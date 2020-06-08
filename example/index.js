@@ -9,8 +9,8 @@ const pathJoin = require('path').join,
 	generate = require('@babel/generator').default;
 
 // Imports
-const livepack = require('../lib/index.js'),
-	plugin = require('../lib/babel.js');
+const tracker = require('../tracker.js'),
+	plugin = require('../babel.js');
 
 // Run
 
@@ -28,7 +28,7 @@ const outputJs = transformSync(inputJs, {
 
 console.log(outputJs);
 console.log('--------------------');
-const fns = livepack._fns;
+const {fns} = tracker;
 console.log('fns:', fns);
 // console.log(generate(fns[Object.keys(fns)[0]].node, {comments: false}).code);
 
