@@ -16,7 +16,11 @@
   "bugs": {
     "url": "https://github.com/overlookmotel/livepack/issues"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@babel/core": "^7.10.2",
+    "@babel/generator": "^7.10.2",
+    "@babel/types": "^7.10.2"
+  },
   "devDependencies": {
     "@overlookmotel/eslint-config": "^7.1.2",
     "@overlookmotel/eslint-config-jest": "^4.0.1",
