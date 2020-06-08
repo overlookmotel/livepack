@@ -1,0 +1,24 @@
+language: node_js
+
+script:
+  - "npm run ci"
+
+node_js:
+  - "14"
+  - "13"
+  - "12"
+  - "10"
+
+branches:
+  except:
+    - /^v\d+\./
+
+matrix:
+  fast_finish: true
+  include:
+    - node_js: "12"
+      env: COVERAGE=true
+  allow_failures:
+    - env: COVERAGE=true
+
+cache: npm
