@@ -3,14 +3,11 @@
 'use strict';
 
 // Modules
-const pathJoin = require('path').join,
-	{readFileSync} = require('fs'),
-	{transformSync} = require('@babel/core'),
-	generate = require('@babel/generator').default;
+const babelRegister = require('@babel/register');
 
 // Imports
-const tracker = require('../tracker.js'),
-	plugin = require('../babel.js');
+const plugin = require('../babel.js');
+const tracker = require('../tracker.js');
 
 // Run
 
@@ -18,24 +15,15 @@ console.log('--------------------');
 console.log('--------------------');
 console.log('--------------------');
 
-const path = pathJoin(__dirname, 'src/index.js');
-const inputJs = readFileSync(path, 'utf8');
-const outputJs = transformSync(inputJs, {
+babelRegister({
+	ignore: [],
+	root: '/',
 	plugins: [plugin],
-	filename: path,
-	comments: false
-}).code;
+	cache: false
+});
 
-console.log(outputJs);
-console.log('--------------------');
-const {fns} = tracker;
-console.log('fns:', fns);
-// console.log(generate(fns[Object.keys(fns)[0]].node, {comments: false}).code);
+const res = require('./src/index.js');
 
-// console.log(getFnJs(fns[Object.keys(fns)[0]]));
-
-function getFnJs(fnObj) {
-	const {node} = fnObj;
-	node.body.body.shift();
-	return generate(node, {comments: false}).code;
-}
+console.log('res:', res);
+// console.log('fns:', tracker.fns);
+console.log('invocations:', tracker.invocations);

@@ -4,15 +4,18 @@ const a = 1;
 
 // let set;
 function outer() {
-	let b = 2;
+	let b = a;
 
 	return function inner(x) {
+		console.log(`a = ${a}, b = ${b}`); // eslint-disable-line no-console
 		b += x;
-		console.log(`${a},${b}`); // eslint-disable-line no-console
 	};
 }
 
-const inner = outer();
-inner(10);
+const inner1 = outer();
+inner1(10);
+inner1(10);
+const inner2 = outer();
+inner2(10);
 
-module.exports = inner;
+module.exports = {inner1, inner2};
