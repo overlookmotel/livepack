@@ -23,7 +23,6 @@
   },
   "devDependencies": {
     "@babel/core": "^7.10.2",
-    "@babel/generator": "^7.10.2",
     "@overlookmotel/eslint-config": "^7.1.2",
     "@overlookmotel/eslint-config-jest": "^4.0.1",
     "@overlookmotel/eslint-config-node": "^2.0.0",
