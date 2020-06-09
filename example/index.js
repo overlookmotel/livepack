@@ -27,4 +27,4 @@ serialize(res.inner2);
 
 console.log('res:', res);
 // console.log('fns:', tracker.fns);
-console.log('invocations:', tracker.invocations);
+console.log('scopes:', tracker.scopes);
