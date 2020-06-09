@@ -2,8 +2,13 @@
 
 'use strict';
 
+// Modules
+const pathJoin = require('path').join;
+
 // Register babel plugin to transform requires
-require('../register.js');
+require('../register.js')({
+	trackerPath: pathJoin(__dirname, '../tracker.js')
+});
 
 // Imports
 const serialize = require('../index.js');
