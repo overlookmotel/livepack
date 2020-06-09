@@ -19,4 +19,4 @@ inner1(10);
 const inner2 = outer();
 inner2(10);
 
-module.exports = {inner1, inner2};
+module.exports = {outer, inner1, inner2};
