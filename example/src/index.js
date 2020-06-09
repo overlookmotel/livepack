@@ -5,9 +5,10 @@ const a = 1;
 // let set;
 function outer() {
 	let b = a;
+	const c = a;
 
 	return function inner(x) {
-		console.log(`a = ${a}, b = ${b}`); // eslint-disable-line no-console
+		console.log(`a = ${a}, b = ${b}, c = ${c}`); // eslint-disable-line no-console
 		b += x;
 	};
 }
