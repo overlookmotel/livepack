@@ -24,6 +24,7 @@ const res = require('./src/index.js');
 console.log('res:', res);
 
 for (const name of ['outer', 'inner1', 'inner2', 'set1', 'set2']) {
-	const js = serialize(res[name]); // eslint-disable-line no-unused-vars
-	// console.log(js);
+	const js = serialize(res[name]);
+	console.log('js:', js);
+	console.log('--------------------');
 }
