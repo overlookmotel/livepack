@@ -7,7 +7,7 @@ function outer() {
 	let b = a;
 	const c = a;
 
-	setters.push(function set(x) { // eslint-disable-line prefer-arrow-callback
+	setters.push((x) => {
 		b = x;
 	});
 
