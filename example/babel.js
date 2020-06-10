@@ -23,7 +23,8 @@ const outputJs = transformSync(inputJs, {
 		[babelPlugin, {trackerPath}]
 	],
 	filename: path,
-	comments: false
+	comments: false,
+	generatorOpts: {retainLines: true}
 }).code;
 
 console.log(outputJs);
