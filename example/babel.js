@@ -10,6 +10,10 @@ const pathJoin = require('path').join,
 
 // Run
 
+console.log('--------------------');
+console.log('--------------------');
+console.log('--------------------');
+
 const trackerPath = pathJoin(__dirname, '../tracker.js');
 
 const path = pathJoin(__dirname, 'src/index.js');

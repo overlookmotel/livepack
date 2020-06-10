@@ -7,9 +7,7 @@ function outer() {
 	let b = a;
 	const c = a;
 
-	setters.push((x) => {
-		b = x;
-	});
+	setters.push(x => b = x); // eslint-disable-line no-return-assign
 
 	return function inner() {
 		console.log(`a = ${a}, b = ${b}, c = ${c}`); // eslint-disable-line no-console
