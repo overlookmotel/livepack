@@ -1,24 +1,28 @@
 'use strict';
 
-const r = {iAmR: true};
-const q = {iAmQ: true, r};
+const circularObj = {iAmCircularObj: true};
+const circularObj2 = {iAmCircularObj2: true, circularObj};
+circularObj.circularObj2 = circularObj2;
+
+const circularArray = [];
+circularArray[0] = circularArray;
 
 const setters = [];
 function outer() {
-	let b = q;
-	const c = q;
+	let b = circularObj;
+	const c = circularArray;
 
 	setters.push(x => b = x); // eslint-disable-line no-return-assign
 
-	function foo(q) { // eslint-disable-line no-shadow
-		return q * 2;
+	function foo(b) { // eslint-disable-line no-shadow
+		return b * 2;
 	}
 
-	if (q) {
+	if (b) {
 		const d = 1;
 		return function inner() {
 			// eslint-disable-next-line no-console
-			console.log(`a = ${q}, b = ${b}, c = ${c}, d = ${d}, foo = ${!!foo}`);
+			console.log(`circularObj = ${circularObj}, b = ${b}, c = ${c}, d = ${d}, foo = ${!!foo}`);
 		};
 	}
 	return () => {};
