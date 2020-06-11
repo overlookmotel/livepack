@@ -1,17 +1,27 @@
 'use strict';
 
-const a = 1;
+const r = {iAmR: true};
+const q = {iAmQ: true, r};
 
 const setters = [];
 function outer() {
-	let b = a;
-	const c = a;
+	let b = q;
+	const c = q;
 
 	setters.push(x => b = x); // eslint-disable-line no-return-assign
 
-	return function inner() {
-		console.log(`a = ${a}, b = ${b}, c = ${c}`); // eslint-disable-line no-console
-	};
+	function foo(q) { // eslint-disable-line no-shadow
+		return q * 2;
+	}
+
+	if (q) {
+		const d = 1;
+		return function inner() {
+			// eslint-disable-next-line no-console
+			console.log(`a = ${q}, b = ${b}, c = ${c}, d = ${d}, foo = ${!!foo}`);
+		};
+	}
+	return () => {};
 }
 
 const inner1 = outer();
@@ -20,4 +30,4 @@ const [set1, set2] = setters;
 set1(10);
 set2(20);
 
-module.exports = {outer, inner1, inner2, set1, set2};
+module.exports = {inner1, inner2};

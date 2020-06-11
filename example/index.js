@@ -19,9 +19,6 @@ console.log('--------------------');
 
 const res = require('./src/index.js');
 
-for (const name of ['outer', 'inner1', 'inner2', 'set1', 'set2']) {
-	console.log(name);
-	const js = serialize(res[name]);
-	console.log(js);
-	console.log('--------------------');
-}
+const js = serialize(res);
+console.log('--------------------');
+console.log(js);
