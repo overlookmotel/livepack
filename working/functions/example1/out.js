@@ -1,6 +1,17 @@
-/* eslint-disable no-console, no-shadow, no-var */
+/* eslint-disable no-console, no-var, vars-on-top */
 
 'use strict';
+
+function createScope0(a) {
+	return [function createScope1(b) {
+		var c = function inner() {
+			console.log(`a = ${a}, b = ${b}`);
+			a++;
+			b += 100;
+		};
+		return [c];
+	}];
+}
 
 var scope0 = createScope0(2),
 	createScope1 = scope0[0],
@@ -14,16 +25,3 @@ module.exports = c;
 // Compacts down to:
 // var createScope1 = createScope0[0];
 // module.exports = {inner1: createScope1(1)[0], inner2: createScope1(2)[0]};
-
-function createScope0(a) {
-	function createScope1(b) {
-		var c = function inner() {
-			console.log(`a = ${a}, b = ${b}`);
-			a++;
-			b += 100;
-		};
-		return [c];
-	}
-
-	return [createScope1];
-}
