@@ -7,8 +7,7 @@ function outer() {
 	if (b) {
 		const c = b;
 		return function inner() {
-			// eslint-disable-next-line no-console
-			console.log(`a = ${a}, b = ${b}, c = ${c}`);
+			console.log(`a = ${a}, b = ${b}, c = ${c}`); // eslint-disable-line no-console
 			a++;
 			b += 100;
 		};
@@ -22,4 +21,4 @@ inner1();
 inner2();
 inner2();
 
-module.exports = {inner1, inner2};
+module.exports = {inner1, inner2, outer};
