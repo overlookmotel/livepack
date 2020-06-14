@@ -6,15 +6,12 @@
 'use strict';
 
 // Modules
-const livepack = require('livepack');
-
-// Init
-require('./support/index.js');
+const serialize = require('livepack');
 
 // Tests
 
-describe('tests', () => {
-	it.skip('all', () => { // eslint-disable-line jest/no-disabled-tests
-		expect(livepack).not.toBeUndefined();
+describe('package', () => {
+	it('exports serialize function', () => {
+		expect(serialize).toBeFunction();
 	});
 });
