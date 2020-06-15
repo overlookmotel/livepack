@@ -1,9 +1,9 @@
-/* eslint-disable no-console */
+/* eslint-disable no-console, camelcase */
 
 'use strict';
 
-function createBlock1(a) {
-	return [function createBlock2(b) {
+function createScope1(a) {
+	return [function createScope2(b) {
 		function inner() {
 			console.log(`a = ${a}, b = ${b}`);
 			a++;
@@ -13,10 +13,10 @@ function createBlock1(a) {
 	}];
 }
 
-const scope1 = createBlock1(2),
-	createScope2 = scope1[0],
-	scope2 = createScope2(1),
-	scope3 = createScope2(101),
+const scope1 = createScope1(2),
+	createScope1_2 = scope1[0],
+	scope2 = createScope1_2(1),
+	scope3 = createScope1_2(101),
 	a = scope2[0],
 	b = scope3[0],
 	c = {inner1: a, inner2: b};
