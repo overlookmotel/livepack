@@ -22,7 +22,8 @@
     "@babel/register": "^7.10.1",
     "@babel/traverse": "^7.10.1",
     "@babel/types": "^7.10.2",
-    "is-it-type": "^4.0.0"
+    "is-it-type": "^4.0.0",
+    "lodash": "^4.17.15"
   },
   "devDependencies": {
     "@babel/core": "^7.10.2",
