@@ -1,27 +1,31 @@
-/* eslint-disable no-console, no-var, vars-on-top */
+/* eslint-disable no-console */
 
 'use strict';
 
-function createScope0(a) {
-	return [function createScope1(b) {
-		var c = function inner() {
-			console.log(`a = ${a}, b = ${b}`);
-			a++;
-			b += 100;
-		};
-		return [c];
+function createScope0() {
+	return [function createScope1(a) {
+		return [function createScope2(b) {
+			function inner() {
+				console.log(`a = ${a}, b = ${b}`);
+				a++;
+				b += 100;
+			}
+			return [inner];
+		}];
 	}];
 }
 
-var scope0 = createScope0(2),
+const scope0 = createScope0(),
 	createScope1 = scope0[0],
-	scope1 = createScope1(1),
-	scope2 = createScope1(101),
-	a = scope1[0],
-	b = scope2[0],
+	scope1 = createScope1(2),
+	createScope2 = scope1[0],
+	scope2 = createScope2(1),
+	scope3 = createScope2(101),
+	a = scope2[0],
+	b = scope3[0],
 	c = {inner1: a, inner2: b};
 module.exports = c;
 
 // Compacts down to:
-// var createScope1 = createScope0[0];
-// module.exports = {inner1: createScope1(1)[0], inner2: createScope1(2)[0]};
+// const createScope2 = createScope0()[0](2)[0];
+// module.exports = {inner1: createScope2(1)[0], inner2: createScope2(101)[0]};
