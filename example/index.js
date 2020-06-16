@@ -19,6 +19,6 @@ console.log('--------------------');
 
 const res = require('./src/index.js');
 
-const js = serialize(res);
+const js = serialize(res, {inline: false});
 console.log('--------------------');
 console.log(js);
