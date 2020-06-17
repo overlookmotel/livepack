@@ -27,8 +27,8 @@ function createScope1(a) {
 const scope101 = createScope1(3),
 	createScope101_2 = scope101[0],
 	scope102 = createScope101_2(11),
+	inner1 = scope102[2],
 	scope103 = createScope101_2(12),
-	inner102 = scope102[2],
-	inner103 = scope103[2];
+	inner2 = scope103[2];
 
-module.exports = {inner102, inner103};
+module.exports = {inner1, inner2};

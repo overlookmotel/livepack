@@ -23,7 +23,7 @@ function outer() { // Block 2, scope 102, 103
 	return inner;
 }
 
-const inner102 = outer();
-const inner103 = outer();
+const inner1 = outer(); // From scope 102
+const inner2 = outer(); // From scope 103
 
-module.exports = {inner102, inner103};
+module.exports = {inner1, inner2};

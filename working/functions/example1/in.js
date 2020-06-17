@@ -9,7 +9,7 @@ function outer() { // Block 2, scope 102, 103
 	return function inner() { // Block 3
 		console.log(`a = ${a}, b = ${b}`); // eslint-disable-line no-console
 		a++;
-		b += 100;
+		b += 10;
 	};
 }
 
