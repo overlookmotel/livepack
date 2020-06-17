@@ -7,7 +7,7 @@ function outer() {
 	return function inner() {
 		console.log(`a = ${a}, b = ${b}`); // eslint-disable-line no-console
 		a++;
-		b += 100;
+		b += 10;
 	};
 }
 
