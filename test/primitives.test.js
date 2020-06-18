@@ -77,5 +77,5 @@ it('null', () => {
 });
 
 it('undefined', () => {
-	expectSerializedEqual(undefined, 'undefined');
+	expectSerializedEqual(undefined, 'void 0');
 });
