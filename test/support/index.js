@@ -26,10 +26,10 @@ module.exports = {
  * @returns {*} - Result of evaluation
  */
 function expectSerializedEqual(input, expectedJs) {
-	const js = serialize(input, {inline: true});
+	const js = serialize(input);
 
 	if (expectedJs !== undefined) {
-		expect(js).toEqual(`module.exports = ${expectedJs};`);
+		expect(js).toEqual(`module.exports=${expectedJs};`);
 	}
 
 	const output = exec(js);
@@ -56,7 +56,7 @@ function exec(js) {
  */
 function run(input) {
 	// Serialize to JS
-	const js = serialize(input, {inline: true});
+	const js = serialize(input);
 
 	// Execute JS and return exported value
 	return exec(js);
