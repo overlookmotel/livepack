@@ -12,23 +12,23 @@ const {expectSerializedEqual} = require('./support/index.js');
 
 describe('arrays', () => {
 	it('empty array', () => {
-		expectSerializedEqual([]);
+		expectSerializedEqual([], '[]');
 	});
 
 	describe('entries', () => {
 		it('one entry', () => {
-			expectSerializedEqual([1]);
+			expectSerializedEqual([1], '[1]');
 		});
 
 		it('multiple entries', () => {
-			expectSerializedEqual([1, 2, 3]);
+			expectSerializedEqual([1, 2, 3], '[1,2,3]');
 		});
 
 		it('sparse entries', () => {
 			const input = [, , 1, , , 2, , , 3]; // eslint-disable-line no-sparse-arrays
 			input.length = 11;
 
-			const output = expectSerializedEqual(input);
+			const output = expectSerializedEqual(input, '[,,1,,,2,,,3,,,]');
 			expect(output).toBeArrayOfSize(11);
 
 			for (let i = 0; i < input.length; i++) {
@@ -42,7 +42,7 @@ describe('arrays', () => {
 			expectSerializedEqual([
 				[1],
 				2
-			]);
+			], '[[1],2]');
 		});
 
 		it('multiple nested arrays', () => {
@@ -50,7 +50,7 @@ describe('arrays', () => {
 				[1],
 				[2],
 				3
-			]);
+			], '[[1],[2],3]');
 		});
 
 		it('multiple layers of nesting', () => {
@@ -74,7 +74,7 @@ describe('arrays', () => {
 					],
 					9
 				]
-			]);
+			], '[[[[1,2],[],3],[[4],5],[],6],[[[7,8]],9]]');
 		});
 
 		describe('duplicated references', () => {
@@ -85,7 +85,7 @@ describe('arrays', () => {
 					a,
 					a
 				];
-				const output = expectSerializedEqual(input);
+				const output = expectSerializedEqual(input, '(()=>{const a=[1];return[[a],a,a];})()');
 				expect(output[1]).toEqual(a);
 				expect(output[2]).toBe(output[1]);
 				expect(output[0][0]).toBe(output[1]);
@@ -98,7 +98,7 @@ describe('arrays', () => {
 					a,
 					[a]
 				];
-				const output = expectSerializedEqual(input);
+				const output = expectSerializedEqual(input, '(()=>{const a=[1];return[a,a,[a]];})()');
 				expect(output[0]).toEqual(a);
 				expect(output[1]).toBe(output[0]);
 				expect(output[2][0]).toBe(output[0]);
@@ -111,7 +111,7 @@ describe('arrays', () => {
 					const input = [];
 					input[0] = input;
 
-					const output = expectSerializedEqual(input);
+					const output = expectSerializedEqual(input, '(()=>{const a=[];a[0]=a;return a;})()');
 					expect(output[0]).toBe(output);
 				});
 
@@ -119,7 +119,7 @@ describe('arrays', () => {
 					const input = [[[]]];
 					input[0][0][0] = input;
 
-					const output = expectSerializedEqual(input);
+					const output = expectSerializedEqual(input, '(()=>{const a=[],b=[[a]];a[0]=b;return b;})()');
 					expect(output[0][0][0]).toBe(output);
 				});
 			});
@@ -130,7 +130,7 @@ describe('arrays', () => {
 					a[0] = a;
 					const input = [a];
 
-					const output = expectSerializedEqual(input);
+					const output = expectSerializedEqual(input, '(()=>{const a=[];a[0]=a;return[a];})()');
 					expect(output[0][0]).toBe(output[0]);
 				});
 
@@ -139,7 +139,7 @@ describe('arrays', () => {
 					a[0][0][0] = a;
 					const input = [a];
 
-					const output = expectSerializedEqual(input);
+					const output = expectSerializedEqual(input, '(()=>{const a=[],b=[[a]];a[0]=b;return[b];})()');
 					expect(output[0][0][0][0]).toBe(output[0]);
 				});
 			});

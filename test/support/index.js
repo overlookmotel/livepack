@@ -12,8 +12,8 @@ const serialize = require('livepack');
 
 module.exports = {
 	expectSerializedEqual,
-	exec,
-	run
+	run,
+	exec
 };
 
 /**
@@ -26,13 +26,26 @@ module.exports = {
  * @returns {*} - Result of evaluation
  */
 function expectSerializedEqual(input, expectedJs) {
-	const js = serialize(input);
-
-	if (expectedJs !== undefined) expect(js).toBe(expectedJs);
-
-	const output = exec(js);
+	const output = run(input, expectedJs);
 	expect(output).toEqual(input);
 	return output;
+}
+
+/**
+ * Serialize object to Javascript and execute it.
+ * @param {*} input - Input value
+ * @param {string} [expectedJs] - JS code that value should serialize to (optional)
+ * @returns {*} - Result of evaluation
+ */
+function run(input, expectedJs) {
+	// Serialize to JS
+	const js = serialize(input);
+
+	// Check expected JS output
+	if (expectedJs !== undefined) expect(js).toBe(expectedJs);
+
+	// Execute JS and return exported value
+	return exec(js);
 }
 
 /**
@@ -42,17 +55,4 @@ function expectSerializedEqual(input, expectedJs) {
  */
 function exec(js) {
 	return new Function(`return ${js}`)(); // eslint-disable-line no-new-func
-}
-
-/**
- * Serialize object to Javascript and execute it.
- * @param {*} input - Input value
- * @returns {*} - Result of evaluation
- */
-function run(input) {
-	// Serialize to JS
-	const js = serialize(input);
-
-	// Execute JS and return exported value
-	return exec(js);
 }
