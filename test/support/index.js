@@ -28,9 +28,7 @@ module.exports = {
 function expectSerializedEqual(input, expectedJs) {
 	const js = serialize(input);
 
-	if (expectedJs !== undefined) {
-		expect(js).toEqual(`module.exports=${expectedJs};`);
-	}
+	if (expectedJs !== undefined) expect(js).toBe(expectedJs);
 
 	const output = exec(js);
 	expect(output).toEqual(input);
@@ -38,15 +36,12 @@ function expectSerializedEqual(input, expectedJs) {
 }
 
 /**
- * Execute JS code and return value of `module.exports`.
+ * Execute JS code and return value.
  * @param {string} js - Javascript code
  * @returns {*} - Result of evaluation
  */
 function exec(js) {
-	const fn = new Function('module', js); // eslint-disable-line no-new-func
-	const module = {exports: {}};
-	fn(module);
-	return module.exports;
+	return new Function(`return ${js}`)(); // eslint-disable-line no-new-func
 }
 
 /**
