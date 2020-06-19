@@ -12,117 +12,186 @@ const {run} = require('./support/index.js');
 
 describe('functions', () => {
 	describe('without scope', () => {
-		it('arrow function', () => {
-			const input = (x, y) => [x, y];
-			const out = run(input);
+		describe('single instantiation of function', () => {
+			it('arrow function', () => {
+				const input = (x, y) => [x, y];
+				const out = run(input);
 
-			expect(out).toBeFunction();
-			const param1 = {},
-				param2 = {};
-			const res = out(param1, param2);
-			expect(res).toBeArrayOfSize(2);
-			expect(res[0]).toBe(param1);
-			expect(res[1]).toBe(param2);
+				expect(out).toBeFunction();
+				const param1 = {},
+					param2 = {};
+				const res = out(param1, param2);
+				expect(res).toBeArrayOfSize(2);
+				expect(res[0]).toBe(param1);
+				expect(res[1]).toBe(param2);
+			});
+
+			it('function expression', () => {
+				const input = function(x, y) {
+					return [x, y, this]; // eslint-disable-line no-invalid-this
+				};
+				const out = run(input);
+
+				expect(out).toBeFunction();
+				const param1 = {},
+					param2 = {},
+					ctx = {};
+				const res = out.call(ctx, param1, param2);
+				expect(res).toBeArrayOfSize(3);
+				expect(res[0]).toBe(param1);
+				expect(res[1]).toBe(param2);
+				expect(res[2]).toBe(ctx);
+			});
+
+			it('function declaration', () => {
+				function input(x, y) {
+					return [x, y, this]; // eslint-disable-line no-invalid-this
+				}
+				const out = run(input);
+
+				expect(out).toBeFunction();
+				const param1 = {},
+					param2 = {},
+					ctx = {};
+				const res = out.call(ctx, param1, param2);
+				expect(res).toBeArrayOfSize(3);
+				expect(res[0]).toBe(param1);
+				expect(res[1]).toBe(param2);
+				expect(res[2]).toBe(ctx);
+			});
 		});
 
-		it('function expression', () => {
-			const input = function(x, y) {
-				return [x, y, this]; // eslint-disable-line no-invalid-this
-			};
+		it('multiple instantiations of function', () => {
+			const input = [1, 2, 3].map(() => (
+				function(x, y) {
+					return [x, y, this]; // eslint-disable-line no-invalid-this
+				}
+			));
 			const out = run(input);
+			expect(out).toBeArrayOfSize(3);
 
-			expect(out).toBeFunction();
-			const param1 = {},
-				param2 = {},
-				ctx = {};
-			const res = out.call(ctx, param1, param2);
-			expect(res).toBeArrayOfSize(3);
-			expect(res[0]).toBe(param1);
-			expect(res[1]).toBe(param2);
-			expect(res[2]).toBe(ctx);
-		});
+			expect(out[0]).not.toBe(out[1]);
+			expect(out[0]).not.toBe(out[2]);
+			expect(out[1]).not.toBe(out[2]);
 
-		it('function declaration', () => {
-			function input(x, y) {
-				return [x, y, this]; // eslint-disable-line no-invalid-this
+			for (const fn of out) {
+				expect(fn).toBeFunction();
+				const param1 = {},
+					param2 = {},
+					ctx = {};
+				const res = fn.call(ctx, param1, param2);
+				expect(res).toBeArrayOfSize(3);
+				expect(res[0]).toBe(param1);
+				expect(res[1]).toBe(param2);
+				expect(res[2]).toBe(ctx);
 			}
-			const out = run(input);
-
-			expect(out).toBeFunction();
-			const param1 = {},
-				param2 = {},
-				ctx = {};
-			const res = out.call(ctx, param1, param2);
-			expect(res).toBeArrayOfSize(3);
-			expect(res[0]).toBe(param1);
-			expect(res[1]).toBe(param2);
-			expect(res[2]).toBe(ctx);
 		});
 	});
 
 	describe('with external scope', () => {
-		it('arrow function', () => {
-			const extA = {extA: 1},
-				extB = {extB: 2};
-			const input = (x, y) => [x, y, extA, extB];
-			const out = run(input);
+		describe('single instantiation of function', () => {
+			it('arrow function', () => {
+				const extA = {extA: 1},
+					extB = {extB: 2};
+				const input = (x, y) => [x, y, extA, extB];
+				const out = run(input);
 
-			expect(out).toBeFunction();
-			const param1 = {},
-				param2 = {};
-			const res = out(param1, param2);
-			expect(res).toBeArrayOfSize(4);
-			expect(res[0]).toBe(param1);
-			expect(res[1]).toBe(param2);
-			expect(res[2]).toEqual(extA);
-			expect(res[3]).toEqual(extB);
+				expect(out).toBeFunction();
+				const param1 = {},
+					param2 = {};
+				const res = out(param1, param2);
+				expect(res).toBeArrayOfSize(4);
+				expect(res[0]).toBe(param1);
+				expect(res[1]).toBe(param2);
+				expect(res[2]).toEqual(extA);
+				expect(res[3]).toEqual(extB);
+			});
+
+			it('function expression', () => {
+				const extA = {extA: 1},
+					extB = {extB: 2};
+				const input = function(x, y) {
+					return [x, y, this, extA, extB]; // eslint-disable-line no-invalid-this
+				};
+				const out = run(input);
+
+				expect(out).toBeFunction();
+				const param1 = {},
+					param2 = {},
+					ctx = {};
+				const res = out.call(ctx, param1, param2);
+				expect(res).toBeArrayOfSize(5);
+				expect(res[0]).toBe(param1);
+				expect(res[1]).toBe(param2);
+				expect(res[2]).toBe(ctx);
+				expect(res[3]).toEqual(extA);
+				expect(res[4]).toEqual(extB);
+			});
+
+			it('function declaration', () => {
+				const extA = {extA: 1},
+					extB = {extB: 2};
+				function input(x, y) {
+					return [x, y, this, extA, extB]; // eslint-disable-line no-invalid-this
+				}
+				const out = run(input);
+
+				expect(out).toBeFunction();
+				const param1 = {},
+					param2 = {},
+					ctx = {};
+				const res = out.call(ctx, param1, param2);
+				expect(res).toBeArrayOfSize(5);
+				expect(res[0]).toBe(param1);
+				expect(res[1]).toBe(param2);
+				expect(res[2]).toBe(ctx);
+				expect(res[3]).toEqual(extA);
+				expect(res[4]).toEqual(extB);
+			});
 		});
 
-		it('function expression', () => {
+		it('multiple instantiations of function', () => {
 			const extA = {extA: 1},
 				extB = {extB: 2};
-			const input = function(x, y) {
-				return [x, y, this, extA, extB]; // eslint-disable-line no-invalid-this
-			};
+			const input = [1, 2, 3].map(() => (
+				function(x, y) {
+					return [x, y, this, extA, extB]; // eslint-disable-line no-invalid-this
+				}
+			));
 			const out = run(input);
+			expect(out).toBeArrayOfSize(3);
 
-			expect(out).toBeFunction();
-			const param1 = {},
-				param2 = {},
-				ctx = {};
-			const res = out.call(ctx, param1, param2);
-			expect(res).toBeArrayOfSize(5);
-			expect(res[0]).toBe(param1);
-			expect(res[1]).toBe(param2);
-			expect(res[2]).toBe(ctx);
-			expect(res[3]).toEqual(extA);
-			expect(res[4]).toEqual(extB);
-		});
+			expect(out[0]).not.toBe(out[1]);
+			expect(out[0]).not.toBe(out[2]);
+			expect(out[1]).not.toBe(out[2]);
 
-		it('function declaration', () => {
-			const extA = {extA: 1},
-				extB = {extB: 2};
-			function input(x, y) {
-				return [x, y, this, extA, extB]; // eslint-disable-line no-invalid-this
-			}
-			const out = run(input);
+			const resABs = out.map((item) => {
+				expect(item).toBeFunction();
+				const param1 = {},
+					param2 = {},
+					ctx = {};
+				const res = item.call(ctx, param1, param2);
+				expect(res).toBeArrayOfSize(5);
+				expect(res[0]).toBe(param1);
+				expect(res[1]).toBe(param2);
+				expect(res[2]).toBe(ctx);
+				expect(res[3]).toEqual(extA);
+				expect(res[4]).toEqual(extB);
+				return [res[3], res[4]];
+			});
 
-			expect(out).toBeFunction();
-			const param1 = {},
-				param2 = {},
-				ctx = {};
-			const res = out.call(ctx, param1, param2);
-			expect(res).toBeArrayOfSize(5);
-			expect(res[0]).toBe(param1);
-			expect(res[1]).toBe(param2);
-			expect(res[2]).toBe(ctx);
-			expect(res[3]).toEqual(extA);
-			expect(res[4]).toEqual(extB);
+			const resAs = resABs.map(resAB => resAB[0]);
+			expect(resAs[0]).toBe(resAs[1]);
+			expect(resAs[0]).toBe(resAs[2]);
+
+			const resBs = resABs.map(resAB => resAB[1]);
+			expect(resBs[0]).toBe(resBs[1]);
+			expect(resBs[0]).toBe(resBs[2]);
 		});
 	});
 
 	describe('with vars from above scope', () => {
-		it('single instantiation', () => {
+		it('single instantiation of scope', () => {
 			const extA = {extA: 1};
 			function outer(b, c) {
 				return function(x, y) {
@@ -148,7 +217,7 @@ describe('functions', () => {
 			expect(res[5]).toEqual(extC);
 		});
 
-		it('multiple instantiations', () => {
+		it('multiple instantiations of scope', () => {
 			const extA = {extA: 1};
 			function outer(b, c) {
 				return function(x, y) {
@@ -190,7 +259,7 @@ describe('functions', () => {
 	});
 
 	describe('with vars from above nested scopes', () => {
-		it('single instantiation', () => {
+		it('single instantiation of scope', () => {
 			const extA = {extA: 1};
 			function outer(b) {
 				return function inner(c) {
@@ -218,7 +287,7 @@ describe('functions', () => {
 			expect(res[5]).toEqual(extC);
 		});
 
-		it('multiple independent instantiations', () => {
+		it('multiple independent instantiations of scope', () => {
 			const extA = {extA: 1};
 			function outer(b) {
 				return function inner(c) {
@@ -259,7 +328,7 @@ describe('functions', () => {
 			expect(resAs[0]).toBe(resAs[2]);
 		});
 
-		it('multiple instantiations with shared scope', () => {
+		it('multiple instantiations of scope with shared upper scope', () => {
 			const extA = {extA: 1};
 			function outer(b) {
 				return function inner(c) {
