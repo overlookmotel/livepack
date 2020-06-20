@@ -1,5 +1,7 @@
 'use strict';
 
+const {last} = require('lodash');
+
 let a = 1;
 function outer() {
 	let b = a;
@@ -23,4 +25,4 @@ const {inner: inner2, setB: setB2} = outer();
 setB1(200);
 setB2(300);
 
-module.exports = {inner1, inner2};
+module.exports = {inner1, inner2, last};
