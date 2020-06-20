@@ -13,12 +13,12 @@ const serialize = require('../index.js');
 
 // Run
 
-console.log('--------------------');
-console.log('--------------------');
-console.log('--------------------');
+// console.log('--------------------');
+// console.log('--------------------');
+// console.log('--------------------');
 
 const res = require('./src/index.js');
 
 const js = serialize(res, {compact: false, inline: true});
-console.log('--------------------');
+// console.log('--------------------');
 console.log(js);
