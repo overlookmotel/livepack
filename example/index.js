@@ -1,24 +1,25 @@
-/* eslint-disable no-console */
+/* eslint-disable no-console, import/order */
 
 'use strict';
 
-// Register babel plugin to transform requires
-const pathJoin = require('path').join;
-require('../register.js')({
-	trackerPath: pathJoin(__dirname, '../tracker.js')
-});
+// Register babel plugin
+require('../register.js')(); // require('livepack/register')();
 
 // Modules
-const serialize = require('../index.js');
+const serialize = require('../index.js'); // require('livepack')
 
-// Run
-
-// console.log('--------------------');
-// console.log('--------------------');
-// console.log('--------------------');
-
+// Load source
 const res = require('./src/index.js');
 
-const js = serialize(res, {compact: false, inline: true});
-// console.log('--------------------');
+// Serialize to JS
+const js = serialize(res, {format: 'cjs', compact: false, inline: true});
 console.log(js);
+
+// Save output to file
+const pathJoin = require('path').join,
+	{existsSync, mkdirSync, writeFileSync} = require('fs');
+
+const buildDirPath = pathJoin(__dirname, 'build');
+if (!existsSync(buildDirPath)) mkdirSync(buildDirPath);
+const buildPath = pathJoin(buildDirPath, 'index.js');
+writeFileSync(buildPath, js);
