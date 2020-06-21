@@ -83,7 +83,7 @@ describe('objects', () => {
 					a,
 					b: a
 				};
-				const output = expectSerializedEqual(input, '(()=>{const a={aa:1};return{c:{d:a},a:a,b:a};})()');
+				const output = expectSerializedEqual(input, '(()=>{const d={aa:1};return{c:{d},a:d,b:d};})()');
 				expect(output.a).toEqual(a);
 				expect(output.b).toBe(output.a);
 				expect(output.c.d).toBe(output.a);
@@ -98,7 +98,7 @@ describe('objects', () => {
 						d: a
 					}
 				};
-				const output = expectSerializedEqual(input, '(()=>{const a={aa:1};return{a:a,b:a,c:{d:a}};})()');
+				const output = expectSerializedEqual(input, '(()=>{const a={aa:1};return{a,b:a,c:{d:a}};})()');
 				expect(output.a).toEqual(a);
 				expect(output.b).toBe(output.a);
 				expect(output.c.d).toBe(output.a);
@@ -111,7 +111,9 @@ describe('objects', () => {
 					const input = {};
 					input.a = input;
 
-					const output = expectSerializedEqual(input, '(()=>{const a={};a.a=a;return a;})()');
+					const output = expectSerializedEqual(
+						input, '(()=>{const exports={};exports.a=exports;return exports;})()'
+					);
 					expect(output.a).toBe(output);
 				});
 
@@ -124,7 +126,7 @@ describe('objects', () => {
 					input.a.b.c = input;
 
 					const output = expectSerializedEqual(
-						input, '(()=>{const a={},b={a:{b:a}};a.c=b;return b;})()'
+						input, '(()=>{const b={},exports={a:{b}};b.c=exports;return exports;})()'
 					);
 					expect(output.a.b.c).toBe(output);
 				});
@@ -136,7 +138,7 @@ describe('objects', () => {
 					a.b = a;
 					const input = {a};
 
-					const output = expectSerializedEqual(input, '(()=>{const a={};a.b=a;return{a:a};})()');
+					const output = expectSerializedEqual(input, '(()=>{const a={};a.b=a;return{a};})()');
 					expect(output.a.b).toBe(output.a);
 				});
 
@@ -150,7 +152,7 @@ describe('objects', () => {
 					const input = {a};
 
 					const output = expectSerializedEqual(
-						input, '(()=>{const a={},b={b:{c:a}};a.d=b;return{a:b};})()'
+						input, '(()=>{const c={},a={b:{c}};c.d=a;return{a};})()'
 					);
 					expect(output.a.b.c.d).toBe(output.a);
 				});
