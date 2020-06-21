@@ -1,6 +1,6 @@
 # TODO
 
-* Inject functions into scopes
+* Inject functions into scopes - write tests
 * Handle `this`
 * Handle `arguments`
 * Ensure var names don't clash
