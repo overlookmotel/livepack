@@ -19,6 +19,7 @@
   "dependencies": {
     "@babel/generator": "^7.10.2",
     "@babel/parser": "^7.10.2",
+    "@babel/plugin-transform-modules-commonjs": "^7.10.1",
     "@babel/register": "^7.10.1",
     "@babel/traverse": "^7.10.1",
     "@babel/types": "^7.10.2",
