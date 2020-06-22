@@ -1,6 +1,7 @@
 # TODO
 
-* Test for ensuring var names are valid JS identifiers
+* Tests for ensuring var names are valid JS identifiers
+* Tests for ensuring object keys are valid
 * Tests for injecting functions into scopes
 * Tests for handling `this`
 * Tests for handling `arguments`
