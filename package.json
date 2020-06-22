@@ -23,7 +23,7 @@
     "@babel/register": "^7.10.3",
     "@babel/traverse": "^7.10.3",
     "@babel/types": "^7.10.3",
-    "is-it-type": "^4.0.0",
+    "is-it-type": "^4.1.0",
     "lodash": "^4.17.15"
   },
   "devDependencies": {
