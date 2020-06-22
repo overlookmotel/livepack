@@ -1,9 +1,15 @@
 # TODO
 
 * Inject functions into scopes - write tests
-* Handle `this`
-* Handle `arguments`
-* Ensure var names don't clash
+* Handle `this` - write tests
+* Handle `arguments` - write tests
+* Ensure var names don't clash when not mangling
+* Mangle vars within functions
 * Make block IDs unique across all files
-* Name vars according to property where var found
 * Handle destructured parameters in func definitions (`({a, b: {c}}) => {}` / `([a, b, [c]]) => {}`)
+
+* Symbol-keyed properties
+* RegExps etc
+* Classes
+* Prototypes
+* Additional properties
