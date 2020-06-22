@@ -24,7 +24,8 @@
     "@babel/traverse": "^7.10.3",
     "@babel/types": "^7.10.3",
     "is-it-type": "^4.1.0",
-    "lodash": "^4.17.15"
+    "lodash": "^4.17.15",
+    "reserved-words": "^0.1.2"
   },
   "devDependencies": {
     "@babel/core": "^7.10.3",
