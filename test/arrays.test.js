@@ -85,9 +85,7 @@ describe('arrays', () => {
 					a,
 					a
 				];
-				const output = expectSerializedEqual(
-					input, '(()=>{const exports_0_0=[1];return[[exports_0_0],exports_0_0,exports_0_0];})()'
-				);
+				const output = expectSerializedEqual(input, '(()=>{const a=[1];return[[a],a,a];})()');
 				expect(output[1]).toEqual(a);
 				expect(output[2]).toBe(output[1]);
 				expect(output[0][0]).toBe(output[1]);
@@ -100,9 +98,7 @@ describe('arrays', () => {
 					a,
 					[a]
 				];
-				const output = expectSerializedEqual(
-					input, '(()=>{const exports_0=[1];return[exports_0,exports_0,[exports_0]];})()'
-				);
+				const output = expectSerializedEqual(input, '(()=>{const a=[1];return[a,a,[a]];})()');
 				expect(output[0]).toEqual(a);
 				expect(output[1]).toBe(output[0]);
 				expect(output[2][0]).toBe(output[0]);
@@ -115,9 +111,7 @@ describe('arrays', () => {
 					const input = [];
 					input[0] = input;
 
-					const output = expectSerializedEqual(
-						input, '(()=>{const exports=[];exports[0]=exports;return exports;})()'
-					);
+					const output = expectSerializedEqual(input, '(()=>{const a=[];a[0]=a;return a;})()');
 					expect(output[0]).toBe(output);
 				});
 
@@ -125,10 +119,7 @@ describe('arrays', () => {
 					const input = [[[]]];
 					input[0][0][0] = input;
 
-					const output = expectSerializedEqual(
-						input,
-						'(()=>{const exports_0_0=[],exports=[[exports_0_0]];exports_0_0[0]=exports;return exports;})()'
-					);
+					const output = expectSerializedEqual(input, '(()=>{const a=[],b=[[a]];a[0]=b;return b;})()');
 					expect(output[0][0][0]).toBe(output);
 				});
 			});
@@ -139,9 +130,7 @@ describe('arrays', () => {
 					a[0] = a;
 					const input = [a];
 
-					const output = expectSerializedEqual(
-						input, '(()=>{const exports_0=[];exports_0[0]=exports_0;return[exports_0];})()'
-					);
+					const output = expectSerializedEqual(input, '(()=>{const a=[];a[0]=a;return[a];})()');
 					expect(output[0][0]).toBe(output[0]);
 				});
 
@@ -150,10 +139,7 @@ describe('arrays', () => {
 					a[0][0][0] = a;
 					const input = [a];
 
-					const output = expectSerializedEqual(
-						input,
-						'(()=>{const exports_0_0_0=[],exports_0=[[exports_0_0_0]];exports_0_0_0[0]=exports_0;return[exports_0];})()'
-					);
+					const output = expectSerializedEqual(input, '(()=>{const a=[],b=[[a]];a[0]=b;return[b];})()');
 					expect(output[0][0][0][0]).toBe(output[0]);
 				});
 			});

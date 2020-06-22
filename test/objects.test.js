@@ -83,7 +83,7 @@ describe('objects', () => {
 					a,
 					b: a
 				};
-				const output = expectSerializedEqual(input, '(()=>{const d={aa:1};return{c:{d},a:d,b:d};})()');
+				const output = expectSerializedEqual(input, '(()=>{const a={aa:1};return{c:{d:a},a,b:a};})()');
 				expect(output.a).toEqual(a);
 				expect(output.b).toBe(output.a);
 				expect(output.c.d).toBe(output.a);
@@ -112,7 +112,7 @@ describe('objects', () => {
 					input.a = input;
 
 					const output = expectSerializedEqual(
-						input, '(()=>{const exports={};exports.a=exports;return exports;})()'
+						input, '(()=>{const a={};a.a=a;return a;})()'
 					);
 					expect(output.a).toBe(output);
 				});
@@ -126,7 +126,7 @@ describe('objects', () => {
 					input.a.b.c = input;
 
 					const output = expectSerializedEqual(
-						input, '(()=>{const b={},exports={a:{b}};b.c=exports;return exports;})()'
+						input, '(()=>{const a={},b={a:{b:a}};a.c=b;return b;})()'
 					);
 					expect(output.a.b.c).toBe(output);
 				});
@@ -152,7 +152,7 @@ describe('objects', () => {
 					const input = {a};
 
 					const output = expectSerializedEqual(
-						input, '(()=>{const c={},a={b:{c}};c.d=a;return{a};})()'
+						input, '(()=>{const a={},b={b:{c:a}};a.d=b;return{a:b};})()'
 					);
 					expect(output.a.b.c.d).toBe(output.a);
 				});
