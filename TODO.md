@@ -15,6 +15,7 @@
 * Tests for references to upper function name (`function x() { return () => x; }`)
 * Handle `super`
 * Option to strip function names (NB don't where is referenced internally `function x() { return x; }`)
+* Preserve arrow function names (e.g. `x = () => {}` -> `x.name === 'x'`) NB cannot be determined statically - `a = 'x', o = {[a]: () => {}}` -> `o.x.name === 'x'`
 
 * Symbol-keyed properties
 * RegExps etc
