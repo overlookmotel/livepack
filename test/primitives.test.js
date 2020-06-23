@@ -10,7 +10,7 @@ const {describeWithAllOptions, itWithAllOptions} = require('./support/index.js')
 
 // Tests
 
-describeWithAllOptions('strings', ({expectSerializedEqual}) => {
+describeWithAllOptions('Strings', ({expectSerializedEqual}) => {
 	it('non-empty string', () => {
 		expectSerializedEqual('abc', '"abc"');
 	});
@@ -20,7 +20,7 @@ describeWithAllOptions('strings', ({expectSerializedEqual}) => {
 	});
 });
 
-describeWithAllOptions('booleans', ({expectSerializedEqual}) => {
+describeWithAllOptions('Booleans', ({expectSerializedEqual}) => {
 	it('true', () => {
 		expectSerializedEqual(true, 'true');
 	});
@@ -30,7 +30,7 @@ describeWithAllOptions('booleans', ({expectSerializedEqual}) => {
 	});
 });
 
-describeWithAllOptions('numbers', ({expectSerializedEqual}) => {
+describeWithAllOptions('Numbers', ({expectSerializedEqual}) => {
 	it('positive integers', () => {
 		expectSerializedEqual(1, '1');
 		expectSerializedEqual(123, '123');

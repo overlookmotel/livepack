@@ -10,7 +10,7 @@ const {describeWithAllOptions} = require('./support/index.js');
 
 // Tests
 
-describeWithAllOptions('objects', ({expectSerializedEqual}) => {
+describeWithAllOptions('Objects', ({expectSerializedEqual}) => {
 	it('empty object', () => {
 		expectSerializedEqual({}, '({})');
 	});

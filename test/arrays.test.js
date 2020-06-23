@@ -10,7 +10,7 @@ const {describeWithAllOptions} = require('./support/index.js');
 
 // Tests
 
-describeWithAllOptions('arrays', ({expectSerializedEqual}) => {
+describeWithAllOptions('Arrays', ({expectSerializedEqual}) => {
 	it('empty array', () => {
 		expectSerializedEqual([], '[]');
 	});

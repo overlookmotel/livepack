@@ -10,7 +10,7 @@ const serialize = require('livepack');
 
 // Tests
 
-describe('package', () => {
+describe('Package', () => {
 	it('exports serialize function', () => {
 		expect(serialize).toBeFunction();
 	});

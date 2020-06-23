@@ -10,7 +10,7 @@ const {describeWithAllOptions} = require('./support/index.js');
 
 // Tests
 
-describeWithAllOptions('functions', ({run}) => {
+describeWithAllOptions('Functions', ({run}) => {
 	describe('without scope', () => {
 		describe('single instantiation of function', () => {
 			it('arrow function', () => {
