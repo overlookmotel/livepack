@@ -9,13 +9,13 @@
 const parseNodeVersion = require('parse-node-version');
 
 // Imports
-const {run} = require('./support/index.js');
+const {describeWithAllOptions} = require('./support/index.js');
 
 // Tests
 
 const itIfNode12Plus = parseNodeVersion(process.version).major >= 12 ? it : it.skip;
 
-describe('symbols', () => {
+describeWithAllOptions('symbols', ({run}) => {
 	it('named symbol', () => {
 		const output = run(Symbol('foo'), 'Symbol("foo")');
 		expect(typeof output).toBe('symbol');

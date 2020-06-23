@@ -10,11 +10,74 @@ const serialize = require('livepack');
 
 // Exports
 
-module.exports = {
-	expectSerializedEqual,
-	run,
-	exec
-};
+module.exports = {describeWithAllOptions, itWithAllOptions};
+
+/**
+ * Replacement for `describe` which runs tests with all serialize options.
+ * `fn` will be called with `{expectSerializedEqual, run, exec}` + properties for options used.
+ * `expectSerializedEqual` + `run` only do the expected JS output check when all options true.
+ * @param {string} name - Test name
+ * @param {Function} fn - Function containing test definitions
+ * @returns {undefined}
+ */
+function describeWithAllOptions(name, fn) {
+	describeAllOptions(name, fn, describe, describe);
+}
+describeWithAllOptions.only = (name, fn) => describeAllOptions(name, fn, describe.only, describe);
+describeWithAllOptions.skip = (name, fn) => describeAllOptions(name, fn, describe.skip, describe);
+
+/**
+ * Replacement for `it` which runs test with all serialize options.
+ * `fn` will be called with `{expectSerializedEqual, run, exec}` + properties for options used.
+ * `expectSerializedEqual` + `run` only do the expected JS output check when all options true.
+ * @param {string} name - Test name
+ * @param {Function} fn - Test definition function
+ * @returns {undefined}
+ */
+function itWithAllOptions(name, fn) {
+	describeAllOptions(name, fn, describe, it);
+}
+itWithAllOptions.only = (name, fn) => describeAllOptions(name, fn, describe.only, it);
+itWithAllOptions.skip = (name, fn) => describeAllOptions(name, fn, describe.skip, it);
+
+/**
+ * Run tests with all serialize options.
+ * Used by `describeWithAllOptions` + `itWithAllOptions`.
+ * @param {string} name - Test name
+ * @param {Function} fn - Test function
+ * @param {Function} topDescribe - Either `describe`, `describe.only` or `describe.skip`
+ * @param {Function} describeOrIt - Either `describe` or `it`
+ * @returns {undefined}
+ */
+function describeAllOptions(name, fn, topDescribe, describeOrIt) {
+	topDescribe(name, () => {
+		for (const compact of [true, false]) {
+			describe(`with compact option ${compact}`, () => {
+				for (const inline of [true, false]) {
+					describe(`with inline option ${inline}`, () => {
+						for (const mangle of [true, false]) {
+							describeOrIt(`with mangle option ${mangle}`, () => {
+								// Only perform check of expected JS if all options true
+								const allOptionsTrue = compact && inline && mangle;
+								const options = {compact, inline, mangle, comments: false};
+								fn({
+									expectSerializedEqual: allOptionsTrue
+										? (input, expectedJs) => expectSerializedEqual(input, null, expectedJs)
+										: input => expectSerializedEqual(input, options),
+									run: allOptionsTrue
+										? (input, expectedJs) => run(input, null, expectedJs)
+										: input => run(input, options),
+									exec,
+									...options
+								});
+							});
+						}
+					});
+				}
+			});
+		}
+	});
+}
 
 /**
  * Serialize value to JS and test:
@@ -22,11 +85,12 @@ module.exports = {
  *   2. Serialized JS matches expectation
  *
  * @param {*} input - Input value
+ * @param {Object} [options] - Options object
  * @param {string} [expectedJs] - JS code that value should serialize to (optional)
  * @returns {*} - Result of evaluation
  */
-function expectSerializedEqual(input, expectedJs) {
-	const output = run(input, expectedJs);
+function expectSerializedEqual(input, options, expectedJs) {
+	const output = run(input, options, expectedJs);
 	expect(output).toEqual(input);
 	return output;
 }
@@ -34,12 +98,13 @@ function expectSerializedEqual(input, expectedJs) {
 /**
  * Serialize object to Javascript and execute it.
  * @param {*} input - Input value
+ * @param {Object} [options] - Options object
  * @param {string} [expectedJs] - JS code that value should serialize to (optional)
  * @returns {*} - Result of evaluation
  */
-function run(input, expectedJs) {
+function run(input, options, expectedJs) {
 	// Serialize to JS
-	const js = serialize(input);
+	const js = serialize(input, options);
 
 	// Check expected JS output
 	if (expectedJs !== undefined) expect(js).toBe(expectedJs);

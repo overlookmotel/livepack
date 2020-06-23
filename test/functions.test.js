@@ -6,11 +6,11 @@
 'use strict';
 
 // Imports
-const {run} = require('./support/index.js');
+const {describeWithAllOptions} = require('./support/index.js');
 
 // Tests
 
-describe('functions', () => {
+describeWithAllOptions('functions', ({run}) => {
 	describe('without scope', () => {
 		describe('single instantiation of function', () => {
 			it('arrow function', () => {

@@ -6,11 +6,11 @@
 'use strict';
 
 // Imports
-const {expectSerializedEqual} = require('./support/index.js');
+const {describeWithAllOptions} = require('./support/index.js');
 
 // Tests
 
-describe('arrays', () => {
+describeWithAllOptions('arrays', ({expectSerializedEqual}) => {
 	it('empty array', () => {
 		expectSerializedEqual([], '[]');
 	});

@@ -6,11 +6,11 @@
 'use strict';
 
 // Imports
-const {expectSerializedEqual} = require('./support/index.js');
+const {describeWithAllOptions, itWithAllOptions} = require('./support/index.js');
 
 // Tests
 
-describe('strings', () => {
+describeWithAllOptions('strings', ({expectSerializedEqual}) => {
 	it('non-empty string', () => {
 		expectSerializedEqual('abc', '"abc"');
 	});
@@ -20,7 +20,7 @@ describe('strings', () => {
 	});
 });
 
-describe('booleans', () => {
+describeWithAllOptions('booleans', ({expectSerializedEqual}) => {
 	it('true', () => {
 		expectSerializedEqual(true, 'true');
 	});
@@ -30,7 +30,7 @@ describe('booleans', () => {
 	});
 });
 
-describe('numbers', () => {
+describeWithAllOptions('numbers', ({expectSerializedEqual}) => {
 	it('positive integers', () => {
 		expectSerializedEqual(1, '1');
 		expectSerializedEqual(123, '123');
@@ -72,10 +72,10 @@ describe('numbers', () => {
 	});
 });
 
-it('null', () => {
+itWithAllOptions('null', ({expectSerializedEqual}) => {
 	expectSerializedEqual(null, 'null');
 });
 
-it('undefined', () => {
+itWithAllOptions('undefined', ({expectSerializedEqual}) => {
 	expectSerializedEqual(undefined, 'void 0');
 });
