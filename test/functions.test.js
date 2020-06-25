@@ -15,7 +15,7 @@ describeWithAllOptions('Functions', ({run}) => {
 		describe('single instantiation of function', () => {
 			it('arrow function', () => {
 				const input = (x, y) => [x, y];
-				const out = run(input, '(x,y)=>[x,y]');
+				const out = run(input, '(a,b)=>[a,b]');
 
 				expect(out).toBeFunction();
 				const param1 = {},
@@ -30,7 +30,7 @@ describeWithAllOptions('Functions', ({run}) => {
 				const input = function(x, y) {
 					return [x, y, this]; // eslint-disable-line no-invalid-this
 				};
-				const out = run(input, '(function input(x,y){return[x,y,this];})');
+				const out = run(input, '(function input(a,b){return[a,b,this];})');
 
 				expect(out).toBeFunction();
 				const param1 = {},
@@ -47,7 +47,7 @@ describeWithAllOptions('Functions', ({run}) => {
 				function input(x, y) {
 					return [x, y, this]; // eslint-disable-line no-invalid-this
 				}
-				const out = run(input, '(function input(x,y){return[x,y,this];})');
+				const out = run(input, '(function input(a,b){return[a,b,this];})');
 
 				expect(out).toBeFunction();
 				const param1 = {},
