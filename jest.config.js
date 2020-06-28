@@ -5,9 +5,6 @@
 
 'use strict';
 
-// Modules
-const pathJoin = require('path').join;
-
 // Imports
 const babelPlugin = require('./babel.js');
 
@@ -20,11 +17,7 @@ module.exports = {
 	setupFilesAfterEnv: ['jest-extended', 'jest-expect-arguments'],
 	transform: {
 		'\\.js$': ['babel-jest', {
-			plugins: [
-				[babelPlugin, {
-					trackerPath: pathJoin(__dirname, 'tracker.js')
-				}]
-			],
+			plugins: [babelPlugin],
 			generatorOpts: {retainLines: true, compact: false}
 		}]
 	}
