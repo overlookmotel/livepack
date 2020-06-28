@@ -21,6 +21,7 @@
 * Symbol-keyed object properties
 * Property descriptors
 * RegExps etc
+* Maps, Sets, WeakMaps, WeakSets
 * Classes
 * Prototypes
 * Additional properties
