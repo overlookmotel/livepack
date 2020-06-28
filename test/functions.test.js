@@ -376,7 +376,7 @@ describeWithAllOptions('Functions', ({run}) => {
 
 	describe('including `this`', () => {
 		describe('referencing upper function scope', () => {
-			describe('one level up', () => {
+			describe('1 level up', () => {
 				it('single instantiation', () => {
 					function outer() {
 						return () => this; // eslint-disable-line no-invalid-this
