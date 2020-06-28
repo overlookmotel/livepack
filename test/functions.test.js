@@ -193,9 +193,9 @@ describeWithAllOptions('Functions', ({run}) => {
 	describe('with vars from above scope', () => {
 		it('single instantiation of scope', () => {
 			const extA = {extA: 1};
-			function outer(b, c) {
+			function outer(extB, extC) {
 				return function(x, y) {
-					return [x, y, this, extA, b, c]; // eslint-disable-line no-invalid-this
+					return [x, y, this, extA, extB, extC]; // eslint-disable-line no-invalid-this
 				};
 			}
 			const extB = {extB: 2},
@@ -219,17 +219,17 @@ describeWithAllOptions('Functions', ({run}) => {
 
 		it('multiple instantiations of scope', () => {
 			const extA = {extA: 1};
-			function outer(b, c) {
+			function outer(extB, extC) {
 				return function(x, y) {
-					return [x, y, this, extA, b, c]; // eslint-disable-line no-invalid-this
+					return [x, y, this, extA, extB, extC]; // eslint-disable-line no-invalid-this
 				};
 			}
 			const exts = [
-				{b: {extB1: 11}, c: {extC1: 12}},
-				{b: {extB2: 21}, c: {extC2: 22}},
-				{b: {extB3: 31}, c: {extC3: 32}}
+				{extB: {extB1: 11}, extC: {extC1: 12}},
+				{extB: {extB2: 21}, extC: {extC2: 22}},
+				{extB: {extB3: 31}, extC: {extC3: 32}}
 			];
-			const input = exts.map(({b: extB, c: extC}) => outer(extB, extC));
+			const input = exts.map(({extB, extC}) => outer(extB, extC));
 			const out = run(input);
 
 			expect(out).toBeArrayOfSize(3);
@@ -248,8 +248,8 @@ describeWithAllOptions('Functions', ({run}) => {
 				expect(res[1]).toBe(param2);
 				expect(res[2]).toBe(ctx);
 				expect(res[3]).toEqual(extA);
-				expect(res[4]).toEqual(exts[index].b);
-				expect(res[5]).toEqual(exts[index].c);
+				expect(res[4]).toEqual(exts[index].extB);
+				expect(res[5]).toEqual(exts[index].extC);
 				return res[3];
 			});
 
@@ -261,10 +261,10 @@ describeWithAllOptions('Functions', ({run}) => {
 	describe('with vars from above nested scopes', () => {
 		it('single instantiation of scope', () => {
 			const extA = {extA: 1};
-			function outer(b) {
-				return function inner(c) {
+			function outer(extB) {
+				return function inner(extC) {
 					return function(x, y) {
-						return [x, y, this, extA, b, c]; // eslint-disable-line no-invalid-this
+						return [x, y, this, extA, extB, extC]; // eslint-disable-line no-invalid-this
 					};
 				};
 			}
@@ -289,19 +289,19 @@ describeWithAllOptions('Functions', ({run}) => {
 
 		it('multiple independent instantiations of scope', () => {
 			const extA = {extA: 1};
-			function outer(b) {
-				return function inner(c) {
+			function outer(extB) {
+				return function inner(extC) {
 					return function(x, y) {
-						return [x, y, this, extA, b, c]; // eslint-disable-line no-invalid-this
+						return [x, y, this, extA, extB, extC]; // eslint-disable-line no-invalid-this
 					};
 				};
 			}
 			const exts = [
-				{b: {extB1: 11}, c: {extC1: 12}},
-				{b: {extB2: 21}, c: {extC2: 22}},
-				{b: {extB3: 31}, c: {extC3: 32}}
+				{extB: {extB1: 11}, extC: {extC1: 12}},
+				{extB: {extB2: 21}, extC: {extC2: 22}},
+				{extB: {extB3: 31}, extC: {extC3: 32}}
 			];
-			const input = exts.map(({b: extB, c: extC}) => outer(extB)(extC));
+			const input = exts.map(({extB, extC}) => outer(extB)(extC));
 			const out = run(input);
 
 			expect(out).toBeArrayOfSize(3);
@@ -320,8 +320,8 @@ describeWithAllOptions('Functions', ({run}) => {
 				expect(res[1]).toBe(param2);
 				expect(res[2]).toBe(ctx);
 				expect(res[3]).toEqual(extA);
-				expect(res[3]).toEqual(exts[index].b);
-				expect(res[4]).toEqual(exts[index].c);
+				expect(res[3]).toEqual(exts[index].extB);
+				expect(res[4]).toEqual(exts[index].extC);
 			});
 
 			expect(resAs[0]).toBe(resAs[1]);
@@ -330,10 +330,10 @@ describeWithAllOptions('Functions', ({run}) => {
 
 		it('multiple instantiations of scope with shared upper scope', () => {
 			const extA = {extA: 1};
-			function outer(b) {
-				return function inner(c) {
+			function outer(extB) {
+				return function inner(extC) {
 					return function(x, y) {
-						return [x, y, this, extA, b, c]; // eslint-disable-line no-invalid-this
+						return [x, y, this, extA, extB, extC]; // eslint-disable-line no-invalid-this
 					};
 				};
 			}
@@ -361,14 +361,14 @@ describeWithAllOptions('Functions', ({run}) => {
 				expect(res[3]).toEqual(extA);
 				expect(res[4]).toEqual(extB);
 				expect(res[5]).toEqual(extCs[index]);
-				return [res[3], res[4]];
+				return {extA: res[3], extB: res[4]};
 			});
 
-			const resAs = resABs.map(resAB => resAB[0]);
+			const resAs = resABs.map(resAB => resAB.extA);
 			expect(resAs[0]).toBe(resAs[1]);
 			expect(resAs[0]).toBe(resAs[2]);
 
-			const resBs = resABs.map(resAB => resAB[1]);
+			const resBs = resABs.map(resAB => resAB.extB);
 			expect(resBs[0]).toBe(resBs[1]);
 			expect(resBs[0]).toBe(resBs[2]);
 		});
@@ -457,7 +457,7 @@ describeWithAllOptions('Functions', ({run}) => {
 			describe('2 levels up', () => {
 				it('single instantiation', () => {
 					function outer() {
-						return a => () => [this, a]; // eslint-disable-line no-invalid-this
+						return extA => () => [this, extA]; // eslint-disable-line no-invalid-this
 					}
 					const ctx = {ctx: 1},
 						extA = {extA: 2};
@@ -470,22 +470,21 @@ describeWithAllOptions('Functions', ({run}) => {
 
 				it('multiple instantiations', () => {
 					function outer() {
-						return a => () => [this, a]; // eslint-disable-line no-invalid-this
+						return extA => () => [this, extA]; // eslint-disable-line no-invalid-this
 					}
-
 					const exts = [
-						{ctx: {ctx1: 1}, a: {extA1: 11}},
-						{ctx: {ctx2: 2}, a: {extA2: 21}},
-						{ctx: {ctx3: 3}, a: {extA3: 31}}
+						{ctx: {ctx1: 1}, extA: {extA1: 11}},
+						{ctx: {ctx2: 2}, extA: {extA2: 21}},
+						{ctx: {ctx3: 3}, extA: {extA3: 31}}
 					];
-					const input = exts.map(({ctx, a}) => outer.call(ctx)(a));
+					const input = exts.map(({ctx, extA}) => outer.call(ctx)(extA));
 					const out = run(input);
 
 					expect(out).toBeArrayOfSize(3);
 					out.forEach((fn, index) => {
 						expect(fn).toBeFunction();
 						const res = fn();
-						const {ctx, a: extA} = exts[index];
+						const {ctx, extA} = exts[index];
 						expect(res).toEqual([ctx, extA]);
 					});
 				});
@@ -494,7 +493,7 @@ describeWithAllOptions('Functions', ({run}) => {
 			describe('3 levels up', () => {
 				it('single instantiation', () => {
 					function outer() {
-						return a => b => () => [this, a, b]; // eslint-disable-line no-invalid-this
+						return extA => extB => () => [this, extA, extB]; // eslint-disable-line no-invalid-this
 					}
 					const ctx = {ctx: 1},
 						extA = {extA: 2},
@@ -508,22 +507,22 @@ describeWithAllOptions('Functions', ({run}) => {
 
 				it('multiple instantiations', () => {
 					function outer() {
-						return a => b => () => [this, a, b]; // eslint-disable-line no-invalid-this
+						return extA => extB => () => [this, extA, extB]; // eslint-disable-line no-invalid-this
 					}
 
 					const exts = [
-						{ctx: {ctx1: 1}, a: {extA1: 11}, b: {extB1: 12}},
-						{ctx: {ctx2: 2}, a: {extA2: 21}, b: {extB2: 22}},
-						{ctx: {ctx3: 3}, a: {extA3: 31}, b: {extB3: 32}}
+						{ctx: {ctx1: 1}, extA: {extA1: 11}, extB: {extB1: 12}},
+						{ctx: {ctx2: 2}, extA: {extA2: 21}, extB: {extB2: 22}},
+						{ctx: {ctx3: 3}, extA: {extA3: 31}, extB: {extB3: 32}}
 					];
-					const input = exts.map(({ctx, a, b}) => outer.call(ctx)(a)(b));
+					const input = exts.map(({ctx, extA, extB}) => outer.call(ctx)(extA)(extB));
 					const out = run(input);
 
 					expect(out).toBeArrayOfSize(3);
 					out.forEach((fn, index) => {
 						expect(fn).toBeFunction();
 						const res = fn();
-						const {ctx, a: extA, b: extB} = exts[index];
+						const {ctx, extA, extB} = exts[index];
 						expect(res).toEqual([ctx, extA, extB]);
 					});
 				});
