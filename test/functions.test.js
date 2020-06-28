@@ -375,7 +375,7 @@ describeWithAllOptions('Functions', ({run}) => {
 	});
 
 	describe('including `this`', () => {
-		describe('referencing upper function', () => {
+		describe('referencing upper function scope', () => {
 			describe('one level up', () => {
 				it('single instantiation', () => {
 					function outer() {
@@ -524,6 +524,206 @@ describeWithAllOptions('Functions', ({run}) => {
 						const res = fn();
 						const {ctx, extA, extB} = exts[index];
 						expect(res).toEqual([ctx, extA, extB]);
+					});
+				});
+			});
+		});
+
+		describe('referencing local scope', () => {
+			it('in exported function', () => {
+				const input = function() { return this; }; // eslint-disable-line no-invalid-this
+				const out = run(input, '(function input(){return this;})');
+
+				expect(out).toBeFunction();
+				const ctx = {};
+				expect(out.call(ctx)).toBe(ctx);
+			});
+
+			describe('in function nested inside exported function', () => {
+				describe('when outer function is', () => {
+					it('function declaration', () => {
+						function input() {
+							return function() { return this; }; // eslint-disable-line no-invalid-this
+						}
+						const out = run(input, '(function input(){return function(){return this;};})');
+
+						expect(out).toBeFunction();
+						const res = out();
+						expect(res).toBeFunction();
+						const ctx = {};
+						expect(res.call(ctx)).toBe(ctx);
+					});
+
+					it('function expression', () => {
+						const input = function() {
+							return function() { return this; }; // eslint-disable-line no-invalid-this
+						};
+						const out = run(input, '(function input(){return function(){return this;};})');
+
+						expect(out).toBeFunction();
+						const res = out();
+						expect(res).toBeFunction();
+						const ctx = {};
+						expect(res.call(ctx)).toBe(ctx);
+					});
+
+					it('arrow function', () => {
+						const input = () => function() { return this; }; // eslint-disable-line no-invalid-this
+						const out = run(input, '()=>function(){return this;}');
+
+						expect(out).toBeFunction();
+						const res = out();
+						expect(res).toBeFunction();
+						const ctx = {};
+						expect(res.call(ctx)).toBe(ctx);
+					});
+				});
+
+				describe('referencing exported function scope', () => {
+					it('from 1 level up', () => {
+						function input() {
+							return () => this; // eslint-disable-line no-invalid-this
+						}
+						const out = run(input, '(function input(){return()=>this;})');
+
+						expect(out).toBeFunction();
+						const ctx = {};
+						const res = out.call(ctx);
+						expect(res).toBeFunction();
+						expect(res()).toBe(ctx);
+					});
+
+					it('from 2 levels up', () => {
+						function input() {
+							return () => () => this; // eslint-disable-line no-invalid-this
+						}
+						const out = run(input, '(function input(){return()=>()=>this;})');
+
+						expect(out).toBeFunction();
+						const ctx = {};
+						const res = out.call(ctx);
+						expect(res).toBeFunction();
+						const res2 = res();
+						expect(res2).toBeFunction();
+						expect(res2()).toBe(ctx);
+					});
+				});
+
+				describe('referencing nested function scope', () => {
+					describe('when outer function is', () => {
+						describe('function declaration', () => {
+							it('from 1 level up', () => {
+								function input() {
+									return function() {
+										return () => this; // eslint-disable-line no-invalid-this
+									};
+								}
+								const out = run(input, '(function input(){return function(){return()=>this;};})');
+
+								expect(out).toBeFunction();
+								const res = out();
+								expect(res).toBeFunction();
+								const ctx = {};
+								const res2 = res.call(ctx);
+								expect(res2).toBeFunction();
+								expect(res2()).toBe(ctx);
+							});
+
+							it('from 2 levels up', () => {
+								function input() {
+									return function() {
+										return () => () => this; // eslint-disable-line no-invalid-this
+									};
+								}
+								const out = run(input, '(function input(){return function(){return()=>()=>this;};})');
+
+								expect(out).toBeFunction();
+								const res = out();
+								expect(res).toBeFunction();
+								const ctx = {};
+								const res2 = res.call(ctx);
+								expect(res2).toBeFunction();
+								const res3 = res2();
+								expect(res3).toBeFunction();
+								expect(res3()).toBe(ctx);
+							});
+						});
+
+						describe('function expression', () => {
+							it('from 1 level up', () => {
+								const input = function() {
+									return function() {
+										return () => this; // eslint-disable-line no-invalid-this
+									};
+								};
+								const out = run(input, '(function input(){return function(){return()=>this;};})');
+
+								expect(out).toBeFunction();
+								const res = out();
+								expect(res).toBeFunction();
+								const ctx = {};
+								const res2 = res.call(ctx);
+								expect(res2).toBeFunction();
+								expect(res2()).toBe(ctx);
+							});
+
+							it('from 2 levels up', () => {
+								const input = function() {
+									return function() {
+										return () => () => this; // eslint-disable-line no-invalid-this
+									};
+								};
+								const out = run(input, '(function input(){return function(){return()=>()=>this;};})');
+
+								expect(out).toBeFunction();
+								const res = out();
+								expect(res).toBeFunction();
+								const ctx = {};
+								const res2 = res.call(ctx);
+								expect(res2).toBeFunction();
+								const res3 = res2();
+								expect(res3).toBeFunction();
+								expect(res3()).toBe(ctx);
+							});
+						});
+
+						describe('arrow function', () => {
+							it('from 1 level up', () => {
+								const input = () => (
+									function() {
+										return () => this; // eslint-disable-line no-invalid-this
+									}
+								);
+								const out = run(input, '()=>function(){return()=>this;}');
+
+								expect(out).toBeFunction();
+								const res = out();
+								expect(res).toBeFunction();
+								const ctx = {};
+								const res2 = res.call(ctx);
+								expect(res2).toBeFunction();
+								expect(res2()).toBe(ctx);
+							});
+
+							it('from 2 levels up', () => {
+								const input = () => (
+									function() {
+										return () => () => this; // eslint-disable-line no-invalid-this
+									}
+								);
+								const out = run(input, '()=>function(){return()=>()=>this;}');
+
+								expect(out).toBeFunction();
+								const res = out();
+								expect(res).toBeFunction();
+								const ctx = {};
+								const res2 = res.call(ctx);
+								expect(res2).toBeFunction();
+								const res3 = res2();
+								expect(res3).toBeFunction();
+								expect(res3()).toBe(ctx);
+							});
+						});
 					});
 				});
 			});
