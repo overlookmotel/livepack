@@ -509,7 +509,6 @@ describeWithAllOptions('Functions', ({run}) => {
 					function outer() {
 						return extA => extB => () => [this, extA, extB]; // eslint-disable-line no-invalid-this
 					}
-
 					const exts = [
 						{ctx: {ctx1: 1}, extA: {extA1: 11}, extB: {extB1: 12}},
 						{ctx: {ctx2: 2}, extA: {extA2: 21}, extB: {extB2: 22}},
