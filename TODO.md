@@ -5,6 +5,7 @@
 
 * Tests for block IDs unique across all files
 * Tests for handling `arguments`
+* Tests for avoiding var names clashing with globals
 * Tests for ensuring object keys are valid
 * Tests for injecting functions into scopes
 * Tests for ensuring var names are valid JS identifiers
