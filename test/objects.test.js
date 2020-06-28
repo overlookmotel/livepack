@@ -23,6 +23,10 @@ describeWithAllOptions('Objects', ({expectSerializedEqual}) => {
 		it('multiple properties', () => {
 			expectSerializedEqual({a: 1, b: 2, c: 3}, '({a:1,b:2,c:3})');
 		});
+
+		it('properties with names which are not valid identifiers', () => {
+			expectSerializedEqual({'b-c': {'0a': 1, 'd.e': 2}}, '({"b-c":{"0a":1,"d.e":2}})');
+		});
 	});
 
 	describe('nested objects', () => {
@@ -129,6 +133,16 @@ describeWithAllOptions('Objects', ({expectSerializedEqual}) => {
 						input, '(()=>{const a={},b={a:{b:a}};a.c=b;return b;})()'
 					);
 					expect(output.a.b.c).toBe(output);
+				});
+
+				it('property names which are not valid identifiers', () => {
+					const input = {};
+					input['0a'] = input;
+
+					const output = expectSerializedEqual(
+						input, '(()=>{const a={};a["0a"]=a;return a;})()'
+					);
+					expect(output['0a']).toBe(output);
 				});
 			});
 
