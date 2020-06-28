@@ -373,4 +373,161 @@ describeWithAllOptions('Functions', ({run}) => {
 			expect(resBs[0]).toBe(resBs[2]);
 		});
 	});
+
+	describe('including `this`', () => {
+		describe('referencing upper function', () => {
+			describe('one level up', () => {
+				it('single instantiation', () => {
+					function outer() {
+						return () => this; // eslint-disable-line no-invalid-this
+					}
+					const ctx = {ctx: 1};
+					const input = outer.call(ctx);
+					const out = run(input, '(a=>()=>a)({ctx:1})');
+
+					expect(out).toBeFunction();
+					expect(out()).toEqual(ctx);
+				});
+
+				it('multiple instantiations', () => {
+					function outer() {
+						return () => this; // eslint-disable-line no-invalid-this
+					}
+					const ctxs = [1, 2, 3].map(n => ({[`ctx${n}`]: n}));
+					const input = ctxs.map(ctx => outer.call(ctx));
+					const out = run(input);
+
+					expect(out).toBeArrayOfSize(3);
+					out.forEach((fn, index) => {
+						expect(fn).toBeFunction();
+						expect(fn()).toEqual(ctxs[index]);
+					});
+				});
+
+				describe('with clashing var names', () => {
+					it('outer params', () => {
+						function outer(this$0, this$1) {
+							return () => [this, this$0, this$1]; // eslint-disable-line no-invalid-this
+						}
+						const ctx = {ctx: 1},
+							extA = {extA: 2},
+							extB = {extB: 3};
+						const input = outer.call(ctx, extA, extB);
+						const out = run(input, '((a,b,c)=>()=>[a,b,c])({ctx:1},{extA:2},{extB:3})');
+
+						expect(out).toBeFunction();
+						expect(out()).toEqual([ctx, extA, extB]);
+					});
+
+					it('inner params', () => {
+						function outer() {
+							return (this$0, this$1) => [this, this$0, this$1]; // eslint-disable-line no-invalid-this
+						}
+						const ctx = {ctx: 1};
+						const input = outer.call(ctx);
+						const out = run(input, '(c=>(a,b)=>[c,a,b])({ctx:1})');
+
+						expect(out).toBeFunction();
+						const param1 = {},
+							param2 = {};
+						const res = out(param1, param2);
+						expect(res).toEqual([ctx, param1, param2]);
+						expect(res[1]).toBe(param1);
+						expect(res[2]).toBe(param2);
+					});
+
+					it('outer and inner params', () => {
+						function outer(this$0) {
+							return this$1 => [this, this$0, this$1]; // eslint-disable-line no-invalid-this
+						}
+						const ctx = {ctx: 1},
+							extA = {extA: 2};
+						const input = outer.call(ctx, extA);
+						const out = run(input, '((b,c)=>a=>[b,c,a])({ctx:1},{extA:2})');
+
+						expect(out).toBeFunction();
+						const param = {};
+						const res = out(param);
+						expect(res).toEqual([ctx, extA, param]);
+						expect(res[2]).toBe(param);
+					});
+				});
+			});
+
+			describe('2 levels up', () => {
+				it('single instantiation', () => {
+					function outer() {
+						return a => () => [this, a]; // eslint-disable-line no-invalid-this
+					}
+					const ctx = {ctx: 1},
+						extA = {extA: 2};
+					const input = outer.call(ctx)(extA);
+					const out = run(input, '(b=>a=>()=>[b,a])({ctx:1})({extA:2})');
+
+					expect(out).toBeFunction();
+					expect(out()).toEqual([ctx, extA]);
+				});
+
+				it('multiple instantiations', () => {
+					function outer() {
+						return a => () => [this, a]; // eslint-disable-line no-invalid-this
+					}
+
+					const exts = [
+						{ctx: {ctx1: 1}, a: {extA1: 11}},
+						{ctx: {ctx2: 2}, a: {extA2: 21}},
+						{ctx: {ctx3: 3}, a: {extA3: 31}}
+					];
+					const input = exts.map(({ctx, a}) => outer.call(ctx)(a));
+					const out = run(input);
+
+					expect(out).toBeArrayOfSize(3);
+					out.forEach((fn, index) => {
+						expect(fn).toBeFunction();
+						const res = fn();
+						const {ctx, a: extA} = exts[index];
+						expect(res).toEqual([ctx, extA]);
+					});
+				});
+			});
+
+			describe('3 levels up', () => {
+				it('single instantiation', () => {
+					function outer() {
+						return a => b => () => [this, a, b]; // eslint-disable-line no-invalid-this
+					}
+					const ctx = {ctx: 1},
+						extA = {extA: 2},
+						extB = {extB: 3};
+					const input = outer.call(ctx)(extA)(extB);
+					const out = run(input, '(c=>b=>a=>()=>[c,b,a])({ctx:1})({extA:2})({extB:3})');
+
+					expect(out).toBeFunction();
+					expect(out()).toEqual([ctx, extA, extB]);
+				});
+
+				it('multiple instantiations', () => {
+					function outer() {
+						return a => b => () => [this, a, b]; // eslint-disable-line no-invalid-this
+					}
+
+					const exts = [
+						{ctx: {ctx1: 1}, a: {extA1: 11}, b: {extB1: 12}},
+						{ctx: {ctx2: 2}, a: {extA2: 21}, b: {extB2: 22}},
+						{ctx: {ctx3: 3}, a: {extA3: 31}, b: {extB3: 32}}
+					];
+					const input = exts.map(({ctx, a, b}) => outer.call(ctx)(a)(b));
+					const out = run(input);
+
+					expect(out).toBeArrayOfSize(3);
+					out.forEach((fn, index) => {
+						expect(fn).toBeFunction();
+						const res = fn();
+						const {ctx, a: extA, b: extB} = exts[index];
+						expect(res).toEqual([ctx, extA, extB]);
+					});
+				});
+			});
+		});
+	});
 });
