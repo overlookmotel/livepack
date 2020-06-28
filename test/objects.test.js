@@ -27,6 +27,15 @@ describeWithAllOptions('Objects', ({expectSerializedEqual}) => {
 		it('properties with names which are not valid identifiers', () => {
 			expectSerializedEqual({'b-c': {'0a': 1, 'd.e': 2}}, '({"b-c":{"0a":1,"d.e":2}})');
 		});
+
+		it('properties with names which are JS reserved words', () => {
+			// This test is to ensure doesn't create illegally-named intermediate vars when
+			// `mangle` and `inline` options false
+			expectSerializedEqual(
+				{if: {}, do: {}, this: {}, arguments: {}, repeat: {if: {}, do: {}, this: {}, arguments: {}}},
+				'({if:{},do:{},this:{},arguments:{},repeat:{if:{},do:{},this:{},arguments:{}}})'
+			);
+		});
 	});
 
 	describe('nested objects', () => {
