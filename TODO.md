@@ -1,6 +1,5 @@
 # TODO
 
-* Refactor creation of dependencies
 * Handle destructured parameters in func definitions (`({a, b: {c}}) => {}` / `([a, b, [c]]) => {}`)
 * Handle spread parameters in func definitions (`(...args) => {}`)
 
@@ -17,6 +16,7 @@
 * Handle `super`
 * Option to strip function names (NB don't where is referenced internally `function x() { return x; }`)
 * Ensure correct function names (see below)
+* Handle bound functions (created with `.bind()`)
 
 * Symbol-keyed object properties
 * Property descriptors
