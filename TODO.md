@@ -3,6 +3,7 @@
 * Tests for block IDs unique across all files
 * Tests for avoiding var names clashing with globals
 * Tests for injecting functions into scopes
+* Tests for vars in funcs
 * Tests for destructured vars in funcs (`() => {const {a} = {a: 123};}`, `() => {const {a: {b}} = {a: {b: 123}};}`)
 * Tests for spread vars in funcs (`(...a) => {}`, `([...a]) => {}`, `({a, ...b}) => {}`)
 * Tests for references to own function name (`function x() { return x; }`)
