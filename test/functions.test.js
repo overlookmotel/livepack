@@ -1326,4 +1326,147 @@ describeWithAllOptions('Functions', ({run}) => {
 			});
 		});
 	});
+
+	describe('with destructured params', () => {
+		describe('in outer function', () => {
+			describe('object destructuring', () => {
+				it('destructured 1 level deep', () => {
+					function outer({w, x}, {y, q: z}) {
+						return () => [w, x, y, z];
+					}
+					const input = outer({w: 1, x: 2}, {y: 3, q: 4});
+					const out = run(input, '((a,b,c,d)=>()=>[a,b,c,d])(1,2,3,4)');
+
+					expect(out).toBeFunction();
+					const res = out();
+					expect(res).toEqual([1, 2, 3, 4]);
+				});
+
+				it('destructured 2 levels deep', () => {
+					function outer({ww: {w, x}}, {yy: {y}, zz: {q: z}}) {
+						return () => [w, x, y, z];
+					}
+					const input = outer({ww: {w: 1, x: 2}}, {yy: {y: 3}, zz: {q: 4}});
+					const out = run(input, '((a,b,c,d)=>()=>[a,b,c,d])(1,2,3,4)');
+
+					expect(out).toBeFunction();
+					const res = out();
+					expect(res).toEqual([1, 2, 3, 4]);
+				});
+			});
+
+			describe('array destructuring', () => {
+				it('destructured 1 level deep', () => {
+					function outer([w, x], [, y, , , z]) {
+						return () => [w, x, y, z];
+					}
+					const input = outer([1, 2], [0, 3, 0, 0, 4]);
+					const out = run(input, '((a,b,c,d)=>()=>[a,b,c,d])(1,2,3,4)');
+
+					expect(out).toBeFunction();
+					const res = out();
+					expect(res).toEqual([1, 2, 3, 4]);
+				});
+
+				it('destructured 2 levels deep', () => {
+					function outer([[w], [x]], [[, y, , , z]]) {
+						return () => [w, x, y, z];
+					}
+					const input = outer([[1], [2]], [[0, 3, 0, 0, 4]]);
+					const out = run(input, '((a,b,c,d)=>()=>[a,b,c,d])(1,2,3,4)');
+
+					expect(out).toBeFunction();
+					const res = out();
+					expect(res).toEqual([1, 2, 3, 4]);
+				});
+			});
+		});
+
+		describe('in exported function', () => {
+			describe('object destructuring', () => {
+				it('destructured 1 level deep', () => {
+					function outer(x, y, q, z) { // eslint-disable-line no-unused-vars
+						return ({w, x}, {y, q: z}) => [w, x, y, z]; // eslint-disable-line no-shadow
+					}
+					const input = outer();
+					const out = run(input, '({w:a,x:b},{y:c,q:d})=>[a,b,c,d]');
+
+					expect(out).toBeFunction();
+					const param1 = {},
+						param2 = {},
+						param3 = {},
+						param4 = {};
+					const res = out({w: param1, x: param2}, {y: param3, q: param4});
+					expect(res).toHaveLength(4);
+					expect(res[0]).toBe(param1);
+					expect(res[1]).toBe(param2);
+					expect(res[2]).toBe(param3);
+					expect(res[3]).toBe(param4);
+				});
+
+				it('destructured 2 levels deep', () => {
+					function outer(x, y, ww, q, z) { // eslint-disable-line no-unused-vars
+						// eslint-disable-next-line no-shadow
+						return ({ww: {w, x}}, {yy: {y}, zz: {q: z}}) => [w, x, y, z];
+					}
+					const input = outer();
+					const out = run(input, '({ww:{w:a,x:b}},{yy:{y:c},zz:{q:d}})=>[a,b,c,d]');
+
+					expect(out).toBeFunction();
+					const param1 = {},
+						param2 = {},
+						param3 = {},
+						param4 = {};
+					const res = out({ww: {w: param1, x: param2}}, {yy: {y: param3}, zz: {q: param4}});
+					expect(res).toHaveLength(4);
+					expect(res[0]).toBe(param1);
+					expect(res[1]).toBe(param2);
+					expect(res[2]).toBe(param3);
+					expect(res[3]).toBe(param4);
+				});
+			});
+
+			describe('array destructuring', () => {
+				it('destructured 1 level deep', () => {
+					function outer(x, y, z) { // eslint-disable-line no-unused-vars
+						return ([w, x], [, y, , , z]) => [w, x, y, z]; // eslint-disable-line no-shadow
+					}
+					const input = outer();
+					const out = run(input, '([a,b],[,c,,,d])=>[a,b,c,d]');
+
+					expect(out).toBeFunction();
+					const param1 = {},
+						param2 = {},
+						param3 = {},
+						param4 = {};
+					const res = out([param1, param2], [0, param3, 0, 0, param4]);
+					expect(res).toHaveLength(4);
+					expect(res[0]).toBe(param1);
+					expect(res[1]).toBe(param2);
+					expect(res[2]).toBe(param3);
+					expect(res[3]).toBe(param4);
+				});
+
+				it('destructured 2 levels deep', () => {
+					function outer(x, y, z) { // eslint-disable-line no-unused-vars
+						return ([[w], [x]], [[, y, , , z]]) => [w, x, y, z]; // eslint-disable-line no-shadow
+					}
+					const input = outer();
+					const out = run(input, '([[a],[b]],[[,c,,,d]])=>[a,b,c,d]');
+
+					expect(out).toBeFunction();
+					const param1 = {},
+						param2 = {},
+						param3 = {},
+						param4 = {};
+					const res = out([[param1], [param2]], [[0, param3, 0, 0, param4]]);
+					expect(res).toHaveLength(4);
+					expect(res[0]).toBe(param1);
+					expect(res[1]).toBe(param2);
+					expect(res[2]).toBe(param3);
+					expect(res[3]).toBe(param4);
+				});
+			});
+		});
+	});
 });
