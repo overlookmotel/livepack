@@ -59,32 +59,66 @@ describeWithAllOptions('Functions', ({run}) => {
 				expect(res[1]).toBe(param2);
 				expect(res[2]).toBe(ctx);
 			});
+
+			it('with default params', () => {
+				const input = (x = {defaultA: 1}, y = {defaultB: 2}) => [x, y];
+				const out = run(input, '(a={defaultA:1},b={defaultB:2})=>[a,b]');
+
+				expect(out).toBeFunction();
+				expect(out()).toEqual([{defaultA: 1}, {defaultB: 2}]);
+			});
 		});
 
-		it('multiple instantiations of function', () => {
-			const input = [1, 2, 3].map(() => (
-				function(x, y) {
-					return [x, y, this]; // eslint-disable-line no-invalid-this
+		describe('multiple instantiations of function', () => {
+			it('without default params', () => {
+				const input = [1, 2, 3].map(() => (
+					function(x, y) {
+						return [x, y, this]; // eslint-disable-line no-invalid-this
+					}
+				));
+				const out = run(input);
+				expect(out).toBeArrayOfSize(3);
+
+				expect(out[0]).not.toBe(out[1]);
+				expect(out[0]).not.toBe(out[2]);
+				expect(out[1]).not.toBe(out[2]);
+
+				for (const fn of out) {
+					expect(fn).toBeFunction();
+					const param1 = {},
+						param2 = {},
+						ctx = {};
+					const res = fn.call(ctx, param1, param2);
+					expect(res).toBeArrayOfSize(3);
+					expect(res[0]).toBe(param1);
+					expect(res[1]).toBe(param2);
+					expect(res[2]).toBe(ctx);
 				}
-			));
-			const out = run(input);
-			expect(out).toBeArrayOfSize(3);
+			});
 
-			expect(out[0]).not.toBe(out[1]);
-			expect(out[0]).not.toBe(out[2]);
-			expect(out[1]).not.toBe(out[2]);
+			it('with default params', () => {
+				const input = [1, 2, 3].map(() => (
+					function(x = {defaultA: 1}, y = {defaultB: 2}) {
+						return [x, y, this]; // eslint-disable-line no-invalid-this
+					}
+				));
+				const out = run(input);
+				expect(out).toBeArrayOfSize(3);
 
-			for (const fn of out) {
-				expect(fn).toBeFunction();
-				const param1 = {},
-					param2 = {},
-					ctx = {};
-				const res = fn.call(ctx, param1, param2);
-				expect(res).toBeArrayOfSize(3);
-				expect(res[0]).toBe(param1);
-				expect(res[1]).toBe(param2);
-				expect(res[2]).toBe(ctx);
-			}
+				expect(out[0]).not.toBe(out[1]);
+				expect(out[0]).not.toBe(out[2]);
+				expect(out[1]).not.toBe(out[2]);
+
+				for (const fn of out) {
+					expect(fn).toBeFunction();
+					const ctx = {};
+					const res = fn.call(ctx);
+					expect(res).toBeArrayOfSize(3);
+					expect(res[0]).toEqual({defaultA: 1});
+					expect(res[1]).toEqual({defaultB: 2});
+					expect(res[2]).toBe(ctx);
+				}
+			});
 		});
 	});
 
@@ -148,45 +182,133 @@ describeWithAllOptions('Functions', ({run}) => {
 				expect(res[3]).toEqual(extA);
 				expect(res[4]).toEqual(extB);
 			});
+
+			describe('with default params', () => {
+				it('referencing external vars', () => {
+					const extA = {extA: 1},
+						extB = {extB: 2};
+					const input = (x = extA, y = extB) => [x, y];
+					const out = run(input, '((c,d)=>(a=c,b=d)=>[a,b])({extA:1},{extB:2})');
+
+					expect(out).toBeFunction();
+					expect(out()).toEqual([extA, extB]);
+				});
+
+				it('referencing external vars embedded in objects', () => {
+					const extA = {extA: 1},
+						extB = {extB: 2};
+					const input = (x = {nestedA: extA}, y = {nestedB: extB}) => [x, y];
+					const out = run(input, '((c,d)=>(a={nestedA:c},b={nestedB:d})=>[a,b])({extA:1},{extB:2})');
+
+					expect(out).toBeFunction();
+					expect(out()).toEqual([{nestedA: extA}, {nestedB: extB}]);
+				});
+			});
 		});
 
-		it('multiple instantiations of function', () => {
-			const extA = {extA: 1},
-				extB = {extB: 2};
-			const input = [1, 2, 3].map(() => (
-				function(x, y) {
-					return [x, y, this, extA, extB]; // eslint-disable-line no-invalid-this
-				}
-			));
-			const out = run(input);
-			expect(out).toBeArrayOfSize(3);
+		describe('multiple instantiations of function', () => {
+			it('without default params', () => {
+				const extA = {extA: 1},
+					extB = {extB: 2};
+				const input = [1, 2, 3].map(() => (
+					function(x, y) {
+						return [x, y, this, extA, extB]; // eslint-disable-line no-invalid-this
+					}
+				));
+				const out = run(input);
 
-			expect(out[0]).not.toBe(out[1]);
-			expect(out[0]).not.toBe(out[2]);
-			expect(out[1]).not.toBe(out[2]);
+				expect(out).toBeArrayOfSize(3);
+				expect(out[0]).not.toBe(out[1]);
+				expect(out[0]).not.toBe(out[2]);
+				expect(out[1]).not.toBe(out[2]);
 
-			const resABs = out.map((item) => {
-				expect(item).toBeFunction();
-				const param1 = {},
-					param2 = {},
-					ctx = {};
-				const res = item.call(ctx, param1, param2);
-				expect(res).toBeArrayOfSize(5);
-				expect(res[0]).toBe(param1);
-				expect(res[1]).toBe(param2);
-				expect(res[2]).toBe(ctx);
-				expect(res[3]).toEqual(extA);
-				expect(res[4]).toEqual(extB);
-				return [res[3], res[4]];
+				const resABs = out.map((fn) => {
+					expect(fn).toBeFunction();
+					const param1 = {},
+						param2 = {},
+						ctx = {};
+					const res = fn.call(ctx, param1, param2);
+					expect(res).toBeArrayOfSize(5);
+					expect(res[0]).toBe(param1);
+					expect(res[1]).toBe(param2);
+					expect(res[2]).toBe(ctx);
+					expect(res[3]).toEqual(extA);
+					expect(res[4]).toEqual(extB);
+					return [res[3], res[4]];
+				});
+
+				const resAs = resABs.map(resAB => resAB[0]);
+				expect(resAs[0]).toBe(resAs[1]);
+				expect(resAs[0]).toBe(resAs[2]);
+
+				const resBs = resABs.map(resAB => resAB[1]);
+				expect(resBs[0]).toBe(resBs[1]);
+				expect(resBs[0]).toBe(resBs[2]);
 			});
 
-			const resAs = resABs.map(resAB => resAB[0]);
-			expect(resAs[0]).toBe(resAs[1]);
-			expect(resAs[0]).toBe(resAs[2]);
+			describe('with default params', () => {
+				it('referencing external vars', () => {
+					const extA = {extA: 1},
+						extB = {extB: 2};
+					const input = [1, 2, 3].map(() => (
+						(x = extA, y = extB) => [x, y]
+					));
+					const out = run(input);
 
-			const resBs = resABs.map(resAB => resAB[1]);
-			expect(resBs[0]).toBe(resBs[1]);
-			expect(resBs[0]).toBe(resBs[2]);
+					expect(out).toBeArrayOfSize(3);
+					expect(out[0]).not.toBe(out[1]);
+					expect(out[0]).not.toBe(out[2]);
+					expect(out[1]).not.toBe(out[2]);
+
+					const resABs = out.map((fn) => {
+						expect(fn).toBeFunction();
+						const res = fn();
+						expect(res).toBeArrayOfSize(2);
+						expect(res[0]).toEqual(extA);
+						expect(res[1]).toEqual(extB);
+						return {extA: res[0], extB: res[1]};
+					});
+
+					const resAs = resABs.map(resAB => resAB.extA);
+					expect(resAs[0]).toBe(resAs[1]);
+					expect(resAs[0]).toBe(resAs[2]);
+
+					const resBs = resABs.map(resAB => resAB.extB);
+					expect(resBs[0]).toBe(resBs[1]);
+					expect(resBs[0]).toBe(resBs[2]);
+				});
+
+				it('referencing external vars embedded in objects', () => {
+					const extA = {extA: 1},
+						extB = {extB: 2};
+					const input = [1, 2, 3].map(() => (
+						(x = {nestedA: extA}, y = {nestedB: extB}) => [x, y]
+					));
+					const out = run(input);
+
+					expect(out).toBeArrayOfSize(3);
+					expect(out[0]).not.toBe(out[1]);
+					expect(out[0]).not.toBe(out[2]);
+					expect(out[1]).not.toBe(out[2]);
+
+					const resABs = out.map((fn) => {
+						expect(fn).toBeFunction();
+						const res = fn();
+						expect(res).toBeArrayOfSize(2);
+						expect(res[0]).toEqual({nestedA: extA});
+						expect(res[1]).toEqual({nestedB: extB});
+						return {extA: res[0].nestedA, extB: res[1].nestedB};
+					});
+
+					const resAs = resABs.map(resAB => resAB.extA);
+					expect(resAs[0]).toBe(resAs[1]);
+					expect(resAs[0]).toBe(resAs[2]);
+
+					const resBs = resABs.map(resAB => resAB.extB);
+					expect(resBs[0]).toBe(resBs[1]);
+					expect(resBs[0]).toBe(resBs[2]);
+				});
+			});
 		});
 	});
 
