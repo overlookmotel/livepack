@@ -1527,4 +1527,48 @@ describeWithAllOptions('Functions', ({run}) => {
 			expect(res[2][1]).toBe(param4);
 		});
 	});
+
+	describe('referencing error argument of `catch ()`', () => {
+		it('1 level up', () => {
+			let input;
+			try {
+				throw 123; // eslint-disable-line no-throw-literal
+			} catch (err) {
+				const extA = 456;
+				input = (x, y) => [x, y, extA, err];
+			}
+			const out = run(input, '((c,d)=>(a,b)=>[a,b,c,d])(456,123)');
+
+			expect(out).toBeFunction();
+			const param1 = {},
+				param2 = {};
+			const res = out(param1, param2);
+			expect(res).toBeArrayOfSize(4);
+			expect(res[0]).toBe(param1);
+			expect(res[1]).toBe(param2);
+			expect(res[2]).toEqual(456);
+			expect(res[3]).toEqual(123);
+		});
+
+		it('2 levels up', () => {
+			let input;
+			try {
+				throw 123; // eslint-disable-line no-throw-literal
+			} catch (err) {
+				const extA = 456;
+				input = x => y => [x, y, extA, err];
+			}
+			const out = run(input, '((c,d)=>a=>b=>[a,b,c,d])(456,123)');
+
+			expect(out).toBeFunction();
+			const param1 = {},
+				param2 = {};
+			const res = out(param1)(param2);
+			expect(res).toBeArrayOfSize(4);
+			expect(res[0]).toBe(param1);
+			expect(res[1]).toBe(param2);
+			expect(res[2]).toEqual(456);
+			expect(res[3]).toEqual(123);
+		});
+	});
 });
