@@ -25,6 +25,7 @@
 * Classes
 * Prototypes
 * Additional properties
+* Set strict mode on functions
 
 ### Function names
 
