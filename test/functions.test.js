@@ -1469,4 +1469,38 @@ describeWithAllOptions('Functions', ({run}) => {
 			});
 		});
 	});
+
+	describe('with spread params', () => {
+		it('in outer function', () => {
+			function outer(x, y, ...z) {
+				return () => [x, y, z];
+			}
+			const input = outer(1, 2, 3, 4, 5);
+			const out = run(input, '((a,b,c)=>()=>[a,b,c])(1,2,[3,4,5])');
+
+			expect(out).toBeFunction();
+			const res = out();
+			expect(res).toEqual([1, 2, [3, 4, 5]]);
+		});
+
+		it('in exported function', () => {
+			function outer(y, z) { // eslint-disable-line no-unused-vars
+				return (x, y, ...z) => [x, y, z]; // eslint-disable-line no-shadow
+			}
+			const input = outer();
+			const out = run(input, '(a,b,...c)=>[a,b,c]');
+
+			expect(out).toBeFunction();
+			const param1 = {},
+				param2 = {},
+				param3 = {},
+				param4 = {};
+			const res = out(param1, param2, param3, param4);
+			expect(res).toHaveLength(3);
+			expect(res[0]).toBe(param1);
+			expect(res[1]).toBe(param2);
+			expect(res[2][0]).toBe(param3);
+			expect(res[2][1]).toBe(param4);
+		});
+	});
 });
