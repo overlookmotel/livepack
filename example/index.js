@@ -12,7 +12,7 @@ const serialize = require('../index.js'); // require('livepack')
 const res = require('./src/index.js');
 
 // Serialize to JS
-const js = serialize(res, {format: 'cjs', compact: false, inline: true});
+const js = serialize(res, {format: 'cjs', minify: false, inline: true});
 console.log(js);
 
 // Save output to file
