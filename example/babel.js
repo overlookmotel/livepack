@@ -19,7 +19,8 @@ const inputJs = readFileSync(path, 'utf8');
 const outputJs = transformSync(inputJs, {
 	plugins: [babelPlugin],
 	filename: path,
-	generatorOpts: {retainLines: true}
+	generatorOpts: {retainLines: true},
+	sourceType: 'script'
 }).code;
 
 console.log(outputJs);
