@@ -96,7 +96,7 @@ describeWithAllOptions('Objects', ({expectSerializedEqual}) => {
 					a,
 					b: a
 				};
-				const output = expectSerializedEqual(input, '(()=>{const a={aa:1};return{c:{d:a},a,b:a};})()');
+				const output = expectSerializedEqual(input, '(()=>{const a={aa:1};return{c:{d:a},a,b:a}})()');
 				expect(output.a).toEqual(a);
 				expect(output.b).toBe(output.a);
 				expect(output.c.d).toBe(output.a);
@@ -111,7 +111,7 @@ describeWithAllOptions('Objects', ({expectSerializedEqual}) => {
 						d: a
 					}
 				};
-				const output = expectSerializedEqual(input, '(()=>{const a={aa:1};return{a,b:a,c:{d:a}};})()');
+				const output = expectSerializedEqual(input, '(()=>{const a={aa:1};return{a,b:a,c:{d:a}}})()');
 				expect(output.a).toEqual(a);
 				expect(output.b).toBe(output.a);
 				expect(output.c.d).toBe(output.a);
@@ -125,7 +125,7 @@ describeWithAllOptions('Objects', ({expectSerializedEqual}) => {
 					input.a = input;
 
 					const output = expectSerializedEqual(
-						input, '(()=>{const a={};a.a=a;return a;})()'
+						input, '(()=>{const a={};a.a=a;return a})()'
 					);
 					expect(output.a).toBe(output);
 				});
@@ -139,7 +139,7 @@ describeWithAllOptions('Objects', ({expectSerializedEqual}) => {
 					input.a.b.c = input;
 
 					const output = expectSerializedEqual(
-						input, '(()=>{const a={},b={a:{b:a}};a.c=b;return b;})()'
+						input, '(()=>{const a={},b={a:{b:a}};a.c=b;return b})()'
 					);
 					expect(output.a.b.c).toBe(output);
 				});
@@ -149,7 +149,7 @@ describeWithAllOptions('Objects', ({expectSerializedEqual}) => {
 					input['0a'] = input;
 
 					const output = expectSerializedEqual(
-						input, '(()=>{const a={};a["0a"]=a;return a;})()'
+						input, '(()=>{const a={};a["0a"]=a;return a})()'
 					);
 					expect(output['0a']).toBe(output);
 				});
@@ -161,7 +161,7 @@ describeWithAllOptions('Objects', ({expectSerializedEqual}) => {
 					a.b = a;
 					const input = {a};
 
-					const output = expectSerializedEqual(input, '(()=>{const a={};a.b=a;return{a};})()');
+					const output = expectSerializedEqual(input, '(()=>{const a={};a.b=a;return{a}})()');
 					expect(output.a.b).toBe(output.a);
 				});
 
@@ -175,7 +175,7 @@ describeWithAllOptions('Objects', ({expectSerializedEqual}) => {
 					const input = {a};
 
 					const output = expectSerializedEqual(
-						input, '(()=>{const a={},b={b:{c:a}};a.d=b;return{a:b};})()'
+						input, '(()=>{const a={},b={b:{c:a}};a.d=b;return{a:b}})()'
 					);
 					expect(output.a.b.c.d).toBe(output.a);
 				});

@@ -51,15 +51,15 @@ itWithAllOptions.skip = (name, fn) => describeAllOptions(name, fn, describe.skip
  */
 function describeAllOptions(name, fn, topDescribe, describeOrIt) {
 	topDescribe(name, () => {
-		for (const compact of [true, false]) {
-			describe(`with compact option ${compact}`, () => {
+		for (const minify of [true, false]) {
+			describe(`with minify option ${minify}`, () => {
 				for (const inline of [true, false]) {
 					describe(`with inline option ${inline}`, () => {
 						for (const mangle of [true, false]) {
 							describeOrIt(`with mangle option ${mangle}`, () => {
 								// Only perform check of expected JS if all options true
-								const allOptionsTrue = compact && inline && mangle;
-								const options = {compact, inline, mangle, comments: false};
+								const allOptionsTrue = minify && inline && mangle;
+								const options = {minify, inline, mangle, comments: false};
 								fn({
 									expectSerializedEqual: allOptionsTrue
 										? (input, expectedJs) => expectSerializedEqual(input, null, expectedJs)

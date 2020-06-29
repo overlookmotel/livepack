@@ -30,7 +30,7 @@ describeWithAllOptions('Functions', ({run}) => {
 				const input = function(x, y) {
 					return [x, y, this]; // eslint-disable-line no-invalid-this
 				};
-				const out = run(input, '(function input(a,b){return[a,b,this];})');
+				const out = run(input, '(function input(a,b){return[a,b,this]})');
 
 				expect(out).toBeFunction();
 				const param1 = {},
@@ -47,7 +47,7 @@ describeWithAllOptions('Functions', ({run}) => {
 				function input(x, y) {
 					return [x, y, this]; // eslint-disable-line no-invalid-this
 				}
-				const out = run(input, '(function input(a,b){return[a,b,this];})');
+				const out = run(input, '(function input(a,b){return[a,b,this]})');
 
 				expect(out).toBeFunction();
 				const param1 = {},
@@ -653,7 +653,7 @@ describeWithAllOptions('Functions', ({run}) => {
 		describe('referencing local scope', () => {
 			it('in exported function', () => {
 				const input = function() { return this; }; // eslint-disable-line no-invalid-this
-				const out = run(input, '(function input(){return this;})');
+				const out = run(input, '(function input(){return this})');
 
 				expect(out).toBeFunction();
 				const ctx = {};
@@ -666,7 +666,7 @@ describeWithAllOptions('Functions', ({run}) => {
 						function input() {
 							return function() { return this; }; // eslint-disable-line no-invalid-this
 						}
-						const out = run(input, '(function input(){return function(){return this;};})');
+						const out = run(input, '(function input(){return function(){return this}})');
 
 						expect(out).toBeFunction();
 						const res = out();
@@ -679,7 +679,7 @@ describeWithAllOptions('Functions', ({run}) => {
 						const input = function() {
 							return function() { return this; }; // eslint-disable-line no-invalid-this
 						};
-						const out = run(input, '(function input(){return function(){return this;};})');
+						const out = run(input, '(function input(){return function(){return this}})');
 
 						expect(out).toBeFunction();
 						const res = out();
@@ -690,7 +690,7 @@ describeWithAllOptions('Functions', ({run}) => {
 
 					it('arrow function', () => {
 						const input = () => function() { return this; }; // eslint-disable-line no-invalid-this
-						const out = run(input, '()=>function(){return this;}');
+						const out = run(input, '()=>function(){return this}');
 
 						expect(out).toBeFunction();
 						const res = out();
@@ -705,7 +705,7 @@ describeWithAllOptions('Functions', ({run}) => {
 						function input() {
 							return () => this; // eslint-disable-line no-invalid-this
 						}
-						const out = run(input, '(function input(){return()=>this;})');
+						const out = run(input, '(function input(){return()=>this})');
 
 						expect(out).toBeFunction();
 						const ctx = {};
@@ -718,7 +718,7 @@ describeWithAllOptions('Functions', ({run}) => {
 						function input() {
 							return () => () => this; // eslint-disable-line no-invalid-this
 						}
-						const out = run(input, '(function input(){return()=>()=>this;})');
+						const out = run(input, '(function input(){return()=>()=>this})');
 
 						expect(out).toBeFunction();
 						const ctx = {};
@@ -739,7 +739,7 @@ describeWithAllOptions('Functions', ({run}) => {
 										return () => this; // eslint-disable-line no-invalid-this
 									};
 								}
-								const out = run(input, '(function input(){return function(){return()=>this;};})');
+								const out = run(input, '(function input(){return function(){return()=>this}})');
 
 								expect(out).toBeFunction();
 								const res = out();
@@ -756,7 +756,7 @@ describeWithAllOptions('Functions', ({run}) => {
 										return () => () => this; // eslint-disable-line no-invalid-this
 									};
 								}
-								const out = run(input, '(function input(){return function(){return()=>()=>this;};})');
+								const out = run(input, '(function input(){return function(){return()=>()=>this}})');
 
 								expect(out).toBeFunction();
 								const res = out();
@@ -777,7 +777,7 @@ describeWithAllOptions('Functions', ({run}) => {
 										return () => this; // eslint-disable-line no-invalid-this
 									};
 								};
-								const out = run(input, '(function input(){return function(){return()=>this;};})');
+								const out = run(input, '(function input(){return function(){return()=>this}})');
 
 								expect(out).toBeFunction();
 								const res = out();
@@ -794,7 +794,7 @@ describeWithAllOptions('Functions', ({run}) => {
 										return () => () => this; // eslint-disable-line no-invalid-this
 									};
 								};
-								const out = run(input, '(function input(){return function(){return()=>()=>this;};})');
+								const out = run(input, '(function input(){return function(){return()=>()=>this}})');
 
 								expect(out).toBeFunction();
 								const res = out();
@@ -815,7 +815,7 @@ describeWithAllOptions('Functions', ({run}) => {
 										return () => this; // eslint-disable-line no-invalid-this
 									}
 								);
-								const out = run(input, '()=>function(){return()=>this;}');
+								const out = run(input, '()=>function(){return()=>this}');
 
 								expect(out).toBeFunction();
 								const res = out();
@@ -832,7 +832,7 @@ describeWithAllOptions('Functions', ({run}) => {
 										return () => () => this; // eslint-disable-line no-invalid-this
 									}
 								);
-								const out = run(input, '()=>function(){return()=>()=>this;}');
+								const out = run(input, '()=>function(){return()=>()=>this}');
 
 								expect(out).toBeFunction();
 								const res = out();
@@ -1064,7 +1064,7 @@ describeWithAllOptions('Functions', ({run}) => {
 		describe('referencing local scope', () => {
 			it('in exported function', () => {
 				const input = function() { return arguments; }; // eslint-disable-line prefer-rest-params
-				const out = run(input, '(function input(){return arguments;})');
+				const out = run(input, '(function input(){return arguments})');
 
 				expect(out).toBeFunction();
 				const argA = {argA: 1},
@@ -1082,7 +1082,7 @@ describeWithAllOptions('Functions', ({run}) => {
 						function input() {
 							return function() { return arguments; }; // eslint-disable-line prefer-rest-params
 						}
-						const out = run(input, '(function input(){return function(){return arguments;};})');
+						const out = run(input, '(function input(){return function(){return arguments}})');
 
 						expect(out).toBeFunction();
 						const fn = out();
@@ -1100,7 +1100,7 @@ describeWithAllOptions('Functions', ({run}) => {
 						const input = function() {
 							return function() { return arguments; }; // eslint-disable-line prefer-rest-params
 						};
-						const out = run(input, '(function input(){return function(){return arguments;};})');
+						const out = run(input, '(function input(){return function(){return arguments}})');
 
 						expect(out).toBeFunction();
 						const fn = out();
@@ -1117,7 +1117,7 @@ describeWithAllOptions('Functions', ({run}) => {
 					it('arrow function', () => {
 						// eslint-disable-next-line prefer-rest-params
 						const input = () => function() { return arguments; };
-						const out = run(input, '()=>function(){return arguments;}');
+						const out = run(input, '()=>function(){return arguments}');
 
 						expect(out).toBeFunction();
 						const fn = out();
@@ -1137,7 +1137,7 @@ describeWithAllOptions('Functions', ({run}) => {
 						function input() {
 							return () => arguments; // eslint-disable-line prefer-rest-params
 						}
-						const out = run(input, '(function input(){return()=>arguments;})');
+						const out = run(input, '(function input(){return()=>arguments})');
 
 						expect(out).toBeFunction();
 						const argA = {argA: 1},
@@ -1155,7 +1155,7 @@ describeWithAllOptions('Functions', ({run}) => {
 						function input() {
 							return () => () => arguments; // eslint-disable-line prefer-rest-params
 						}
-						const out = run(input, '(function input(){return()=>()=>arguments;})');
+						const out = run(input, '(function input(){return()=>()=>arguments})');
 
 						expect(out).toBeFunction();
 						const argA = {argA: 1},
@@ -1181,7 +1181,7 @@ describeWithAllOptions('Functions', ({run}) => {
 										return () => arguments; // eslint-disable-line prefer-rest-params
 									};
 								}
-								const out = run(input, '(function input(){return function(){return()=>arguments;};})');
+								const out = run(input, '(function input(){return function(){return()=>arguments}})');
 
 								expect(out).toBeFunction();
 								const fnBase = out();
@@ -1204,7 +1204,7 @@ describeWithAllOptions('Functions', ({run}) => {
 									};
 								}
 								const out = run(
-									input, '(function input(){return function(){return()=>()=>arguments;};})'
+									input, '(function input(){return function(){return()=>()=>arguments}})'
 								);
 
 								expect(out).toBeFunction();
@@ -1231,7 +1231,7 @@ describeWithAllOptions('Functions', ({run}) => {
 										return () => arguments; // eslint-disable-line prefer-rest-params
 									};
 								};
-								const out = run(input, '(function input(){return function(){return()=>arguments;};})');
+								const out = run(input, '(function input(){return function(){return()=>arguments}})');
 
 								expect(out).toBeFunction();
 								const fnBase = out();
@@ -1254,7 +1254,7 @@ describeWithAllOptions('Functions', ({run}) => {
 									};
 								};
 								const out = run(
-									input, '(function input(){return function(){return()=>()=>arguments;};})'
+									input, '(function input(){return function(){return()=>()=>arguments}})'
 								);
 
 								expect(out).toBeFunction();
@@ -1281,7 +1281,7 @@ describeWithAllOptions('Functions', ({run}) => {
 										return () => arguments; // eslint-disable-line prefer-rest-params
 									}
 								);
-								const out = run(input, '()=>function(){return()=>arguments;}');
+								const out = run(input, '()=>function(){return()=>arguments}');
 
 								expect(out).toBeFunction();
 								const fnBase = out();
@@ -1303,7 +1303,7 @@ describeWithAllOptions('Functions', ({run}) => {
 										return () => () => arguments; // eslint-disable-line prefer-rest-params
 									}
 								);
-								const out = run(input, '()=>function(){return()=>()=>arguments;}');
+								const out = run(input, '()=>function(){return()=>()=>arguments}');
 
 								expect(out).toBeFunction();
 								const fnBase = out();
