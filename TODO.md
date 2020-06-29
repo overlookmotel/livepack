@@ -4,8 +4,8 @@
 * Tests for avoiding var names clashing with globals
 * Tests for injecting functions into scopes
 * Tests for vars in funcs
-* Tests for destructured vars in funcs (`() => {const {a} = {a: 123};}`, `() => {const {a: {b}} = {a: {b: 123}};}`)
-* Tests for spread vars in funcs (`(...a) => {}`, `([...a]) => {}`, `({a, ...b}) => {}`)
+* Tests for destructured vars in funcs (`() => {const {a, b: {c, d}, ...e} = {a: 1, b: {c: 2, d: 3}, x: 4, y: 5}}}`, `() => {const [a, [b, c], ...d] = [1, [2, 3], 4, 5]}`)
+* Tests for rest vars in funcs (`(a, b) => {const c = {a, ...b}`, `(a, b) => {const c = [a, ...b]}`)
 * Tests for references to own function name (`function x() { return x; }`)
 * Tests for references to upper function name (`function x() { return () => x; }`)
 * Tests for labels not identified as vars
