@@ -1805,4 +1805,41 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 			});
 		}
 	});
+
+	describe('do not treat labels as variables', () => {
+		it('in labels', () => {
+			// Test `console` is not misinterpretted as referring to external var
+			let input;
+			console: input = () => console; // eslint-disable-line no-labels, no-label-var, no-unused-labels
+			const out = run(input, '()=>console');
+
+			expect(out()).toBe(console);
+		});
+
+		it('in continue statements', () => {
+			// Test `x` in `continue` statement is not misinterpretted as referring to external var `x`
+			const x = {}; // eslint-disable-line no-unused-vars
+			const input = () => {
+				x: for (let i = 0; i < 3; i++) { // eslint-disable-line no-labels, no-label-var
+					continue x; // eslint-disable-line no-labels, no-extra-label
+				}
+			};
+			const out = run(input, '()=>{x:for(let a=0;a<3;a++){continue x}}');
+
+			expect(out()).toBeUndefined();
+		});
+
+		it('in break statements', () => {
+			// Test `x` in `break` statement is not misinterpretted as referring to external var `x`
+			const x = {}; // eslint-disable-line no-unused-vars
+			const input = () => {
+				x: for (let i = 0; i < 3; i++) { // eslint-disable-line no-labels, no-label-var
+					break x; // eslint-disable-line no-labels, no-extra-label
+				}
+			};
+			const out = run(input, '()=>{x:for(let a=0;a<3;a++){break x}}');
+
+			expect(out()).toBeUndefined();
+		});
+	});
 });
