@@ -3,8 +3,6 @@
 * Tests for block IDs unique across all files
 * Tests for avoiding var names clashing with globals
 * Tests for injecting functions into scopes
-* Tests for references to own function name (`function x() { return x; }`)
-* Tests for references to upper function name (`function x() { return () => x; }`)
 * Tests for labels not identified as vars
 
 * Handle `super`

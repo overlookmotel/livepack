@@ -1763,4 +1763,24 @@ describeWithAllOptions('Functions', ({run}) => {
 			});
 		});
 	});
+
+	describe('self-referencing functions', () => {
+		it('own function', () => {
+			const input = function x() {
+				return x;
+			};
+			const out = run(input, '(function x(){return x})');
+
+			expect(out()).toBe(out);
+		});
+
+		it('upper function', () => {
+			const input = function x() {
+				return () => x;
+			};
+			const out = run(input, '(function x(){return()=>x})');
+
+			expect(out()()).toBe(out);
+		});
+	});
 });
