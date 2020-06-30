@@ -183,6 +183,23 @@ describeWithAllOptions('Functions', ({run}) => {
 				expect(res[4]).toEqual(extB);
 			});
 
+			it('with destructured vars', () => {
+				const {a: extA} = {a: {extA: 1}},
+					{...extB} = {extB: 2};
+				const input = (x, y) => [x, y, extA, extB];
+				const out = run(input);
+
+				expect(out).toBeFunction();
+				const param1 = {},
+					param2 = {};
+				const res = out(param1, param2);
+				expect(res).toBeArrayOfSize(4);
+				expect(res[0]).toBe(param1);
+				expect(res[1]).toBe(param2);
+				expect(res[2]).toEqual(extA);
+				expect(res[3]).toEqual(extB);
+			});
+
 			describe('with default params', () => {
 				it('referencing external vars', () => {
 					const extA = {extA: 1},
