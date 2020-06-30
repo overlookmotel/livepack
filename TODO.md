@@ -2,6 +2,7 @@
 
 * Tests for block IDs unique across all files
 * Tests for avoiding var names clashing with globals
+* Tests for avoiding var names clashing with function names
 * Tests for injecting functions into scopes
 * Tests for labels not identified as vars
 
