@@ -1571,4 +1571,150 @@ describeWithAllOptions('Functions', ({run}) => {
 			expect(res[3]).toEqual(123);
 		});
 	});
+
+	describe('referencing var created in `for ()`', () => {
+		describe('`for ( ...; ...; ... )', () => {
+			it('using `let`', () => {
+				const input = [];
+				for (let x = 1, y = 11; x <= 3; x++, y++) input.push(() => [x, y]); // NB No statement block
+				const out = run(input);
+
+				expect(out).toBeArrayOfSize(3);
+				out.forEach((fn, index) => {
+					expect(fn).toBeFunction();
+					const res = fn();
+					expect(res).toEqual([index + 1, index + 11]);
+				});
+			});
+
+			it('using `var`', () => {
+				const input = [];
+				// eslint-disable-next-line no-var, vars-on-top, no-loop-func
+				for (var x = 1, y = 11; x <= 3; x++, y++) input.push(() => [x, y]); // NB No statement block
+				const out = run(input);
+
+				expect(out).toBeArrayOfSize(3);
+				for (const fn of out) {
+					expect(fn).toBeFunction();
+					const res = fn();
+					expect(res).toEqual([4, 14]);
+				}
+			});
+		});
+
+		describe('`for ( ... of ... )', () => {
+			describe('using `const`', () => {
+				it('without destructuring', () => {
+					const input = [];
+					for (const x of [0, 2, 4]) input.push(() => x); // NB No statement block
+					const out = run(input);
+
+					expect(out).toBeArrayOfSize(3);
+					out.forEach((fn, index) => {
+						expect(fn).toBeFunction();
+						const res = fn();
+						expect(res).toBe(index * 2);
+					});
+				});
+
+				it('with destructuring', () => {
+					const input = [];
+					for (
+						const {x, yy: [y], ...z} of [
+							{x: 1, yy: [2], m: 3, n: 4},
+							{x: 11, yy: [12], m: 13, n: 14},
+							{x: 21, yy: [22], m: 23, n: 24}
+						]
+					) input.push(() => [x, y, z]); // NB No statement block
+					const out = run(input);
+
+					expect(out).toBeArrayOfSize(3);
+					out.forEach((fn, index) => {
+						expect(fn).toBeFunction();
+						const res = fn();
+						expect(res).toEqual(
+							[index * 10 + 1, index * 10 + 2, {m: index * 10 + 3, n: index * 10 + 4}]
+						);
+					});
+				});
+			});
+
+			describe('using `var`', () => {
+				it('without destructuring', () => {
+					const input = [];
+					// eslint-disable-next-line no-var, vars-on-top, no-loop-func
+					for (var x of [{obj1: 1}, {obj2: 2}, {obj3: 3}]) input.push(() => x); // NB No statement block
+					const out = run(input);
+
+					expect(out).toBeArrayOfSize(3);
+					const ress = out.map((fn) => {
+						expect(fn).toBeFunction();
+						const res = fn();
+						expect(res).toEqual({obj3: 3});
+						return res;
+					});
+
+					expect(ress[0]).toBe(ress[1]);
+					expect(ress[0]).toBe(ress[2]);
+				});
+
+				it('with destructuring', () => {
+					const input = [];
+					for (
+						var {x, yy: [y], ...z} of [ // eslint-disable-line no-var, vars-on-top
+							{x: {objX1: 1}, yy: [{objY1: 2}], m: {objM1: 3}, n: {objN1: 4}},
+							{x: {objX2: 11}, yy: [{objY2: 12}], m: {objM2: 13}, n: {objN2: 14}},
+							{x: {objX3: 21}, yy: [{objY3: 22}], m: {objM3: 23}, n: {objN3: 24}}
+						]
+					) input.push(() => [x, y, z]); // eslint-disable-line no-loop-func
+					// NB No statement block
+					const out = run(input);
+
+					expect(out).toBeArrayOfSize(3);
+					const ress = out.map((fn) => {
+						expect(fn).toBeFunction();
+						const res = fn();
+						expect(res).toEqual([{objX3: 21}, {objY3: 22}, {m: {objM3: 23}, n: {objN3: 24}}]);
+						return res;
+					});
+
+					expect(ress[0][0]).toBe(ress[1][0]);
+					expect(ress[0][1]).toBe(ress[1][1]);
+					expect(ress[0][2]).toBe(ress[1][2]);
+					expect(ress[0][0]).toBe(ress[2][0]);
+					expect(ress[0][1]).toBe(ress[2][1]);
+					expect(ress[0][2]).toBe(ress[2][2]);
+				});
+			});
+		});
+
+		describe('`for ( ... in ... )', () => {
+			it('using `const`', () => {
+				const input = [];
+				for (const x in {x: 1, y: 2, z: 3}) input.push(() => x); // NB No statement block
+				const out = run(input);
+
+				expect(out).toBeArrayOfSize(3);
+				out.forEach((fn, index) => {
+					expect(fn).toBeFunction();
+					const res = fn();
+					expect(res).toBe(['x', 'y', 'z'][index]);
+				});
+			});
+
+			it('using `var`', () => {
+				const input = [];
+				// eslint-disable-next-line no-var, vars-on-top, no-loop-func
+				for (var x in {x: 1, y: 2, z: 3}) input.push(() => x); // NB No statement block
+				const out = run(input);
+
+				expect(out).toBeArrayOfSize(3);
+				for (const fn of out) {
+					expect(fn).toBeFunction();
+					const res = fn();
+					expect(res).toBe('z');
+				}
+			});
+		});
+	});
 });
