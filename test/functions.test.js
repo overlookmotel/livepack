@@ -316,13 +316,22 @@ describeWithAllOptions('Functions', ({run}) => {
 		it('single instantiation of scope', () => {
 			const extA = {extA: 1};
 			function outer(extB, extC) {
-				return function(x, y) {
-					return [x, y, this, extA, extB, extC]; // eslint-disable-line no-invalid-this
-				};
+				let extD;
+				const {e: extE} = {e: {extE: 5}};
+				return [
+					function(x, y) {
+						return [x, y, this, extA, extB, extC, extD, extE]; // eslint-disable-line no-invalid-this
+					},
+					function inject(_extD) {
+						extD = _extD;
+					}
+				];
 			}
 			const extB = {extB: 2},
-				extC = {extC: 3};
-			const input = outer(extB, extC);
+				extC = {extC: 3},
+				extD = {extD: 4};
+			const [input, inject] = outer(extB, extC);
+			inject(extD);
 			const out = run(input);
 
 			expect(out).toBeFunction();
@@ -330,28 +339,41 @@ describeWithAllOptions('Functions', ({run}) => {
 				param2 = {},
 				ctx = {};
 			const res = out.call(ctx, param1, param2);
-			expect(res).toBeArrayOfSize(6);
+			expect(res).toBeArrayOfSize(8);
 			expect(res[0]).toBe(param1);
 			expect(res[1]).toBe(param2);
 			expect(res[2]).toBe(ctx);
 			expect(res[3]).toEqual(extA);
 			expect(res[4]).toEqual(extB);
 			expect(res[5]).toEqual(extC);
+			expect(res[6]).toEqual(extD);
+			expect(res[7]).toEqual({extE: 5});
 		});
 
 		it('multiple instantiations of scope', () => {
 			const extA = {extA: 1};
 			function outer(extB, extC) {
-				return function(x, y) {
-					return [x, y, this, extA, extB, extC]; // eslint-disable-line no-invalid-this
-				};
+				let extD;
+				const {e: extE} = {e: {extE: 5}};
+				return [
+					function(x, y) {
+						return [x, y, this, extA, extB, extC, extD, extE]; // eslint-disable-line no-invalid-this
+					},
+					function inject(_extD) {
+						extD = _extD;
+					}
+				];
 			}
 			const exts = [
-				{extB: {extB1: 11}, extC: {extC1: 12}},
-				{extB: {extB2: 21}, extC: {extC2: 22}},
-				{extB: {extB3: 31}, extC: {extC3: 32}}
+				{extB: {extB1: 11}, extC: {extC1: 12}, extD: {extD1: 13}},
+				{extB: {extB2: 21}, extC: {extC2: 22}, extD: {extD2: 23}},
+				{extB: {extB3: 31}, extC: {extC3: 32}, extD: {extD3: 33}}
 			];
-			const input = exts.map(({extB, extC}) => outer(extB, extC));
+			const input = exts.map(({extB, extC, extD}) => {
+				const [fn, inject] = outer(extB, extC);
+				inject(extD);
+				return fn;
+			});
 			const out = run(input);
 
 			expect(out).toBeArrayOfSize(3);
@@ -359,24 +381,31 @@ describeWithAllOptions('Functions', ({run}) => {
 			expect(out[0]).not.toBe(out[2]);
 			expect(out[1]).not.toBe(out[2]);
 
-			const resAs = out.map((item, index) => {
+			const resAEs = out.map((item, index) => {
 				expect(item).toBeFunction();
 				const param1 = {},
 					param2 = {},
 					ctx = {};
 				const res = item.call(ctx, param1, param2);
-				expect(res).toBeArrayOfSize(6);
+				expect(res).toBeArrayOfSize(8);
 				expect(res[0]).toBe(param1);
 				expect(res[1]).toBe(param2);
 				expect(res[2]).toBe(ctx);
 				expect(res[3]).toEqual(extA);
 				expect(res[4]).toEqual(exts[index].extB);
 				expect(res[5]).toEqual(exts[index].extC);
-				return res[3];
+				expect(res[6]).toEqual(exts[index].extD);
+				expect(res[7]).toEqual({extE: 5});
+				return {extA: res[3], extE: res[7]};
 			});
 
+			const resAs = resAEs.map(resAE => resAE.extA);
 			expect(resAs[0]).toBe(resAs[1]);
 			expect(resAs[0]).toBe(resAs[2]);
+
+			const resEs = resAEs.map(resAE => resAE.extE);
+			expect(resEs[0]).not.toBe(resEs[1]);
+			expect(resEs[0]).not.toBe(resEs[2]);
 		});
 	});
 
