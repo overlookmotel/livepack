@@ -1373,6 +1373,207 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 		});
 	});
 
+	describe('referencing other functions', () => {
+		describe('in scope above (not injected)', () => {
+			it('single instantiation', () => {
+				function other() { return 123; }
+				const input = () => other;
+				const out = run(input, '(a=>()=>a)(function other(){return 123})');
+
+				expect(out).toBeFunction();
+				const otherFn = out();
+				expect(otherFn).toBeFunction();
+				expect(otherFn()).toBe(123);
+			});
+
+			it('multiple instantiations', () => {
+				function other() { return 123; }
+				const input = [1, 2, 3].map(() => () => other);
+				const out = run(
+					input, '(()=>{const a=(a=>()=>()=>a)(function other(){return 123});return[a(),a(),a()]})()'
+				);
+
+				expect(out).toBeArrayOfSize(3);
+				const others = out.map((fn) => {
+					expect(fn).toBeFunction();
+					const otherFn = fn();
+					expect(otherFn).toBeFunction();
+					expect(otherFn()).toBe(123);
+					return otherFn;
+				});
+
+				expect(others[0]).toBe(others[1]);
+				expect(others[0]).toBe(others[2]);
+			});
+		});
+
+		describe('in same scope (injected)', () => {
+			it('single instantiation', () => {
+				function outer(extA) {
+					function other() { return extA; }
+					return function inner() { return [extA, other]; };
+				}
+				const extA = {extA: 1};
+				const input = outer(extA);
+				const out = run(input);
+
+				expect(out).toBeFunction();
+				const res = out();
+				expect(res).toBeArrayOfSize(2);
+				const [resA, other] = res;
+				expect(resA).toEqual(extA);
+				expect(other).toBeFunction();
+				expect(other()).toBe(resA);
+			});
+
+			it('multiple instantiations', () => {
+				function outer(extA) {
+					function other() { return extA; }
+					return function inner() { return [extA, other]; };
+				}
+				const extAs = [{extA1: 1}, {extA2: 2}, {extA3: 3}];
+				const input = extAs.map(extA => outer(extA));
+				const out = run(input);
+
+				expect(out).toBeArrayOfSize(3);
+				const others = out.map((inner, index) => {
+					expect(inner).toBeFunction();
+					const res = inner();
+					expect(res).toBeArrayOfSize(2);
+					const [extA, other] = res;
+					expect(extA).toEqual(extAs[index]);
+					expect(other).toBeFunction();
+					expect(other()).toBe(extA);
+					return other;
+				});
+
+				expect(others[0]).not.toBe(others[1]);
+				expect(others[0]).not.toBe(others[2]);
+			});
+		});
+
+		describe('in nested scope (injected)', () => {
+			it('single instantiation', () => {
+				function outer(extA) {
+					let other;
+					if (true) { // eslint-disable-line no-constant-condition
+						const extB = extA;
+						other = () => [extA, extB];
+					}
+					return function inner() { return [extA, other]; };
+				}
+				const extA = {extA: 1};
+				const input = outer(extA);
+				const out = run(input);
+
+				expect(out).toBeFunction();
+				const res = out();
+				expect(res).toBeArrayOfSize(2);
+				const [resA, other] = res;
+				expect(resA).toEqual(extA);
+				expect(other).toBeFunction();
+				const otherRes = other();
+				expect(otherRes).toBeArrayOfSize(2);
+				const [resA2, resB] = otherRes;
+				expect(resA2).toBe(resA);
+				expect(resB).toBe(resA);
+			});
+
+			it('multiple instantiations', () => {
+				function outer(extA) {
+					let other;
+					if (true) { // eslint-disable-line no-constant-condition
+						const extB = extA;
+						other = () => [extA, extB];
+					}
+					return function inner() { return [extA, other]; };
+				}
+				const extAs = [{extA1: 1}, {extA2: 2}, {extA3: 3}];
+				const input = extAs.map(extA => outer(extA));
+				const out = run(input);
+
+				expect(out).toBeArrayOfSize(3);
+				const others = out.map((inner, index) => {
+					expect(inner).toBeFunction();
+					const res = inner();
+					expect(res).toBeArrayOfSize(2);
+					const [resA, other] = res;
+					expect(resA).toEqual(extAs[index]);
+					expect(other).toBeFunction();
+					const otherRes = other();
+					expect(otherRes).toBeArrayOfSize(2);
+					const [resA2, resB] = otherRes;
+					expect(resA2).toBe(resA);
+					expect(resB).toBe(resA);
+					return other;
+				});
+
+				expect(others[0]).not.toBe(others[1]);
+				expect(others[0]).not.toBe(others[2]);
+			});
+		});
+
+		describe('circular references between functions (both injected)', () => {
+			it('single instantiation', () => {
+				function outer(extA) {
+					function inner1() { return [extA, inner2]; }
+					function inner2() { return [extA, inner1]; }
+					return inner1;
+				}
+				const extA = {extA: 1};
+				const input = outer(extA);
+				const out = run(input);
+
+				expect(out).toBeFunction();
+				const inner1Res = out();
+				expect(inner1Res).toBeArrayOfSize(2);
+				const [resA, inner2] = inner1Res;
+				expect(resA).toEqual(extA);
+				expect(inner2).toBeFunction();
+				const inner2Res = inner2();
+				expect(inner2Res).toBeArrayOfSize(2);
+				const [resA2, inner1] = inner2Res;
+				expect(resA2).toBe(resA);
+				expect(inner1).toBe(out);
+			});
+
+			it('multiple instantiations', () => {
+				function outer(extA) {
+					function inner1() { return [extA, inner2]; }
+					function inner2() { return [extA, inner1]; }
+					return inner1;
+				}
+				const extAs = [{extA1: 1}, {extA2: 2}, {extA3: 3}];
+				const input = extAs.map(extA => outer(extA));
+				const out = run(input);
+
+				expect(out).toBeArrayOfSize(3);
+				const inners = out.map((inner1, index) => {
+					expect(inner1).toBeFunction();
+					const inner1Res = inner1();
+					expect(inner1Res).toBeArrayOfSize(2);
+					const [resA, inner2] = inner1Res;
+					expect(resA).toEqual(extAs[index]);
+					expect(inner2).toBeFunction();
+					const inner2Res = inner2();
+					expect(inner2Res).toBeArrayOfSize(2);
+					const [resA2, inner1FromInner2] = inner2Res;
+					expect(resA2).toBe(resA);
+					expect(inner1FromInner2).toBe(inner1);
+					return {inner1, inner2};
+				});
+
+				const inner1s = inners.map(({inner1}) => inner1);
+				expect(inner1s[0]).not.toBe(inner1s[1]);
+				expect(inner1s[0]).not.toBe(inner1s[2]);
+
+				const inner2s = inners.map(({inner2}) => inner2);
+				expect(inner2s[0]).not.toBe(inner2s[1]);
+				expect(inner2s[0]).not.toBe(inner2s[2]);
+			});
+		});
+	});
+
 	describe('with destructured params', () => {
 		describe('in outer function', () => {
 			describe('object destructuring', () => {

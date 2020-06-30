@@ -1,7 +1,6 @@
 # TODO
 
 * Tests for block IDs unique across all files
-* Tests for injecting functions into scopes
 
 * Handle `super`
 * Option to strip function names (NB don't where is referenced internally `function x() { return x; }`)
