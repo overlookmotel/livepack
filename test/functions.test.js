@@ -950,7 +950,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 
 						expect(out).toBeFunction();
 						const res = out();
-						expect(res).toHaveLength(3);
+						expect(res).toBeArrayOfSize(3);
 						expect(res[0]).toBeArguments();
 						expect(res[0]).toHaveLength(2);
 						expect(res[0][0]).toEqual(extA);
@@ -973,7 +973,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 						const param1 = {},
 							param2 = {};
 						const res = out(param1, param2);
-						expect(res).toHaveLength(3);
+						expect(res).toBeArrayOfSize(3);
 						expect(res[0]).toBeArguments();
 						expect(res[0]).toHaveLength(2);
 						expect(res[0][0]).toEqual(argA);
@@ -995,7 +995,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 						expect(out).toBeFunction();
 						const param = {};
 						const res = out(param);
-						expect(res).toHaveLength(3);
+						expect(res).toBeArrayOfSize(3);
 						expect(res[0]).toBeArguments();
 						expect(res[0]).toHaveLength(2);
 						expect(res[0][0]).toEqual(extA);
@@ -1019,7 +1019,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 
 					expect(out).toBeFunction();
 					const res = out();
-					expect(res).toHaveLength(2);
+					expect(res).toBeArrayOfSize(2);
 					expect(res[0]).toBeArguments();
 					expect(res[0]).toHaveLength(2);
 					expect(res[0][0]).toEqual(argA);
@@ -1044,7 +1044,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 						expect(fn).toBeFunction();
 						const res = fn();
 						const {argA, argB, extA} = exts[index];
-						expect(res).toHaveLength(2);
+						expect(res).toBeArrayOfSize(2);
 						expect(res[0]).toBeArguments();
 						expect(res[0]).toHaveLength(2);
 						expect(res[0][0]).toEqual(argA);
@@ -1069,7 +1069,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 
 					expect(out).toBeFunction();
 					const res = out();
-					expect(res).toHaveLength(3);
+					expect(res).toBeArrayOfSize(3);
 					expect(res[0]).toBeArguments();
 					expect(res[0]).toHaveLength(2);
 					expect(res[0][0]).toEqual(argA);
@@ -1095,7 +1095,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 						expect(fn).toBeFunction();
 						const res = fn();
 						const {argA, argB, extA, extB} = exts[index];
-						expect(res).toHaveLength(3);
+						expect(res).toBeArrayOfSize(3);
 						expect(res[0]).toBeArguments();
 						expect(res[0]).toHaveLength(2);
 						expect(res[0][0]).toEqual(argA);
@@ -1646,7 +1646,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 						param5 = {},
 						param6 = {};
 					const res = out({v: param1, w: param2}, {x: param3, q: param4, m: param5, n: param6});
-					expect(res).toHaveLength(5);
+					expect(res).toBeArrayOfSize(5);
 					expect(res[0]).toBe(param1);
 					expect(res[1]).toBe(param2);
 					expect(res[2]).toBe(param3);
@@ -1675,7 +1675,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 						{vv: {v: param1, w: param2}},
 						{xx: {x: param3}, yy: {q: param4}, m: param5, n: param6}
 					);
-					expect(res).toHaveLength(5);
+					expect(res).toBeArrayOfSize(5);
 					expect(res[0]).toBe(param1);
 					expect(res[1]).toBe(param2);
 					expect(res[2]).toBe(param3);
@@ -1702,12 +1702,12 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 						param5 = {},
 						param6 = {};
 					const res = out([param1, param2], [0, param3, 0, 0, param4, 0, param5, param6]);
-					expect(res).toHaveLength(5);
+					expect(res).toBeArrayOfSize(5);
 					expect(res[0]).toBe(param1);
 					expect(res[1]).toBe(param2);
 					expect(res[2]).toBe(param3);
 					expect(res[3]).toBe(param4);
-					expect(res[4]).toHaveLength(2);
+					expect(res[4]).toBeArrayOfSize(2);
 					expect(res[4][0]).toBe(param5);
 					expect(res[4][1]).toBe(param6);
 				});
@@ -1728,12 +1728,12 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 						param5 = {},
 						param6 = {};
 					const res = out([[param1], [param2]], [[0, param3, 0, 0, param4, 0, param5, param6]]);
-					expect(res).toHaveLength(5);
+					expect(res).toBeArrayOfSize(5);
 					expect(res[0]).toBe(param1);
 					expect(res[1]).toBe(param2);
 					expect(res[2]).toBe(param3);
 					expect(res[3]).toBe(param4);
-					expect(res[4]).toHaveLength(2);
+					expect(res[4]).toBeArrayOfSize(2);
 					expect(res[4][0]).toBe(param5);
 					expect(res[4][1]).toBe(param6);
 				});
@@ -1767,7 +1767,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 				param3 = {},
 				param4 = {};
 			const res = out(param1, param2, param3, param4);
-			expect(res).toHaveLength(3);
+			expect(res).toBeArrayOfSize(3);
 			expect(res[0]).toBe(param1);
 			expect(res[1]).toBe(param2);
 			expect(res[2][0]).toBe(param3);
