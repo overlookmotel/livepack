@@ -67,6 +67,9 @@ function describeAllOptions(name, fn, topDescribe, describeOrIt) {
 									run: allOptionsTrue
 										? (input, expectedJs) => run(input, null, expectedJs)
 										: input => run(input, options),
+									serialize: allOptionsTrue
+										? input => serialize(input)
+										: input => serialize(input, options),
 									exec,
 									...options
 								});
