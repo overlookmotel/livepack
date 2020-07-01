@@ -77,8 +77,8 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 					}
 				));
 				const out = run(input);
-				expect(out).toBeArrayOfSize(3);
 
+				expect(out).toBeArrayOfSize(3);
 				expect(out[0]).not.toBe(out[1]);
 				expect(out[0]).not.toBe(out[2]);
 				expect(out[1]).not.toBe(out[2]);
