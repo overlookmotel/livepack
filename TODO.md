@@ -1,15 +1,16 @@
 # TODO
 
-* Handle `super`
 * Option to strip function names (NB don't where is referenced internally `function x() { return x; }`)
 * Ensure correct function names (see below)
 * Handle bound functions (created with `.bind()`)
+* Handle functions with names which are not valid JS identifiers
 
 * Symbol-keyed object properties
 * Property descriptors
 * RegExps etc
 * Maps, Sets, WeakMaps, WeakSets
 * Classes
+* Handle `super` (in class + object methods)
 * Prototypes
 * Additional properties
 * Set strict mode on functions
