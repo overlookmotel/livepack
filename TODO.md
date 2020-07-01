@@ -14,6 +14,8 @@
 * Additional properties
 * Set strict mode on functions
 
+* Delete `id` field from `records`, `blocks`, `scopes`, `functions`
+
 ### Function names
 
 Classes can have a static method called `name`. This overwrites the string name given in class definition `class C {}`.
