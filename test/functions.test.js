@@ -2200,7 +2200,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 			} else {
 				const fn = (0, (x, y) => [a, x, y]); // eslint-disable-line no-undef
 				const input = {a: fn, b: fn};
-				expect(serialize(input)).toBe('(()=>{const a$0=(x,y)=>[a,x,y];return{a:a$0,b:a$0}})()');
+				expect(serialize(input)).toBe('(()=>{const a$0=(0,(x,y)=>[a,x,y]);return{a:a$0,b:a$0}})()');
 			}
 		});
 
@@ -2272,7 +2272,6 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 		expect(input.name).toBe('0a'); // Sanity check
 		const out = run(input, '(function(){})');
 
-		// TODO Remove the `if ()` once function name preservation implemented
-		if (inline) expect(out.name).toBe('');
+		expect(out.name).toBe('');
 	});
 });
