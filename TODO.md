@@ -2,13 +2,15 @@
 
 * Symbol-keyed object properties
 * Property descriptors
+* Additional properties
 * RegExps etc
 * Maps, Sets
 * WeakMaps, WeakSets
 * Classes
 * Handle `super` (in class + object methods)
 * Prototypes
-* Additional properties
+* Globals
+* Built-in modules
 * Set strict mode on functions
 * Ensure correct function names (see below)
 * Option to strip function names (NB don't where is referenced internally `function x() { return x; }`)
