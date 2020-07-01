@@ -3,7 +3,8 @@
 * Symbol-keyed object properties
 * Property descriptors
 * RegExps etc
-* Maps, Sets, WeakMaps, WeakSets
+* Maps, Sets
+* WeakMaps, WeakSets
 * Classes
 * Handle `super` (in class + object methods)
 * Prototypes
