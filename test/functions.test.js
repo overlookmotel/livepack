@@ -2198,7 +2198,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 				const input = (x, y) => [a, x, y]; // eslint-disable-line no-undef
 				expect(serialize(input)).toBe('(b,c)=>[a,b,c]');
 			} else {
-				const fn = (x, y) => [a, x, y]; // eslint-disable-line no-undef
+				const fn = (0, (x, y) => [a, x, y]); // eslint-disable-line no-undef
 				const input = {a: fn, b: fn};
 				expect(serialize(input)).toBe('(()=>{const a$0=(x,y)=>[a,x,y];return{a:a$0,b:a$0}})()');
 			}
