@@ -19,18 +19,18 @@
     "url": "https://github.com/overlookmotel/livepack/issues"
   },
   "dependencies": {
-    "@babel/generator": "^7.10.3",
-    "@babel/parser": "^7.10.3",
-    "@babel/plugin-transform-modules-commonjs": "^7.10.1",
-    "@babel/register": "^7.10.3",
-    "@babel/traverse": "^7.10.3",
-    "@babel/types": "^7.10.3",
+    "@babel/generator": "^7.10.4",
+    "@babel/parser": "^7.10.4",
+    "@babel/plugin-transform-modules-commonjs": "^7.10.4",
+    "@babel/register": "^7.10.4",
+    "@babel/traverse": "^7.10.4",
+    "@babel/types": "^7.10.4",
     "is-it-type": "^4.1.0",
     "lodash": "^4.17.15",
     "reserved-words": "^0.1.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.10.3",
+    "@babel/core": "^7.10.4",
     "@overlookmotel/eslint-config": "^7.2.1",
     "@overlookmotel/eslint-config-jest": "^4.1.1",
     "@overlookmotel/eslint-config-node": "^2.1.2",
