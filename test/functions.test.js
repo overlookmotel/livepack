@@ -2263,4 +2263,16 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 		expect(inner3).toBeFunction();
 		expect(inner3()).toEqual([{extA3: 5}, {extB3: 6}]);
 	});
+
+	it('not named illegally', () => {
+		const obj = {
+			'0a': function() {}
+		};
+		const input = obj['0a'];
+		expect(input.name).toBe('0a'); // Sanity check
+		const out = run(input, '(function(){})');
+
+		// TODO Remove the `if ()` once function name preservation implemented
+		if (inline) expect(out.name).toBe('');
+	});
 });
