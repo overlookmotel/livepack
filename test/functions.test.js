@@ -1574,6 +1574,58 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 		});
 	});
 
+	describe('with circular references', () => {
+		it('nested in object 1 level deep', () => {
+			const input = {
+				fn: () => input
+			};
+			const out = run(input);
+
+			expect(out).toBeObject();
+			expect(out).toContainAllKeys(['fn']);
+			const {fn} = out;
+			expect(fn).toBeFunction();
+			expect(fn()).toBe(out);
+		});
+
+		it('nested in object 2 levels deep', () => {
+			const input = {
+				inner: {
+					fn: () => input
+				}
+			};
+			const out = run(input);
+
+			expect(out).toBeObject();
+			expect(out).toContainAllKeys(['inner']);
+			const {inner} = out;
+			expect(inner).toBeObject();
+			expect(inner).toContainAllKeys(['fn']);
+			const {fn} = inner;
+			expect(fn).toBeFunction();
+			expect(fn()).toBe(out);
+		});
+
+		it('reference nested in nested function', () => {
+			const input = {
+				fn: x => () => [x, input]
+			};
+			const out = run(input);
+
+			expect(out).toBeObject();
+			expect(out).toContainAllKeys(['fn']);
+			const {fn} = out;
+			expect(fn).toBeFunction();
+			const param = {};
+			const fnInner = fn(param);
+			expect(fnInner).toBeFunction();
+			const res = fnInner();
+			expect(res).toBeArrayOfSize(2);
+			expect(res[0]).toBe(param);
+			expect(res[1]).toBe(out);
+		});
+	});
+
 	describe('with destructured params', () => {
 		describe('in outer function', () => {
 			describe('object destructuring', () => {
