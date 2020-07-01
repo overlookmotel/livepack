@@ -16,6 +16,7 @@
 * Set strict mode on functions
 
 * Delete `id` field from `records`, `blocks`, `scopes`, `functions`
+* Remove `@babel/core` dev dependency
 
 ### Function names
 
