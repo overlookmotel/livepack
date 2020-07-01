@@ -4,6 +4,8 @@
   "description": "Serialize live running code to Javascript",
   "main": "index.js",
   "files": [
+    "babel.js",
+    "register.js",
     "lib/**/*.js"
   ],
   "author": {
