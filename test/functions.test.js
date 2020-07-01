@@ -2095,4 +2095,19 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 			expect(out()).toBeUndefined();
 		});
 	});
+
+	it('distinguish scopes and functions with same block IDs from different files', () => {
+		const input = require('./fixtures/functionBlocks/index.js'); // eslint-disable-line global-require
+		const out = run(input);
+
+		expect(out).toBeObject();
+		expect(out).toContainAllKeys(['inner1', 'inner2', 'inner3']);
+		const {inner1, inner2, inner3} = out;
+		expect(inner1).toBeFunction();
+		expect(inner1()).toEqual([{extA1: 1}, {extB1: 2}]);
+		expect(inner2).toBeFunction();
+		expect(inner2()).toEqual([{extA2: 3}, {extB2: 4}]);
+		expect(inner3).toBeFunction();
+		expect(inner3()).toEqual([{extA3: 5}, {extB3: 6}]);
+	});
 });

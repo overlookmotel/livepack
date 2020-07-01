@@ -1,7 +1,5 @@
 # TODO
 
-* Tests for block IDs unique across all files
-
 * Handle `super`
 * Option to strip function names (NB don't where is referenced internally `function x() { return x; }`)
 * Ensure correct function names (see below)
