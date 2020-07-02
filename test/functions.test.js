@@ -2190,6 +2190,83 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 		});
 	});
 
+	describe('generators + async functions', () => {
+		it('generator function', () => {
+			const extA = {extA: 1},
+				extB = {extB: 2};
+			function* input(x, y) {
+				yield [extA, extB];
+				return [this, x, y]; // eslint-disable-line no-invalid-this
+			}
+			const out = run(
+				input, '((c,d)=>function*input(a,b){yield[c,d];return[this,a,b]})({extA:1},{extB:2})'
+			);
+
+			expect(out).toBeFunction();
+			const ctx = {},
+				param1 = {},
+				param2 = {};
+			const iterator = out.call(ctx, param1, param2);
+			const res1 = iterator.next();
+			expect(res1).toEqual({value: [{extA: 1}, {extB: 2}], done: false});
+			const res2 = iterator.next();
+			expect(res2).toEqual({value: [{}, {}, {}], done: true});
+			expect(res2.value[0]).toBe(ctx);
+			expect(res2.value[1]).toBe(param1);
+			expect(res2.value[2]).toBe(param2);
+		});
+
+		it('async function', async () => {
+			const extA = {extA: 1},
+				extB = {extB: 2};
+			async function input(x, y) {
+				await Promise.resolve();
+				return [extA, extB, this, x, y]; // eslint-disable-line no-invalid-this
+			}
+			const out = run(
+				input,
+				'((c,d)=>async function input(a,b){await Promise.resolve();return[c,d,this,a,b]})({extA:1},{extB:2})'
+			);
+
+			expect(out).toBeFunction();
+			const ctx = {},
+				param1 = {},
+				param2 = {};
+			const res = await out.call(ctx, param1, param2);
+			expect(res).toEqual([{extA: 1}, {extB: 2}, {}, {}, {}]);
+			expect(res[2]).toBe(ctx);
+			expect(res[3]).toBe(param1);
+			expect(res[4]).toBe(param2);
+		});
+
+		it('async generator function', async () => {
+			const extA = {extA: 1},
+				extB = {extB: 2};
+			async function* input(x, y) {
+				await Promise.resolve();
+				yield [extA, extB];
+				return [this, x, y]; // eslint-disable-line no-invalid-this
+			}
+			const out = run(
+				input,
+				'((c,d)=>async function*input(a,b){await Promise.resolve();yield[c,d];return[this,a,b]})({extA:1},{extB:2})'
+			);
+
+			expect(out).toBeFunction();
+			const ctx = {},
+				param1 = {},
+				param2 = {};
+			const iterator = out.call(ctx, param1, param2);
+			const res1 = await iterator.next();
+			expect(res1).toEqual({value: [{extA: 1}, {extB: 2}], done: false});
+			const res2 = await iterator.next();
+			expect(res2).toEqual({value: [{}, {}, {}], done: true});
+			expect(res2.value[0]).toBe(ctx);
+			expect(res2.value[1]).toBe(param1);
+			expect(res2.value[2]).toBe(param2);
+		});
+	});
+
 	describe('avoid var name clashes', () => {
 		if (!minify || !inline) return;
 

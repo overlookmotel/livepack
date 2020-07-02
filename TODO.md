@@ -1,7 +1,5 @@
 # TODO
 
-* Tests for generator and async functions
-
 * Symbol-keyed object properties
 * Property descriptors
 * Additional properties
