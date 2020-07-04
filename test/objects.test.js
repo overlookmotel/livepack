@@ -182,4 +182,179 @@ describeWithAllOptions('Objects', ({expectSerializedEqual}) => {
 			});
 		});
 	});
+
+	describe('with descriptors', () => {
+		describe('no circular properties', () => {
+			it('has correct prototype', () => {
+				const input = {x: 1};
+				Object.defineProperty(input, 'y', {value: 2, writable: true, configurable: true});
+				expectSerializedEqual(input, null, (obj) => {
+					expect(Object.getPrototypeOf(obj)).toBe(Object.prototype);
+				});
+			});
+
+			it('has correct value', () => {
+				const input = {x: 1};
+				Object.defineProperty(input, 'y', {value: 2, writable: true, configurable: true});
+				expectSerializedEqual(input, null, (obj) => {
+					expect(obj.y).toBe(2);
+				});
+			});
+
+			describe('with descriptor props', () => {
+				it('`enumerable`', () => {
+					const input = {x: 1};
+					Object.defineProperty(input, 'y', {value: 2, writable: true, configurable: true});
+
+					expectSerializedEqual(input, null, (obj) => {
+						expect(Object.keys(obj)).toEqual(['x']);
+						expect(Object.getOwnPropertyDescriptor(obj, 'y')).toEqual({
+							value: 2, writable: true, enumerable: false, configurable: true
+						});
+					});
+				});
+
+				it('`writeable`', () => {
+					const input = {x: 1};
+					Object.defineProperty(input, 'y', {value: 2, enumerable: true, configurable: true});
+
+					expectSerializedEqual(input, null, (obj) => {
+						expect(() => { obj.y = 3; }).toThrow("Cannot assign to read only property 'y' of object");
+						expect(Object.getOwnPropertyDescriptor(obj, 'y')).toEqual({
+							value: 2, writable: false, enumerable: true, configurable: true
+						});
+					});
+				});
+
+				it('`configurable`', () => {
+					const input = {x: 1};
+					Object.defineProperty(input, 'y', {value: 2, writable: true, enumerable: true});
+
+					expectSerializedEqual(input, null, (obj) => {
+						expect(() => { delete obj.y; }).toThrow("Cannot delete property 'y' of ");
+						expect(Object.getOwnPropertyDescriptor(obj, 'y')).toEqual({
+							value: 2, writable: true, enumerable: true, configurable: false
+						});
+					});
+				});
+			});
+
+			describe('with getter / setter', () => {
+				it('getter', () => {
+					const input = {
+						x: 1,
+						get y() { return 2; }
+					};
+
+					expectSerializedEqual(input, null, (obj) => {
+						expect(obj.y).toBe(2);
+						expect(Object.keys(obj)).toEqual(['x', 'y']);
+						const descriptor = Object.getOwnPropertyDescriptor(obj, 'y');
+						expect(descriptor).toContainAllKeys(['enumerable', 'configurable', 'get', 'set']);
+						expect(descriptor.enumerable).toBeTrue();
+						expect(descriptor.configurable).toBeTrue();
+						expect(descriptor.get).toBeFunction();
+						expect(descriptor.set).toBeUndefined();
+					});
+				});
+
+				it('setter', () => {
+					const input = {
+						x: 1,
+						set y(newX) { this.x = newX; }
+					};
+
+					expectSerializedEqual(input, null, (obj) => {
+						expect(obj.x).toBe(1);
+						expect(obj.y).toBeUndefined();
+						expect(Object.keys(obj)).toEqual(['x', 'y']);
+						const descriptor = Object.getOwnPropertyDescriptor(obj, 'y');
+						expect(descriptor).toContainAllKeys(['enumerable', 'configurable', 'get', 'set']);
+						expect(descriptor.enumerable).toBeTrue();
+						expect(descriptor.configurable).toBeTrue();
+						expect(descriptor.get).toBeUndefined();
+						expect(descriptor.set).toBeFunction();
+
+						obj.y = 2;
+						expect(obj.x).toBe(2);
+						expect(obj.y).toBeUndefined();
+					});
+				});
+			});
+		});
+
+		describe('circular properties', () => {
+			it('has correct prototype', () => {
+				const input = {x: 1};
+				Object.defineProperty(input, 'y', {value: input, writable: true, configurable: true});
+				expectSerializedEqual(input, null, (obj) => {
+					expect(Object.getPrototypeOf(obj)).toBe(Object.prototype);
+				});
+			});
+
+			it('has correct value', () => {
+				const input = {x: 1};
+				Object.defineProperty(input, 'y', {value: input, writable: true, configurable: true});
+				expectSerializedEqual(input, null, (obj) => {
+					expect(obj.y).toBe(obj);
+				});
+			});
+
+			describe('with descriptor props', () => {
+				it('`enumerable`', () => {
+					const input = {x: 1};
+					Object.defineProperty(input, 'y', {value: input, writable: true, configurable: true});
+
+					expectSerializedEqual(input, null, (obj) => {
+						expect(Object.keys(obj)).toEqual(['x']);
+						expect(Object.getOwnPropertyDescriptor(obj, 'y')).toEqual({
+							value: obj, writable: true, enumerable: false, configurable: true
+						});
+					});
+				});
+
+				it('`writeable`', () => {
+					const input = {x: 1};
+					Object.defineProperty(input, 'y', {value: input, enumerable: true, configurable: true});
+
+					expectSerializedEqual(input, null, (obj) => {
+						expect(() => { obj.y = 3; }).toThrow("Cannot assign to read only property 'y' of object");
+						expect(Object.getOwnPropertyDescriptor(obj, 'y')).toEqual({
+							value: obj, writable: false, enumerable: true, configurable: true
+						});
+					});
+				});
+
+				it('`configurable`', () => {
+					const input = {x: 1};
+					Object.defineProperty(input, 'y', {value: input, writable: true, enumerable: true});
+
+					expectSerializedEqual(input, null, (obj) => {
+						expect(() => { delete obj.y; }).toThrow("Cannot delete property 'y' of ");
+						expect(Object.getOwnPropertyDescriptor(obj, 'y')).toEqual({
+							value: obj, writable: true, enumerable: true, configurable: false
+						});
+					});
+				});
+			});
+
+			it('with getter', () => {
+				const input = {
+					x: 1,
+					get y() { return input; }
+				};
+
+				expectSerializedEqual(input, null, (obj) => {
+					expect(obj.y).toEqual(input);
+					expect(Object.keys(obj)).toEqual(['x', 'y']);
+					const descriptor = Object.getOwnPropertyDescriptor(obj, 'y');
+					expect(descriptor).toContainAllKeys(['enumerable', 'configurable', 'get', 'set']);
+					expect(descriptor.enumerable).toBeTrue();
+					expect(descriptor.configurable).toBeTrue();
+					expect(descriptor.get).toBeFunction();
+					expect(descriptor.set).toBeUndefined();
+				});
+			});
+		});
+	});
 });

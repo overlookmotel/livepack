@@ -1,7 +1,6 @@
 # TODO
 
 * Symbol-keyed object properties
-* Property descriptors
 * Additional properties
 * RegExps etc
 * Maps, Sets
