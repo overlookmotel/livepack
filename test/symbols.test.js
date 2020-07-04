@@ -15,7 +15,7 @@ const {describeWithAllOptions} = require('./support/index.js');
 
 const itIfNode12Plus = parseNodeVersion(process.version).major >= 12 ? it : it.skip;
 
-describeWithAllOptions('Symbols', ({run}) => {
+describeWithAllOptions('Symbols', ({run, serialize, minify, mangle, inline}) => {
 	it('named symbol', () => {
 		const output = run(Symbol('foo'), 'Symbol("foo")');
 		expect(typeof output).toBe('symbol');
@@ -36,4 +36,14 @@ describeWithAllOptions('Symbols', ({run}) => {
 		const output = run(Symbol.for('bar'), 'Symbol.for("bar")');
 		expect(typeof output).toBe('symbol');
 	});
+
+	if (minify && inline && !mangle) {
+		it('name var after symbol description', () => {
+			const s = Symbol('foo bar');
+			const input = [s, s];
+			const js = serialize(input);
+
+			expect(js).toBe('(()=>{const foo_bar=Symbol("foo bar");return[foo_bar,foo_bar]})()');
+		});
+	}
 });
