@@ -67,8 +67,8 @@ function describeAllOptions(name, fn, topDescribe, describeOrIt) {
 										)
 										: (input, _, validate) => expectSerializedEqual(input, options, null, validate),
 									run: allOptionsTrue
-										? (input, expectedJs) => run(input, null, expectedJs)
-										: input => run(input, options),
+										? (input, expectedJs, validate) => run(input, null, expectedJs, validate)
+										: (input, _, validate) => run(input, options, null, validate),
 									serialize: allOptionsTrue
 										? input => serialize(input)
 										: input => serialize(input, options),
@@ -97,7 +97,7 @@ function describeAllOptions(name, fn, topDescribe, describeOrIt) {
  * @returns {*} - Result of evaluation
  */
 function expectSerializedEqual(input, options, expectedJs, validate) {
-	const output = run(input, options, expectedJs, validate);
+	const output = run(input, options, expectedJs);
 	expect(output).toEqual(input);
 	if (validate) {
 		validate(input);
@@ -111,17 +111,27 @@ function expectSerializedEqual(input, options, expectedJs, validate) {
  * @param {*} input - Input value
  * @param {Object} [options] - Options object
  * @param {string} [expectedJs] - JS code that value should serialize to (optional)
+ * @param {Function} [validate] - Function to validate result
  * @returns {*} - Result of evaluation
  */
-function run(input, options, expectedJs) {
+function run(input, options, expectedJs, validate) {
 	// Serialize to JS
 	const js = serialize(input, options);
 
 	// Check expected JS output
 	if (expectedJs != null) expect(js).toBe(expectedJs);
 
-	// Execute JS and return exported value
-	return exec(js);
+	// Execute JS
+	const output = exec(js);
+
+	// Validate input + output
+	if (validate) {
+		validate(input);
+		validate(output);
+	}
+
+	// Return exported value
+	return output;
 }
 
 /**

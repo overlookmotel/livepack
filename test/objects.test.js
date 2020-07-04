@@ -10,7 +10,7 @@ const {describeWithAllOptions} = require('./support/index.js');
 
 // Tests
 
-describeWithAllOptions('Objects', ({expectSerializedEqual}) => {
+describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 	it('empty object', () => {
 		expectSerializedEqual({}, '({})');
 	});
@@ -178,6 +178,200 @@ describeWithAllOptions('Objects', ({expectSerializedEqual}) => {
 						input, '(()=>{const a={},b={b:{c:a}};a.d=b;return{a:b}})()'
 					);
 					expect(output.a.b.c.d).toBe(output.a);
+				});
+			});
+		});
+	});
+
+	describe('with symbol keys', () => {
+		describe('no descriptors', () => {
+			it('no circular properties', () => {
+				const input = {
+					x: 1,
+					y: 2,
+					[Symbol('symbol1')]: 3,
+					[Symbol('symbol2')]: 4
+				};
+
+				run(input, null, (obj) => {
+					const symbolKeys = Object.getOwnPropertySymbols(obj);
+					expect(symbolKeys).toBeArrayOfSize(2);
+					expect(Object.keys(obj)).toBeArrayOfSize(2);
+					const [s1, s2] = symbolKeys;
+					expect(typeof s1).toBe('symbol');
+					expect(typeof s2).toBe('symbol');
+					expect(s2).not.toBe(s1);
+					expect(obj[s1]).toBe(3);
+					expect(obj[s2]).toBe(4);
+					expect(obj.x).toBe(1);
+					expect(obj.y).toBe(2);
+				});
+			});
+
+			it('repeated key', () => {
+				const s = Symbol('symbol1');
+				const input = {obj1: {[s]: 1}, obj2: {[s]: 2}};
+
+				run(input, null, (obj) => {
+					expect(obj).toBeObject();
+					expect(obj).toContainAllKeys(['obj1', 'obj2']);
+					const {obj1, obj2} = obj;
+
+					const symbolKeys1 = Object.getOwnPropertySymbols(obj1);
+					expect(symbolKeys1).toBeArrayOfSize(1);
+					const symbolKeys2 = Object.getOwnPropertySymbols(obj2);
+					expect(symbolKeys2).toBeArrayOfSize(1);
+					const [s1] = symbolKeys1,
+						[s2] = symbolKeys2;
+					expect(typeof s1).toBe('symbol');
+					expect(s2).toBe(s1);
+					expect(obj1[s1]).toBe(1);
+					expect(obj2[s1]).toBe(2);
+				});
+			});
+
+			it('circular properties', () => {
+				const input = {x: 1, y: 2};
+				input[Symbol('symbol1')] = input;
+
+				run(input, null, (obj) => {
+					const symbolKeys = Object.getOwnPropertySymbols(obj);
+					expect(symbolKeys).toBeArrayOfSize(1);
+					expect(Object.keys(obj)).toBeArrayOfSize(2);
+					const [s] = symbolKeys;
+					expect(typeof s).toBe('symbol');
+					expect(obj[s]).toBe(obj);
+					expect(obj.x).toBe(1);
+					expect(obj.y).toBe(2);
+				});
+			});
+
+			it('circular properties duplicated', () => {
+				const input = {x: 1, y: 2};
+				input[Symbol('symbol1')] = input;
+				input[Symbol('symbol2')] = input;
+
+				run(input, null, (obj) => {
+					const symbolKeys = Object.getOwnPropertySymbols(obj);
+					expect(symbolKeys).toBeArrayOfSize(2);
+					expect(Object.keys(obj)).toBeArrayOfSize(2);
+					const [s1, s2] = symbolKeys;
+					expect(typeof s1).toBe('symbol');
+					expect(typeof s2).toBe('symbol');
+					expect(s2).not.toBe(s1);
+					expect(obj[s1]).toBe(obj);
+					expect(obj[s2]).toBe(obj);
+					expect(obj.x).toBe(1);
+					expect(obj.y).toBe(2);
+				});
+			});
+		});
+
+		describe('with descriptors', () => {
+			it('no circular properties', () => {
+				const input = {x: 1, y: 2};
+				Object.defineProperties(input, {
+					[Symbol('symbol1')]: {value: 3, writable: true, configurable: true},
+					[Symbol('symbol2')]: {value: 4, writable: true, configurable: true}
+				});
+
+				run(input, null, (obj) => {
+					const symbolKeys = Object.getOwnPropertySymbols(obj);
+					expect(symbolKeys).toBeArrayOfSize(2);
+					expect(Object.keys(obj)).toBeArrayOfSize(2);
+					const [s1, s2] = symbolKeys;
+					expect(typeof s1).toBe('symbol');
+					expect(typeof s2).toBe('symbol');
+					expect(s2).not.toBe(s1);
+					expect(obj[s1]).toBe(3);
+					expect(obj[s2]).toBe(4);
+					expect(Object.getOwnPropertyDescriptor(obj, s1)).toEqual({
+						value: 3, writable: true, enumerable: false, configurable: true
+					});
+					expect(Object.getOwnPropertyDescriptor(obj, s2)).toEqual({
+						value: 4, writable: true, enumerable: false, configurable: true
+					});
+					expect(obj.x).toBe(1);
+					expect(obj.y).toBe(2);
+				});
+			});
+
+			it('repeated key', () => {
+				const s = Symbol('symbol1');
+				const input = {obj1: {}, obj2: {}};
+				Object.defineProperty(input.obj1, s, {value: 1, writable: true, configurable: true});
+				Object.defineProperty(input.obj2, s, {value: 2, writable: true, configurable: true});
+
+				run(input, null, (obj) => {
+					expect(obj).toBeObject();
+					expect(obj).toContainAllKeys(['obj1', 'obj2']);
+					const {obj1, obj2} = obj;
+
+					const symbolKeys1 = Object.getOwnPropertySymbols(obj1);
+					expect(symbolKeys1).toBeArrayOfSize(1);
+					const symbolKeys2 = Object.getOwnPropertySymbols(obj2);
+					expect(symbolKeys2).toBeArrayOfSize(1);
+					const [s1] = symbolKeys1,
+						[s2] = symbolKeys2;
+					expect(typeof s1).toBe('symbol');
+					expect(s2).toBe(s1);
+					expect(obj1[s1]).toBe(1);
+					expect(obj2[s1]).toBe(2);
+					expect(Object.getOwnPropertyDescriptor(obj1, s1)).toEqual({
+						value: 1, writable: true, enumerable: false, configurable: true
+					});
+					expect(Object.getOwnPropertyDescriptor(obj2, s1)).toEqual({
+						value: 2, writable: true, enumerable: false, configurable: true
+					});
+				});
+			});
+
+			it('circular properties', () => {
+				const input = {x: 1, y: 2};
+				Object.defineProperty(input, Symbol('symbol1'), {
+					value: input, writable: true, configurable: true
+				});
+
+				run(input, null, (obj) => {
+					const symbolKeys = Object.getOwnPropertySymbols(obj);
+					expect(symbolKeys).toBeArrayOfSize(1);
+					expect(Object.keys(obj)).toBeArrayOfSize(2);
+					const [s] = symbolKeys;
+					expect(typeof s).toBe('symbol');
+					expect(obj[s]).toBe(obj);
+					expect(Object.getOwnPropertyDescriptor(obj, s)).toEqual({
+						value: obj, writable: true, enumerable: false, configurable: true
+					});
+					expect(obj.x).toBe(1);
+					expect(obj.y).toBe(2);
+				});
+			});
+
+			it('circular properties duplicated', () => {
+				const input = {x: 1, y: 2};
+				Object.defineProperties(input, {
+					[Symbol('symbol1')]: {value: input, writable: true, configurable: true},
+					[Symbol('symbol2')]: {value: input, writable: true, configurable: true}
+				});
+
+				run(input, null, (obj) => {
+					const symbolKeys = Object.getOwnPropertySymbols(obj);
+					expect(symbolKeys).toBeArrayOfSize(2);
+					expect(Object.keys(obj)).toBeArrayOfSize(2);
+					const [s1, s2] = symbolKeys;
+					expect(typeof s1).toBe('symbol');
+					expect(typeof s2).toBe('symbol');
+					expect(s2).not.toBe(s1);
+					expect(obj[s1]).toBe(obj);
+					expect(obj[s2]).toBe(obj);
+					expect(Object.getOwnPropertyDescriptor(obj, s1)).toEqual({
+						value: obj, writable: true, enumerable: false, configurable: true
+					});
+					expect(Object.getOwnPropertyDescriptor(obj, s2)).toEqual({
+						value: obj, writable: true, enumerable: false, configurable: true
+					});
+					expect(obj.x).toBe(1);
+					expect(obj.y).toBe(2);
 				});
 			});
 		});
