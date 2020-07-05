@@ -1,7 +1,5 @@
 # TODO
 
-* Globals
-* Protect global vars from being overwritten (`Object`, `Buffer`, `Date`, `module`)
 * Prototypes
 * Classes
 * Handle `super` (in class + object methods)
