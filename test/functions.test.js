@@ -2038,7 +2038,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 	});
 
 	describe('bound functions', () => {
-		describe('no circulare references (no injection)', () => {
+		describe('no circular references (no injection)', () => {
 			it('single instantiation', () => {
 				// eslint-disable-next-line no-invalid-this
 				function fn(v, w, x, y, z) { return [this, v, w, x, y, z]; }
