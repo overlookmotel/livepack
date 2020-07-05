@@ -3,6 +3,8 @@
  * Tests for other built-ins
  * ------------------*/
 
+/* eslint-disable jest/no-identical-title */
+
 'use strict';
 
 // Imports
@@ -36,3 +38,21 @@ describeWithAllOptions('RegExps', ({expectSerializedEqual}) => {
 function expectToBeRegex(val) {
 	expect(Object.getPrototypeOf(val)).toBe(RegExp.prototype);
 }
+
+describeWithAllOptions('Dates', ({expectSerializedEqual}) => {
+	it('without extra props', () => {
+		const input = new Date('01/01/2020 12:00:00');
+		expectSerializedEqual(input, 'new Date(1577880000000)', (date) => {
+			expect(date).toBeValidDate();
+		});
+	});
+
+	it('with extra props', () => {
+		const input = new Date('01/01/2020 12:00:00');
+		input.x = 'bar';
+		expectSerializedEqual(input, 'Object.assign(new Date(1577880000000),{x:"bar"})', (date) => {
+			expect(date).toBeValidDate();
+			expect(date.x).toBe('bar');
+		});
+	});
+});
