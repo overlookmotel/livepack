@@ -1,9 +1,10 @@
 # TODO
 
+* Globals
+* Protect global vars from being overwritten (`Object`, `Buffer`, `Date`, `module`)
+* Prototypes
 * Classes
 * Handle `super` (in class + object methods)
-* Prototypes
-* Globals
 * Built-in modules
 * Set strict mode on functions
 * Option to strip function names (NB don't where is referenced internally `function x() { return x; }`)
