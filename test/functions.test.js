@@ -2051,6 +2051,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 				);
 
 				expect(out).toBeFunction();
+				expect(out.name).toBe('bound fn');
 				const param1 = {},
 					param2 = 100;
 				const res = out(param1, param2);
@@ -2079,6 +2080,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 
 				const ctxExtAs = out.map((boundFn, index) => {
 					expect(boundFn).toBeFunction();
+					expect(boundFn.name).toBe('bound fn');
 					const param1 = {},
 						param2 = index * 100;
 					const res = boundFn(param1, param2);
@@ -2120,6 +2122,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 					expect(obj).toContainAllKeys(['fn']);
 					const boundFn = obj.fn;
 					expect(boundFn).toBeFunction();
+					expect(boundFn.name).toBe('bound fn');
 					const param1 = {},
 						param2 = 100;
 					const res = boundFn(param1, param2);
@@ -2155,6 +2158,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 						expect(obj).toContainAllKeys(['fn']);
 						const boundFn = obj.fn;
 						expect(boundFn).toBeFunction();
+						expect(boundFn.name).toBe('bound fn');
 						const param1 = {},
 							param2 = index * 100;
 						const res = boundFn(param1, param2);
@@ -2185,6 +2189,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 				expect(out).toContainAllKeys(['fn', 'boundFn']);
 				const {boundFn} = out;
 				expect(boundFn).toBeFunction();
+				expect(boundFn.name).toBe('bound fn');
 				expect(boundFn()).toBe(out.fn);
 			});
 		});
@@ -2341,14 +2346,83 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 		expect(inner3()).toEqual([{extA3: 5}, {extB3: 6}]);
 	});
 
-	it('not named illegally', () => {
-		const obj = {
-			'0a': function() {}
-		};
-		const input = obj['0a'];
-		expect(input.name).toBe('0a'); // Sanity check
-		const out = run(input, '(function(){})');
+	it('maintain name where name not valid JS identifier', () => {
+		const input = {'0a': function() {}}['0a'];
+		run(
+			input, 'Object.defineProperties(function(){},{name:{value:"0a",configurable:true}})',
+			fn => expect(fn.name).toBe('0a')
+		);
+	});
 
-		expect(out.name).toBe('');
+	describe('with extra properties', () => {
+		describe('non-circular', () => {
+			it('without descriptors', () => {
+				const input = function() {};
+				input.x = 1;
+				input.y = 2;
+				run(input, 'Object.assign(function input(){},{x:1,y:2})', (fn) => {
+					expect(fn).toBeFunction();
+					expect(fn.x).toBe(1);
+					expect(fn.y).toBe(2);
+				});
+			});
+
+			it('with descriptors', () => {
+				const input = function() {};
+				Object.defineProperty(input, 'x', {value: 1, enumerable: true});
+				Object.defineProperty(input, 'y', {value: 2, writable: true, configurable: true});
+				run(
+					input,
+					'Object.defineProperties(function input(){},{x:{value:1,enumerable:true},y:{value:2,writable:true,configurable:true}})',
+					(fn) => {
+						expect(fn).toBeFunction();
+						expect(
+							Object.getOwnPropertyNames(fn)
+								.filter(n => !['length', 'name', 'prototype', 'arguments', 'caller'].includes(n))
+						).toEqual(['x', 'y']);
+						expect(Object.getOwnPropertyDescriptor(fn, 'x')).toEqual({
+							value: 1, writable: false, enumerable: true, configurable: false
+						});
+						expect(Object.getOwnPropertyDescriptor(fn, 'y')).toEqual({
+							value: 2, writable: true, enumerable: false, configurable: true
+						});
+					}
+				);
+			});
+		});
+
+		describe('circular references', () => {
+			it('without descriptors', () => {
+				const input = function() {};
+				input.x = input;
+				input.y = input;
+				run(input, '(()=>{const a=function input(){};a.x=a;a.y=a;return a})()', (fn) => {
+					expect(fn).toBeFunction();
+					expect(fn.x).toBe(fn);
+					expect(fn.y).toBe(fn);
+				});
+			});
+
+			it('with descriptors', () => {
+				const input = function() {};
+				Object.defineProperty(input, 'x', {value: input, enumerable: true});
+				Object.defineProperty(input, 'y', {value: input, writable: true, configurable: true});
+				run(input, null, (fn) => {
+					expect(fn).toBeFunction();
+					expect(fn.x).toBe(fn);
+					expect(fn.y).toBe(fn);
+					expect(
+						Object.getOwnPropertyNames(fn)
+							.filter(n => !['length', 'name', 'prototype', 'arguments', 'caller'].includes(n))
+					).toEqual(['x', 'y']);
+					expect(Object.getOwnPropertyDescriptor(fn, 'x')).toEqual({
+						value: fn, writable: false, enumerable: true, configurable: false
+					});
+					expect(Object.getOwnPropertyDescriptor(fn, 'y')).toEqual({
+						value: fn, writable: true, enumerable: false, configurable: true
+					});
+				});
+			});
+		});
 	});
 });
