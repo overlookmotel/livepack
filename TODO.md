@@ -1,6 +1,5 @@
 # TODO
 
-* RegExps etc
 * Maps, Sets
 * WeakMaps, WeakSets
 * Classes

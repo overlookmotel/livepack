@@ -56,3 +56,34 @@ describeWithAllOptions('Dates', ({expectSerializedEqual}) => {
 		});
 	});
 });
+
+describeWithAllOptions('Buffers', ({expectSerializedEqual}) => {
+	it('without extra props', () => {
+		const input = Buffer.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+		expectSerializedEqual(
+			input, 'Buffer.from("QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVo=","base64")',
+			(buf) => {
+				expectToBeBuffer(buf);
+				expect(buf.toString()).toBe('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+			}
+		);
+	});
+
+	it('with extra props', () => {
+		const input = Buffer.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+		input.x = 'bar';
+		expectSerializedEqual(
+			input,
+			'Object.assign(Buffer.from("QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVo=","base64"),{x:"bar"})',
+			(buf) => {
+				expectToBeBuffer(buf);
+				expect(buf.toString()).toBe('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+				expect(buf.x).toBe('bar');
+			}
+		);
+	});
+});
+
+function expectToBeBuffer(val) {
+	expect(Object.getPrototypeOf(val)).toBe(Buffer.prototype);
+}
