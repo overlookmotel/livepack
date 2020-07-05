@@ -145,4 +145,63 @@ describeWithAllOptions('Arrays', ({expectSerializedEqual}) => {
 			});
 		});
 	});
+
+	describe('extra properties', () => {
+		describe('non-circular', () => {
+			it('without descriptors', () => {
+				const input = [1, 2, 3];
+				input.x = 4;
+				input.y = 5;
+				expectSerializedEqual(input, 'Object.assign([1,2,3],{x:4,y:5})');
+			});
+
+			it('with descriptors', () => {
+				const input = [1, 2, 3];
+				Object.defineProperty(input, 'x', {value: 4, enumerable: true});
+				Object.defineProperty(input, 'y', {value: 5, writable: true, configurable: true});
+				expectSerializedEqual(
+					input,
+					'Object.defineProperties([1,2,3],{x:{value:4,enumerable:true},y:{value:5,writable:true,configurable:true}})',
+					(arr) => {
+						expect(Object.getOwnPropertyNames(arr)).toEqual(['0', '1', '2', 'length', 'x', 'y']);
+						expect(Object.getOwnPropertyDescriptor(arr, 'x')).toEqual({
+							value: 4, writable: false, enumerable: true, configurable: false
+						});
+						expect(Object.getOwnPropertyDescriptor(arr, 'y')).toEqual({
+							value: 5, writable: true, enumerable: false, configurable: true
+						});
+					}
+				);
+			});
+		});
+
+		describe('circular references', () => {
+			it('without descriptors', () => {
+				const input = [1, 2, 3];
+				input.x = input;
+				input.y = input;
+				expectSerializedEqual(input, '(()=>{const a=[1,2,3];a.x=a;a.y=a;return a})()', (arr) => {
+					expect(arr.x).toBe(arr);
+					expect(arr.y).toBe(arr);
+				});
+			});
+
+			it('with descriptors', () => {
+				const input = [1, 2, 3];
+				Object.defineProperty(input, 'x', {value: input, enumerable: true});
+				Object.defineProperty(input, 'y', {value: input, writable: true, configurable: true});
+				expectSerializedEqual(input, null, (arr) => {
+					expect(arr.x).toBe(arr);
+					expect(arr.y).toBe(arr);
+					expect(Object.getOwnPropertyNames(arr)).toEqual(['0', '1', '2', 'length', 'x', 'y']);
+					expect(Object.getOwnPropertyDescriptor(arr, 'x')).toEqual({
+						value: arr, writable: false, enumerable: true, configurable: false
+					});
+					expect(Object.getOwnPropertyDescriptor(arr, 'y')).toEqual({
+						value: arr, writable: true, enumerable: false, configurable: true
+					});
+				});
+			});
+		});
+	});
 });
