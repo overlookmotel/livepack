@@ -1,7 +1,5 @@
 # TODO
 
-* Maps, Sets
-* WeakMaps, WeakSets
 * Classes
 * Handle `super` (in class + object methods)
 * Prototypes
