@@ -188,9 +188,9 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 			it('no circular properties', () => {
 				const input = {
 					x: 1,
-					y: 2,
+					y: {yy: 2},
 					[Symbol('symbol1')]: 3,
-					[Symbol('symbol2')]: 4
+					[Symbol('symbol2')]: {ss: 4}
 				};
 
 				run(input, null, (obj) => {
@@ -202,9 +202,9 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 					expect(typeof s2).toBe('symbol');
 					expect(s2).not.toBe(s1);
 					expect(obj[s1]).toBe(3);
-					expect(obj[s2]).toBe(4);
+					expect(obj[s2]).toEqual({ss: 4});
 					expect(obj.x).toBe(1);
-					expect(obj.y).toBe(2);
+					expect(obj.y).toEqual({yy: 2});
 				});
 			});
 
@@ -269,10 +269,10 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 
 		describe('with descriptors', () => {
 			it('no circular properties', () => {
-				const input = {x: 1, y: 2};
+				const input = {x: 1, y: {yy: 2}};
 				Object.defineProperties(input, {
 					[Symbol('symbol1')]: {value: 3, writable: true, configurable: true},
-					[Symbol('symbol2')]: {value: 4, writable: true, configurable: true}
+					[Symbol('symbol2')]: {value: {ss: 4}, writable: true, configurable: true}
 				});
 
 				run(input, null, (obj) => {
@@ -284,15 +284,15 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 					expect(typeof s2).toBe('symbol');
 					expect(s2).not.toBe(s1);
 					expect(obj[s1]).toBe(3);
-					expect(obj[s2]).toBe(4);
+					expect(obj[s2]).toEqual({ss: 4});
 					expect(Object.getOwnPropertyDescriptor(obj, s1)).toEqual({
 						value: 3, writable: true, enumerable: false, configurable: true
 					});
 					expect(Object.getOwnPropertyDescriptor(obj, s2)).toEqual({
-						value: 4, writable: true, enumerable: false, configurable: true
+						value: {ss: 4}, writable: true, enumerable: false, configurable: true
 					});
 					expect(obj.x).toBe(1);
-					expect(obj.y).toBe(2);
+					expect(obj.y).toEqual({yy: 2});
 				});
 			});
 
