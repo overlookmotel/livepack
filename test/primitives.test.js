@@ -59,16 +59,43 @@ describeWithAllOptions('Numbers', ({expectSerializedEqual}) => {
 		expectSerializedEqual(-123.0001, '-123.0001');
 	});
 
-	it('infinity', () => {
-		expectSerializedEqual(1 / 0, 'Infinity');
+	describe('Infinity', () => {
+		it('serializes correctly', () => {
+			expectSerializedEqual(1 / 0, 'Infinity');
+		});
+
+		it('treated as a global var', () => {
+			expectSerializedEqual(
+				{Infinity: 1 / 0, y: 1 / 0},
+				'(()=>{const a=Infinity;return{Infinity:a,y:a}})()'
+			);
+		});
 	});
 
-	it('negative infinity', () => {
-		expectSerializedEqual(-1 / 0, '-Infinity');
+	describe('negative Infinity', () => {
+		it('serializes correctly', () => {
+			expectSerializedEqual(-1 / 0, '-Infinity');
+		});
+
+		it('treated as a global var', () => {
+			expectSerializedEqual(
+				{minusInfinity: -1 / 0, y: -1 / 0},
+				'(()=>{const a=-Infinity;return{minusInfinity:a,y:a}})()'
+			);
+		});
 	});
 
-	it('NaN', () => { // eslint-disable-line jest/lowercase-name
-		expectSerializedEqual(undefined * 1, 'NaN');
+	describe('NaN', () => {
+		it('serializes correctly', () => {
+			expectSerializedEqual(undefined * 1, 'NaN');
+		});
+
+		it('treated as a global var', () => {
+			expectSerializedEqual(
+				{x: undefined * 1, y: undefined * 1},
+				'(()=>{const a=NaN;return{x:a,y:a}})()'
+			);
+		});
 	});
 });
 
