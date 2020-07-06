@@ -551,4 +551,91 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 			});
 		});
 	});
+
+	describe('null prototype object', () => {
+		it('no properties', () => {
+			expectSerializedEqual(Object.create(null), 'Object.create(null)', (obj) => {
+				expect(Object.getPrototypeOf(obj)).toBeNull();
+				expect(obj).toContainAllKeys([]);
+			});
+		});
+
+		describe('no circular props', () => {
+			it('properties', () => {
+				const input = Object.create(null);
+				input.x = 1;
+				input.y = 2;
+
+				expectSerializedEqual(
+					input, '(()=>{const a=Object;return a.assign(a.create(null),{x:1,y:2})})()',
+					(obj) => {
+						expect(Object.getPrototypeOf(obj)).toBeNull();
+						expect(obj).toContainAllKeys(['x', 'y']);
+						expect(obj.x).toBe(1);
+						expect(obj.y).toBe(2);
+					}
+				);
+			});
+
+			it('properties with descriptors', () => {
+				const input = Object.create(null);
+				input.x = 1;
+				Object.defineProperty(input, 'y', {value: 2, writable: true, configurable: true});
+
+				expectSerializedEqual(
+					input,
+					'Object.create(null,{x:{value:1,writable:true,enumerable:true,configurable:true},y:{value:2,writable:true,configurable:true}})',
+					(obj) => {
+						expect(Object.getPrototypeOf(obj)).toBeNull();
+						expect(Object.getOwnPropertyNames(obj)).toEqual(['x', 'y']);
+						expect(Object.keys(obj)).toEqual(['x']);
+						expect(obj.x).toBe(1);
+						expect(obj.y).toBe(2);
+						expect(Object.getOwnPropertyDescriptor(obj, 'y')).toEqual({
+							value: 2, writable: true, enumerable: false, configurable: true
+						});
+					}
+				);
+			});
+		});
+
+		describe('circular props', () => {
+			it('properties', () => {
+				const input = Object.create(null);
+				input.x = 1;
+				input.y = input;
+
+				expectSerializedEqual(
+					input, '(()=>{const a=Object,b=a.assign(a.create(null),{x:1});b.y=b;return b})()',
+					(obj) => {
+						expect(Object.getPrototypeOf(obj)).toBeNull();
+						expect(obj).toContainAllKeys(['x', 'y']);
+						expect(obj.x).toBe(1);
+						expect(obj.y).toBe(obj);
+					}
+				);
+			});
+
+			it('properties with descriptors', () => {
+				const input = Object.create(null);
+				input.x = 1;
+				Object.defineProperty(input, 'y', {value: input, writable: true, configurable: true});
+
+				expectSerializedEqual(
+					input,
+					'(()=>{const a=Object,b=a.assign(a.create(null),{x:1});a.defineProperties(b,{y:{value:b,writable:true,configurable:true}});return b})()',
+					(obj) => {
+						expect(Object.getPrototypeOf(obj)).toBeNull();
+						expect(Object.getOwnPropertyNames(obj)).toEqual(['x', 'y']);
+						expect(Object.keys(obj)).toEqual(['x']);
+						expect(obj.x).toBe(1);
+						expect(obj.y).toBe(obj);
+						expect(Object.getOwnPropertyDescriptor(obj, 'y')).toEqual({
+							value: obj, writable: true, enumerable: false, configurable: true
+						});
+					}
+				);
+			});
+		});
+	});
 });
