@@ -13,59 +13,117 @@ const {describeWithAllOptions} = require('./support/index.js');
 describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) => {
 	describe('without scope', () => {
 		describe('single instantiation of function', () => {
-			it('arrow function', () => {
-				const input = (x, y) => [x, y];
-				const out = run(input, '(a,b)=>[a,b]');
+			describe('arrow function', () => {
+				it('anonymous', () => {
+					run(
+						(x, y) => [x, y],
+						'(a,b)=>[a,b]',
+						(fn) => {
+							expect(fn).toBeFunction();
+							const param1 = {},
+								param2 = {};
+							const res = fn(param1, param2);
+							expect(res).toBeArrayOfSize(2);
+							expect(res[0]).toBe(param1);
+							expect(res[1]).toBe(param2);
+							expect(fn.name).toBe('');
+						}
+					);
+				});
 
-				expect(out).toBeFunction();
-				const param1 = {},
-					param2 = {};
-				const res = out(param1, param2);
-				expect(res).toBeArrayOfSize(2);
-				expect(res[0]).toBe(param1);
-				expect(res[1]).toBe(param2);
+				it('named', () => {
+					const input = (x, y) => [x, y];
+					run(
+						input,
+						'Object.defineProperties((a,b)=>[a,b],{name:{value:"input",configurable:true}})',
+						(fn) => {
+							expect(fn).toBeFunction();
+							const param1 = {},
+								param2 = {};
+							const res = fn(param1, param2);
+							expect(res).toBeArrayOfSize(2);
+							expect(res[0]).toBe(param1);
+							expect(res[1]).toBe(param2);
+							expect(fn.name).toBe('input');
+						}
+					);
+				});
 			});
 
-			it('function expression', () => {
-				const input = function(x, y) {
-					return [x, y, this]; // eslint-disable-line no-invalid-this
-				};
-				const out = run(input, '(function input(a,b){return[a,b,this]})');
+			describe('function expression', () => {
+				it('anonymous', () => {
+					run(
+						function(x, y) {
+							return [x, y, this]; // eslint-disable-line no-invalid-this
+						},
+						'(function(a,b){return[a,b,this]})',
+						(fn) => {
+							expect(fn).toBeFunction();
+							const param1 = {},
+								param2 = {},
+								ctx = {};
+							const res = fn.call(ctx, param1, param2);
+							expect(res).toBeArrayOfSize(3);
+							expect(res[0]).toBe(param1);
+							expect(res[1]).toBe(param2);
+							expect(res[2]).toBe(ctx);
+							expect(fn.name).toBe('');
+						}
+					);
+				});
 
-				expect(out).toBeFunction();
-				const param1 = {},
-					param2 = {},
-					ctx = {};
-				const res = out.call(ctx, param1, param2);
-				expect(res).toBeArrayOfSize(3);
-				expect(res[0]).toBe(param1);
-				expect(res[1]).toBe(param2);
-				expect(res[2]).toBe(ctx);
+				it('named', () => {
+					run(
+						function input(x, y) {
+							return [x, y, this]; // eslint-disable-line no-invalid-this
+						},
+						'(function input(a,b){return[a,b,this]})',
+						(fn) => {
+							expect(fn).toBeFunction();
+							const param1 = {},
+								param2 = {},
+								ctx = {};
+							const res = fn.call(ctx, param1, param2);
+							expect(res).toBeArrayOfSize(3);
+							expect(res[0]).toBe(param1);
+							expect(res[1]).toBe(param2);
+							expect(res[2]).toBe(ctx);
+							expect(fn.name).toBe('input');
+						}
+					);
+				});
 			});
 
 			it('function declaration', () => {
 				function input(x, y) {
 					return [x, y, this]; // eslint-disable-line no-invalid-this
 				}
-				const out = run(input, '(function input(a,b){return[a,b,this]})');
-
-				expect(out).toBeFunction();
-				const param1 = {},
-					param2 = {},
-					ctx = {};
-				const res = out.call(ctx, param1, param2);
-				expect(res).toBeArrayOfSize(3);
-				expect(res[0]).toBe(param1);
-				expect(res[1]).toBe(param2);
-				expect(res[2]).toBe(ctx);
+				run(
+					input, '(function input(a,b){return[a,b,this]})',
+					(fn) => {
+						expect(fn).toBeFunction();
+						const param1 = {},
+							param2 = {},
+							ctx = {};
+						const res = fn.call(ctx, param1, param2);
+						expect(res).toBeArrayOfSize(3);
+						expect(res[0]).toBe(param1);
+						expect(res[1]).toBe(param2);
+						expect(res[2]).toBe(ctx);
+						expect(fn.name).toBe('input');
+					}
+				);
 			});
 
 			it('with default params', () => {
-				const input = (x = {defaultA: 1}, y = {defaultB: 2}) => [x, y];
-				const out = run(input, '(a={defaultA:1},b={defaultB:2})=>[a,b]');
-
-				expect(out).toBeFunction();
-				expect(out()).toEqual([{defaultA: 1}, {defaultB: 2}]);
+				run(
+					(x = {defaultA: 1}, y = {defaultB: 2}) => [x, y],
+					'(a={defaultA:1},b={defaultB:2})=>[a,b]',
+					(fn) => {
+						expect(fn).toBeFunction();
+						expect(fn()).toEqual([{defaultA: 1}, {defaultB: 2}]);
+					}
+				);
 			});
 		});
 
@@ -204,21 +262,27 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 				it('referencing external vars', () => {
 					const extA = {extA: 1},
 						extB = {extB: 2};
-					const input = (x = extA, y = extB) => [x, y];
-					const out = run(input, '((c,d)=>(a=c,b=d)=>[a,b])({extA:1},{extB:2})');
-
-					expect(out).toBeFunction();
-					expect(out()).toEqual([extA, extB]);
+					run(
+						(x = extA, y = extB) => [x, y],
+						'((c,d)=>(a=c,b=d)=>[a,b])({extA:1},{extB:2})',
+						(fn) => {
+							expect(fn).toBeFunction();
+							expect(fn()).toEqual([extA, extB]);
+						}
+					);
 				});
 
 				it('referencing external vars embedded in objects', () => {
 					const extA = {extA: 1},
 						extB = {extB: 2};
-					const input = (x = {nestedA: extA}, y = {nestedB: extB}) => [x, y];
-					const out = run(input, '((c,d)=>(a={nestedA:c},b={nestedB:d})=>[a,b])({extA:1},{extB:2})');
-
-					expect(out).toBeFunction();
-					expect(out()).toEqual([{nestedA: extA}, {nestedB: extB}]);
+					run(
+						(x = {nestedA: extA}, y = {nestedB: extB}) => [x, y],
+						'((c,d)=>(a={nestedA:c},b={nestedB:d})=>[a,b])({extA:1},{extB:2})',
+						(fn) => {
+							expect(fn).toBeFunction();
+							expect(fn()).toEqual([{nestedA: extA}, {nestedB: extB}]);
+						}
+					);
 				});
 			});
 		});
@@ -735,14 +799,17 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 					});
 
 					it('arrow function', () => {
-						const input = () => function() { return this; }; // eslint-disable-line no-invalid-this
-						const out = run(input, '()=>function(){return this}');
-
-						expect(out).toBeFunction();
-						const res = out();
-						expect(res).toBeFunction();
-						const ctx = {};
-						expect(res.call(ctx)).toBe(ctx);
+						run(
+							() => function() { return this; }, // eslint-disable-line no-invalid-this
+							'()=>function(){return this}',
+							(fn) => {
+								expect(fn).toBeFunction();
+								const res = fn();
+								expect(res).toBeFunction();
+								const ctx = {};
+								expect(res.call(ctx)).toBe(ctx);
+							}
+						);
 					});
 				});
 
@@ -856,39 +923,45 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 
 						describe('arrow function', () => {
 							it('from 1 level up', () => {
-								const input = () => (
-									function() {
-										return () => this; // eslint-disable-line no-invalid-this
+								run(
+									() => (
+										function() {
+											return () => this; // eslint-disable-line no-invalid-this
+										}
+									),
+									'()=>function(){return()=>this}',
+									(fn) => {
+										expect(fn).toBeFunction();
+										const res = fn();
+										expect(res).toBeFunction();
+										const ctx = {};
+										const res2 = res.call(ctx);
+										expect(res2).toBeFunction();
+										expect(res2()).toBe(ctx);
 									}
 								);
-								const out = run(input, '()=>function(){return()=>this}');
-
-								expect(out).toBeFunction();
-								const res = out();
-								expect(res).toBeFunction();
-								const ctx = {};
-								const res2 = res.call(ctx);
-								expect(res2).toBeFunction();
-								expect(res2()).toBe(ctx);
 							});
 
 							it('from 2 levels up', () => {
-								const input = () => (
-									function() {
-										return () => () => this; // eslint-disable-line no-invalid-this
+								run(
+									() => (
+										function() {
+											return () => () => this; // eslint-disable-line no-invalid-this
+										}
+									),
+									'()=>function(){return()=>()=>this}',
+									(fn) => {
+										expect(fn).toBeFunction();
+										const res = fn();
+										expect(res).toBeFunction();
+										const ctx = {};
+										const res2 = res.call(ctx);
+										expect(res2).toBeFunction();
+										const res3 = res2();
+										expect(res3).toBeFunction();
+										expect(res3()).toBe(ctx);
 									}
 								);
-								const out = run(input, '()=>function(){return()=>()=>this}');
-
-								expect(out).toBeFunction();
-								const res = out();
-								expect(res).toBeFunction();
-								const ctx = {};
-								const res2 = res.call(ctx);
-								expect(res2).toBeFunction();
-								const res3 = res2();
-								expect(res3).toBeFunction();
-								expect(res3()).toBe(ctx);
 							});
 						});
 					});
@@ -1161,20 +1234,22 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 					});
 
 					it('arrow function', () => {
-						// eslint-disable-next-line prefer-rest-params
-						const input = () => function() { return arguments; };
-						const out = run(input, '()=>function(){return arguments}');
-
-						expect(out).toBeFunction();
-						const fn = out();
-						expect(fn).toBeFunction();
-						const argA = {argA: 1},
-							argB = {argB: 1};
-						const res = fn(argA, argB);
-						expect(res).toBeArguments();
-						expect(res).toHaveLength(2);
-						expect(res[0]).toBe(argA);
-						expect(res[1]).toBe(argB);
+						run(
+							() => function() { return arguments; }, // eslint-disable-line prefer-rest-params
+							'()=>function(){return arguments}',
+							(out) => {
+								expect(out).toBeFunction();
+								const fn = out();
+								expect(fn).toBeFunction();
+								const argA = {argA: 1},
+									argB = {argB: 1};
+								const res = fn(argA, argB);
+								expect(res).toBeArguments();
+								expect(res).toHaveLength(2);
+								expect(res[0]).toBe(argA);
+								expect(res[1]).toBe(argB);
+							}
+						);
 					});
 				});
 
@@ -1322,49 +1397,55 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 
 						describe('arrow function', () => {
 							it('from 1 level up', () => {
-								const input = () => (
-									function() {
-										return () => arguments; // eslint-disable-line prefer-rest-params
+								run(
+									() => (
+										function() {
+											return () => arguments; // eslint-disable-line prefer-rest-params
+										}
+									),
+									'()=>function(){return()=>arguments}',
+									(out) => {
+										expect(out).toBeFunction();
+										const fnBase = out();
+										expect(fnBase).toBeFunction();
+										const argA = {argA: 1},
+											argB = {argB: 1};
+										const fn = fnBase(argA, argB);
+										expect(fn).toBeFunction();
+										const res = fn();
+										expect(res).toBeArguments();
+										expect(res).toHaveLength(2);
+										expect(res[0]).toBe(argA);
+										expect(res[1]).toBe(argB);
 									}
 								);
-								const out = run(input, '()=>function(){return()=>arguments}');
-
-								expect(out).toBeFunction();
-								const fnBase = out();
-								expect(fnBase).toBeFunction();
-								const argA = {argA: 1},
-									argB = {argB: 1};
-								const fn = fnBase(argA, argB);
-								expect(fn).toBeFunction();
-								const res = fn();
-								expect(res).toBeArguments();
-								expect(res).toHaveLength(2);
-								expect(res[0]).toBe(argA);
-								expect(res[1]).toBe(argB);
 							});
 
 							it('from 2 levels up', () => {
-								const input = () => (
-									function() {
-										return () => () => arguments; // eslint-disable-line prefer-rest-params
+								run(
+									() => (
+										function() {
+											return () => () => arguments; // eslint-disable-line prefer-rest-params
+										}
+									),
+									'()=>function(){return()=>()=>arguments}',
+									(out) => {
+										expect(out).toBeFunction();
+										const fnBase = out();
+										expect(fnBase).toBeFunction();
+										const argA = {argA: 1},
+											argB = {argB: 1};
+										const fnIntermediate = fnBase(argA, argB);
+										expect(fnIntermediate).toBeFunction();
+										const fn = fnIntermediate();
+										expect(fn).toBeFunction();
+										const res = fn();
+										expect(res).toBeArguments();
+										expect(res).toHaveLength(2);
+										expect(res[0]).toBe(argA);
+										expect(res[1]).toBe(argB);
 									}
 								);
-								const out = run(input, '()=>function(){return()=>()=>arguments}');
-
-								expect(out).toBeFunction();
-								const fnBase = out();
-								expect(fnBase).toBeFunction();
-								const argA = {argA: 1},
-									argB = {argB: 1};
-								const fnIntermediate = fnBase(argA, argB);
-								expect(fnIntermediate).toBeFunction();
-								const fn = fnIntermediate();
-								expect(fn).toBeFunction();
-								const res = fn();
-								expect(res).toBeArguments();
-								expect(res).toHaveLength(2);
-								expect(res[0]).toBe(argA);
-								expect(res[1]).toBe(argB);
 							});
 						});
 					});
@@ -1377,13 +1458,16 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 		describe('in scope above (not injected)', () => {
 			it('single instantiation', () => {
 				function other() { return 123; }
-				const input = () => other;
-				const out = run(input, '(a=>()=>a)(function other(){return 123})');
-
-				expect(out).toBeFunction();
-				const otherFn = out();
-				expect(otherFn).toBeFunction();
-				expect(otherFn()).toBe(123);
+				run(
+					() => other,
+					'(a=>()=>a)(function other(){return 123})',
+					(fn) => {
+						expect(fn).toBeFunction();
+						const otherFn = fn();
+						expect(otherFn).toBeFunction();
+						expect(otherFn()).toBe(123);
+					}
+				);
 			});
 
 			it('multiple instantiations', () => {
@@ -1834,7 +1918,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 				throw 123; // eslint-disable-line no-throw-literal
 			} catch (err) {
 				const extA = 456;
-				input = (x, y) => [x, y, extA, err];
+				input = (0, (x, y) => [x, y, extA, err]);
 			}
 			const out = run(input, '((c,d)=>(a,b)=>[a,b,c,d])(456,123)');
 
@@ -1855,7 +1939,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 				throw 123; // eslint-disable-line no-throw-literal
 			} catch (err) {
 				const extA = 456;
-				input = x => y => [x, y, extA, err];
+				input = (0, x => y => [x, y, extA, err]);
 			}
 			const out = run(input, '((c,d)=>a=>b=>[a,b,c,d])(456,123)');
 
@@ -2276,7 +2360,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 		describe('avoid var name clashes', () => {
 			it('with globals', () => {
 				if (mangle) {
-					const input = (x, y) => [a, x, y]; // eslint-disable-line no-undef
+					const input = (0, (x, y) => [a, x, y]); // eslint-disable-line no-undef
 					expect(serialize(input)).toBe('(b,c)=>[a,b,c]');
 				} else {
 					const fn = (0, (x, y) => [a, x, y]); // eslint-disable-line no-undef
@@ -2287,7 +2371,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 
 			if (mangle) {
 				it('with function names', () => {
-					const input = (x, y) => function a() { return [x, y]; };
+					const input = (0, (x, y) => function a() { return [x, y]; });
 					expect(serialize(input)).toBe('(b,c)=>function a(){return[b,c]}');
 				});
 			}
@@ -2298,7 +2382,8 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 		it('in labels', () => {
 			// Test `console` is not misinterpretted as referring to external var
 			let input;
-			console: input = () => console; // eslint-disable-line no-labels, no-label-var, no-unused-labels
+			// eslint-disable-next-line no-labels, no-label-var, no-unused-labels
+			console: input = (0, () => console);
 			const out = run(input, '()=>console');
 
 			expect(out()).toBe(console);
@@ -2307,27 +2392,29 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 		it('in continue statements', () => {
 			// Test `x` in `continue` statement is not misinterpretted as referring to external var `x`
 			const x = {}; // eslint-disable-line no-unused-vars
-			const input = () => {
-				x: for (let i = 0; i < 3; i++) { // eslint-disable-line no-labels, no-label-var
-					continue x; // eslint-disable-line no-labels, no-extra-label
-				}
-			};
-			const out = run(input, '()=>{x:for(let a=0;a<3;a++){continue x}}');
-
-			expect(out()).toBeUndefined();
+			run(
+				() => {
+					x: for (let i = 0; i < 3; i++) { // eslint-disable-line no-labels, no-label-var
+						continue x; // eslint-disable-line no-labels, no-extra-label
+					}
+				},
+				'()=>{x:for(let a=0;a<3;a++){continue x}}',
+				fn => expect(fn()).toBeUndefined()
+			);
 		});
 
 		it('in break statements', () => {
 			// Test `x` in `break` statement is not misinterpretted as referring to external var `x`
 			const x = {}; // eslint-disable-line no-unused-vars
-			const input = () => {
-				x: for (let i = 0; i < 3; i++) { // eslint-disable-line no-labels, no-label-var
-					break x; // eslint-disable-line no-labels, no-extra-label
-				}
-			};
-			const out = run(input, '()=>{x:for(let a=0;a<3;a++){break x}}');
-
-			expect(out()).toBeUndefined();
+			run(
+				() => {
+					x: for (let i = 0; i < 3; i++) { // eslint-disable-line no-labels, no-label-var
+						break x; // eslint-disable-line no-labels, no-extra-label
+					}
+				},
+				'()=>{x:for(let a=0;a<3;a++){break x}}',
+				fn => expect(fn()).toBeUndefined()
+			);
 		});
 	});
 
