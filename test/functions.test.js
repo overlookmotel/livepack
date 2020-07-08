@@ -2272,27 +2272,27 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 		});
 	});
 
-	describe('avoid var name clashes', () => {
-		if (!minify || !inline) return;
+	if (minify && inline) {
+		describe('avoid var name clashes', () => {
+			it('with globals', () => {
+				if (mangle) {
+					const input = (x, y) => [a, x, y]; // eslint-disable-line no-undef
+					expect(serialize(input)).toBe('(b,c)=>[a,b,c]');
+				} else {
+					const fn = (0, (x, y) => [a, x, y]); // eslint-disable-line no-undef
+					const input = {a: fn, b: fn};
+					expect(serialize(input)).toBe('(()=>{const a$0=(0,(x,y)=>[a,x,y]);return{a:a$0,b:a$0}})()');
+				}
+			});
 
-		it('with globals', () => {
 			if (mangle) {
-				const input = (x, y) => [a, x, y]; // eslint-disable-line no-undef
-				expect(serialize(input)).toBe('(b,c)=>[a,b,c]');
-			} else {
-				const fn = (0, (x, y) => [a, x, y]); // eslint-disable-line no-undef
-				const input = {a: fn, b: fn};
-				expect(serialize(input)).toBe('(()=>{const a$0=(0,(x,y)=>[a,x,y]);return{a:a$0,b:a$0}})()');
+				it('with function names', () => {
+					const input = (x, y) => function a() { return [x, y]; };
+					expect(serialize(input)).toBe('(b,c)=>function a(){return[b,c]}');
+				});
 			}
 		});
-
-		if (mangle) {
-			it('with function names', () => {
-				const input = (x, y) => function a() { return [x, y]; };
-				expect(serialize(input)).toBe('(b,c)=>function a(){return[b,c]}');
-			});
-		}
-	});
+	}
 
 	describe('do not treat labels as variables', () => {
 		it('in labels', () => {
