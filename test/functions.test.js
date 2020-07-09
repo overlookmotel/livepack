@@ -2129,23 +2129,25 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 				const ctx = {ctx: 1},
 					extA = {extA: 2},
 					extB = {extB: 3};
-				const input = fn.bind(ctx, extA, extB, 123);
-				const out = run(
-					input, '(function fn(a,b,c,d,e){return[this,a,b,c,d,e]}).bind({ctx:1},{extA:2},{extB:3},123)'
+				run(
+					fn.bind(ctx, extA, extB, 123),
+					'(function fn(a,b,c,d,e){return[this,a,b,c,d,e]}).bind({ctx:1},{extA:2},{extB:3},123)',
+					(boundFn) => {
+						expect(boundFn).toBeFunction();
+						expect(boundFn.name).toBe('bound fn');
+						expect(boundFn).toHaveLength(2);
+						const param1 = {},
+							param2 = 100;
+						const res = boundFn(param1, param2);
+						expect(res).toBeArrayOfSize(6);
+						expect(res[0]).toEqual(ctx);
+						expect(res[1]).toEqual(extA);
+						expect(res[2]).toEqual(extB);
+						expect(res[3]).toBe(123);
+						expect(res[4]).toBe(param1);
+						expect(res[5]).toBe(param2);
+					}
 				);
-
-				expect(out).toBeFunction();
-				expect(out.name).toBe('bound fn');
-				const param1 = {},
-					param2 = 100;
-				const res = out(param1, param2);
-				expect(res).toBeArrayOfSize(6);
-				expect(res[0]).toEqual(ctx);
-				expect(res[1]).toEqual(extA);
-				expect(res[2]).toEqual(extB);
-				expect(res[3]).toBe(123);
-				expect(res[4]).toBe(param1);
-				expect(res[5]).toBe(param2);
 			});
 
 			it('multiple instantiations', () => {
@@ -2154,37 +2156,41 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 				const ctx = {ctx: 1},
 					extA = {extA: 2};
 				const extBs = [{extB1: 11}, {extB2: 12}, {extB3: 13}];
-				const input = extBs.map(extB => fn.bind(ctx, extA, extB, 123));
-				const out = run(input);
+				run(
+					extBs.map(extB => fn.bind(ctx, extA, extB, 123)),
+					null,
+					(out) => {
+						expect(out).toBeArrayOfSize(3);
+						expect(out[0]).not.toBe(out[1]);
+						expect(out[0]).not.toBe(out[2]);
+						expect(out[1]).not.toBe(out[2]);
 
-				expect(out).toBeArrayOfSize(3);
-				expect(out[0]).not.toBe(out[1]);
-				expect(out[0]).not.toBe(out[2]);
-				expect(out[1]).not.toBe(out[2]);
+						const ctxExtAs = out.map((boundFn, index) => {
+							expect(boundFn).toBeFunction();
+							expect(boundFn.name).toBe('bound fn');
+							expect(boundFn).toHaveLength(2);
+							const param1 = {},
+								param2 = index * 100;
+							const res = boundFn(param1, param2);
+							expect(res).toBeArrayOfSize(6);
+							expect(res[0]).toEqual(ctx);
+							expect(res[1]).toEqual(extA);
+							expect(res[2]).toEqual(extBs[index]);
+							expect(res[3]).toBe(123);
+							expect(res[4]).toBe(param1);
+							expect(res[5]).toBe(param2);
+							return {ctx: res[0], extA: res[1]};
+						});
 
-				const ctxExtAs = out.map((boundFn, index) => {
-					expect(boundFn).toBeFunction();
-					expect(boundFn.name).toBe('bound fn');
-					const param1 = {},
-						param2 = index * 100;
-					const res = boundFn(param1, param2);
-					expect(res).toBeArrayOfSize(6);
-					expect(res[0]).toEqual(ctx);
-					expect(res[1]).toEqual(extA);
-					expect(res[2]).toEqual(extBs[index]);
-					expect(res[3]).toBe(123);
-					expect(res[4]).toBe(param1);
-					expect(res[5]).toBe(param2);
-					return {ctx: res[0], extA: res[1]};
-				});
+						const ctxs = ctxExtAs.map(({ctx}) => ctx); // eslint-disable-line no-shadow
+						expect(ctxs[0]).toBe(ctxs[1]);
+						expect(ctxs[0]).toBe(ctxs[2]);
 
-				const ctxs = ctxExtAs.map(({ctx}) => ctx); // eslint-disable-line no-shadow
-				expect(ctxs[0]).toBe(ctxs[1]);
-				expect(ctxs[0]).toBe(ctxs[2]);
-
-				const extAs = ctxExtAs.map(({extA}) => extA); // eslint-disable-line no-shadow
-				expect(extAs[0]).toBe(extAs[1]);
-				expect(extAs[0]).toBe(extAs[2]);
+						const extAs = ctxExtAs.map(({extA}) => extA); // eslint-disable-line no-shadow
+						expect(extAs[0]).toBe(extAs[1]);
+						expect(extAs[0]).toBe(extAs[2]);
+					}
+				);
 			});
 		});
 
@@ -2197,26 +2203,27 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 						extB = {extB: 2};
 					const input = {obj: {}};
 					input.obj.fn = fn.bind(input, extA, extB, 123);
-					const out = run(input);
-
-					expect(out).toBeObject();
-					expect(out).toContainAllKeys(['obj']);
-					const {obj} = out;
-					expect(obj).toBeObject();
-					expect(obj).toContainAllKeys(['fn']);
-					const boundFn = obj.fn;
-					expect(boundFn).toBeFunction();
-					expect(boundFn.name).toBe('bound fn');
-					const param1 = {},
-						param2 = 100;
-					const res = boundFn(param1, param2);
-					expect(res).toBeArrayOfSize(6);
-					expect(res[0]).toBe(out);
-					expect(res[1]).toEqual(extA);
-					expect(res[2]).toEqual(extB);
-					expect(res[3]).toBe(123);
-					expect(res[4]).toBe(param1);
-					expect(res[5]).toBe(param2);
+					run(input, null, (out) => {
+						expect(out).toBeObject();
+						expect(out).toContainAllKeys(['obj']);
+						const {obj} = out;
+						expect(obj).toBeObject();
+						expect(obj).toContainAllKeys(['fn']);
+						const boundFn = obj.fn;
+						expect(boundFn).toBeFunction();
+						expect(boundFn.name).toBe('bound fn');
+						expect(boundFn).toHaveLength(2);
+						const param1 = {},
+							param2 = 100;
+						const res = boundFn(param1, param2);
+						expect(res).toBeArrayOfSize(6);
+						expect(res[0]).toBe(out);
+						expect(res[1]).toEqual(extA);
+						expect(res[2]).toEqual(extB);
+						expect(res[3]).toBe(123);
+						expect(res[4]).toBe(param1);
+						expect(res[5]).toBe(param2);
+					});
 				});
 
 				it('multiple instantiations', () => {
@@ -2230,51 +2237,56 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 							fn: fn.bind(input, extA, extB, 123)
 						});
 					}
-					const out = run(input);
+					run(input, null, (out) => {
+						expect(out).toBeArrayOfSize(3);
+						expect(out[0]).not.toBe(out[1]);
+						expect(out[0]).not.toBe(out[2]);
+						expect(out[1]).not.toBe(out[2]);
 
-					expect(out).toBeArrayOfSize(3);
-					expect(out[0]).not.toBe(out[1]);
-					expect(out[0]).not.toBe(out[2]);
-					expect(out[1]).not.toBe(out[2]);
+						const extAs = out.map((obj, index) => {
+							expect(obj).toBeObject();
+							expect(obj).toContainAllKeys(['fn']);
+							const boundFn = obj.fn;
+							expect(boundFn).toBeFunction();
+							expect(boundFn.name).toBe('bound fn');
+							expect(boundFn).toHaveLength(2);
+							const param1 = {},
+								param2 = index * 100;
+							const res = boundFn(param1, param2);
+							expect(res).toBeArrayOfSize(6);
+							expect(res[0]).toBe(out);
+							expect(res[1]).toEqual(extA);
+							expect(res[2]).toEqual(extBs[index]);
+							expect(res[3]).toBe(123);
+							expect(res[4]).toBe(param1);
+							expect(res[5]).toBe(param2);
+							return res[1];
+						});
 
-					const extAs = out.map((obj, index) => {
-						expect(obj).toBeObject();
-						expect(obj).toContainAllKeys(['fn']);
-						const boundFn = obj.fn;
-						expect(boundFn).toBeFunction();
-						expect(boundFn.name).toBe('bound fn');
-						const param1 = {},
-							param2 = index * 100;
-						const res = boundFn(param1, param2);
-						expect(res).toBeArrayOfSize(6);
-						expect(res[0]).toBe(out);
-						expect(res[1]).toEqual(extA);
-						expect(res[2]).toEqual(extBs[index]);
-						expect(res[3]).toBe(123);
-						expect(res[4]).toBe(param1);
-						expect(res[5]).toBe(param2);
-						return res[1];
+						expect(extAs[0]).toBe(extAs[1]);
+						expect(extAs[0]).toBe(extAs[2]);
 					});
-
-					expect(extAs[0]).toBe(extAs[1]);
-					expect(extAs[0]).toBe(extAs[2]);
 				});
 			});
 
 			it('function', () => {
 				function fn() { return this; } // eslint-disable-line no-invalid-this
-				const input = {
-					fn,
-					boundFn: fn.bind(fn)
-				};
-				const out = run(input);
-
-				expect(out).toBeObject();
-				expect(out).toContainAllKeys(['fn', 'boundFn']);
-				const {boundFn} = out;
-				expect(boundFn).toBeFunction();
-				expect(boundFn.name).toBe('bound fn');
-				expect(boundFn()).toBe(out.fn);
+				run(
+					{
+						fn,
+						boundFn: fn.bind(fn)
+					},
+					null,
+					(out) => {
+						expect(out).toBeObject();
+						expect(out).toContainAllKeys(['fn', 'boundFn']);
+						const {boundFn} = out;
+						expect(boundFn).toBeFunction();
+						expect(boundFn.name).toBe('bound fn');
+						expect(boundFn).toHaveLength(0);
+						expect(boundFn()).toBe(out.fn);
+					}
+				);
 			});
 		});
 	});
@@ -2433,12 +2445,138 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 		expect(inner3()).toEqual([{extA3: 5}, {extB3: 6}]);
 	});
 
-	it('maintain name where name not valid JS identifier', () => {
-		const input = {'0a': function() {}}['0a'];
-		run(
-			input, 'Object.defineProperties(function(){},{name:{value:"0a",configurable:true}})',
-			fn => expect(fn.name).toBe('0a')
-		);
+	describe('maintain name where', () => {
+		it('not valid JS identifier', () => {
+			run(
+				{'0a': function() {}}['0a'],
+				'Object.defineProperties(function(){},{name:{value:"0a",configurable:true}})',
+				fn => expect(fn.name).toBe('0a')
+			);
+		});
+
+		describe('descriptor altered', () => {
+			it('value altered', () => {
+				function input() {}
+				Object.defineProperty(input, 'name', {value: 'foo'});
+				run(
+					input,
+					'(function foo(){})',
+					fn => expect(fn.name).toBe('foo')
+				);
+			});
+
+			it('getter', () => {
+				function input() {}
+				Object.defineProperty(input, 'name', {get() { return 'foo'; }});
+				run(
+					input,
+					'Object.defineProperties(function(){},{name:{get:function get(){return"foo"},configurable:true}})',
+					(fn) => {
+						expect(fn.name).toBe('foo');
+						expect(Object.getOwnPropertyDescriptor(fn, 'name')).toEqual({
+							configurable: true,
+							enumerable: false,
+							get: expect.any(Function),
+							set: undefined
+						});
+					}
+				);
+			});
+
+			it('properties altered', () => {
+				function input() {}
+				Object.defineProperty(input, 'name', {value: 'input', enumerable: true});
+				run(
+					input,
+					'Object.defineProperties(function input(){},{name:{value:"input",enumerable:true,configurable:true}})',
+					(fn) => {
+						expect(fn.name).toBe('input');
+						expect(Object.getOwnPropertyDescriptor(fn, 'name')).toEqual({
+							value: 'input',
+							writable: false,
+							enumerable: true,
+							configurable: true
+						});
+					}
+				);
+			});
+		});
+
+		it('deleted', () => {
+			function input() {}
+			delete input.name;
+			run(
+				input,
+				'(()=>{const a=(0,function(){});delete a.name;return a})()',
+				(fn) => {
+					expect(fn.name).toBe('');
+					expect(Object.getOwnPropertyDescriptor(fn, 'name')).toBeUndefined();
+				}
+			);
+		});
+	});
+
+	describe('maintain length where', () => {
+		it('altered', () => {
+			function input() {}
+			Object.defineProperty(input, 'length', {value: 2});
+			run(
+				input,
+				'Object.defineProperties(function input(){},{length:{value:2,configurable:true}})',
+				fn => expect(fn).toHaveLength(2)
+			);
+		});
+
+		describe('descriptor altered', () => {
+			it('getter', () => {
+				function input() {}
+				Object.defineProperty(input, 'length', {get() { return 2; }});
+				run(
+					input,
+					'Object.defineProperties(function input(){},{length:{get:function get(){return 2},configurable:true}})',
+					(fn) => {
+						expect(fn.length).toBe(2); // eslint-disable-line jest/prefer-to-have-length
+						expect(Object.getOwnPropertyDescriptor(fn, 'length')).toEqual({
+							configurable: true,
+							enumerable: false,
+							get: expect.any(Function),
+							set: undefined
+						});
+					}
+				);
+			});
+
+			it('properties altered', () => {
+				function input() {}
+				Object.defineProperty(input, 'length', {value: 0, enumerable: true});
+				run(
+					input,
+					'Object.defineProperties(function input(){},{length:{value:0,enumerable:true,configurable:true}})',
+					(fn) => {
+						expect(fn.length).toBe(0); // eslint-disable-line jest/prefer-to-have-length
+						expect(Object.getOwnPropertyDescriptor(fn, 'length')).toEqual({
+							value: 0,
+							writable: false,
+							enumerable: true,
+							configurable: true
+						});
+					}
+				);
+			});
+		});
+
+		it('deleted', () => {
+			function input() {}
+			delete input.length;
+			run(
+				input,
+				'(()=>{const a=function input(){};delete a.length;return a})()',
+				(fn) => {
+					expect(fn.length).toBe(0); // eslint-disable-line jest/prefer-to-have-length
+					expect(Object.getOwnPropertyDescriptor(fn, 'length')).toBeUndefined();
+				}
+			);
+		});
 	});
 
 	describe('with extra properties', () => {
