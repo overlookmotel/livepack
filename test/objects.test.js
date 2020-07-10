@@ -396,41 +396,25 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 			});
 
 			describe('with descriptor props', () => {
-				it('`enumerable`', () => {
-					const input = {x: 1};
-					Object.defineProperty(input, 'y', {value: 2, writable: true, configurable: true});
+				it.each( // eslint-disable-next-line no-bitwise
+					[0, 1, 2, 3, 4, 5, 6, 7].map(n => [!(n & 4), !(n & 2), !(n & 1)])
+				)(
+					'{writable: %p, enumerable: %p, configurable: %p}',
+					(writable, enumerable, configurable) => {
+						const input = {x: 1};
+						Object.defineProperty(input, 'y', {value: 2, writable, enumerable, configurable});
 
-					expectSerializedEqual(input, null, (obj) => {
-						expect(Object.keys(obj)).toEqual(['x']);
-						expect(Object.getOwnPropertyDescriptor(obj, 'y')).toEqual({
-							value: 2, writable: true, enumerable: false, configurable: true
+						expectSerializedEqual(input, null, (obj) => {
+							expect(Object.getOwnPropertyNames(obj)).toEqual(['x', 'y']);
+							expect(Object.getOwnPropertyDescriptor(obj, 'x')).toEqual({
+								value: 1, writable: true, enumerable: true, configurable: true
+							});
+							expect(Object.getOwnPropertyDescriptor(obj, 'y')).toEqual({
+								value: 2, writable, enumerable, configurable
+							});
 						});
-					});
-				});
-
-				it('`writeable`', () => {
-					const input = {x: 1};
-					Object.defineProperty(input, 'y', {value: 2, enumerable: true, configurable: true});
-
-					expectSerializedEqual(input, null, (obj) => {
-						expect(() => { obj.y = 3; }).toThrow("Cannot assign to read only property 'y' of object");
-						expect(Object.getOwnPropertyDescriptor(obj, 'y')).toEqual({
-							value: 2, writable: false, enumerable: true, configurable: true
-						});
-					});
-				});
-
-				it('`configurable`', () => {
-					const input = {x: 1};
-					Object.defineProperty(input, 'y', {value: 2, writable: true, enumerable: true});
-
-					expectSerializedEqual(input, null, (obj) => {
-						expect(() => { delete obj.y; }).toThrow("Cannot delete property 'y' of ");
-						expect(Object.getOwnPropertyDescriptor(obj, 'y')).toEqual({
-							value: 2, writable: true, enumerable: true, configurable: false
-						});
-					});
-				});
+					}
+				);
 			});
 
 			describe('with getter / setter', () => {
@@ -495,41 +479,33 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 			});
 
 			describe('with descriptor props', () => {
-				it('`enumerable`', () => {
-					const input = {x: 1};
-					Object.defineProperty(input, 'y', {value: input, writable: true, configurable: true});
+				it.each( // eslint-disable-next-line no-bitwise
+					[0, 1, 2, 3, 4, 5, 6, 7].map(n => [!(n & 4), !(n & 2), !(n & 1)])
+				)(
+					'{writable: %p, enumerable: %p, configurable: %p}',
+					(writable, enumerable, configurable) => {
+						const input = {w: 1};
+						Object.defineProperty(input, 'x', {value: input, writable, enumerable, configurable});
+						input.y = 2;
+						Object.defineProperty(input, 'z', {value: input, writable, enumerable, configurable});
 
-					expectSerializedEqual(input, null, (obj) => {
-						expect(Object.keys(obj)).toEqual(['x']);
-						expect(Object.getOwnPropertyDescriptor(obj, 'y')).toEqual({
-							value: obj, writable: true, enumerable: false, configurable: true
+						expectSerializedEqual(input, null, (obj) => {
+							expect(Object.getOwnPropertyNames(obj)).toEqual(['w', 'x', 'y', 'z']);
+							expect(Object.getOwnPropertyDescriptor(obj, 'w')).toEqual({
+								value: 1, writable: true, enumerable: true, configurable: true
+							});
+							expect(Object.getOwnPropertyDescriptor(obj, 'y')).toEqual({
+								value: 2, writable: true, enumerable: true, configurable: true
+							});
+							expect(Object.getOwnPropertyDescriptor(obj, 'x')).toEqual({
+								value: obj, writable, enumerable, configurable
+							});
+							expect(Object.getOwnPropertyDescriptor(obj, 'z')).toEqual({
+								value: obj, writable, enumerable, configurable
+							});
 						});
-					});
-				});
-
-				it('`writeable`', () => {
-					const input = {x: 1};
-					Object.defineProperty(input, 'y', {value: input, enumerable: true, configurable: true});
-
-					expectSerializedEqual(input, null, (obj) => {
-						expect(() => { obj.y = 3; }).toThrow("Cannot assign to read only property 'y' of object");
-						expect(Object.getOwnPropertyDescriptor(obj, 'y')).toEqual({
-							value: obj, writable: false, enumerable: true, configurable: true
-						});
-					});
-				});
-
-				it('`configurable`', () => {
-					const input = {x: 1};
-					Object.defineProperty(input, 'y', {value: input, writable: true, enumerable: true});
-
-					expectSerializedEqual(input, null, (obj) => {
-						expect(() => { delete obj.y; }).toThrow("Cannot delete property 'y' of ");
-						expect(Object.getOwnPropertyDescriptor(obj, 'y')).toEqual({
-							value: obj, writable: true, enumerable: true, configurable: false
-						});
-					});
-				});
+					}
+				);
 			});
 
 			it('with getter', () => {
@@ -547,6 +523,25 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 					expect(descriptor.configurable).toBeTrue();
 					expect(descriptor.get).toBeFunction();
 					expect(descriptor.set).toBeUndefined();
+				});
+			});
+
+			it('with setter', () => {
+				const input = {
+					x: 1,
+					set y(_) { this.z = input; }
+				};
+
+				expectSerializedEqual(input, null, (obj) => {
+					expect(Object.keys(obj)).toEqual(['x', 'y']);
+					obj.y = 2;
+					expect(obj.z).toEqual(input);
+					const descriptor = Object.getOwnPropertyDescriptor(obj, 'y');
+					expect(descriptor).toContainAllKeys(['enumerable', 'configurable', 'get', 'set']);
+					expect(descriptor.enumerable).toBeTrue();
+					expect(descriptor.configurable).toBeTrue();
+					expect(descriptor.get).toBeUndefined();
+					expect(descriptor.set).toBeFunction();
 				});
 			});
 		});
@@ -591,6 +586,9 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 						expect(Object.keys(obj)).toEqual(['x']);
 						expect(obj.x).toBe(1);
 						expect(obj.y).toBe(2);
+						expect(Object.getOwnPropertyDescriptor(obj, 'x')).toEqual({
+							value: 1, writable: true, enumerable: true, configurable: true
+						});
 						expect(Object.getOwnPropertyDescriptor(obj, 'y')).toEqual({
 							value: 2, writable: true, enumerable: false, configurable: true
 						});

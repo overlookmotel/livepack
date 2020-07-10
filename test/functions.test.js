@@ -27,6 +27,9 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 							expect(res[0]).toBe(param1);
 							expect(res[1]).toBe(param2);
 							expect(fn.name).toBe('');
+							expect(Object.getOwnPropertyDescriptor(fn, 'name')).toEqual({
+								value: '', writable: false, enumerable: false, configurable: true
+							});
 						}
 					);
 				});
@@ -35,7 +38,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 					const input = (x, y) => [x, y];
 					run(
 						input,
-						'Object.defineProperties((a,b)=>[a,b],{name:{value:"input",configurable:true}})',
+						'Object.defineProperties((a,b)=>[a,b],{name:{value:"input"}})',
 						(fn) => {
 							expect(fn).toBeFunction();
 							const param1 = {},
@@ -45,6 +48,9 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 							expect(res[0]).toBe(param1);
 							expect(res[1]).toBe(param2);
 							expect(fn.name).toBe('input');
+							expect(Object.getOwnPropertyDescriptor(fn, 'name')).toEqual({
+								value: 'input', writable: false, enumerable: false, configurable: true
+							});
 						}
 					);
 				});
@@ -68,6 +74,9 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 							expect(res[1]).toBe(param2);
 							expect(res[2]).toBe(ctx);
 							expect(fn.name).toBe('');
+							expect(Object.getOwnPropertyDescriptor(fn, 'name')).toEqual({
+								value: '', writable: false, enumerable: false, configurable: true
+							});
 						}
 					);
 				});
@@ -89,6 +98,9 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 							expect(res[1]).toBe(param2);
 							expect(res[2]).toBe(ctx);
 							expect(fn.name).toBe('input');
+							expect(Object.getOwnPropertyDescriptor(fn, 'name')).toEqual({
+								value: 'input', writable: false, enumerable: false, configurable: true
+							});
 						}
 					);
 				});
@@ -111,6 +123,9 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 						expect(res[1]).toBe(param2);
 						expect(res[2]).toBe(ctx);
 						expect(fn.name).toBe('input');
+						expect(Object.getOwnPropertyDescriptor(fn, 'name')).toEqual({
+							value: 'input', writable: false, enumerable: false, configurable: true
+						});
 					}
 				);
 			});
@@ -2449,8 +2464,13 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 		it('not valid JS identifier', () => {
 			run(
 				{'0a': function() {}}['0a'],
-				'Object.defineProperties(function(){},{name:{value:"0a",configurable:true}})',
-				fn => expect(fn.name).toBe('0a')
+				'Object.defineProperties(function(){},{name:{value:"0a"}})',
+				(fn) => {
+					expect(fn.name).toBe('0a');
+					expect(Object.getOwnPropertyDescriptor(fn, 'name')).toEqual({
+						value: '0a', writable: false, enumerable: false, configurable: true
+					});
+				}
 			);
 		});
 
@@ -2461,7 +2481,12 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 				run(
 					input,
 					'(function foo(){})',
-					fn => expect(fn.name).toBe('foo')
+					(fn) => {
+						expect(fn.name).toBe('foo');
+						expect(Object.getOwnPropertyDescriptor(fn, 'name')).toEqual({
+							value: 'foo', writable: false, enumerable: false, configurable: true
+						});
+					}
 				);
 			});
 
@@ -2470,32 +2495,31 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 				Object.defineProperty(input, 'name', {get() { return 'foo'; }});
 				run(
 					input,
-					'Object.defineProperties(function(){},{name:{get:function get(){return"foo"},configurable:true}})',
+					'Object.defineProperties(function(){},{name:{get:function get(){return"foo"}}})',
 					(fn) => {
 						expect(fn.name).toBe('foo');
 						expect(Object.getOwnPropertyDescriptor(fn, 'name')).toEqual({
-							configurable: true,
-							enumerable: false,
-							get: expect.any(Function),
-							set: undefined
+							get: expect.any(Function), set: undefined, enumerable: false, configurable: true
 						});
 					}
 				);
 			});
 
-			it('properties altered', () => {
-				function input() {}
-				Object.defineProperty(input, 'name', {value: 'input', enumerable: true});
-				run(
-					input,
-					'Object.defineProperties(function input(){},{name:{value:"input",enumerable:true,configurable:true}})',
-					(fn) => {
-						expect(fn.name).toBe('input');
-						expect(Object.getOwnPropertyDescriptor(fn, 'name')).toEqual({
-							value: 'input',
-							writable: false,
-							enumerable: true,
-							configurable: true
+			describe('properties altered', () => {
+				it.each( // eslint-disable-next-line no-bitwise
+					[0, 1, 2, 3, 4, 5, 6, 7].map(n => [!(n & 4), !(n & 2), !(n & 1)])
+				)(
+					'{writable: %p, enumerable: %p, configurable: %p}',
+					(writable, enumerable, configurable) => {
+						function input() {}
+						Object.defineProperty(input, 'name', {value: 'input', writable, enumerable, configurable});
+
+						run(input, null, (fn) => {
+							expect(fn).toBeFunction();
+							expect(fn.name).toBe('input');
+							expect(Object.getOwnPropertyDescriptor(fn, 'name')).toEqual({
+								value: 'input', writable, enumerable, configurable
+							});
 						});
 					}
 				);
@@ -2522,8 +2546,13 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 			Object.defineProperty(input, 'length', {value: 2});
 			run(
 				input,
-				'Object.defineProperties(function input(){},{length:{value:2,configurable:true}})',
-				fn => expect(fn).toHaveLength(2)
+				'Object.defineProperties(function input(){},{length:{value:2}})',
+				(fn) => {
+					expect(fn).toHaveLength(2);
+					expect(Object.getOwnPropertyDescriptor(fn, 'length')).toEqual({
+						value: 2, writable: false, enumerable: false, configurable: true
+					});
+				}
 			);
 		});
 
@@ -2533,32 +2562,31 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 				Object.defineProperty(input, 'length', {get() { return 2; }});
 				run(
 					input,
-					'Object.defineProperties(function input(){},{length:{get:function get(){return 2},configurable:true}})',
+					'Object.defineProperties(function input(){},{length:{get:function get(){return 2}}})',
 					(fn) => {
 						expect(fn.length).toBe(2); // eslint-disable-line jest/prefer-to-have-length
 						expect(Object.getOwnPropertyDescriptor(fn, 'length')).toEqual({
-							configurable: true,
-							enumerable: false,
-							get: expect.any(Function),
-							set: undefined
+							get: expect.any(Function), set: undefined, enumerable: false, configurable: true
 						});
 					}
 				);
 			});
 
-			it('properties altered', () => {
-				function input() {}
-				Object.defineProperty(input, 'length', {value: 0, enumerable: true});
-				run(
-					input,
-					'Object.defineProperties(function input(){},{length:{value:0,enumerable:true,configurable:true}})',
-					(fn) => {
-						expect(fn.length).toBe(0); // eslint-disable-line jest/prefer-to-have-length
-						expect(Object.getOwnPropertyDescriptor(fn, 'length')).toEqual({
-							value: 0,
-							writable: false,
-							enumerable: true,
-							configurable: true
+			describe('properties altered', () => {
+				it.each( // eslint-disable-next-line no-bitwise
+					[0, 1, 2, 3, 4, 5, 6, 7].map(n => [!(n & 4), !(n & 2), !(n & 1)])
+				)(
+					'{writable: %p, enumerable: %p, configurable: %p}',
+					(writable, enumerable, configurable) => {
+						function input() {}
+						Object.defineProperty(input, 'length', {value: 0, writable, enumerable, configurable});
+
+						run(input, null, (fn) => {
+							expect(fn).toBeFunction();
+							expect(fn.length).toBe(0); // eslint-disable-line jest/prefer-to-have-length
+							expect(Object.getOwnPropertyDescriptor(fn, 'length')).toEqual({
+								value: 0, writable, enumerable, configurable
+							});
 						});
 					}
 				);
