@@ -163,13 +163,11 @@ describeWithAllOptions('Arrays', ({expectSerializedEqual}) => {
 					input,
 					'Object.defineProperties([1,2,3],{x:{value:4,enumerable:true},y:{value:5,writable:true,configurable:true}})',
 					(arr) => {
-						expect(Object.getOwnPropertyNames(arr)).toEqual(['0', '1', '2', 'length', 'x', 'y']);
-						expect(Object.getOwnPropertyDescriptor(arr, 'x')).toEqual({
-							value: 4, writable: false, enumerable: true, configurable: false
-						});
-						expect(Object.getOwnPropertyDescriptor(arr, 'y')).toEqual({
-							value: 5, writable: true, enumerable: false, configurable: true
-						});
+						expect(arr).toHaveOwnPropertyNames(['0', '1', '2', 'length', 'x', 'y']);
+						expect(arr.x).toBe(4);
+						expect(arr.y).toBe(5);
+						expect(arr).toHaveDescriptorModifiersFor('x', false, true, false);
+						expect(arr).toHaveDescriptorModifiersFor('y', true, false, true);
 					}
 				);
 			});
@@ -191,15 +189,11 @@ describeWithAllOptions('Arrays', ({expectSerializedEqual}) => {
 				Object.defineProperty(input, 'x', {value: input, enumerable: true});
 				Object.defineProperty(input, 'y', {value: input, writable: true, configurable: true});
 				expectSerializedEqual(input, null, (arr) => {
+					expect(arr).toHaveOwnPropertyNames(['0', '1', '2', 'length', 'x', 'y']);
 					expect(arr.x).toBe(arr);
 					expect(arr.y).toBe(arr);
-					expect(Object.getOwnPropertyNames(arr)).toEqual(['0', '1', '2', 'length', 'x', 'y']);
-					expect(Object.getOwnPropertyDescriptor(arr, 'x')).toEqual({
-						value: arr, writable: false, enumerable: true, configurable: false
-					});
-					expect(Object.getOwnPropertyDescriptor(arr, 'y')).toEqual({
-						value: arr, writable: true, enumerable: false, configurable: true
-					});
+					expect(arr).toHaveDescriptorModifiersFor('x', false, true, false);
+					expect(arr).toHaveDescriptorModifiersFor('y', true, false, true);
 				});
 			});
 		});

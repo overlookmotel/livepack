@@ -23,9 +23,9 @@ describeWithAllOptions('Prototypes', ({run}) => {
 						expect(fn).toBeFunction();
 						expect(fn).toContainAllKeys([]);
 						expect(fn.prototype).toHaveOwnPropertyNames(['constructor']);
-						expect(fn).toHaveDescriptorModifiers('prototype', true, false, false);
+						expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
 						expect(fn.prototype.constructor).toBe(fn);
-						expect(fn.prototype).toHaveDescriptorModifiers('constructor', true, false, true);
+						expect(fn.prototype).toHaveDescriptorModifiersFor('constructor', true, false, true);
 					}
 				);
 			});
@@ -46,13 +46,13 @@ describeWithAllOptions('Prototypes', ({run}) => {
 								expect(fn.x).toBe(1);
 								expect(fn.y).toBe(2);
 								expect(fn.z).toBe(3);
-								expect(fn).toHaveDescriptorModifiers('x', true, true, true);
-								expect(fn).toHaveDescriptorModifiers('y', true, true, true);
-								expect(fn).toHaveDescriptorModifiers('z', true, true, true);
+								expect(fn).toHaveDescriptorModifiersFor('x', true, true, true);
+								expect(fn).toHaveDescriptorModifiersFor('y', true, true, true);
+								expect(fn).toHaveDescriptorModifiersFor('z', true, true, true);
 								expect(fn.prototype).toHaveOwnPropertyNames(['constructor']);
-								expect(fn).toHaveDescriptorModifiers('prototype', true, false, false);
+								expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
 								expect(fn.prototype.constructor).toBe(fn);
-								expect(fn.prototype).toHaveDescriptorModifiers('constructor', true, false, true);
+								expect(fn.prototype).toHaveDescriptorModifiersFor('constructor', true, false, true);
 							}
 						);
 					});
@@ -71,13 +71,13 @@ describeWithAllOptions('Prototypes', ({run}) => {
 								expect(fn.x).toEqual({xx: 1});
 								expect(fn.y).toBe(2);
 								expect(fn.z).toBe(fn.x);
-								expect(fn).toHaveDescriptorModifiers('x', true, true, true);
-								expect(fn).toHaveDescriptorModifiers('y', true, true, true);
-								expect(fn).toHaveDescriptorModifiers('z', true, true, true);
+								expect(fn).toHaveDescriptorModifiersFor('x', true, true, true);
+								expect(fn).toHaveDescriptorModifiersFor('y', true, true, true);
+								expect(fn).toHaveDescriptorModifiersFor('z', true, true, true);
 								expect(fn.prototype).toHaveOwnPropertyNames(['constructor']);
-								expect(fn).toHaveDescriptorModifiers('prototype', true, false, false);
+								expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
 								expect(fn.prototype.constructor).toBe(fn);
-								expect(fn.prototype).toHaveDescriptorModifiers('constructor', true, false, true);
+								expect(fn.prototype).toHaveDescriptorModifiersFor('constructor', true, false, true);
 							}
 						);
 					});
@@ -96,13 +96,13 @@ describeWithAllOptions('Prototypes', ({run}) => {
 								expect(fn.x).toBe(fn);
 								expect(fn.y).toBe(2);
 								expect(fn.z).toBe(fn);
-								expect(fn).toHaveDescriptorModifiers('x', true, true, true);
-								expect(fn).toHaveDescriptorModifiers('y', true, true, true);
-								expect(fn).toHaveDescriptorModifiers('z', true, true, true);
+								expect(fn).toHaveDescriptorModifiersFor('x', true, true, true);
+								expect(fn).toHaveDescriptorModifiersFor('y', true, true, true);
+								expect(fn).toHaveDescriptorModifiersFor('z', true, true, true);
 								expect(fn.prototype).toHaveOwnPropertyNames(['constructor']);
-								expect(fn).toHaveDescriptorModifiers('prototype', true, false, false);
+								expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
 								expect(fn.prototype.constructor).toBe(fn);
-								expect(fn.prototype).toHaveDescriptorModifiers('constructor', true, false, true);
+								expect(fn.prototype).toHaveDescriptorModifiersFor('constructor', true, false, true);
 							}
 						);
 					});
@@ -123,13 +123,13 @@ describeWithAllOptions('Prototypes', ({run}) => {
 								expect(fn.x).toBe(1);
 								expect(fn.y).toBe(2);
 								expect(fn.z).toBe(3);
-								expect(fn).toHaveDescriptorModifiers('x', false, true, false);
-								expect(fn).toHaveDescriptorModifiers('y', true, true, true);
-								expect(fn).toHaveDescriptorModifiers('z', true, true, false);
+								expect(fn).toHaveDescriptorModifiersFor('x', false, true, false);
+								expect(fn).toHaveDescriptorModifiersFor('y', true, true, true);
+								expect(fn).toHaveDescriptorModifiersFor('z', true, true, false);
 								expect(fn.prototype).toHaveOwnPropertyNames(['constructor']);
-								expect(fn).toHaveDescriptorModifiers('prototype', true, false, false);
+								expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
 								expect(fn.prototype.constructor).toBe(fn);
-								expect(fn.prototype).toHaveDescriptorModifiers('constructor', true, false, true);
+								expect(fn.prototype).toHaveDescriptorModifiersFor('constructor', true, false, true);
 							}
 						);
 					});
@@ -148,13 +148,13 @@ describeWithAllOptions('Prototypes', ({run}) => {
 								expect(fn.x).toEqual({xx: 1});
 								expect(fn.y).toBe(2);
 								expect(fn.z).toBe(fn.x);
-								expect(fn).toHaveDescriptorModifiers('x', false, true, false);
-								expect(fn).toHaveDescriptorModifiers('y', true, true, true);
-								expect(fn).toHaveDescriptorModifiers('z', true, true, false);
+								expect(fn).toHaveDescriptorModifiersFor('x', false, true, false);
+								expect(fn).toHaveDescriptorModifiersFor('y', true, true, true);
+								expect(fn).toHaveDescriptorModifiersFor('z', true, true, false);
 								expect(fn.prototype).toHaveOwnPropertyNames(['constructor']);
-								expect(fn).toHaveDescriptorModifiers('prototype', true, false, false);
+								expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
 								expect(fn.prototype.constructor).toBe(fn);
-								expect(fn.prototype).toHaveDescriptorModifiers('constructor', true, false, true);
+								expect(fn.prototype).toHaveDescriptorModifiersFor('constructor', true, false, true);
 							}
 						);
 					});
@@ -173,13 +173,13 @@ describeWithAllOptions('Prototypes', ({run}) => {
 								expect(fn.x).toBe(fn);
 								expect(fn.y).toBe(2);
 								expect(fn.z).toBe(fn);
-								expect(fn).toHaveDescriptorModifiers('x', false, true, false);
-								expect(fn).toHaveDescriptorModifiers('y', true, true, true);
-								expect(fn).toHaveDescriptorModifiers('z', true, true, false);
+								expect(fn).toHaveDescriptorModifiersFor('x', false, true, false);
+								expect(fn).toHaveDescriptorModifiersFor('y', true, true, true);
+								expect(fn).toHaveDescriptorModifiersFor('z', true, true, false);
 								expect(fn.prototype).toHaveOwnPropertyNames(['constructor']);
-								expect(fn).toHaveDescriptorModifiers('prototype', true, false, false);
+								expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
 								expect(fn.prototype.constructor).toBe(fn);
-								expect(fn.prototype).toHaveDescriptorModifiers('constructor', true, false, true);
+								expect(fn.prototype).toHaveDescriptorModifiersFor('constructor', true, false, true);
 							}
 						);
 					});
@@ -198,7 +198,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 						(fn) => {
 							expect(fn).toBeFunction();
 							expect(fn.prototype).toHaveOwnPropertyNames([]);
-							expect(fn).toHaveDescriptorModifiers('prototype', true, false, false);
+							expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
 						}
 					);
 				});
@@ -218,10 +218,10 @@ describeWithAllOptions('Prototypes', ({run}) => {
 									expect(fn).toContainAllKeys(['x', 'y']);
 									expect(fn.x).toBe(1);
 									expect(fn.y).toBe(2);
-									expect(fn).toHaveDescriptorModifiers('x', true, true, true);
-									expect(fn).toHaveDescriptorModifiers('y', true, true, true);
+									expect(fn).toHaveDescriptorModifiersFor('x', true, true, true);
+									expect(fn).toHaveDescriptorModifiersFor('y', true, true, true);
 									expect(fn.prototype).toHaveOwnPropertyNames([]);
-									expect(fn).toHaveDescriptorModifiers('prototype', true, false, false);
+									expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
 								}
 							);
 						});
@@ -239,10 +239,10 @@ describeWithAllOptions('Prototypes', ({run}) => {
 									expect(fn).toContainAllKeys(['x', 'y']);
 									expect(fn.x).toEqual({xx: 1});
 									expect(fn.y).toBe(fn.x);
-									expect(fn).toHaveDescriptorModifiers('x', true, true, true);
-									expect(fn).toHaveDescriptorModifiers('y', true, true, true);
+									expect(fn).toHaveDescriptorModifiersFor('x', true, true, true);
+									expect(fn).toHaveDescriptorModifiersFor('y', true, true, true);
 									expect(fn.prototype).toHaveOwnPropertyNames([]);
-									expect(fn).toHaveDescriptorModifiers('prototype', true, false, false);
+									expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
 								}
 							);
 						});
@@ -260,10 +260,10 @@ describeWithAllOptions('Prototypes', ({run}) => {
 									expect(fn).toContainAllKeys(['x', 'y']);
 									expect(fn.x).toBe(fn);
 									expect(fn.y).toBe(fn);
-									expect(fn).toHaveDescriptorModifiers('x', true, true, true);
-									expect(fn).toHaveDescriptorModifiers('y', true, true, true);
+									expect(fn).toHaveDescriptorModifiersFor('x', true, true, true);
+									expect(fn).toHaveDescriptorModifiersFor('y', true, true, true);
 									expect(fn.prototype).toHaveOwnPropertyNames([]);
-									expect(fn).toHaveDescriptorModifiers('prototype', true, false, false);
+									expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
 								}
 							);
 						});
@@ -283,10 +283,10 @@ describeWithAllOptions('Prototypes', ({run}) => {
 									expect(fn).toContainAllKeys(['x', 'y']);
 									expect(fn.x).toBe(1);
 									expect(fn.y).toBe(2);
-									expect(fn).toHaveDescriptorModifiers('x', false, true, false);
-									expect(fn).toHaveDescriptorModifiers('y', true, true, false);
+									expect(fn).toHaveDescriptorModifiersFor('x', false, true, false);
+									expect(fn).toHaveDescriptorModifiersFor('y', true, true, false);
 									expect(fn.prototype).toHaveOwnPropertyNames([]);
-									expect(fn).toHaveDescriptorModifiers('prototype', true, false, false);
+									expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
 								}
 							);
 						});
@@ -304,10 +304,10 @@ describeWithAllOptions('Prototypes', ({run}) => {
 									expect(fn).toContainAllKeys(['x', 'y']);
 									expect(fn.x).toEqual({xx: 1});
 									expect(fn.y).toBe(fn.x);
-									expect(fn).toHaveDescriptorModifiers('x', false, true, false);
-									expect(fn).toHaveDescriptorModifiers('y', true, true, false);
+									expect(fn).toHaveDescriptorModifiersFor('x', false, true, false);
+									expect(fn).toHaveDescriptorModifiersFor('y', true, true, false);
 									expect(fn.prototype).toHaveOwnPropertyNames([]);
-									expect(fn).toHaveDescriptorModifiers('prototype', true, false, false);
+									expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
 								}
 							);
 						});
@@ -325,10 +325,10 @@ describeWithAllOptions('Prototypes', ({run}) => {
 									expect(fn).toContainAllKeys(['x', 'y']);
 									expect(fn.x).toBe(fn);
 									expect(fn.y).toBe(fn);
-									expect(fn).toHaveDescriptorModifiers('x', false, true, false);
-									expect(fn).toHaveDescriptorModifiers('y', true, true, false);
+									expect(fn).toHaveDescriptorModifiersFor('x', false, true, false);
+									expect(fn).toHaveDescriptorModifiersFor('y', true, true, false);
 									expect(fn.prototype).toHaveOwnPropertyNames([]);
-									expect(fn).toHaveDescriptorModifiers('prototype', true, false, false);
+									expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
 								}
 							);
 						});
@@ -347,9 +347,9 @@ describeWithAllOptions('Prototypes', ({run}) => {
 							expect(fn).toBeFunction();
 							expect(fn.prototype).toEqual({x: 1, y: 2});
 							expect(fn.prototype).toHaveOwnPropertyNames(['x', 'y']);
-							expect(fn.prototype).toHaveDescriptorModifiers('x', true, true, true);
-							expect(fn.prototype).toHaveDescriptorModifiers('y', true, true, true);
-							expect(fn).toHaveDescriptorModifiers('prototype', true, false, false);
+							expect(fn.prototype).toHaveDescriptorModifiersFor('x', true, true, true);
+							expect(fn.prototype).toHaveDescriptorModifiersFor('y', true, true, true);
+							expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
 						}
 					);
 				});
@@ -369,11 +369,11 @@ describeWithAllOptions('Prototypes', ({run}) => {
 									expect(fn).toContainAllKeys(['y', 'z']);
 									expect(fn.y).toBe(3);
 									expect(fn.z).toBe(4);
-									expect(fn).toHaveDescriptorModifiers('y', true, true, true);
-									expect(fn).toHaveDescriptorModifiers('z', true, true, true);
+									expect(fn).toHaveDescriptorModifiersFor('y', true, true, true);
+									expect(fn).toHaveDescriptorModifiersFor('z', true, true, true);
 									expect(fn.prototype).toHaveOwnPropertyNames(['w', 'x']);
 									expect(fn.prototype).toEqual({w: 1, x: 2});
-									expect(fn).toHaveDescriptorModifiers('prototype', true, false, false);
+									expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
 								}
 							);
 						});
@@ -391,11 +391,11 @@ describeWithAllOptions('Prototypes', ({run}) => {
 									expect(fn).toContainAllKeys(['y', 'z']);
 									expect(fn.y).toEqual({xx: 1});
 									expect(fn.z).toBe(fn.y);
-									expect(fn).toHaveDescriptorModifiers('y', true, true, true);
-									expect(fn).toHaveDescriptorModifiers('z', true, true, true);
+									expect(fn).toHaveDescriptorModifiersFor('y', true, true, true);
+									expect(fn).toHaveDescriptorModifiersFor('z', true, true, true);
 									expect(fn.prototype).toHaveOwnPropertyNames(['w', 'x']);
 									expect(fn.prototype).toEqual({w: 1, x: 2});
-									expect(fn).toHaveDescriptorModifiers('prototype', true, false, false);
+									expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
 								}
 							);
 						});
@@ -413,11 +413,11 @@ describeWithAllOptions('Prototypes', ({run}) => {
 									expect(fn).toContainAllKeys(['y', 'z']);
 									expect(fn.y).toBe(fn);
 									expect(fn.z).toBe(fn);
-									expect(fn).toHaveDescriptorModifiers('y', true, true, true);
-									expect(fn).toHaveDescriptorModifiers('z', true, true, true);
+									expect(fn).toHaveDescriptorModifiersFor('y', true, true, true);
+									expect(fn).toHaveDescriptorModifiersFor('z', true, true, true);
 									expect(fn.prototype).toHaveOwnPropertyNames(['w', 'x']);
 									expect(fn.prototype).toEqual({w: 1, x: 2});
-									expect(fn).toHaveDescriptorModifiers('prototype', true, false, false);
+									expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
 								}
 							);
 						});
@@ -437,11 +437,11 @@ describeWithAllOptions('Prototypes', ({run}) => {
 									expect(fn).toContainAllKeys(['y', 'z']);
 									expect(fn.y).toBe(3);
 									expect(fn.z).toBe(4);
-									expect(fn).toHaveDescriptorModifiers('y', false, true, false);
-									expect(fn).toHaveDescriptorModifiers('z', true, true, false);
+									expect(fn).toHaveDescriptorModifiersFor('y', false, true, false);
+									expect(fn).toHaveDescriptorModifiersFor('z', true, true, false);
 									expect(fn.prototype).toHaveOwnPropertyNames(['w', 'x']);
 									expect(fn.prototype).toEqual({w: 1, x: 2});
-									expect(fn).toHaveDescriptorModifiers('prototype', true, false, false);
+									expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
 								}
 							);
 						});
@@ -459,11 +459,11 @@ describeWithAllOptions('Prototypes', ({run}) => {
 									expect(fn).toContainAllKeys(['y', 'z']);
 									expect(fn.y).toEqual({xx: 1});
 									expect(fn.z).toBe(fn.y);
-									expect(fn).toHaveDescriptorModifiers('y', false, true, false);
-									expect(fn).toHaveDescriptorModifiers('z', true, true, false);
+									expect(fn).toHaveDescriptorModifiersFor('y', false, true, false);
+									expect(fn).toHaveDescriptorModifiersFor('z', true, true, false);
 									expect(fn.prototype).toHaveOwnPropertyNames(['w', 'x']);
 									expect(fn.prototype).toEqual({w: 1, x: 2});
-									expect(fn).toHaveDescriptorModifiers('prototype', true, false, false);
+									expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
 								}
 							);
 						});
@@ -481,11 +481,11 @@ describeWithAllOptions('Prototypes', ({run}) => {
 									expect(fn).toContainAllKeys(['y', 'z']);
 									expect(fn.y).toBe(fn);
 									expect(fn.z).toBe(fn);
-									expect(fn).toHaveDescriptorModifiers('y', false, true, false);
-									expect(fn).toHaveDescriptorModifiers('z', true, true, false);
+									expect(fn).toHaveDescriptorModifiersFor('y', false, true, false);
+									expect(fn).toHaveDescriptorModifiersFor('z', true, true, false);
 									expect(fn.prototype).toHaveOwnPropertyNames(['w', 'x']);
 									expect(fn.prototype).toEqual({w: 1, x: 2});
-									expect(fn).toHaveDescriptorModifiers('prototype', true, false, false);
+									expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
 								}
 							);
 						});
@@ -505,9 +505,9 @@ describeWithAllOptions('Prototypes', ({run}) => {
 							expect(fn.prototype).toHaveOwnPropertyNames(['x', 'y']);
 							expect(fn.prototype.x).toBe(fn);
 							expect(fn.prototype.y).toBe(fn);
-							expect(fn.prototype).toHaveDescriptorModifiers('x', true, true, true);
-							expect(fn.prototype).toHaveDescriptorModifiers('y', true, true, true);
-							expect(fn).toHaveDescriptorModifiers('prototype', true, false, false);
+							expect(fn.prototype).toHaveDescriptorModifiersFor('x', true, true, true);
+							expect(fn.prototype).toHaveDescriptorModifiersFor('y', true, true, true);
+							expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
 						}
 					);
 				});
@@ -527,12 +527,12 @@ describeWithAllOptions('Prototypes', ({run}) => {
 									expect(fn).toContainAllKeys(['y', 'z']);
 									expect(fn.y).toBe(3);
 									expect(fn.z).toBe(4);
-									expect(fn).toHaveDescriptorModifiers('y', true, true, true);
-									expect(fn).toHaveDescriptorModifiers('z', true, true, true);
+									expect(fn).toHaveDescriptorModifiersFor('y', true, true, true);
+									expect(fn).toHaveDescriptorModifiersFor('z', true, true, true);
 									expect(fn.prototype).toHaveOwnPropertyNames(['w', 'x']);
 									expect(fn.prototype.w).toBe(fn);
 									expect(fn.prototype.x).toBe(fn);
-									expect(fn).toHaveDescriptorModifiers('prototype', true, false, false);
+									expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
 								}
 							);
 						});
@@ -550,12 +550,12 @@ describeWithAllOptions('Prototypes', ({run}) => {
 									expect(fn).toContainAllKeys(['y', 'z']);
 									expect(fn.y).toEqual({xx: 1});
 									expect(fn.z).toBe(fn.y);
-									expect(fn).toHaveDescriptorModifiers('y', true, true, true);
-									expect(fn).toHaveDescriptorModifiers('z', true, true, true);
+									expect(fn).toHaveDescriptorModifiersFor('y', true, true, true);
+									expect(fn).toHaveDescriptorModifiersFor('z', true, true, true);
 									expect(fn.prototype).toHaveOwnPropertyNames(['w', 'x']);
 									expect(fn.prototype.w).toBe(fn);
 									expect(fn.prototype.x).toBe(fn);
-									expect(fn).toHaveDescriptorModifiers('prototype', true, false, false);
+									expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
 								}
 							);
 						});
@@ -573,12 +573,12 @@ describeWithAllOptions('Prototypes', ({run}) => {
 									expect(fn).toContainAllKeys(['y', 'z']);
 									expect(fn.y).toBe(fn);
 									expect(fn.z).toBe(fn);
-									expect(fn).toHaveDescriptorModifiers('y', true, true, true);
-									expect(fn).toHaveDescriptorModifiers('z', true, true, true);
+									expect(fn).toHaveDescriptorModifiersFor('y', true, true, true);
+									expect(fn).toHaveDescriptorModifiersFor('z', true, true, true);
 									expect(fn.prototype).toHaveOwnPropertyNames(['w', 'x']);
 									expect(fn.prototype.w).toBe(fn);
 									expect(fn.prototype.x).toBe(fn);
-									expect(fn).toHaveDescriptorModifiers('prototype', true, false, false);
+									expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
 								}
 							);
 						});
@@ -598,12 +598,12 @@ describeWithAllOptions('Prototypes', ({run}) => {
 									expect(fn).toContainAllKeys(['y', 'z']);
 									expect(fn.y).toBe(3);
 									expect(fn.z).toBe(4);
-									expect(fn).toHaveDescriptorModifiers('y', false, true, false);
-									expect(fn).toHaveDescriptorModifiers('z', true, true, false);
+									expect(fn).toHaveDescriptorModifiersFor('y', false, true, false);
+									expect(fn).toHaveDescriptorModifiersFor('z', true, true, false);
 									expect(fn.prototype).toHaveOwnPropertyNames(['w', 'x']);
 									expect(fn.prototype.w).toBe(fn);
 									expect(fn.prototype.x).toBe(fn);
-									expect(fn).toHaveDescriptorModifiers('prototype', true, false, false);
+									expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
 								}
 							);
 						});
@@ -621,12 +621,12 @@ describeWithAllOptions('Prototypes', ({run}) => {
 									expect(fn).toContainAllKeys(['y', 'z']);
 									expect(fn.y).toEqual({xx: 1});
 									expect(fn.z).toBe(fn.y);
-									expect(fn).toHaveDescriptorModifiers('y', false, true, false);
-									expect(fn).toHaveDescriptorModifiers('z', true, true, false);
+									expect(fn).toHaveDescriptorModifiersFor('y', false, true, false);
+									expect(fn).toHaveDescriptorModifiersFor('z', true, true, false);
 									expect(fn.prototype).toHaveOwnPropertyNames(['w', 'x']);
 									expect(fn.prototype.w).toBe(fn);
 									expect(fn.prototype.x).toBe(fn);
-									expect(fn).toHaveDescriptorModifiers('prototype', true, false, false);
+									expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
 								}
 							);
 						});
@@ -644,12 +644,12 @@ describeWithAllOptions('Prototypes', ({run}) => {
 									expect(fn).toContainAllKeys(['y', 'z']);
 									expect(fn.y).toBe(fn);
 									expect(fn.z).toBe(fn);
-									expect(fn).toHaveDescriptorModifiers('y', false, true, false);
-									expect(fn).toHaveDescriptorModifiers('z', true, true, false);
+									expect(fn).toHaveDescriptorModifiersFor('y', false, true, false);
+									expect(fn).toHaveDescriptorModifiersFor('z', true, true, false);
 									expect(fn.prototype).toHaveOwnPropertyNames(['w', 'x']);
 									expect(fn.prototype.w).toBe(fn);
 									expect(fn.prototype.x).toBe(fn);
-									expect(fn).toHaveDescriptorModifiers('prototype', true, false, false);
+									expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
 								}
 							);
 						});
@@ -668,7 +668,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 							expect(fn).toBeFunction();
 							expect(fn.prototype).toBeFunction();
 							expect(fn.prototype).not.toBe(fn);
-							expect(fn).toHaveDescriptorModifiers('prototype', true, false, false);
+							expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
 						}
 					);
 				});
@@ -685,11 +685,11 @@ describeWithAllOptions('Prototypes', ({run}) => {
 							expect(fn).toBeFunction();
 							expect(fn.prototype).toBeFunction();
 							expect(fn.prototype).not.toBe(fn);
-							expect(fn).toHaveDescriptorModifiers('prototype', true, false, false);
+							expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
 							expect(fn.x).toBe(1);
 							expect(fn.y).toBe(2);
-							expect(fn).toHaveDescriptorModifiers('x', true, true, true);
-							expect(fn).toHaveDescriptorModifiers('y', true, true, true);
+							expect(fn).toHaveDescriptorModifiersFor('x', true, true, true);
+							expect(fn).toHaveDescriptorModifiersFor('y', true, true, true);
 						}
 					);
 				});
@@ -705,7 +705,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 						(fn) => {
 							expect(fn).toBeFunction();
 							expect(fn.prototype).toBe(123);
-							expect(fn).toHaveDescriptorModifiers('prototype', true, false, false);
+							expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
 						}
 					);
 				});
@@ -721,11 +721,11 @@ describeWithAllOptions('Prototypes', ({run}) => {
 						(fn) => {
 							expect(fn).toBeFunction();
 							expect(fn.prototype).toBe(123);
-							expect(fn).toHaveDescriptorModifiers('prototype', true, false, false);
+							expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
 							expect(fn.x).toBe(1);
 							expect(fn.y).toBe(2);
-							expect(fn).toHaveDescriptorModifiers('x', true, true, true);
-							expect(fn).toHaveDescriptorModifiers('y', true, true, true);
+							expect(fn).toHaveDescriptorModifiersFor('x', true, true, true);
+							expect(fn).toHaveDescriptorModifiersFor('y', true, true, true);
 						}
 					);
 				});
@@ -743,9 +743,9 @@ describeWithAllOptions('Prototypes', ({run}) => {
 					(fn) => {
 						expect(fn).toBeFunction();
 						expect(fn.prototype).toHaveOwnPropertyNames(['constructor']);
-						expect(fn).toHaveDescriptorModifiers('prototype', false, false, false);
+						expect(fn).toHaveDescriptorModifiersFor('prototype', false, false, false);
 						expect(fn.prototype.constructor).toBe(fn);
-						expect(fn.prototype).toHaveDescriptorModifiers('constructor', true, false, true);
+						expect(fn.prototype).toHaveDescriptorModifiersFor('constructor', true, false, true);
 					}
 				);
 			});
@@ -765,11 +765,11 @@ describeWithAllOptions('Prototypes', ({run}) => {
 								expect(fn).toContainAllKeys(['y', 'z']);
 								expect(fn.y).toBe(3);
 								expect(fn.z).toBe(4);
-								expect(fn).toHaveDescriptorModifiers('y', true, true, true);
-								expect(fn).toHaveDescriptorModifiers('z', true, true, true);
+								expect(fn).toHaveDescriptorModifiersFor('y', true, true, true);
+								expect(fn).toHaveDescriptorModifiersFor('z', true, true, true);
 								expect(fn.prototype).toHaveOwnPropertyNames(['constructor']);
 								expect(fn.prototype.constructor).toBe(fn);
-								expect(fn).toHaveDescriptorModifiers('prototype', false, false, false);
+								expect(fn).toHaveDescriptorModifiersFor('prototype', false, false, false);
 							}
 						);
 					});
@@ -787,11 +787,11 @@ describeWithAllOptions('Prototypes', ({run}) => {
 								expect(fn).toContainAllKeys(['y', 'z']);
 								expect(fn.y).toEqual({xx: 1});
 								expect(fn.z).toBe(fn.y);
-								expect(fn).toHaveDescriptorModifiers('y', true, true, true);
-								expect(fn).toHaveDescriptorModifiers('z', true, true, true);
+								expect(fn).toHaveDescriptorModifiersFor('y', true, true, true);
+								expect(fn).toHaveDescriptorModifiersFor('z', true, true, true);
 								expect(fn.prototype).toHaveOwnPropertyNames(['constructor']);
 								expect(fn.prototype.constructor).toBe(fn);
-								expect(fn).toHaveDescriptorModifiers('prototype', false, false, false);
+								expect(fn).toHaveDescriptorModifiersFor('prototype', false, false, false);
 							}
 						);
 					});
@@ -809,11 +809,11 @@ describeWithAllOptions('Prototypes', ({run}) => {
 								expect(fn).toContainAllKeys(['y', 'z']);
 								expect(fn.y).toBe(fn);
 								expect(fn.z).toBe(fn);
-								expect(fn).toHaveDescriptorModifiers('y', true, true, true);
-								expect(fn).toHaveDescriptorModifiers('z', true, true, true);
+								expect(fn).toHaveDescriptorModifiersFor('y', true, true, true);
+								expect(fn).toHaveDescriptorModifiersFor('z', true, true, true);
 								expect(fn.prototype).toHaveOwnPropertyNames(['constructor']);
 								expect(fn.prototype.constructor).toBe(fn);
-								expect(fn).toHaveDescriptorModifiers('prototype', false, false, false);
+								expect(fn).toHaveDescriptorModifiersFor('prototype', false, false, false);
 							}
 						);
 					});
@@ -833,11 +833,11 @@ describeWithAllOptions('Prototypes', ({run}) => {
 								expect(fn).toContainAllKeys(['y', 'z']);
 								expect(fn.y).toBe(3);
 								expect(fn.z).toBe(4);
-								expect(fn).toHaveDescriptorModifiers('y', false, true, false);
-								expect(fn).toHaveDescriptorModifiers('z', true, true, false);
+								expect(fn).toHaveDescriptorModifiersFor('y', false, true, false);
+								expect(fn).toHaveDescriptorModifiersFor('z', true, true, false);
 								expect(fn.prototype).toHaveOwnPropertyNames(['constructor']);
 								expect(fn.prototype.constructor).toBe(fn);
-								expect(fn).toHaveDescriptorModifiers('prototype', false, false, false);
+								expect(fn).toHaveDescriptorModifiersFor('prototype', false, false, false);
 							}
 						);
 					});
@@ -855,11 +855,11 @@ describeWithAllOptions('Prototypes', ({run}) => {
 								expect(fn).toContainAllKeys(['y', 'z']);
 								expect(fn.y).toEqual({xx: 1});
 								expect(fn.z).toBe(fn.y);
-								expect(fn).toHaveDescriptorModifiers('y', false, true, false);
-								expect(fn).toHaveDescriptorModifiers('z', true, true, false);
+								expect(fn).toHaveDescriptorModifiersFor('y', false, true, false);
+								expect(fn).toHaveDescriptorModifiersFor('z', true, true, false);
 								expect(fn.prototype).toHaveOwnPropertyNames(['constructor']);
 								expect(fn.prototype.constructor).toBe(fn);
-								expect(fn).toHaveDescriptorModifiers('prototype', false, false, false);
+								expect(fn).toHaveDescriptorModifiersFor('prototype', false, false, false);
 							}
 						);
 					});
@@ -877,11 +877,11 @@ describeWithAllOptions('Prototypes', ({run}) => {
 								expect(fn).toContainAllKeys(['y', 'z']);
 								expect(fn.y).toBe(fn);
 								expect(fn.z).toBe(fn);
-								expect(fn).toHaveDescriptorModifiers('y', false, true, false);
-								expect(fn).toHaveDescriptorModifiers('z', true, true, false);
+								expect(fn).toHaveDescriptorModifiersFor('y', false, true, false);
+								expect(fn).toHaveDescriptorModifiersFor('z', true, true, false);
 								expect(fn.prototype).toHaveOwnPropertyNames(['constructor']);
 								expect(fn.prototype.constructor).toBe(fn);
-								expect(fn).toHaveDescriptorModifiers('prototype', false, false, false);
+								expect(fn).toHaveDescriptorModifiersFor('prototype', false, false, false);
 							}
 						);
 					});

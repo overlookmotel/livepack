@@ -285,12 +285,8 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 					expect(s2).not.toBe(s1);
 					expect(obj[s1]).toBe(3);
 					expect(obj[s2]).toEqual({ss: 4});
-					expect(Object.getOwnPropertyDescriptor(obj, s1)).toEqual({
-						value: 3, writable: true, enumerable: false, configurable: true
-					});
-					expect(Object.getOwnPropertyDescriptor(obj, s2)).toEqual({
-						value: {ss: 4}, writable: true, enumerable: false, configurable: true
-					});
+					expect(obj).toHaveDescriptorModifiersFor(s1, true, false, true);
+					expect(obj).toHaveDescriptorModifiersFor(s2, true, false, true);
 					expect(obj.x).toBe(1);
 					expect(obj.y).toEqual({yy: 2});
 				});
@@ -317,12 +313,8 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 					expect(s2).toBe(s1);
 					expect(obj1[s1]).toBe(1);
 					expect(obj2[s1]).toBe(2);
-					expect(Object.getOwnPropertyDescriptor(obj1, s1)).toEqual({
-						value: 1, writable: true, enumerable: false, configurable: true
-					});
-					expect(Object.getOwnPropertyDescriptor(obj2, s1)).toEqual({
-						value: 2, writable: true, enumerable: false, configurable: true
-					});
+					expect(obj1).toHaveDescriptorModifiersFor(s1, true, false, true);
+					expect(obj2).toHaveDescriptorModifiersFor(s1, true, false, true);
 				});
 			});
 
@@ -339,9 +331,7 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 					const [s] = symbolKeys;
 					expect(typeof s).toBe('symbol');
 					expect(obj[s]).toBe(obj);
-					expect(Object.getOwnPropertyDescriptor(obj, s)).toEqual({
-						value: obj, writable: true, enumerable: false, configurable: true
-					});
+					expect(obj).toHaveDescriptorModifiersFor(s, true, false, true);
 					expect(obj.x).toBe(1);
 					expect(obj.y).toBe(2);
 				});
@@ -364,12 +354,8 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 					expect(s2).not.toBe(s1);
 					expect(obj[s1]).toBe(obj);
 					expect(obj[s2]).toBe(obj);
-					expect(Object.getOwnPropertyDescriptor(obj, s1)).toEqual({
-						value: obj, writable: true, enumerable: false, configurable: true
-					});
-					expect(Object.getOwnPropertyDescriptor(obj, s2)).toEqual({
-						value: obj, writable: true, enumerable: false, configurable: true
-					});
+					expect(obj).toHaveDescriptorModifiersFor(s1, true, false, true);
+					expect(obj).toHaveDescriptorModifiersFor(s2, true, false, true);
 					expect(obj.x).toBe(1);
 					expect(obj.y).toBe(2);
 				});
@@ -405,13 +391,11 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 						Object.defineProperty(input, 'y', {value: 2, writable, enumerable, configurable});
 
 						expectSerializedEqual(input, null, (obj) => {
-							expect(Object.getOwnPropertyNames(obj)).toEqual(['x', 'y']);
-							expect(Object.getOwnPropertyDescriptor(obj, 'x')).toEqual({
-								value: 1, writable: true, enumerable: true, configurable: true
-							});
-							expect(Object.getOwnPropertyDescriptor(obj, 'y')).toEqual({
-								value: 2, writable, enumerable, configurable
-							});
+							expect(obj).toHaveOwnPropertyNames(['x', 'y']);
+							expect(obj.x).toBe(1);
+							expect(obj.y).toBe(2);
+							expect(obj).toHaveDescriptorModifiersFor('x', true, true, true);
+							expect(obj).toHaveDescriptorModifiersFor('y', writable, enumerable, configurable);
 						});
 					}
 				);
@@ -427,12 +411,9 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 					expectSerializedEqual(input, null, (obj) => {
 						expect(obj.y).toBe(2);
 						expect(Object.keys(obj)).toEqual(['x', 'y']);
-						const descriptor = Object.getOwnPropertyDescriptor(obj, 'y');
-						expect(descriptor).toContainAllKeys(['enumerable', 'configurable', 'get', 'set']);
-						expect(descriptor.enumerable).toBeTrue();
-						expect(descriptor.configurable).toBeTrue();
-						expect(descriptor.get).toBeFunction();
-						expect(descriptor.set).toBeUndefined();
+						expect(Object.getOwnPropertyDescriptor(obj, 'y')).toEqual({
+							get: expect.any(Function), set: undefined, enumerable: true, configurable: true
+						});
 					});
 				});
 
@@ -446,12 +427,9 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 						expect(obj.x).toBe(1);
 						expect(obj.y).toBeUndefined();
 						expect(Object.keys(obj)).toEqual(['x', 'y']);
-						const descriptor = Object.getOwnPropertyDescriptor(obj, 'y');
-						expect(descriptor).toContainAllKeys(['enumerable', 'configurable', 'get', 'set']);
-						expect(descriptor.enumerable).toBeTrue();
-						expect(descriptor.configurable).toBeTrue();
-						expect(descriptor.get).toBeUndefined();
-						expect(descriptor.set).toBeFunction();
+						expect(Object.getOwnPropertyDescriptor(obj, 'y')).toEqual({
+							get: undefined, set: expect.any(Function), enumerable: true, configurable: true
+						});
 
 						obj.y = 2;
 						expect(obj.x).toBe(2);
@@ -490,19 +468,15 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 						Object.defineProperty(input, 'z', {value: input, writable, enumerable, configurable});
 
 						expectSerializedEqual(input, null, (obj) => {
-							expect(Object.getOwnPropertyNames(obj)).toEqual(['w', 'x', 'y', 'z']);
-							expect(Object.getOwnPropertyDescriptor(obj, 'w')).toEqual({
-								value: 1, writable: true, enumerable: true, configurable: true
-							});
-							expect(Object.getOwnPropertyDescriptor(obj, 'y')).toEqual({
-								value: 2, writable: true, enumerable: true, configurable: true
-							});
-							expect(Object.getOwnPropertyDescriptor(obj, 'x')).toEqual({
-								value: obj, writable, enumerable, configurable
-							});
-							expect(Object.getOwnPropertyDescriptor(obj, 'z')).toEqual({
-								value: obj, writable, enumerable, configurable
-							});
+							expect(obj).toHaveOwnPropertyNames(['w', 'x', 'y', 'z']);
+							expect(obj.w).toBe(1);
+							expect(obj.x).toBe(obj);
+							expect(obj.y).toBe(2);
+							expect(obj.z).toBe(obj);
+							expect(obj).toHaveDescriptorModifiersFor('w', true, true, true);
+							expect(obj).toHaveDescriptorModifiersFor('x', writable, enumerable, configurable);
+							expect(obj).toHaveDescriptorModifiersFor('y', true, true, true);
+							expect(obj).toHaveDescriptorModifiersFor('z', writable, enumerable, configurable);
 						});
 					}
 				);
@@ -517,12 +491,9 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 				expectSerializedEqual(input, null, (obj) => {
 					expect(obj.y).toEqual(input);
 					expect(Object.keys(obj)).toEqual(['x', 'y']);
-					const descriptor = Object.getOwnPropertyDescriptor(obj, 'y');
-					expect(descriptor).toContainAllKeys(['enumerable', 'configurable', 'get', 'set']);
-					expect(descriptor.enumerable).toBeTrue();
-					expect(descriptor.configurable).toBeTrue();
-					expect(descriptor.get).toBeFunction();
-					expect(descriptor.set).toBeUndefined();
+					expect(Object.getOwnPropertyDescriptor(obj, 'y')).toEqual({
+						get: expect.any(Function), set: undefined, enumerable: true, configurable: true
+					});
 				});
 			});
 
@@ -536,12 +507,9 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 					expect(Object.keys(obj)).toEqual(['x', 'y']);
 					obj.y = 2;
 					expect(obj.z).toEqual(input);
-					const descriptor = Object.getOwnPropertyDescriptor(obj, 'y');
-					expect(descriptor).toContainAllKeys(['enumerable', 'configurable', 'get', 'set']);
-					expect(descriptor.enumerable).toBeTrue();
-					expect(descriptor.configurable).toBeTrue();
-					expect(descriptor.get).toBeUndefined();
-					expect(descriptor.set).toBeFunction();
+					expect(Object.getOwnPropertyDescriptor(obj, 'y')).toEqual({
+						get: undefined, set: expect.any(Function), enumerable: true, configurable: true
+					});
 				});
 			});
 		});
@@ -582,16 +550,12 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 					'Object.create(null,{x:{value:1,writable:true,enumerable:true,configurable:true},y:{value:2,writable:true,configurable:true}})',
 					(obj) => {
 						expect(Object.getPrototypeOf(obj)).toBeNull();
-						expect(Object.getOwnPropertyNames(obj)).toEqual(['x', 'y']);
+						expect(obj).toHaveOwnPropertyNames(['x', 'y']);
 						expect(Object.keys(obj)).toEqual(['x']);
 						expect(obj.x).toBe(1);
 						expect(obj.y).toBe(2);
-						expect(Object.getOwnPropertyDescriptor(obj, 'x')).toEqual({
-							value: 1, writable: true, enumerable: true, configurable: true
-						});
-						expect(Object.getOwnPropertyDescriptor(obj, 'y')).toEqual({
-							value: 2, writable: true, enumerable: false, configurable: true
-						});
+						expect(obj).toHaveDescriptorModifiersFor('x', true, true, true);
+						expect(obj).toHaveDescriptorModifiersFor('y', true, false, true);
 					}
 				);
 			});
@@ -624,13 +588,11 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 					'(()=>{const a=Object,b=a.assign(a.create(null),{x:1});a.defineProperties(b,{y:{value:b,writable:true,configurable:true}});return b})()',
 					(obj) => {
 						expect(Object.getPrototypeOf(obj)).toBeNull();
-						expect(Object.getOwnPropertyNames(obj)).toEqual(['x', 'y']);
+						expect(obj).toHaveOwnPropertyNames(['x', 'y']);
 						expect(Object.keys(obj)).toEqual(['x']);
 						expect(obj.x).toBe(1);
 						expect(obj.y).toBe(obj);
-						expect(Object.getOwnPropertyDescriptor(obj, 'y')).toEqual({
-							value: obj, writable: true, enumerable: false, configurable: true
-						});
+						expect(obj).toHaveDescriptorModifiersFor('y', true, false, true);
 					}
 				);
 			});
