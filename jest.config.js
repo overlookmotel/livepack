@@ -14,7 +14,11 @@ module.exports = {
 	testEnvironment: 'node',
 	coverageDirectory: 'coverage',
 	collectCoverageFrom: ['index.js', 'lib/**/*.js'],
-	setupFilesAfterEnv: ['jest-extended', 'jest-expect-arguments'],
+	setupFilesAfterEnv: [
+		'jest-extended',
+		'jest-expect-arguments',
+		'<rootDir>/test/support/expect.js'
+	],
 	transform: {
 		'\\.js$': ['babel-jest', {
 			plugins: [babelPlugin],
