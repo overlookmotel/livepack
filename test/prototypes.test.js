@@ -1477,10 +1477,116 @@ describeWithAllOptions('Prototypes', ({run}) => {
 				});
 			});
 		});
+
+		describe('prototype.constructor', () => {
+			describe('deleted', () => {
+				it('function accessed', () => {
+					const input = (0, function() {});
+					delete input.prototype.constructor;
+					run(
+						input,
+						'Object.assign(function(){},{prototype:{}})',
+						(fn) => {
+							expect(fn).toBeFunction();
+							expect(fn).toContainAllKeys([]);
+							expect(fn.prototype).toBeObject();
+							expect(fn.prototype).toHaveOwnPropertyNames([]);
+							expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
+						}
+					);
+				});
+
+				it('prototype accessed', () => {
+					const inputFn = (0, function() {});
+					delete inputFn.prototype.constructor;
+					run(
+						inputFn.prototype,
+						'({})',
+						(proto) => {
+							expect(proto).toBeObject();
+							expect(proto).toHaveOwnPropertyNames([]);
+						}
+					);
+				});
+			});
+
+			describe('altered', () => {
+				it('function accessed', () => {
+					const input = function() {};
+					input.prototype.constructor = function ctor() {};
+					run(
+						input,
+						'(()=>{const a=Object;return a.assign(function input(){},{prototype:a.create(a.prototype,{constructor:{value:function ctor(){},writable:true,configurable:true}})})})()',
+						(fn) => {
+							expect(fn).toBeFunction();
+							expect(fn).toContainAllKeys([]);
+							expect(fn.prototype).toBeObject();
+							expect(fn.prototype).toHaveOwnPropertyNames(['constructor']);
+							expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
+							expect(fn.prototype).toHaveDescriptorModifiersFor('constructor', true, false, true);
+						}
+					);
+				});
+
+				it('prototype accessed', () => {
+					const inputFn = function() {};
+					inputFn.prototype.constructor = function ctor() {};
+					run(
+						inputFn.prototype,
+						'(()=>{const a=Object;return a.create(a.prototype,{constructor:{value:function ctor(){},writable:true,configurable:true}})})()',
+						(proto) => {
+							expect(proto).toBeObject();
+							expect(proto).toHavePrototype(Object.prototype);
+							expect(proto).toHaveOwnPropertyNames(['constructor']);
+							expect(proto).toHaveDescriptorModifiersFor('constructor', true, false, true);
+						}
+					);
+				});
+			});
+
+			describe('altered descriptor', () => {
+				it('function accessed', () => {
+					const input = (0, function() {});
+					Object.defineProperty(input.prototype, 'constructor', {writable: false});
+					run(
+						input,
+						'(()=>{const a={},b=Object,c=b.assign(function(){},{prototype:a});b.defineProperties(a,{constructor:{value:c,configurable:true}});return c})()',
+						(fn) => {
+							expect(fn).toBeFunction();
+							expect(fn).toContainAllKeys([]);
+							expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
+							const proto = fn.prototype;
+							expect(proto).toBeObject();
+							expect(proto).toHaveOwnPropertyNames(['constructor']);
+							expect(proto).toHaveDescriptorModifiersFor('constructor', false, false, true);
+							expect(proto.constructor).toBe(fn);
+						}
+					);
+				});
+
+				it('prototype accessed', () => {
+					const inputFn = (0, function() {});
+					Object.defineProperty(inputFn.prototype, 'constructor', {writable: false});
+					run(
+						inputFn.prototype,
+						'(()=>{const a=(0,function(){}),b=Object,c=b.create(b.prototype,{constructor:{value:a,configurable:true}});a.prototype=c;return c})()',
+						(proto) => {
+							expect(proto).toBeObject();
+							expect(proto).toHaveOwnPropertyNames(['constructor']);
+							expect(proto).toHaveDescriptorModifiersFor('constructor', false, false, true);
+							const fn = proto.constructor;
+							expect(fn).toBeFunction();
+							expect(fn).toContainAllKeys([]);
+							expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
+							expect(fn.prototype).toBe(proto);
+						}
+					);
+				});
+			});
+		});
 	});
 
 	// TODO Tests for arrow functions + generators + async functions + async generators
-	// TODO Tests for constructor altered
 	// TODO Tests for prototype props/methods
 	// TODO Tests for instances (`new F()`)
 	// TODO Tests for inheritance
