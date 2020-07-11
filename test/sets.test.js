@@ -86,5 +86,5 @@ describeWithAllOptions('Sets', ({expectSerializedEqual}) => {
 });
 
 function expectToBeSet(val) {
-	expect(Object.getPrototypeOf(val)).toBe(Set.prototype);
+	expect(val).toHavePrototype(Set.prototype);
 }

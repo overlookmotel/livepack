@@ -369,7 +369,7 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 				const input = {x: 1};
 				Object.defineProperty(input, 'y', {value: 2, writable: true, configurable: true});
 				expectSerializedEqual(input, null, (obj) => {
-					expect(Object.getPrototypeOf(obj)).toBe(Object.prototype);
+					expect(obj).toHavePrototype(Object.prototype);
 				});
 			});
 
@@ -444,7 +444,7 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 				const input = {x: 1};
 				Object.defineProperty(input, 'y', {value: input, writable: true, configurable: true});
 				expectSerializedEqual(input, null, (obj) => {
-					expect(Object.getPrototypeOf(obj)).toBe(Object.prototype);
+					expect(obj).toHavePrototype(Object.prototype);
 				});
 			});
 
@@ -518,7 +518,7 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 	describe('null prototype object', () => {
 		it('no properties', () => {
 			expectSerializedEqual(Object.create(null), 'Object.create(null)', (obj) => {
-				expect(Object.getPrototypeOf(obj)).toBeNull();
+				expect(obj).toHavePrototype(null);
 				expect(obj).toContainAllKeys([]);
 			});
 		});
@@ -532,7 +532,7 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 				expectSerializedEqual(
 					input, '(()=>{const a=Object;return a.assign(a.create(null),{x:1,y:2})})()',
 					(obj) => {
-						expect(Object.getPrototypeOf(obj)).toBeNull();
+						expect(obj).toHavePrototype(null);
 						expect(obj).toContainAllKeys(['x', 'y']);
 						expect(obj.x).toBe(1);
 						expect(obj.y).toBe(2);
@@ -549,7 +549,7 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 					input,
 					'Object.create(null,{x:{value:1,writable:true,enumerable:true,configurable:true},y:{value:2,writable:true,configurable:true}})',
 					(obj) => {
-						expect(Object.getPrototypeOf(obj)).toBeNull();
+						expect(obj).toHavePrototype(null);
 						expect(obj).toHaveOwnPropertyNames(['x', 'y']);
 						expect(Object.keys(obj)).toEqual(['x']);
 						expect(obj.x).toBe(1);
@@ -570,7 +570,7 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 				expectSerializedEqual(
 					input, '(()=>{const a=Object,b=a.assign(a.create(null),{x:1});b.y=b;return b})()',
 					(obj) => {
-						expect(Object.getPrototypeOf(obj)).toBeNull();
+						expect(obj).toHavePrototype(null);
 						expect(obj).toContainAllKeys(['x', 'y']);
 						expect(obj.x).toBe(1);
 						expect(obj.y).toBe(obj);
@@ -587,7 +587,7 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 					input,
 					'(()=>{const a=Object,b=a.assign(a.create(null),{x:1});a.defineProperties(b,{y:{value:b,writable:true,configurable:true}});return b})()',
 					(obj) => {
-						expect(Object.getPrototypeOf(obj)).toBeNull();
+						expect(obj).toHavePrototype(null);
 						expect(obj).toHaveOwnPropertyNames(['x', 'y']);
 						expect(Object.keys(obj)).toEqual(['x']);
 						expect(obj.x).toBe(1);

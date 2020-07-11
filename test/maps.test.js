@@ -90,5 +90,5 @@ describeWithAllOptions('Maps', ({expectSerializedEqual}) => {
 });
 
 function expectToBeMap(val) {
-	expect(Object.getPrototypeOf(val)).toBe(Map.prototype);
+	expect(val).toHavePrototype(Map.prototype);
 }

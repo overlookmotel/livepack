@@ -11,6 +11,16 @@ const {printReceived, printExpected} = require('jest-matcher-utils');
 // Extend `expect`
 
 expect.extend({
+	toHavePrototype(received, expectedProto) {
+		const proto = received != null ? Object.getPrototypeOf(received) : undefined;
+		const pass = proto === expectedProto;
+
+		return {
+			message: () => `expected ${printReceived(received)}${pass ? ' not' : ''} to have prototype ${printExpected(expectedProto)} but has ${printReceived(proto)}`,
+			pass
+		};
+	},
+
 	toHaveOwnPropertyNames(received, expectedKeys) {
 		const keys = Object.getOwnPropertyNames(received);
 		const pass = keys.length === expectedKeys.length

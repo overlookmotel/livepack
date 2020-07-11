@@ -36,7 +36,7 @@ describeWithAllOptions('RegExps', ({expectSerializedEqual}) => {
 });
 
 function expectToBeRegex(val) {
-	expect(Object.getPrototypeOf(val)).toBe(RegExp.prototype);
+	expect(val).toHavePrototype(RegExp.prototype);
 }
 
 describeWithAllOptions('Dates', ({expectSerializedEqual}) => {
@@ -85,5 +85,5 @@ describeWithAllOptions('Buffers', ({expectSerializedEqual}) => {
 });
 
 function expectToBeBuffer(val) {
-	expect(Object.getPrototypeOf(val)).toBe(Buffer.prototype);
+	expect(val).toHavePrototype(Buffer.prototype);
 }
