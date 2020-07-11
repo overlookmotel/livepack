@@ -194,6 +194,193 @@ describeWithAllOptions('Prototypes', ({run}) => {
 			});
 		});
 
+		describe('unaltered prototype accessed directly', () => {
+			it('function has no other props', () => {
+				run(
+					(function() {}).prototype,
+					'(function(){}).prototype',
+					(proto) => {
+						expect(proto).toBeObject();
+						expect(proto).toHaveOwnPropertyNames(['constructor']);
+						expect(proto).toHaveDescriptorModifiersFor('constructor', true, false, true);
+						const fn = proto.constructor;
+						expect(fn).toBeFunction();
+						expect(fn).toContainAllKeys([]);
+						expect(fn.prototype).toBe(proto);
+						expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
+					}
+				);
+			});
+
+			describe('function has other props', () => {
+				describe('without descriptors', () => {
+					it('literals', () => {
+						const inputFn = (0, function() {});
+						inputFn.x = 1;
+						inputFn.y = 2;
+						inputFn.z = 3;
+						run(
+							inputFn.prototype,
+							'Object.assign(function(){},{x:1,y:2,z:3}).prototype',
+							(proto) => {
+								expect(proto).toBeObject();
+								expect(proto).toHaveOwnPropertyNames(['constructor']);
+								expect(proto).toHaveDescriptorModifiersFor('constructor', true, false, true);
+								const fn = proto.constructor;
+								expect(fn).toBeFunction();
+								expect(fn).toContainAllKeys(['x', 'y', 'z']);
+								expect(fn.x).toBe(1);
+								expect(fn.y).toBe(2);
+								expect(fn.z).toBe(3);
+								expect(fn).toHaveDescriptorModifiersFor('x', true, true, true);
+								expect(fn).toHaveDescriptorModifiersFor('y', true, true, true);
+								expect(fn).toHaveDescriptorModifiersFor('z', true, true, true);
+								expect(fn.prototype).toBe(proto);
+								expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
+							}
+						);
+					});
+
+					it('repeated', () => {
+						const inputFn = (0, function() {});
+						inputFn.x = {xx: 1};
+						inputFn.y = 2;
+						inputFn.z = inputFn.x;
+						run(
+							inputFn.prototype,
+							'(()=>{const a={xx:1};return Object.assign(function(){},{x:a,y:2,z:a}).prototype})()',
+							(proto) => {
+								expect(proto).toBeObject();
+								expect(proto).toHaveOwnPropertyNames(['constructor']);
+								expect(proto).toHaveDescriptorModifiersFor('constructor', true, false, true);
+								const fn = proto.constructor;
+								expect(fn).toBeFunction();
+								expect(fn).toContainAllKeys(['x', 'y', 'z']);
+								expect(fn.x).toEqual({xx: 1});
+								expect(fn.y).toBe(2);
+								expect(fn.z).toBe(fn.x);
+								expect(fn).toHaveDescriptorModifiersFor('x', true, true, true);
+								expect(fn).toHaveDescriptorModifiersFor('y', true, true, true);
+								expect(fn).toHaveDescriptorModifiersFor('z', true, true, true);
+								expect(fn.prototype).toBe(proto);
+								expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
+							}
+						);
+					});
+
+					it('circular', () => {
+						const inputFn = (0, function() {});
+						inputFn.x = inputFn;
+						inputFn.y = 2;
+						inputFn.z = inputFn;
+						run(
+							inputFn.prototype,
+							'(()=>{const a=Object.assign(function(){},{x:void 0,y:2});a.x=a;a.z=a;return a.prototype})()',
+							(proto) => {
+								expect(proto).toBeObject();
+								expect(proto).toHaveOwnPropertyNames(['constructor']);
+								expect(proto).toHaveDescriptorModifiersFor('constructor', true, false, true);
+								const fn = proto.constructor;
+								expect(fn).toBeFunction();
+								expect(fn).toContainAllKeys(['x', 'y', 'z']);
+								expect(fn.x).toBe(fn);
+								expect(fn.y).toBe(2);
+								expect(fn.z).toBe(fn);
+								expect(fn).toHaveDescriptorModifiersFor('x', true, true, true);
+								expect(fn).toHaveDescriptorModifiersFor('y', true, true, true);
+								expect(fn).toHaveDescriptorModifiersFor('z', true, true, true);
+								expect(fn.prototype).toBe(proto);
+								expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
+							}
+						);
+					});
+				});
+
+				describe('with descriptors', () => {
+					it('literals', () => {
+						const inputFn = (0, function() {});
+						Object.defineProperty(inputFn, 'x', {value: 1, enumerable: true});
+						inputFn.y = 2;
+						Object.defineProperty(inputFn, 'z', {value: 3, writable: true, enumerable: true});
+						run(
+							inputFn.prototype,
+							'Object.defineProperties(function(){},{x:{value:1,enumerable:true},y:{value:2,writable:true,enumerable:true,configurable:true},z:{value:3,writable:true,enumerable:true}}).prototype',
+							(proto) => {
+								expect(proto).toBeObject();
+								expect(proto).toHaveOwnPropertyNames(['constructor']);
+								expect(proto).toHaveDescriptorModifiersFor('constructor', true, false, true);
+								const fn = proto.constructor;
+								expect(fn).toBeFunction();
+								expect(fn).toContainAllKeys(['x', 'y', 'z']);
+								expect(fn.x).toBe(1);
+								expect(fn.y).toBe(2);
+								expect(fn.z).toBe(3);
+								expect(fn).toHaveDescriptorModifiersFor('x', false, true, false);
+								expect(fn).toHaveDescriptorModifiersFor('y', true, true, true);
+								expect(fn).toHaveDescriptorModifiersFor('z', true, true, false);
+								expect(fn.prototype).toBe(proto);
+								expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
+							}
+						);
+					});
+
+					it('repeated', () => {
+						const inputFn = (0, function() {});
+						Object.defineProperty(inputFn, 'x', {value: {xx: 1}, enumerable: true});
+						inputFn.y = 2;
+						Object.defineProperty(inputFn, 'z', {value: inputFn.x, writable: true, enumerable: true});
+						run(
+							inputFn.prototype,
+							'(()=>{const a={xx:1};return Object.defineProperties(function(){},{x:{value:a,enumerable:true},y:{value:2,writable:true,enumerable:true,configurable:true},z:{value:a,writable:true,enumerable:true}}).prototype})()',
+							(proto) => {
+								expect(proto).toBeObject();
+								expect(proto).toHaveOwnPropertyNames(['constructor']);
+								expect(proto).toHaveDescriptorModifiersFor('constructor', true, false, true);
+								const fn = proto.constructor;
+								expect(fn).toBeFunction();
+								expect(fn).toContainAllKeys(['x', 'y', 'z']);
+								expect(fn.x).toEqual({xx: 1});
+								expect(fn.y).toBe(2);
+								expect(fn.z).toBe(fn.x);
+								expect(fn).toHaveDescriptorModifiersFor('x', false, true, false);
+								expect(fn).toHaveDescriptorModifiersFor('y', true, true, true);
+								expect(fn).toHaveDescriptorModifiersFor('z', true, true, false);
+								expect(fn.prototype).toBe(proto);
+								expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
+							}
+						);
+					});
+
+					it('circular', () => {
+						const inputFn = (0, function() {});
+						Object.defineProperty(inputFn, 'x', {value: inputFn, enumerable: true});
+						inputFn.y = 2;
+						Object.defineProperty(inputFn, 'z', {value: inputFn, writable: true, enumerable: true});
+						run(
+							inputFn.prototype,
+							'(()=>{const a=Object,b=a.assign(function(){},{x:void 0,y:2});a.defineProperties(b,{x:{value:b,writable:false,configurable:false},z:{value:b,writable:true,enumerable:true}});return b.prototype})()',
+							(proto) => {
+								expect(proto).toBeObject();
+								expect(proto).toHaveOwnPropertyNames(['constructor']);
+								expect(proto).toHaveDescriptorModifiersFor('constructor', true, false, true);
+								const fn = proto.constructor;
+								expect(fn).toBeFunction();
+								expect(fn).toContainAllKeys(['x', 'y', 'z']);
+								expect(fn.x).toBe(fn);
+								expect(fn.y).toBe(2);
+								expect(fn.z).toBe(fn);
+								expect(fn).toHaveDescriptorModifiersFor('x', false, true, false);
+								expect(fn).toHaveDescriptorModifiersFor('y', true, true, true);
+								expect(fn).toHaveDescriptorModifiersFor('z', true, true, false);
+								expect(fn.prototype).toBe(proto);
+								expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
+							}
+						);
+					});
+				});
+			});
+		});
+
 		describe('prototype substituted with', () => {
 			describe('empty object and', () => {
 				it('function has no other props', () => {
