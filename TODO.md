@@ -5,6 +5,7 @@
 * Ignore `extends` var in class definitions e.g. ignore `Y` in `class X extends Y {}`
 * Handle `super` (in class + object methods)
 * Tests for protecting `module`, `exports`, `require` etc vars from being overwritten in CJS mode
+* Don't treat `module` + `exports` as globals - treat as vars in top scope of file
 * Handle objects (including arrays, functions, etc) which are frozen, sealed, or have extensions prevented
 * Handle unscoped `this` e.g. top-level function `() => this`
 * Substitute globals used in functions for created global vars
