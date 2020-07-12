@@ -1584,6 +1584,55 @@ describeWithAllOptions('Prototypes', ({run}) => {
 				});
 			});
 		});
+
+		describe('prototype props + methods', () => {
+			it('1 method', () => {
+				const input = (0, function() {});
+				input.prototype.x = function x() {};
+				run(
+					input,
+					'(()=>{const a=(0,function(){});a.prototype.x=function x(){};return a})()',
+					(fn) => {
+						expect(fn).toBeFunction();
+						expect(fn).toContainAllKeys([]);
+						const proto = fn.prototype;
+						expect(proto).toBeObject();
+						expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
+						expect(proto).toHaveOwnPropertyNames(['constructor', 'x']);
+						expect(proto.constructor).toBe(fn);
+						expect(proto).toHaveDescriptorModifiersFor('constructor', true, false, true);
+						expect(proto.x).toBeFunction();
+					}
+				);
+			});
+
+			it('multiple props', () => {
+				const input = (0, function() {});
+				input.prototype.x = function x() {};
+				input.prototype.y = function y() {};
+				input.prototype.z = {zz: 1};
+				run(
+					input,
+					'(()=>{const a=(0,function(){}),b=a.prototype;b.x=function x(){};b.y=function y(){};b.z={zz:1};return a})()',
+					(fn) => {
+						expect(fn).toBeFunction();
+						expect(fn).toContainAllKeys([]);
+						const proto = fn.prototype;
+						expect(proto).toBeObject();
+						expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
+						expect(proto).toHaveOwnPropertyNames(['constructor', 'x', 'y', 'z']);
+						expect(proto.constructor).toBe(fn);
+						expect(proto).toHaveDescriptorModifiersFor('constructor', true, false, true);
+						expect(proto.x).toBeFunction();
+						expect(proto).toHaveDescriptorModifiersFor('x', true, true, true);
+						expect(proto.y).toBeFunction();
+						expect(proto).toHaveDescriptorModifiersFor('y', true, true, true);
+						expect(proto.z).toEqual({zz: 1});
+						expect(proto).toHaveDescriptorModifiersFor('z', true, true, true);
+					}
+				);
+			});
+		});
 	});
 
 	// TODO Tests for arrow functions + generators + async functions + async generators
