@@ -26,7 +26,7 @@
     "@babel/traverse": "^7.10.4",
     "@babel/types": "^7.10.4",
     "is-it-type": "^4.1.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "reserved-words": "^0.1.2"
   },
   "devDependencies": {
