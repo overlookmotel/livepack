@@ -2456,6 +2456,9 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 				{'0a': function() {}}['0a'],
 				'Object.defineProperties(function(){},{name:{value:"0a"}})',
 				(fn) => {
+					expect(
+						Object.getOwnPropertyNames(fn).filter(key => key !== 'arguments' && key !== 'caller')
+					).toEqual(['length', 'name', 'prototype']);
 					expect(fn.name).toBe('0a');
 					expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
 				}
@@ -2522,6 +2525,23 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 				}
 			);
 		});
+
+		it('deleted and redefined (i.e. property order changed)', () => {
+			function input() {}
+			delete input.name;
+			Object.defineProperty(input, 'name', {value: 'input', configurable: true});
+			run(
+				input,
+				'(()=>{const a=function input(){};delete a.name;Object.defineProperties(a,{name:{value:"input",configurable:true}});return a})()',
+				(fn) => {
+					expect(
+						Object.getOwnPropertyNames(fn).filter(key => key !== 'arguments' && key !== 'caller')
+					).toEqual(['length', 'prototype', 'name']);
+					expect(fn.name).toBe('input');
+					expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
+				}
+			);
+		});
 	});
 
 	describe('maintain length where', () => {
@@ -2532,6 +2552,9 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 				input,
 				'Object.defineProperties(function input(){},{length:{value:2}})',
 				(fn) => {
+					expect(
+						Object.getOwnPropertyNames(fn).filter(key => key !== 'arguments' && key !== 'caller')
+					).toEqual(['length', 'name', 'prototype']);
 					expect(fn.length).toBe(2); // eslint-disable-line jest/prefer-to-have-length
 					expect(fn).toHaveDescriptorModifiersFor('length', false, false, true);
 				}
@@ -2582,6 +2605,23 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 				(fn) => {
 					expect(fn.length).toBe(0); // eslint-disable-line jest/prefer-to-have-length
 					expect(fn).not.toHaveDescriptorFor('length');
+				}
+			);
+		});
+
+		it('deleted and redefined (i.e. property order changed)', () => {
+			function input() {}
+			delete input.length;
+			Object.defineProperty(input, 'length', {value: 0, configurable: true});
+			run(
+				input,
+				'(()=>{const a=function input(){};delete a.length;Object.defineProperties(a,{length:{value:0,configurable:true}});return a})()',
+				(fn) => {
+					expect(
+						Object.getOwnPropertyNames(fn).filter(key => key !== 'arguments' && key !== 'caller')
+					).toEqual(['name', 'prototype', 'length']);
+					expect(fn.name).toBe('input');
+					expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
 				}
 			);
 		});
