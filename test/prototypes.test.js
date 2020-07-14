@@ -120,7 +120,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 							input.z = input;
 							run(
 								input,
-								'(()=>{const a=Object.defineProperties(function(){},{name:{value:"",writable:true},x:{value:void 0,writable:true,enumerable:true,configurable:true},y:{value:2,writable:true,enumerable:true,configurable:true}});a.x=a;a.z=a;return a})()',
+								'(()=>{const a=Object.defineProperties(function(){},{name:{writable:true},x:{writable:true,enumerable:true,configurable:true},y:{value:2,writable:true,enumerable:true,configurable:true}});a.x=a;a.z=a;return a})()',
 								(fn) => {
 									expect(fn).toBeFunction();
 									expect(fn.name).toBe('');
@@ -292,7 +292,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 							Object.defineProperty(input, 'z', {value: input, writable: true, enumerable: true});
 							run(
 								input,
-								'(()=>{const a=Object.defineProperties,b=a(function(){},{name:{value:"",writable:true},x:{value:void 0,writable:true,enumerable:true,configurable:true},y:{value:2,writable:true,enumerable:true,configurable:true}});a(b,{x:{value:b,writable:false,configurable:false},z:{value:b,writable:true,enumerable:true}});return b})()',
+								'(()=>{const a=Object.defineProperties,b=a(function(){},{name:{writable:true},x:{writable:true,enumerable:true,configurable:true},y:{value:2,writable:true,enumerable:true,configurable:true}});a(b,{x:{value:b,writable:false,configurable:false},z:{value:b,writable:true,enumerable:true}});return b})()',
 								(fn) => {
 									expect(fn).toBeFunction();
 									expect(fn.name).toBe('');
@@ -488,7 +488,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 							inputFn.z = inputFn;
 							run(
 								inputFn.prototype,
-								'(()=>{const a=Object.defineProperties(function(){},{name:{value:"",writable:true},x:{value:void 0,writable:true,enumerable:true,configurable:true},y:{value:2,writable:true,enumerable:true,configurable:true}});a.x=a;a.z=a;return a.prototype})()',
+								'(()=>{const a=Object.defineProperties(function(){},{name:{writable:true},x:{writable:true,enumerable:true,configurable:true},y:{value:2,writable:true,enumerable:true,configurable:true}});a.x=a;a.z=a;return a.prototype})()',
 								(proto) => {
 									expect(proto).toBeObject();
 									expect(proto).toHaveOwnPropertyNames(['constructor']);
@@ -666,7 +666,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 							Object.defineProperty(inputFn, 'z', {value: inputFn, writable: true, enumerable: true});
 							run(
 								inputFn.prototype,
-								'(()=>{const a=Object.defineProperties,b=a(function(){},{name:{value:"",writable:true},x:{value:void 0,writable:true,enumerable:true,configurable:true},y:{value:2,writable:true,enumerable:true,configurable:true}});a(b,{x:{value:b,writable:false,configurable:false},z:{value:b,writable:true,enumerable:true}});return b.prototype})()',
+								'(()=>{const a=Object.defineProperties,b=a(function(){},{name:{writable:true},x:{writable:true,enumerable:true,configurable:true},y:{value:2,writable:true,enumerable:true,configurable:true}});a(b,{x:{value:b,writable:false,configurable:false},z:{value:b,writable:true,enumerable:true}});return b.prototype})()',
 								(proto) => {
 									expect(proto).toBeObject();
 									expect(proto).toHaveOwnPropertyNames(['constructor']);
@@ -1321,7 +1321,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 
 				run(
 					input,
-					'(()=>{const a={},b=Object.defineProperties,c=b(function(){},{prototype:{value:a,writable:false}});b(a,{constructor:{value:c,writable:true,configurable:true}});return c})()',
+					'Object.defineProperties(function(){},{prototype:{writable:false}})',
 					(fn) => {
 						expect(fn).toBeFunction();
 						expect(fn.prototype).toBeObject();
@@ -1342,7 +1342,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 						input.z = 4;
 						run(
 							input,
-							'(()=>{const a={},b=Object.defineProperties,c=b(function(){},{prototype:{value:a,writable:false},y:{value:3,writable:true,enumerable:true,configurable:true},z:{value:4,writable:true,enumerable:true,configurable:true}});b(a,{constructor:{value:c,writable:true,configurable:true}});return c})()',
+							'Object.defineProperties(function(){},{prototype:{writable:false},y:{value:3,writable:true,enumerable:true,configurable:true},z:{value:4,writable:true,enumerable:true,configurable:true}})',
 							(fn) => {
 								expect(fn).toBeFunction();
 								expect(fn).toContainAllKeys(['y', 'z']);
@@ -1365,7 +1365,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 						input.z = input.y;
 						run(
 							input,
-							'(()=>{const a={},b=Object.defineProperties,c={xx:1},d=b(function(){},{prototype:{value:a,writable:false},y:{value:c,writable:true,enumerable:true,configurable:true},z:{value:c,writable:true,enumerable:true,configurable:true}});b(a,{constructor:{value:d,writable:true,configurable:true}});return d})()',
+							'(()=>{const a={xx:1};return Object.defineProperties(function(){},{prototype:{writable:false},y:{value:a,writable:true,enumerable:true,configurable:true},z:{value:a,writable:true,enumerable:true,configurable:true}})})()',
 							(fn) => {
 								expect(fn).toBeFunction();
 								expect(fn).toContainAllKeys(['y', 'z']);
@@ -1388,7 +1388,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 						input.z = input;
 						run(
 							input,
-							'(()=>{const a={},b=Object.defineProperties,c=b(function(){},{prototype:{value:a,writable:false}});b(a,{constructor:{value:c,writable:true,configurable:true}});c.y=c;c.z=c;return c})()',
+							'(()=>{const a=Object.defineProperties(function(){},{prototype:{writable:false}});a.y=a;a.z=a;return a})()',
 							(fn) => {
 								expect(fn).toBeFunction();
 								expect(fn).toContainAllKeys(['y', 'z']);
@@ -1413,7 +1413,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 						Object.defineProperty(input, 'z', {value: 4, writable: true, enumerable: true});
 						run(
 							input,
-							'(()=>{const a={},b=Object.defineProperties,c=b(function(){},{prototype:{value:a,writable:false},y:{value:3,enumerable:true},z:{value:4,writable:true,enumerable:true}});b(a,{constructor:{value:c,writable:true,configurable:true}});return c})()',
+							'Object.defineProperties(function(){},{prototype:{writable:false},y:{value:3,enumerable:true},z:{value:4,writable:true,enumerable:true}})',
 							(fn) => {
 								expect(fn).toBeFunction();
 								expect(fn).toContainAllKeys(['y', 'z']);
@@ -1436,7 +1436,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 						Object.defineProperty(input, 'z', {value: input.y, writable: true, enumerable: true});
 						run(
 							input,
-							'(()=>{const a={},b=Object.defineProperties,c={xx:1},d=b(function(){},{prototype:{value:a,writable:false},y:{value:c,enumerable:true},z:{value:c,writable:true,enumerable:true}});b(a,{constructor:{value:d,writable:true,configurable:true}});return d})()',
+							'(()=>{const a={xx:1};return Object.defineProperties(function(){},{prototype:{writable:false},y:{value:a,enumerable:true},z:{value:a,writable:true,enumerable:true}})})()',
 							(fn) => {
 								expect(fn).toBeFunction();
 								expect(fn).toContainAllKeys(['y', 'z']);
@@ -1459,7 +1459,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 						Object.defineProperty(input, 'z', {value: input, writable: true, enumerable: true});
 						run(
 							input,
-							'(()=>{const a={},b=Object.defineProperties,c=b(function(){},{prototype:{value:a,writable:false}});b(a,{constructor:{value:c,writable:true,configurable:true}});b(c,{y:{value:c,enumerable:true},z:{value:c,writable:true,enumerable:true}});return c})()',
+							'(()=>{const a=Object.defineProperties,b=a(function(){},{prototype:{writable:false}});a(b,{y:{value:b,enumerable:true},z:{value:b,writable:true,enumerable:true}});return b})()',
 							(fn) => {
 								expect(fn).toBeFunction();
 								expect(fn).toContainAllKeys(['y', 'z']);
@@ -1550,7 +1550,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 					Object.defineProperty(input.prototype, 'constructor', {writable: false});
 					run(
 						input,
-						'(()=>{const a={},b=Object,c=b.assign(function(){},{prototype:a});b.defineProperties(a,{constructor:{value:c,configurable:true}});return c})()',
+						'(()=>{const a=(0,function(){});Object.defineProperties(a.prototype,{constructor:{writable:false}});return a})()',
 						(fn) => {
 							expect(fn).toBeFunction();
 							expect(fn).toContainAllKeys([]);
@@ -1569,7 +1569,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 					Object.defineProperty(inputFn.prototype, 'constructor', {writable: false});
 					run(
 						inputFn.prototype,
-						'(()=>{const a=(0,function(){}),b=Object,c=b.create(b.prototype,{constructor:{value:a,configurable:true}});a.prototype=c;return c})()',
+						'(()=>{const a=function(){}.prototype;Object.defineProperties(a,{constructor:{writable:false}});return a})()',
 						(proto) => {
 							expect(proto).toBeObject();
 							expect(proto).toHaveOwnPropertyNames(['constructor']);
