@@ -2530,6 +2530,121 @@ describeWithAllOptions('Prototypes', ({run}) => {
 		});
 	});
 
-	// TODO Tests for instances (`new F()`)
+	describe('instances', () => {
+		describe('with no own props', () => {
+			it('where class function has no extra props', () => {
+				const F = function() {};
+				run(
+					new F(),
+					'Object.create(function F(){}.prototype)',
+					(obj) => {
+						expect(obj).toBeObject();
+						expect(obj).toHaveOwnPropertyNames([]);
+						const fn = Object.getPrototypeOf(obj).constructor;
+						expect(fn).toBeFunction();
+						expect(fn.name).toBe('F');
+					}
+				);
+			});
+
+			it('where class function has extra props', () => {
+				const F = function() {};
+				F.x = {xx: 1};
+				run(
+					new F(),
+					'(()=>{const a=Object;return a.create(a.assign(function F(){},{x:{xx:1}}).prototype)})()',
+					(obj) => {
+						expect(obj).toBeObject();
+						expect(obj).toHaveOwnPropertyNames([]);
+						const fn = Object.getPrototypeOf(obj).constructor;
+						expect(fn).toBeFunction();
+						expect(fn.name).toBe('F');
+						expect(fn).toContainAllKeys(['x']);
+						expect(fn.x).toEqual({xx: 1});
+					}
+				);
+			});
+
+			it('where class function has extra prototype props', () => {
+				const F = function() {};
+				F.prototype.x = {xx: 1};
+				run(
+					new F(),
+					'(()=>{const a=function F(){}.prototype;a.x={xx:1};return Object.create(a)})()',
+					(obj) => {
+						expect(obj).toBeObject();
+						expect(obj).toHaveOwnPropertyNames([]);
+						const proto = Object.getPrototypeOf(obj);
+						expect(proto).toEqual({x: {xx: 1}});
+						const fn = Object.getPrototypeOf(obj).constructor;
+						expect(fn).toBeFunction();
+						expect(fn.name).toBe('F');
+						expect(obj.x).toEqual({xx: 1});
+					}
+				);
+			});
+		});
+
+		describe('with own props', () => {
+			it('where class function has no extra props', () => {
+				const F = function() {};
+				const input = new F();
+				input.y = {yy: 1};
+				run(
+					input,
+					'(()=>{const a=Object;return a.assign(a.create(function F(){}.prototype),{y:{yy:1}})})()',
+					(obj) => {
+						expect(obj).toBeObject();
+						expect(obj).toEqual({y: {yy: 1}});
+						const fn = Object.getPrototypeOf(obj).constructor;
+						expect(fn).toBeFunction();
+						expect(fn.name).toBe('F');
+					}
+				);
+			});
+
+			it('where class function has extra props', () => {
+				const F = function() {};
+				F.x = {xx: 1};
+				const input = new F();
+				input.y = {yy: 1};
+				run(
+					input,
+					'(()=>{const a=Object,b=a.assign;return b(a.create(b(function F(){},{x:{xx:1}}).prototype),{y:{yy:1}})})()',
+					(obj) => {
+						expect(obj).toBeObject();
+						expect(obj).toEqual({y: {yy: 1}});
+						const fn = Object.getPrototypeOf(obj).constructor;
+						expect(fn).toBeFunction();
+						expect(fn.name).toBe('F');
+						expect(fn).toContainAllKeys(['x']);
+						expect(fn.x).toEqual({xx: 1});
+					}
+				);
+			});
+
+			it('where class function has extra prototype props', () => {
+				const F = function() {};
+				F.prototype.x = {xx: 1};
+				const input = new F();
+				input.y = {yy: 1};
+				run(
+					input,
+					'(()=>{const a=Object,b=function F(){}.prototype;b.x={xx:1};return a.assign(a.create(b),{y:{yy:1}})})()',
+					(obj) => {
+						expect(obj).toBeObject();
+						expect(obj).toEqual({y: {yy: 1}});
+						const proto = Object.getPrototypeOf(obj);
+						expect(proto).toEqual({x: {xx: 1}});
+						const fn = Object.getPrototypeOf(obj).constructor;
+						expect(fn).toBeFunction();
+						expect(fn.name).toBe('F');
+						expect(obj.x).toEqual({xx: 1});
+					}
+				);
+			});
+		});
+	});
+
 	// TODO Tests for inheritance
 });
