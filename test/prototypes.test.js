@@ -1932,7 +1932,604 @@ describeWithAllOptions('Prototypes', ({run}) => {
 		});
 	});
 
-	// TODO Tests for arrow functions + generators + async functions + async generators
+	describe('arrow functions', () => {
+		it('have no prototype by default', () => {
+			run(
+				() => {},
+				'()=>{}',
+				(fn) => {
+					expect(fn).toBeFunction();
+					expect(fn).toContainAllKeys([]);
+					expect(fn).not.toHaveDescriptorFor('prototype');
+				}
+			);
+		});
+
+		describe('with prototype defined', () => {
+			it('function accessed', () => {
+				const inputFn = (0, () => {});
+				inputFn.prototype = {constructor: inputFn};
+				run(
+					inputFn,
+					'(()=>{const a={},b=Object.assign(()=>{},{prototype:a});a.constructor=b;return b})()',
+					(fn) => {
+						expect(fn).toBeFunction();
+						expect(fn).toContainAllKeys(['prototype']);
+						expect(fn).toHaveDescriptorModifiersFor('prototype', true, true, true);
+						const proto = fn.prototype;
+						expect(proto).toBeObject();
+						expect(proto).toHaveOwnPropertyNames(['constructor']);
+						expect(proto.constructor).toBe(fn);
+						expect(proto).toHaveDescriptorModifiersFor('constructor', true, true, true);
+					}
+				);
+			});
+
+			it('prototype accessed', () => {
+				const inputFn = (0, () => {});
+				inputFn.prototype = {constructor: inputFn};
+				run(
+					inputFn.prototype,
+					'(()=>{const a=(0,()=>{}),b={constructor:a};a.prototype=b;return b})()',
+					(proto) => {
+						expect(proto).toBeObject();
+						expect(proto).toHaveOwnPropertyNames(['constructor']);
+						const fn = proto.constructor;
+						expect(fn).toBeFunction();
+						expect(fn).toContainAllKeys(['prototype']);
+						expect(fn).toHaveDescriptorModifiersFor('prototype', true, true, true);
+						expect(fn.prototype).toBe(proto);
+						expect(proto).toHaveDescriptorModifiersFor('constructor', true, true, true);
+					}
+				);
+			});
+		});
+	});
+
+	describe('async functions', () => {
+		it('have no prototype by default', () => {
+			run(
+				async function() {}, // eslint-disable-line no-empty-function
+				'(async function(){})',
+				(fn) => {
+					expect(fn).toBeFunction();
+					expect(fn).toContainAllKeys([]);
+					expect(fn).not.toHaveDescriptorFor('prototype');
+				}
+			);
+		});
+
+		describe('with prototype defined', () => {
+			it('function accessed', () => {
+				const inputFn = (0, async function() {}); // eslint-disable-line no-empty-function
+				inputFn.prototype = {constructor: inputFn};
+				run(
+					inputFn,
+					'(()=>{const a={},b=Object.assign(async function(){},{prototype:a});a.constructor=b;return b})()',
+					(fn) => {
+						expect(fn).toBeFunction();
+						expect(fn).toContainAllKeys(['prototype']);
+						expect(fn).toHaveDescriptorModifiersFor('prototype', true, true, true);
+						const proto = fn.prototype;
+						expect(proto).toBeObject();
+						expect(proto).toHaveOwnPropertyNames(['constructor']);
+						expect(proto.constructor).toBe(fn);
+						expect(proto).toHaveDescriptorModifiersFor('constructor', true, true, true);
+					}
+				);
+			});
+
+			it('prototype accessed', () => {
+				const inputFn = (0, async function() {}); // eslint-disable-line no-empty-function
+				inputFn.prototype = {constructor: inputFn};
+				run(
+					inputFn.prototype,
+					'(()=>{const a=(0,async function(){}),b={constructor:a};a.prototype=b;return b})()',
+					(proto) => {
+						expect(proto).toBeObject();
+						expect(proto).toHaveOwnPropertyNames(['constructor']);
+						const fn = proto.constructor;
+						expect(fn).toBeFunction();
+						expect(fn).toContainAllKeys(['prototype']);
+						expect(fn).toHaveDescriptorModifiersFor('prototype', true, true, true);
+						expect(fn.prototype).toBe(proto);
+						expect(proto).toHaveDescriptorModifiersFor('constructor', true, true, true);
+					}
+				);
+			});
+		});
+	});
+
+	describe('async arrow functions', () => {
+		it('have no prototype by default', () => {
+			run(
+				async () => {},
+				'async()=>{}',
+				(fn) => {
+					expect(fn).toBeFunction();
+					expect(fn).toContainAllKeys([]);
+					expect(fn).not.toHaveDescriptorFor('prototype');
+				}
+			);
+		});
+
+		describe('with prototype defined', () => {
+			it('function accessed', () => {
+				const inputFn = (0, async () => {});
+				inputFn.prototype = {constructor: inputFn};
+				run(
+					inputFn,
+					'(()=>{const a={},b=Object.assign(async()=>{},{prototype:a});a.constructor=b;return b})()',
+					(fn) => {
+						expect(fn).toBeFunction();
+						expect(fn).toContainAllKeys(['prototype']);
+						expect(fn).toHaveDescriptorModifiersFor('prototype', true, true, true);
+						const proto = fn.prototype;
+						expect(proto).toBeObject();
+						expect(proto).toHaveOwnPropertyNames(['constructor']);
+						expect(proto.constructor).toBe(fn);
+						expect(proto).toHaveDescriptorModifiersFor('constructor', true, true, true);
+					}
+				);
+			});
+
+			it('prototype accessed', () => {
+				const inputFn = (0, async () => {});
+				inputFn.prototype = {constructor: inputFn};
+				run(
+					inputFn.prototype,
+					'(()=>{const a=(0,async()=>{}),b={constructor:a};a.prototype=b;return b})()',
+					(proto) => {
+						expect(proto).toBeObject();
+						expect(proto).toHaveOwnPropertyNames(['constructor']);
+						const fn = proto.constructor;
+						expect(fn).toBeFunction();
+						expect(fn).toContainAllKeys(['prototype']);
+						expect(fn).toHaveDescriptorModifiersFor('prototype', true, true, true);
+						expect(fn.prototype).toBe(proto);
+						expect(proto).toHaveDescriptorModifiersFor('constructor', true, true, true);
+					}
+				);
+			});
+		});
+	});
+
+	describe('generator functions', () => {
+		describe('with no other props', () => {
+			it('function accessed', () => {
+				run(
+					function*() {}, // eslint-disable-line no-empty-function
+					'(function*(){})',
+					(fn) => {
+						expect(fn).toBeFunction();
+						expect(fn).toContainAllKeys([]);
+						expect(fn.prototype).toBeObject();
+						expect(fn.prototype).toHaveOwnPropertyNames([]);
+						expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
+					}
+				);
+			});
+
+			it('prototype accessed', () => {
+				run(
+					function*() {}.prototype, // eslint-disable-line no-empty-function
+					'(()=>{const a=Object;return a.create(a.getPrototypeOf(function*(){}.prototype))})()',
+					(proto) => {
+						expect(proto).toBeObject();
+						expect(proto).toHaveOwnPropertyNames([]);
+					}
+				);
+			});
+
+			it('both accessed, function first', () => {
+				const inputFn = (0, function*() {}); // eslint-disable-line no-empty-function
+				run(
+					{fn: inputFn, proto: inputFn.prototype},
+					'(()=>{const a=(0,function*(){});return{fn:a,proto:a.prototype}})()',
+					(obj) => {
+						expect(obj).toBeObject();
+						expect(obj).toHaveOwnPropertyNames(['fn', 'proto']);
+						const {fn, proto} = obj;
+						expect(fn).toBeFunction();
+						expect(fn).toContainAllKeys([]);
+						expect(proto).toBeObject();
+						expect(proto).toHaveOwnPropertyNames([]);
+						expect(fn.prototype).toBe(proto);
+					}
+				);
+			});
+
+			it('both accessed, prototype first', () => {
+				const inputFn = (0, function*() {}); // eslint-disable-line no-empty-function
+				run(
+					{proto: inputFn.prototype, fn: inputFn},
+					'(()=>{const a=(0,function*(){});return{proto:a.prototype,fn:a}})()',
+					(obj) => {
+						expect(obj).toBeObject();
+						expect(obj).toHaveOwnPropertyNames(['proto', 'fn']);
+						const {fn, proto} = obj;
+						expect(fn).toBeFunction();
+						expect(fn).toContainAllKeys([]);
+						expect(proto).toBeObject();
+						expect(proto).toHaveOwnPropertyNames([]);
+						expect(fn.prototype).toBe(proto);
+					}
+				);
+			});
+		});
+
+		describe('with other props', () => {
+			it('function accessed', () => {
+				const inputFn = (0, function*() {}); // eslint-disable-line no-empty-function
+				inputFn.x = {xx: 1};
+				run(
+					inputFn,
+					'Object.assign(function*(){},{x:{xx:1}})',
+					(fn) => {
+						expect(fn).toBeFunction();
+						expect(fn).toContainAllKeys(['x']);
+						expect(fn.prototype).toBeObject();
+						expect(fn.prototype).toHaveOwnPropertyNames([]);
+						expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
+						expect(fn.x).toEqual({xx: 1});
+						expect(fn).toHaveDescriptorModifiersFor('x', true, true, true);
+					}
+				);
+			});
+
+			it('prototype accessed', () => {
+				const inputFn = (0, function*() {}); // eslint-disable-line no-empty-function
+				inputFn.x = {xx: 1};
+				run(
+					inputFn.prototype,
+					'(()=>{const a=Object;return a.create(a.getPrototypeOf(function*(){}.prototype))})()',
+					(proto) => {
+						expect(proto).toBeObject();
+						expect(proto).toHaveOwnPropertyNames([]);
+					}
+				);
+			});
+
+			it('both accessed, function first', () => {
+				const inputFn = (0, function*() {}); // eslint-disable-line no-empty-function
+				inputFn.x = {xx: 1};
+				run(
+					{fn: inputFn, proto: inputFn.prototype},
+					'(()=>{const a=Object.assign(function*(){},{x:{xx:1}});return{fn:a,proto:a.prototype}})()',
+					(obj) => {
+						expect(obj).toBeObject();
+						expect(obj).toHaveOwnPropertyNames(['fn', 'proto']);
+						const {fn, proto} = obj;
+						expect(fn).toBeFunction();
+						expect(fn).toContainAllKeys(['x']);
+						expect(proto).toBeObject();
+						expect(proto).toHaveOwnPropertyNames([]);
+						expect(fn.prototype).toBe(proto);
+						expect(fn.x).toEqual({xx: 1});
+						expect(fn).toHaveDescriptorModifiersFor('x', true, true, true);
+					}
+				);
+			});
+
+			it('both accessed, prototype first', () => {
+				const inputFn = (0, function*() {}); // eslint-disable-line no-empty-function
+				inputFn.x = {xx: 1};
+				run(
+					{proto: inputFn.prototype, fn: inputFn},
+					'(()=>{const a=Object.assign(function*(){},{x:{xx:1}});return{proto:a.prototype,fn:a}})()',
+					(obj) => {
+						expect(obj).toBeObject();
+						expect(obj).toHaveOwnPropertyNames(['proto', 'fn']);
+						const {fn, proto} = obj;
+						expect(fn).toBeFunction();
+						expect(fn).toContainAllKeys(['x']);
+						expect(proto).toBeObject();
+						expect(proto).toHaveOwnPropertyNames([]);
+						expect(fn.prototype).toBe(proto);
+						expect(fn.x).toEqual({xx: 1});
+						expect(fn).toHaveDescriptorModifiersFor('x', true, true, true);
+					}
+				);
+			});
+		});
+
+		describe('with other prototype props', () => {
+			it('function accessed', () => {
+				const inputFn = (0, function*() {}); // eslint-disable-line no-empty-function
+				inputFn.prototype.x = {xx: 1};
+				run(
+					inputFn,
+					'(()=>{const a=Object,b=a.assign;return b(function*(){},{prototype:b(a.create(a.getPrototypeOf(function*(){}.prototype)),{x:{xx:1}})})})()',
+					(fn) => {
+						expect(fn).toBeFunction();
+						expect(fn).toContainAllKeys([]);
+						const proto = fn.prototype;
+						expect(proto).toBeObject();
+						expect(proto).toHaveOwnPropertyNames(['x']);
+						expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
+						expect(proto.x).toEqual({xx: 1});
+						expect(proto).toHaveDescriptorModifiersFor('x', true, true, true);
+					}
+				);
+			});
+
+			it('prototype accessed', () => {
+				const inputFn = (0, function*() {}); // eslint-disable-line no-empty-function
+				inputFn.prototype.x = {xx: 1};
+				run(
+					inputFn.prototype,
+					'(()=>{const a=Object;return a.assign(a.create(a.getPrototypeOf(function*(){}.prototype)),{x:{xx:1}})})()',
+					(proto) => {
+						expect(proto).toBeObject();
+						expect(proto).toHaveOwnPropertyNames(['x']);
+						expect(proto.x).toEqual({xx: 1});
+						expect(proto).toHaveDescriptorModifiersFor('x', true, true, true);
+					}
+				);
+			});
+
+			it('both accessed, function first', () => {
+				const inputFn = (0, function*() {}); // eslint-disable-line no-empty-function
+				inputFn.prototype.x = {xx: 1};
+				run(
+					{fn: inputFn, proto: inputFn.prototype},
+					'(()=>{const a=Object,b=a.assign,c=b(a.create(a.getPrototypeOf(function*(){}.prototype)),{x:{xx:1}});return{fn:b(function*(){},{prototype:c}),proto:c}})()',
+					(obj) => {
+						expect(obj).toBeObject();
+						expect(obj).toHaveOwnPropertyNames(['fn', 'proto']);
+						const {fn, proto} = obj;
+						expect(fn).toBeFunction();
+						expect(fn).toContainAllKeys([]);
+						expect(proto).toBeObject();
+						expect(proto).toHaveOwnPropertyNames(['x']);
+						expect(fn.prototype).toBe(proto);
+						expect(proto.x).toEqual({xx: 1});
+						expect(proto).toHaveDescriptorModifiersFor('x', true, true, true);
+					}
+				);
+			});
+
+			it('both accessed, prototype first', () => {
+				const inputFn = (0, function*() {}); // eslint-disable-line no-empty-function
+				inputFn.prototype.x = {xx: 1};
+				run(
+					{proto: inputFn.prototype, fn: inputFn},
+					'(()=>{const a=Object,b=a.assign,c=b(a.create(a.getPrototypeOf(function*(){}.prototype)),{x:{xx:1}});return{proto:c,fn:b(function*(){},{prototype:c})}})()',
+					(obj) => {
+						expect(obj).toBeObject();
+						expect(obj).toHaveOwnPropertyNames(['proto', 'fn']);
+						const {fn, proto} = obj;
+						expect(fn).toBeFunction();
+						expect(fn).toContainAllKeys([]);
+						expect(proto).toBeObject();
+						expect(proto).toHaveOwnPropertyNames(['x']);
+						expect(fn.prototype).toBe(proto);
+						expect(proto.x).toEqual({xx: 1});
+						expect(proto).toHaveDescriptorModifiersFor('x', true, true, true);
+					}
+				);
+			});
+		});
+	});
+
+	describe('async generator functions', () => {
+		describe('with no other props', () => {
+			it('function accessed', () => {
+				run(
+					async function*() {}, // eslint-disable-line no-empty-function
+					'(async function*(){})',
+					(fn) => {
+						expect(fn).toBeFunction();
+						expect(fn).toContainAllKeys([]);
+						expect(fn.prototype).toBeObject();
+						expect(fn.prototype).toHaveOwnPropertyNames([]);
+						expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
+					}
+				);
+			});
+
+			it('prototype accessed', () => {
+				run(
+					async function*() {}.prototype, // eslint-disable-line no-empty-function
+					'(()=>{const a=Object;return a.create(a.getPrototypeOf(async function*(){}.prototype))})()',
+					(proto) => {
+						expect(proto).toBeObject();
+						expect(proto).toHaveOwnPropertyNames([]);
+					}
+				);
+			});
+
+			it('both accessed, function first', () => {
+				const inputFn = (0, async function*() {}); // eslint-disable-line no-empty-function
+				run(
+					{fn: inputFn, proto: inputFn.prototype},
+					'(()=>{const a=(0,async function*(){});return{fn:a,proto:a.prototype}})()',
+					(obj) => {
+						expect(obj).toBeObject();
+						expect(obj).toHaveOwnPropertyNames(['fn', 'proto']);
+						const {fn, proto} = obj;
+						expect(fn).toBeFunction();
+						expect(fn).toContainAllKeys([]);
+						expect(proto).toBeObject();
+						expect(proto).toHaveOwnPropertyNames([]);
+						expect(fn.prototype).toBe(proto);
+					}
+				);
+			});
+
+			it('both accessed, prototype first', () => {
+				const inputFn = (0, async function*() {}); // eslint-disable-line no-empty-function
+				run(
+					{proto: inputFn.prototype, fn: inputFn},
+					'(()=>{const a=(0,async function*(){});return{proto:a.prototype,fn:a}})()',
+					(obj) => {
+						expect(obj).toBeObject();
+						expect(obj).toHaveOwnPropertyNames(['proto', 'fn']);
+						const {fn, proto} = obj;
+						expect(fn).toBeFunction();
+						expect(fn).toContainAllKeys([]);
+						expect(proto).toBeObject();
+						expect(proto).toHaveOwnPropertyNames([]);
+						expect(fn.prototype).toBe(proto);
+					}
+				);
+			});
+		});
+
+		describe('with other props', () => {
+			it('function accessed', () => {
+				const inputFn = (0, async function*() {}); // eslint-disable-line no-empty-function
+				inputFn.x = {xx: 1};
+				run(
+					inputFn,
+					'Object.assign(async function*(){},{x:{xx:1}})',
+					(fn) => {
+						expect(fn).toBeFunction();
+						expect(fn).toContainAllKeys(['x']);
+						expect(fn.prototype).toBeObject();
+						expect(fn.prototype).toHaveOwnPropertyNames([]);
+						expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
+						expect(fn.x).toEqual({xx: 1});
+						expect(fn).toHaveDescriptorModifiersFor('x', true, true, true);
+					}
+				);
+			});
+
+			it('prototype accessed', () => {
+				const inputFn = (0, async function*() {}); // eslint-disable-line no-empty-function
+				inputFn.x = {xx: 1};
+				run(
+					inputFn.prototype,
+					'(()=>{const a=Object;return a.create(a.getPrototypeOf(async function*(){}.prototype))})()',
+					(proto) => {
+						expect(proto).toBeObject();
+						expect(proto).toHaveOwnPropertyNames([]);
+					}
+				);
+			});
+
+			it('both accessed, function first', () => {
+				const inputFn = (0, async function*() {}); // eslint-disable-line no-empty-function
+				inputFn.x = {xx: 1};
+				run(
+					{fn: inputFn, proto: inputFn.prototype},
+					'(()=>{const a=Object.assign(async function*(){},{x:{xx:1}});return{fn:a,proto:a.prototype}})()',
+					(obj) => {
+						expect(obj).toBeObject();
+						expect(obj).toHaveOwnPropertyNames(['fn', 'proto']);
+						const {fn, proto} = obj;
+						expect(fn).toBeFunction();
+						expect(fn).toContainAllKeys(['x']);
+						expect(proto).toBeObject();
+						expect(proto).toHaveOwnPropertyNames([]);
+						expect(fn.prototype).toBe(proto);
+						expect(fn.x).toEqual({xx: 1});
+						expect(fn).toHaveDescriptorModifiersFor('x', true, true, true);
+					}
+				);
+			});
+
+			it('both accessed, prototype first', () => {
+				const inputFn = (0, async function*() {}); // eslint-disable-line no-empty-function
+				inputFn.x = {xx: 1};
+				run(
+					{proto: inputFn.prototype, fn: inputFn},
+					'(()=>{const a=Object.assign(async function*(){},{x:{xx:1}});return{proto:a.prototype,fn:a}})()',
+					(obj) => {
+						expect(obj).toBeObject();
+						expect(obj).toHaveOwnPropertyNames(['proto', 'fn']);
+						const {fn, proto} = obj;
+						expect(fn).toBeFunction();
+						expect(fn).toContainAllKeys(['x']);
+						expect(proto).toBeObject();
+						expect(proto).toHaveOwnPropertyNames([]);
+						expect(fn.prototype).toBe(proto);
+						expect(fn.x).toEqual({xx: 1});
+						expect(fn).toHaveDescriptorModifiersFor('x', true, true, true);
+					}
+				);
+			});
+		});
+
+		describe('with other prototype props', () => {
+			it('function accessed', () => {
+				const inputFn = (0, async function*() {}); // eslint-disable-line no-empty-function
+				inputFn.prototype.x = {xx: 1};
+				run(
+					inputFn,
+					'(()=>{const a=Object,b=a.assign;return b(async function*(){},{prototype:b(a.create(a.getPrototypeOf(async function*(){}.prototype)),{x:{xx:1}})})})()',
+					(fn) => {
+						expect(fn).toBeFunction();
+						expect(fn).toContainAllKeys([]);
+						const proto = fn.prototype;
+						expect(proto).toBeObject();
+						expect(proto).toHaveOwnPropertyNames(['x']);
+						expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
+						expect(proto.x).toEqual({xx: 1});
+						expect(proto).toHaveDescriptorModifiersFor('x', true, true, true);
+					}
+				);
+			});
+
+			it('prototype accessed', () => {
+				const inputFn = (0, async function*() {}); // eslint-disable-line no-empty-function
+				inputFn.prototype.x = {xx: 1};
+				run(
+					inputFn.prototype,
+					'(()=>{const a=Object;return a.assign(a.create(a.getPrototypeOf(async function*(){}.prototype)),{x:{xx:1}})})()',
+					(proto) => {
+						expect(proto).toBeObject();
+						expect(proto).toHaveOwnPropertyNames(['x']);
+						expect(proto.x).toEqual({xx: 1});
+						expect(proto).toHaveDescriptorModifiersFor('x', true, true, true);
+					}
+				);
+			});
+
+			it('both accessed, function first', () => {
+				const inputFn = (0, async function*() {}); // eslint-disable-line no-empty-function
+				inputFn.prototype.x = {xx: 1};
+				run(
+					{fn: inputFn, proto: inputFn.prototype},
+					'(()=>{const a=Object,b=a.assign,c=b(a.create(a.getPrototypeOf(async function*(){}.prototype)),{x:{xx:1}});return{fn:b(async function*(){},{prototype:c}),proto:c}})()',
+					(obj) => {
+						expect(obj).toBeObject();
+						expect(obj).toHaveOwnPropertyNames(['fn', 'proto']);
+						const {fn, proto} = obj;
+						expect(fn).toBeFunction();
+						expect(fn).toContainAllKeys([]);
+						expect(proto).toBeObject();
+						expect(proto).toHaveOwnPropertyNames(['x']);
+						expect(fn.prototype).toBe(proto);
+						expect(proto.x).toEqual({xx: 1});
+						expect(proto).toHaveDescriptorModifiersFor('x', true, true, true);
+					}
+				);
+			});
+
+			it('both accessed, prototype first', () => {
+				const inputFn = (0, async function*() {}); // eslint-disable-line no-empty-function
+				inputFn.prototype.x = {xx: 1};
+				run(
+					{proto: inputFn.prototype, fn: inputFn},
+					'(()=>{const a=Object,b=a.assign,c=b(a.create(a.getPrototypeOf(async function*(){}.prototype)),{x:{xx:1}});return{proto:c,fn:b(async function*(){},{prototype:c})}})()',
+					(obj) => {
+						expect(obj).toBeObject();
+						expect(obj).toHaveOwnPropertyNames(['proto', 'fn']);
+						const {fn, proto} = obj;
+						expect(fn).toBeFunction();
+						expect(fn).toContainAllKeys([]);
+						expect(proto).toBeObject();
+						expect(proto).toHaveOwnPropertyNames(['x']);
+						expect(fn.prototype).toBe(proto);
+						expect(proto.x).toEqual({xx: 1});
+						expect(proto).toHaveDescriptorModifiersFor('x', true, true, true);
+					}
+				);
+			});
+		});
+	});
+
 	// TODO Tests for instances (`new F()`)
 	// TODO Tests for inheritance
 });
