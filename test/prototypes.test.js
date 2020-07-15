@@ -1583,6 +1583,56 @@ describeWithAllOptions('Prototypes', ({run}) => {
 					);
 				});
 			});
+
+			describe('deleted and redefined (i.e. property order changed)', () => {
+				it('function accessed', () => {
+					const inputFn = (0, function() {});
+					delete inputFn.prototype.constructor;
+					inputFn.prototype.x = 123;
+					Object.defineProperty(inputFn.prototype, 'constructor', {
+						value: inputFn, writable: true, configurable: true
+					});
+					run(
+						inputFn,
+						'(()=>{const a=(0,function(){}),b=a.prototype;delete b.constructor;Object.defineProperties(b,{x:{value:123,writable:true,enumerable:true,configurable:true},constructor:{value:a,writable:true,configurable:true}});return a})()',
+						(fn) => {
+							expect(
+								Object.getOwnPropertyNames(fn).filter(key => key !== 'arguments' && key !== 'caller')
+							).toEqual(['length', 'name', 'prototype']);
+							const proto = fn.prototype;
+							expect(proto).toBeObject();
+							expect(proto).toHaveOwnPropertyNames(['x', 'constructor']);
+							expect(proto.constructor).toBe(fn);
+							expect(proto).toHaveDescriptorModifiersFor('constructor', true, false, true);
+							expect(proto).toHaveDescriptorModifiersFor('x', true, true, true);
+						}
+					);
+				});
+
+				it('prototype accessed', () => {
+					const inputFn = (0, function() {});
+					delete inputFn.prototype.constructor;
+					inputFn.prototype.x = 123;
+					Object.defineProperty(inputFn.prototype, 'constructor', {
+						value: inputFn, writable: true, configurable: true
+					});
+					run(
+						inputFn.prototype,
+						'(()=>{const a=(0,function(){}),b=a.prototype;delete b.constructor;Object.defineProperties(b,{x:{value:123,writable:true,enumerable:true,configurable:true},constructor:{value:a,writable:true,configurable:true}});return b})()',
+						(proto) => {
+							expect(proto).toBeObject();
+							expect(proto).toHaveOwnPropertyNames(['x', 'constructor']);
+							expect(proto).toHaveDescriptorModifiersFor('constructor', true, false, true);
+							expect(proto).toHaveDescriptorModifiersFor('x', true, true, true);
+							const fn = proto.constructor;
+							expect(
+								Object.getOwnPropertyNames(fn).filter(key => key !== 'arguments' && key !== 'caller')
+							).toEqual(['length', 'name', 'prototype']);
+							expect(fn.prototype).toBe(proto);
+						}
+					);
+				});
+			});
 		});
 
 		describe('prototype props + methods', () => {
