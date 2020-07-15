@@ -25,6 +25,7 @@
     "@babel/register": "^7.10.4",
     "@babel/traverse": "^7.10.4",
     "@babel/types": "^7.10.4",
+    "has-own-prop": "^2.0.0",
     "is-it-type": "^4.1.0",
     "lodash": "^4.17.19",
     "reserved-words": "^0.1.2"
