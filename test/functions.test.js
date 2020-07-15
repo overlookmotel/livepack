@@ -398,6 +398,72 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 		});
 	});
 
+	describe('with external scope 2 levels up', () => {
+		it('single instantiation of function', () => {
+			const extA = {extA: 1},
+				extB = {extB: 2};
+			const input = function(x) {
+				return y => [x, y, this, extA, extB]; // eslint-disable-line no-invalid-this
+			};
+
+			run(input, null, (fn1) => {
+				expect(fn1).toBeFunction();
+				const param1 = {},
+					param2 = {},
+					ctx = {};
+				const fn2 = fn1.call(ctx, param1);
+				const res = fn2(param2);
+				expect(res).toBeArrayOfSize(5);
+				expect(res[0]).toBe(param1);
+				expect(res[1]).toBe(param2);
+				expect(res[2]).toBe(ctx);
+				expect(res[3]).toEqual(extA);
+				expect(res[4]).toEqual(extB);
+			});
+		});
+
+		it('multiple instantiations of function', () => {
+			const extA = {extA: 1},
+				extB = {extB: 2};
+			const input = [1, 2, 3].map(() => (
+				function(x) {
+					return y => [x, y, this, extA, extB]; // eslint-disable-line no-invalid-this
+				}
+			));
+
+			run(input, null, (out) => {
+				expect(out).toBeArrayOfSize(3);
+				expect(out[0]).not.toBe(out[1]);
+				expect(out[0]).not.toBe(out[2]);
+				expect(out[1]).not.toBe(out[2]);
+
+				const resABs = out.map((fn1) => {
+					expect(fn1).toBeFunction();
+					const param1 = {},
+						param2 = {},
+						ctx = {};
+					const fn2 = fn1.call(ctx, param1);
+					const res = fn2(param2);
+					expect(res).toBeArrayOfSize(5);
+					expect(res[0]).toBe(param1);
+					expect(res[1]).toBe(param2);
+					expect(res[2]).toBe(ctx);
+					expect(res[3]).toEqual(extA);
+					expect(res[4]).toEqual(extB);
+					return [res[3], res[4]];
+				});
+
+				const resAs = resABs.map(resAB => resAB[0]);
+				expect(resAs[0]).toBe(resAs[1]);
+				expect(resAs[0]).toBe(resAs[2]);
+
+				const resBs = resABs.map(resAB => resAB[1]);
+				expect(resBs[0]).toBe(resBs[1]);
+				expect(resBs[0]).toBe(resBs[2]);
+			});
+		});
+	});
+
 	describe('with vars from above scope', () => {
 		it('single instantiation of scope', () => {
 			const extA = {extA: 1};
