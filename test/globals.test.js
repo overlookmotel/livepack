@@ -115,5 +115,9 @@ describeWithAllOptions('globals', ({expectSerializedEqual, serialize, minify, ma
 		it('Symbol.for', () => { // eslint-disable-line jest/lowercase-name
 			expectSerializedEqual(Symbol.for, 'Symbol.for');
 		});
+
+		it('Function.prototype.bind', () => { // eslint-disable-line jest/lowercase-name
+			expectSerializedEqual(Function.prototype.bind, 'Function.prototype.bind');
+		});
 	});
 });
