@@ -5,15 +5,10 @@
 
 'use strict';
 
-// Modules
-const parseNodeVersion = require('parse-node-version');
-
 // Imports
 const {describeWithAllOptions} = require('./support/index.js');
 
 // Tests
-
-const itIfNode12Plus = parseNodeVersion(process.version).major >= 12 ? it : it.skip;
 
 describeWithAllOptions('Symbols', ({run, serialize, minify, mangle, inline}) => {
 	it('named symbol', () => {
@@ -26,10 +21,9 @@ describeWithAllOptions('Symbols', ({run, serialize, minify, mangle, inline}) => 
 		expect(typeof output).toBe('symbol');
 	});
 
-	// Skip this test on Node v10 - cannot tell difference on Node v10 between `Symbol()` and `Symbol('')`
-	itIfNode12Plus('symbol with empty string description', () => {
+	it('symbol with empty string description', () => {
 		const output = run(Symbol(''), 'Symbol("")');
-		expect(typeof output).toBe('symbol'); // eslint-disable-line jest/no-standalone-expect
+		expect(typeof output).toBe('symbol');
 	});
 
 	it('global symbol', () => {

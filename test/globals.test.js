@@ -106,4 +106,14 @@ describeWithAllOptions('globals', ({expectSerializedEqual, serialize, minify, ma
 			});
 		}
 	});
+
+	describe('shimmed globals', () => {
+		it('Symbol', () => { // eslint-disable-line jest/lowercase-name
+			expectSerializedEqual(Symbol, 'Symbol');
+		});
+
+		it('Symbol.for', () => { // eslint-disable-line jest/lowercase-name
+			expectSerializedEqual(Symbol.for, 'Symbol.for');
+		});
+	});
 });

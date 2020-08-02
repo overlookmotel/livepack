@@ -47,8 +47,7 @@
     "jest": "^26.1.0",
     "jest-expect-arguments": "^1.0.0",
     "jest-extended": "^0.11.5",
-    "jest-matcher-utils": "^26.1.0",
-    "parse-node-version": "^1.0.1"
+    "jest-matcher-utils": "^26.1.0"
   },
   "keywords": [
     "build",
