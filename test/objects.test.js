@@ -40,6 +40,17 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 				'({if:{},do:{},this:{},arguments:{},repeat:{if:{},do:{},this:{},arguments:{}}})'
 			);
 		});
+
+		it('with undefined value', () => {
+			expectSerializedEqual(
+				{x: undefined},
+				'({x:void 0})',
+				(obj) => {
+					expect(obj).toHaveOwnPropertyNames(['x']);
+					expect(obj.x).toBeUndefined();
+				}
+			);
+		});
 	});
 
 	describe('nested objects', () => {
@@ -478,6 +489,17 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 				expectSerializedEqual(
 					input,
 					'(()=>{const a=Object;return a.create(a.prototype,{0:{value:1,writable:true},1:{value:2,writable:true},23:{value:3,writable:true},"04":{value:4,writable:true}})})()'
+				);
+			});
+
+			it('with undefined value', () => {
+				expectSerializedEqual(
+					Object.defineProperty({}, 'x', {writable: true}),
+					'(()=>{const a=Object;return a.create(a.prototype,{x:{writable:true}})})()',
+					(obj) => {
+						expect(obj).toHaveOwnPropertyNames(['x']);
+						expect(obj.x).toBeUndefined();
+					}
 				);
 			});
 		});
