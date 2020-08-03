@@ -2517,6 +2517,20 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 	});
 
 	describe('maintain name where', () => {
+		it('unnamed function as object property', () => {
+			run(
+				{a: (0, function() {})},
+				'({a:(0,function(){})})',
+				(obj) => {
+					expect(obj).toBeObject();
+					expect(obj).toContainAllKeys(['a']);
+					const fn = obj.a;
+					expect(fn).toBeFunction();
+					expect(fn.name).toBe('');
+				}
+			);
+		});
+
 		it('not valid JS identifier', () => {
 			run(
 				{'0a': function() {}}['0a'],

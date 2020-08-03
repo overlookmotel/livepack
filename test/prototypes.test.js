@@ -1245,7 +1245,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 					input.prototype = function() {};
 					run(
 						input,
-						'Object.assign(function(){},{prototype:function(){}})',
+						'Object.assign(function(){},{prototype:(0,function(){})})',
 						(fn) => {
 							expect(fn).toBeFunction();
 							expect(fn.prototype).toBeFunction();
@@ -1262,7 +1262,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 					input.y = 2;
 					run(
 						input,
-						'Object.assign(function(){},{prototype:function(){},x:1,y:2})',
+						'Object.assign(function(){},{prototype:(0,function(){}),x:1,y:2})',
 						(fn) => {
 							expect(fn).toBeFunction();
 							expect(fn.prototype).toBeFunction();
