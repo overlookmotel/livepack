@@ -2458,6 +2458,15 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 					expect(serialize(input)).toBe('(b,c)=>function a(){return[b,c]}');
 				});
 			}
+
+			it('with function names added by livepack', () => {
+				let a = function() { return a; };
+				const input = a;
+				a = 123;
+				expect(serialize(input)).toBe(
+					mangle ? '(b=>function a(){return b})(123)' : '(a$0=>function a(){return a$0})(123)'
+				);
+			});
 		});
 	}
 

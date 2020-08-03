@@ -6,7 +6,6 @@
 * Handle `super` (in class + object methods)
 * Tests for ignoring `extends` var in class definitions e.g. ignore `Y` in `class X extends Y {}`
 * Tests for computed method keys (`{ [x]() {} }`)
-* Fix var name clashes between scope params + function names e.g. `let x = function() { return x; }; const y = x; x = 123; module.exports = y;` - serialized version is `module.exports = (x => function x() { return x; })(123);` - result of `x()` is function, not `123`
 * Tests for methods (e.g. `{x() {}})`) not having prototypes
 * Tests for protecting `module`, `exports`, `require` etc vars from being overwritten in CJS mode
 * Don't treat `module` + `exports` as globals - treat as vars in top scope of file
