@@ -2547,7 +2547,8 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 
 			it('getter', () => {
 				function input() {}
-				Object.defineProperty(input, 'name', {get() { return 'foo'; }});
+				// eslint-disable-next-line object-shorthand
+				Object.defineProperty(input, 'name', {get: function() { return 'foo'; }});
 				run(
 					input,
 					'Object.defineProperties(function(){},{name:{get:function get(){return"foo"}}})',
@@ -2630,7 +2631,8 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 		describe('descriptor altered', () => {
 			it('getter', () => {
 				function input() {}
-				Object.defineProperty(input, 'length', {get() { return 2; }});
+				// eslint-disable-next-line object-shorthand
+				Object.defineProperty(input, 'length', {get: function() { return 2; }});
 				run(
 					input,
 					'Object.defineProperties(function input(){},{length:{get:function get(){return 2}}})',
