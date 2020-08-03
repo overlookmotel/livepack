@@ -1,8 +1,8 @@
 # TODO
 
-* Prototype inheritance
-* Function inheritance
-* Classes
+* Tests for prototype inheritance
+* Tests for function inheritance
+* Tests for classes
 * Handle `super` (in class + object methods)
 * Tests for ignoring `extends` var in class definitions e.g. ignore `Y` in `class X extends Y {}`
 * Tests for computed method keys (`{ [x]() {} }`)
