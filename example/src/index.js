@@ -6,17 +6,17 @@ let a = 1;
 function outer() {
 	let b = a;
 
-	return {
-		inner() {
-			return `a = ${a}, b = ${b}`;
-		},
-		setA(newA) {
-			a = newA;
-		},
-		setB(newB) {
-			b = newB;
-		}
-	};
+	function inner() {
+		return `a = ${a}, b = ${b}`;
+	}
+	function setA(newA) {
+		a = newA;
+	}
+	function setB(newB) {
+		b = newB;
+	}
+
+	return {inner, setA, setB};
 }
 
 const {inner: inner1, setA, setB: setB1} = outer();
