@@ -28,6 +28,10 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 			expectSerializedEqual({'b-c': {'0a': 1, 'd.e': 2}}, '({"b-c":{"0a":1,"d.e":2}})');
 		});
 
+		it('numeric property keys', () => {
+			expectSerializedEqual({0: {1: 1, 23: 2, '04': 3}}, '({0:{1:1,23:2,"04":3}})');
+		});
+
 		it('properties with names which are JS reserved words', () => {
 			// This test is to ensure doesn't create illegally-named intermediate vars when
 			// `mangle` and `inline` options false
@@ -152,6 +156,24 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 						input, '(()=>{const a={};a["0a"]=a;return a})()'
 					);
 					expect(output['0a']).toBe(output);
+				});
+
+				it('numeric property keys', () => {
+					const input = {};
+					input[0] = input;
+					input[1] = input;
+					input[23] = input;
+					input['04'] = input;
+					expectSerializedEqual(
+						input,
+						'(()=>{const a={};a[0]=a;a[1]=a;a[23]=a;a["04"]=a;return a})()',
+						(obj) => {
+							expect(obj[0]).toBe(obj);
+							expect(obj[1]).toBe(obj);
+							expect(obj[23]).toBe(obj);
+							expect(obj['04']).toBe(obj);
+						}
+					);
 				});
 			});
 
@@ -437,6 +459,27 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 					});
 				});
 			});
+
+			it('with property names which are not valid identifiers', () => {
+				const input = {};
+				Object.defineProperty(input, '0a', {value: 1, writable: true});
+				expectSerializedEqual(
+					input,
+					'(()=>{const a=Object;return a.create(a.prototype,{"0a":{value:1,writable:true}})})()'
+				);
+			});
+
+			it('with numeric property keys', () => {
+				const input = {};
+				Object.defineProperty(input, 0, {value: 1, writable: true});
+				Object.defineProperty(input, 1, {value: 2, writable: true});
+				Object.defineProperty(input, 23, {value: 3, writable: true});
+				Object.defineProperty(input, '04', {value: 4, writable: true});
+				expectSerializedEqual(
+					input,
+					'(()=>{const a=Object;return a.create(a.prototype,{0:{value:1,writable:true},1:{value:2,writable:true},23:{value:3,writable:true},"04":{value:4,writable:true}})})()'
+				);
+			});
 		});
 
 		describe('circular properties', () => {
@@ -511,6 +554,34 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 						get: undefined, set: expect.any(Function), enumerable: true, configurable: true
 					});
 				});
+			});
+
+			it('with property names which are not valid identifiers', () => {
+				const input = {};
+				Object.defineProperty(input, '0a', {value: input, writable: true});
+				expectSerializedEqual(
+					input,
+					'(()=>{const a={};Object.defineProperties(a,{"0a":{value:a,writable:true}});return a})()',
+					obj => expect(obj['0a']).toBe(obj)
+				);
+			});
+
+			it('with numeric property keys', () => {
+				const input = {};
+				Object.defineProperty(input, 0, {value: input, writable: true});
+				Object.defineProperty(input, 1, {value: input, writable: true});
+				Object.defineProperty(input, 23, {value: input, writable: true});
+				Object.defineProperty(input, '04', {value: input, writable: true});
+				expectSerializedEqual(
+					input,
+					'(()=>{const a={};Object.defineProperties(a,{0:{value:a,writable:true},1:{value:a,writable:true},23:{value:a,writable:true},"04":{value:a,writable:true}});return a})()',
+					(obj) => {
+						expect(obj[0]).toBe(obj);
+						expect(obj[1]).toBe(obj);
+						expect(obj[23]).toBe(obj);
+						expect(obj['04']).toBe(obj);
+					}
+				);
 			});
 		});
 	});
