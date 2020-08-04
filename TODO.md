@@ -1,10 +1,10 @@
 # TODO
 
-* Anonymous class expressions have no name property
 * Tests for prototype inheritance
 * Tests for function inheritance
 * Tests for classes
 * Handle `super` (in class + object methods)
+* Tests for anonymous class expressions have no name property
 * Tests for ignoring `extends` var in class definitions e.g. ignore `Y` in `class X extends Y {}`
 * Tests for computed method keys (`{ [x]() {} }`)
 * Tests for methods (e.g. `{x() {}})`) not having prototypes
