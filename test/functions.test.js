@@ -2467,6 +2467,14 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 					mangle ? '(b=>function a(){return b})(123)' : '(a$0=>function a(){return a$0})(123)'
 				);
 			});
+
+			it('with globals with function names added by livepack', () => {
+				// eslint-disable-next-line object-shorthand
+				const input = {console: function() { return console; }}.console;
+				expect(serialize(input)).toBe(
+					'Object.defineProperties(function(){return console},{name:{value:"console"}})'
+				);
+			});
 		});
 	}
 
