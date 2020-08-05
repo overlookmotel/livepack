@@ -1,6 +1,6 @@
 # TODO
 
-* Tests for prototype inheritance
+* Tests for prototype inheritance (inc where function also has properties)
 * Tests for function inheritance
 * Tests for classes
 * Handle `super` (in class + object methods)
