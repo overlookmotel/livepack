@@ -59,19 +59,17 @@ function describeAllOptions(name, fn, topDescribe, describeOrIt) {
 							describeOrIt(`with mangle option ${mangle}`, () => {
 								// Only perform check of expected JS if all options true
 								const allOptionsTrue = minify && inline && mangle;
-								const options = {minify, inline, mangle, comments: false};
+								const options = {minify, inline, mangle, comments: true};
 								fn({
 									expectSerializedEqual: allOptionsTrue
 										? (input, expectedJs, validate) => (
-											expectSerializedEqual(input, null, expectedJs, validate)
+											expectSerializedEqual(input, options, expectedJs, validate)
 										)
 										: (input, _, validate) => expectSerializedEqual(input, options, null, validate),
 									run: allOptionsTrue
-										? (input, expectedJs, validate) => run(input, null, expectedJs, validate)
+										? (input, expectedJs, validate) => run(input, options, expectedJs, validate)
 										: (input, _, validate) => run(input, options, null, validate),
-									serialize: allOptionsTrue
-										? input => serialize(input)
-										: input => serialize(input, options),
+									serialize: input => serialize(input, options),
 									exec,
 									...options
 								});
@@ -119,7 +117,7 @@ function run(input, options, expectedJs, validate) {
 	const js = serialize(input, options);
 
 	// Check expected JS output
-	if (expectedJs != null) expect(js).toBe(expectedJs);
+	if (expectedJs != null) expect(removeEslintComments(js)).toBe(expectedJs);
 
 	// Execute JS
 	const output = exec(js);
@@ -141,4 +139,10 @@ function run(input, options, expectedJs, validate) {
  */
 function exec(js) {
 	return new Function(`return ${js}`)(); // eslint-disable-line no-new-func
+}
+
+function removeEslintComments(js) {
+	// NB Comments cause Babel to add semicolons at end of blocks, which it otherwise doesn't
+	return js.replace(/\/\/ eslint-disable-line [^\n]+\n/g, '')
+		.replace(/;}/g, '}');
 }
