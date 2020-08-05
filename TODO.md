@@ -4,7 +4,7 @@
 * Tests for prototype inheritance (inc where also has properties)
 * Tests for function inheritance (inc where also has properties)
 * Tests for classes
-* Handle `super` (in class + object methods)
+* Tests for `super` (in class + object methods)
 * Tests for anonymous class expressions have no name property
 * Tests for ignoring `extends` var in class definitions e.g. ignore `Y` in `class X extends Y {}`
 * Tests for computed method keys (`{ [x]() {} }`)
