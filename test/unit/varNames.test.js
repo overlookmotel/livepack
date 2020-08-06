@@ -77,10 +77,32 @@ describe('createMangledVarNameTransform', () => {
 				// Shortcut to prevent iterating all the way through to 'this'
 				const factory = new MangledVarNameFactory();
 				transform = factory.transform.bind(factory);
-				factory.counter = 2834276;
+				factory.counter = getCounterForName('thir') - 1;
 
 				useUntil('thir');
 				expect(transform()).toBe('thit');
+			});
+		});
+
+		describe('correctly handles Object.prototype property names', () => {
+			it('valueOf', () => {
+				// Shortcut to prevent iterating all the way through to 'valueOf'
+				const factory = new MangledVarNameFactory();
+				transform = factory.transform.bind(factory);
+				factory.counter = getCounterForName('valueOf') - 2;
+
+				useUntil('valueOe');
+				expect(transform()).toBe('valueOf');
+			});
+
+			it('toString', () => {
+				// Shortcut to prevent iterating all the way through to 'toString'
+				const factory = new MangledVarNameFactory();
+				transform = factory.transform.bind(factory);
+				factory.counter = getCounterForName('toString') - 2;
+
+				useUntil('toStrinf');
+				expect(transform()).toBe('toString');
 			});
 		});
 	});
@@ -135,10 +157,32 @@ describe('createMangledVarNameTransform', () => {
 				// Shortcut to prevent iterating all the way through to 'this'
 				const factory = new MangledVarNameFactory(reserved);
 				transform = factory.transform.bind(factory);
-				factory.counter = 2834276;
+				factory.counter = getCounterForName('thir') - 1;
 
 				useUntil('thir');
 				expect(transform()).toBe('thit');
+			});
+		});
+
+		describe('correctly handles Object.prototype property names', () => {
+			it('valueOf', () => {
+				// Shortcut to prevent iterating all the way through to 'valueOf'
+				const factory = new MangledVarNameFactory(reserved);
+				transform = factory.transform.bind(factory);
+				factory.counter = getCounterForName('valueOf') - 2;
+
+				useUntil('valueOe');
+				expect(transform()).toBe('valueOf');
+			});
+
+			it('toString', () => {
+				// Shortcut to prevent iterating all the way through to 'toString'
+				const factory = new MangledVarNameFactory(reserved);
+				transform = factory.transform.bind(factory);
+				factory.counter = getCounterForName('toString') - 2;
+
+				useUntil('toStrinf');
+				expect(transform()).toBe('toString');
 			});
 		});
 	});
@@ -224,6 +268,23 @@ describe('createUnmangledVarNameTransform', () => {
 				expect(transform('this')).toBe('this$1');
 				expect(transform('this$2')).toBe('this$2');
 				expect(transform('this$2')).toBe('this$3');
+			});
+		});
+
+		describe('correctly handles Object.prototype property names', () => {
+			it('valueOf', () => {
+				expect(transform('valueOf')).toBe('valueOf');
+				expect(transform('valueOf')).toBe('valueOf$0');
+			});
+
+			it('toString', () => {
+				expect(transform('toString')).toBe('toString');
+				expect(transform('toString')).toBe('toString$0');
+			});
+
+			it('__proto__', () => {
+				expect(transform('__proto__')).toBe('__proto__');
+				expect(transform('__proto__')).toBe('__proto__$0');
 			});
 		});
 	});
@@ -314,6 +375,23 @@ describe('createUnmangledVarNameTransform', () => {
 				expect(transform('this$2')).toBe('this$3');
 			});
 		});
+
+		describe('correctly handles Object.prototype property names', () => {
+			it('valueOf', () => {
+				expect(transform('valueOf')).toBe('valueOf');
+				expect(transform('valueOf')).toBe('valueOf$0');
+			});
+
+			it('toString', () => {
+				expect(transform('toString')).toBe('toString');
+				expect(transform('toString')).toBe('toString$0');
+			});
+
+			it('__proto__', () => {
+				expect(transform('__proto__')).toBe('__proto__');
+				expect(transform('__proto__')).toBe('__proto__$0');
+			});
+		});
 	});
 });
 
@@ -321,4 +399,42 @@ function useTransformUntil(transform, name, inputName) {
 	while (true) { // eslint-disable-line no-constant-condition
 		if (transform(inputName) === name) return;
 	}
+}
+
+const CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+function getCounterForName(target) {
+	const factory = new MangledVarNameFactory();
+
+	let min = 0,
+		max = Number.MAX_SAFE_INTEGER - 1,
+		current;
+	while (true) { // eslint-disable-line no-constant-condition
+		current = Math.floor((min + max) / 2);
+		factory.counter = current;
+
+		const name = factory.transform();
+		if (name === target) {
+			break;
+		} else if (name.length > target.length) {
+			max = current;
+		} else if (name.length < target.length) {
+			min = current;
+		} else {
+			for (let i = 0; i < name.length; i++) {
+				const codeName = CHARS.indexOf(name[i]),
+					codeTarget = CHARS.indexOf(target[i]);
+				if (codeName === codeTarget) continue;
+
+				if (codeName > codeTarget) {
+					max = current;
+				} else {
+					min = current;
+				}
+				break;
+			}
+		}
+	}
+
+	return current;
 }
