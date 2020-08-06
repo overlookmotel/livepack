@@ -469,6 +469,18 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 						expect(obj.y).toBeUndefined();
 					});
 				});
+
+				it('getter and setter undefined', () => {
+					const input = {x: 1};
+					Object.defineProperty(input, 'y', {get: undefined, enumerable: true});
+
+					expectSerializedEqual(input, null, (obj) => {
+						expect(Object.keys(obj)).toEqual(['x', 'y']);
+						expect(Object.getOwnPropertyDescriptor(obj, 'y')).toEqual({
+							get: undefined, set: undefined, enumerable: true, configurable: false
+						});
+					});
+				});
 			});
 
 			it('with property names which are not valid identifiers', () => {
