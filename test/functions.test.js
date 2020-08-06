@@ -2759,6 +2759,27 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 					}
 				);
 			});
+
+			it('with getter', () => {
+				const input = function() {};
+				Object.defineProperty(input, 'x', {value: 1, enumerable: true});
+				Object.defineProperty(input, 'y', {get: (0, () => 2)});
+				run(
+					input,
+					'Object.defineProperties(function input(){},{x:{value:1,enumerable:true},y:{get:(0,()=>2)}})',
+					(fn) => {
+						expect(fn).toBeFunction();
+						expect(
+							Object.getOwnPropertyNames(fn)
+								.filter(n => !['length', 'name', 'prototype', 'arguments', 'caller'].includes(n))
+						).toEqual(['x', 'y']);
+						expect(fn.x).toBe(1);
+						expect(fn.y).toBe(2);
+						expect(fn).toHaveDescriptorModifiersFor('x', false, true, false);
+						expect(fn).toHaveDescriptorModifiersFor('y', undefined, false, false);
+					}
+				);
+			});
 		});
 
 		describe('circular references', () => {
@@ -2788,6 +2809,28 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 					expect(fn).toHaveDescriptorModifiersFor('x', false, true, false);
 					expect(fn).toHaveDescriptorModifiersFor('y', true, false, true);
 				});
+			});
+
+			it('with getter', () => {
+				const input = function() { return 2; };
+				Object.defineProperty(input, 'x', {value: 1, enumerable: true});
+				Object.defineProperty(input, 'y', {get: input});
+				run(
+					input,
+					'(()=>{const a=Object.defineProperties,b=a(function input(){return 2},{x:{value:1,enumerable:true}});a(b,{y:{get:b}});return b})()',
+					(fn) => {
+						expect(fn).toBeFunction();
+						expect(fn()).toEqual(2);
+						expect(
+							Object.getOwnPropertyNames(fn)
+								.filter(n => !['length', 'name', 'prototype', 'arguments', 'caller'].includes(n))
+						).toEqual(['x', 'y']);
+						expect(fn.x).toBe(1);
+						expect(fn.y).toBe(2);
+						expect(fn).toHaveDescriptorModifiersFor('x', false, true, false);
+						expect(fn).toHaveDescriptorModifiersFor('y', undefined, false, false);
+					}
+				);
 			});
 		});
 	});
