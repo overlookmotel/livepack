@@ -1,5 +1,6 @@
 # TODO
 
+* Reference to class treated as circular var and injected into scope for class methods, when it doesn't need to be
 * Treat function names differently for function expressions + declarations - in declarations, function name is a local var (acts like `let`) e.g. if function declaration, `function x() { x = 123; }` will redefine `x`; if function expression, `x = 123` error in strict mode, no-op in non-strict mode.
 * Tests for prototype inheritance (inc where also has properties)
 * Tests for function inheritance (inc where also has properties)
