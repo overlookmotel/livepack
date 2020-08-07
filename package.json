@@ -30,7 +30,7 @@
     "reserved-words": "^0.1.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.11.0",
+    "@babel/core": "^7.11.1",
     "@overlookmotel/eslint-config": "^7.2.1",
     "@overlookmotel/eslint-config-jest": "^4.1.1",
     "@overlookmotel/eslint-config-node": "^2.1.2",
