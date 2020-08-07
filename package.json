@@ -62,8 +62,7 @@
     "test-main": "jest --runInBand",
     "cover": "npm run cover-main && rm -rf coverage",
     "coveralls": "npm run cover-main && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage",
-    "cover-main": "cross-env COVERAGE=true jest --coverage",
-    "ci": "if [ $COVERAGE ]; then npm run coveralls; else npm test; fi"
+    "cover-main": "jest --coverage"
   },
   "engines": {
     "node": ">=10"
