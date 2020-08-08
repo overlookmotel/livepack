@@ -488,7 +488,7 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 				Object.defineProperty(input, '0a', {value: 1, writable: true});
 				expectSerializedEqual(
 					input,
-					'(()=>{const a=Object;return a.create(a.prototype,{"0a":{value:1,writable:true}})})()'
+					'Object.defineProperties({},{"0a":{value:1,writable:true}})'
 				);
 			});
 
@@ -500,14 +500,14 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 				Object.defineProperty(input, '04', {value: 4, writable: true});
 				expectSerializedEqual(
 					input,
-					'(()=>{const a=Object;return a.create(a.prototype,{0:{value:1,writable:true},1:{value:2,writable:true},23:{value:3,writable:true},"04":{value:4,writable:true}})})()'
+					'Object.defineProperties({},{0:{value:1,writable:true},1:{value:2,writable:true},23:{value:3,writable:true},"04":{value:4,writable:true}})'
 				);
 			});
 
 			it('with undefined value', () => {
 				expectSerializedEqual(
 					Object.defineProperty({}, 'x', {writable: true}),
-					'(()=>{const a=Object;return a.create(a.prototype,{x:{writable:true}})})()',
+					'Object.defineProperties({},{x:{writable:true}})',
 					(obj) => {
 						expect(obj).toHaveOwnPropertyNames(['x']);
 						expect(obj.x).toBeUndefined();

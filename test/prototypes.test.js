@@ -1516,7 +1516,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 					input.prototype.constructor = function ctor() {};
 					run(
 						input,
-						'(()=>{const a=Object;return a.assign(function input(){},{prototype:a.create(a.prototype,{constructor:{value:function ctor(){},writable:true,configurable:true}})})})()',
+						'(()=>{const a=Object;return a.assign(function input(){},{prototype:a.defineProperties({},{constructor:{value:function ctor(){},writable:true,configurable:true}})})})()',
 						(fn) => {
 							expect(fn).toBeFunction();
 							expect(fn).toContainAllKeys([]);
@@ -1533,7 +1533,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 					inputFn.prototype.constructor = function ctor() {};
 					run(
 						inputFn.prototype,
-						'(()=>{const a=Object;return a.create(a.prototype,{constructor:{value:function ctor(){},writable:true,configurable:true}})})()',
+						'Object.defineProperties({},{constructor:{value:function ctor(){},writable:true,configurable:true}})',
 						(proto) => {
 							expect(proto).toBeObject();
 							expect(proto).toHavePrototype(Object.prototype);
