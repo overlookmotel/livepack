@@ -703,4 +703,290 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 			});
 		});
 	});
+
+	describe('non-extensible', () => {
+		describe('frozen', () => {
+			describe('no circular properties', () => {
+				it('no descriptors', () => {
+					expectSerializedEqual(
+						Object.freeze({a: 1}),
+						'Object.freeze({a:1})',
+						(obj) => {
+							expect(obj).toBeObject();
+							expect(Object.isFrozen(obj)).toBeTrue();
+							expect(obj).toHaveOwnPropertyNames(['a']);
+							expect(obj.a).toBe(1);
+							expect(obj).toHaveDescriptorModifiersFor('a', false, true, false);
+						}
+					);
+				});
+
+				it('descriptors', () => {
+					expectSerializedEqual(
+						Object.freeze(Object.defineProperty({a: 1}, 'a', {enumerable: false})),
+						'(()=>{const a=Object;return a.freeze(a.defineProperties({},{a:{value:1}}))})()',
+						(obj) => {
+							expect(obj).toBeObject();
+							expect(Object.isFrozen(obj)).toBeTrue();
+							expect(obj).toHaveOwnPropertyNames(['a']);
+							expect(obj.a).toBe(1);
+							expect(obj).toHaveDescriptorModifiersFor('a', false, false, false);
+						}
+					);
+				});
+			});
+
+			describe('circular properties', () => {
+				it('no descriptors', () => {
+					const input = {};
+					input.a = input;
+					input.b = 2;
+					input.c = input;
+					Object.freeze(input);
+
+					expectSerializedEqual(
+						input,
+						'(()=>{const a={a:void 0,b:2};a.a=a;a.c=a;Object.freeze(a);return a})()',
+						(obj) => {
+							expect(obj).toBeObject();
+							expect(Object.isFrozen(obj)).toBeTrue();
+							expect(obj).toHaveOwnPropertyNames(['a', 'b', 'c']);
+							expect(obj.a).toBe(obj);
+							expect(obj).toHaveDescriptorModifiersFor('a', false, true, false);
+							expect(obj.b).toBe(2);
+							expect(obj).toHaveDescriptorModifiersFor('b', false, true, false);
+							expect(obj.c).toBe(obj);
+							expect(obj).toHaveDescriptorModifiersFor('c', false, true, false);
+						}
+					);
+				});
+
+				it('descriptors', () => {
+					const input = {};
+					input.a = input;
+					input.b = 2;
+					input.c = input;
+					Object.defineProperty(input, 'a', {enumerable: false});
+					Object.defineProperty(input, 'b', {enumerable: false});
+					Object.defineProperty(input, 'c', {enumerable: false});
+					Object.freeze(input);
+
+					expectSerializedEqual(
+						input,
+						'(()=>{const a=Object,b=a.defineProperties,c=b({},{a:{writable:true,enumerable:true,configurable:true},b:{value:2}});a.freeze(b(c,{a:{value:c,enumerable:false},c:{value:c}}));return c})()',
+						(obj) => {
+							expect(obj).toBeObject();
+							expect(Object.isFrozen(obj)).toBeTrue();
+							expect(obj).toHaveOwnPropertyNames(['a', 'b', 'c']);
+							expect(obj.a).toBe(obj);
+							expect(obj).toHaveDescriptorModifiersFor('a', false, false, false);
+							expect(obj.b).toBe(2);
+							expect(obj).toHaveDescriptorModifiersFor('b', false, false, false);
+							expect(obj.c).toBe(obj);
+							expect(obj).toHaveDescriptorModifiersFor('c', false, false, false);
+						}
+					);
+				});
+			});
+		});
+
+		describe('sealed', () => {
+			describe('no circular properties', () => {
+				it('no descriptors', () => {
+					expectSerializedEqual(
+						Object.seal({a: 1}),
+						'Object.seal({a:1})',
+						(obj) => {
+							expect(obj).toBeObject();
+							expect(Object.isFrozen(obj)).toBeFalse();
+							expect(Object.isSealed(obj)).toBeTrue();
+							expect(obj).toHaveOwnPropertyNames(['a']);
+							expect(obj.a).toBe(1);
+							expect(obj).toHaveDescriptorModifiersFor('a', true, true, false);
+						}
+					);
+				});
+
+				it('descriptors', () => {
+					expectSerializedEqual(
+						Object.seal(Object.defineProperties({a: 1, b: 2, c: 3, d: 4}, {
+							a: {writable: false, enumerable: false},
+							b: {writable: true, enumerable: false},
+							c: {writable: false, enumerable: true},
+							d: {writable: true, enumerable: true}
+						})),
+						'(()=>{const a=Object;return a.seal(a.defineProperties({},{a:{value:1},b:{value:2,writable:true},c:{value:3,enumerable:true},d:{value:4,writable:true,enumerable:true}}))})()',
+						(obj) => {
+							expect(obj).toBeObject();
+							expect(Object.isFrozen(obj)).toBeFalse();
+							expect(Object.isSealed(obj)).toBeTrue();
+							expect(obj).toHaveOwnPropertyNames(['a', 'b', 'c', 'd']);
+							expect(obj.a).toBe(1);
+							expect(obj).toHaveDescriptorModifiersFor('a', false, false, false);
+							expect(obj.b).toBe(2);
+							expect(obj).toHaveDescriptorModifiersFor('b', true, false, false);
+							expect(obj.c).toBe(3);
+							expect(obj).toHaveDescriptorModifiersFor('c', false, true, false);
+							expect(obj.d).toBe(4);
+							expect(obj).toHaveDescriptorModifiersFor('d', true, true, false);
+						}
+					);
+				});
+			});
+
+			describe('circular properties', () => {
+				it('no descriptors', () => {
+					const input = {};
+					input.a = input;
+					input.b = 2;
+					input.c = input;
+					Object.seal(input);
+
+					expectSerializedEqual(
+						input,
+						'(()=>{const a={a:void 0,b:2};a.a=a;a.c=a;Object.seal(a);return a})()',
+						(obj) => {
+							expect(obj).toBeObject();
+							expect(Object.isFrozen(obj)).toBeFalse();
+							expect(Object.isSealed(obj)).toBeTrue();
+							expect(obj).toHaveOwnPropertyNames(['a', 'b', 'c']);
+							expect(obj.a).toBe(obj);
+							expect(obj).toHaveDescriptorModifiersFor('a', true, true, false);
+							expect(obj.b).toBe(2);
+							expect(obj).toHaveDescriptorModifiersFor('b', true, true, false);
+							expect(obj.c).toBe(obj);
+							expect(obj).toHaveDescriptorModifiersFor('c', true, true, false);
+						}
+					);
+				});
+
+				it('descriptors', () => {
+					const input = {};
+					input.a = input;
+					input.b = 2;
+					input.c = input;
+					input.d = input;
+					Object.defineProperties(input, {
+						a: {writable: false, enumerable: false},
+						b: {writable: true, enumerable: false},
+						c: {writable: false, enumerable: true},
+						d: {writable: true, enumerable: true}
+					});
+					Object.seal(input);
+
+					expectSerializedEqual(
+						input,
+						'(()=>{const a=Object,b=a.defineProperties,c=b({},{a:{writable:true,enumerable:true,configurable:true},b:{value:2,writable:true}});a.seal(b(c,{a:{value:c,writable:false,enumerable:false},c:{value:c,enumerable:true},d:{value:c,writable:true,enumerable:true}}));return c})()',
+						(obj) => {
+							expect(obj).toBeObject();
+							expect(Object.isFrozen(obj)).toBeFalse();
+							expect(Object.isSealed(obj)).toBeTrue();
+							expect(obj).toHaveOwnPropertyNames(['a', 'b', 'c', 'd']);
+							expect(obj.a).toBe(obj);
+							expect(obj).toHaveDescriptorModifiersFor('a', false, false, false);
+							expect(obj.b).toBe(2);
+							expect(obj).toHaveDescriptorModifiersFor('b', true, false, false);
+							expect(obj.c).toBe(obj);
+							expect(obj).toHaveDescriptorModifiersFor('c', false, true, false);
+							expect(obj.d).toBe(obj);
+							expect(obj).toHaveDescriptorModifiersFor('d', true, true, false);
+						}
+					);
+				});
+			});
+		});
+
+		describe('extensions prevented', () => {
+			describe('no circular properties', () => {
+				it('no descriptors', () => {
+					expectSerializedEqual(
+						Object.preventExtensions({a: 1}),
+						'Object.preventExtensions({a:1})',
+						(obj) => {
+							expect(obj).toBeObject();
+							expect(Object.isFrozen(obj)).toBeFalse();
+							expect(Object.isSealed(obj)).toBeFalse();
+							expect(Object.isExtensible(obj)).toBeFalse();
+							expect(obj).toHaveOwnPropertyNames(['a']);
+							expect(obj.a).toBe(1);
+							expect(obj).toHaveDescriptorModifiersFor('a', true, true, true);
+						}
+					);
+				});
+
+				it('descriptors', () => {
+					expectSerializedEqual(
+						Object.preventExtensions(Object.defineProperty({a: 1}, 'a', {enumerable: false})),
+						'(()=>{const a=Object;return a.preventExtensions(a.defineProperties({},{a:{value:1,writable:true,configurable:true}}))})()',
+						(obj) => {
+							expect(obj).toBeObject();
+							expect(Object.isFrozen(obj)).toBeFalse();
+							expect(Object.isSealed(obj)).toBeFalse();
+							expect(Object.isExtensible(obj)).toBeFalse();
+							expect(obj).toHaveOwnPropertyNames(['a']);
+							expect(obj.a).toBe(1);
+							expect(obj).toHaveDescriptorModifiersFor('a', true, false, true);
+						}
+					);
+				});
+			});
+
+			describe('circular properties', () => {
+				it('no descriptors', () => {
+					const input = {};
+					input.a = input;
+					input.b = 2;
+					input.c = input;
+					Object.preventExtensions(input);
+
+					expectSerializedEqual(
+						input,
+						'(()=>{const a={a:void 0,b:2};a.a=a;a.c=a;Object.preventExtensions(a);return a})()',
+						(obj) => {
+							expect(obj).toBeObject();
+							expect(Object.isFrozen(obj)).toBeFalse();
+							expect(Object.isSealed(obj)).toBeFalse();
+							expect(Object.isExtensible(obj)).toBeFalse();
+							expect(obj).toHaveOwnPropertyNames(['a', 'b', 'c']);
+							expect(obj.a).toBe(obj);
+							expect(obj).toHaveDescriptorModifiersFor('a', true, true, true);
+							expect(obj.b).toBe(2);
+							expect(obj).toHaveDescriptorModifiersFor('b', true, true, true);
+							expect(obj.c).toBe(obj);
+							expect(obj).toHaveDescriptorModifiersFor('c', true, true, true);
+						}
+					);
+				});
+
+				it('descriptors', () => {
+					const input = {};
+					input.a = input;
+					input.b = 2;
+					input.c = input;
+					Object.defineProperty(input, 'a', {writable: false});
+					Object.defineProperty(input, 'b', {enumerable: false});
+					Object.defineProperty(input, 'c', {configurable: false});
+					Object.preventExtensions(input);
+
+					expectSerializedEqual(
+						input,
+						'(()=>{const a=Object,b=a.defineProperties,c=b({},{a:{writable:true,enumerable:true,configurable:true},b:{value:2,writable:true,configurable:true}});a.preventExtensions(b(c,{a:{value:c,writable:false},c:{value:c,writable:true,enumerable:true}}));return c})()',
+						(obj) => {
+							expect(obj).toBeObject();
+							expect(Object.isFrozen(obj)).toBeFalse();
+							expect(Object.isSealed(obj)).toBeFalse();
+							expect(Object.isExtensible(obj)).toBeFalse();
+							expect(obj).toHaveOwnPropertyNames(['a', 'b', 'c']);
+							expect(obj.a).toBe(obj);
+							expect(obj).toHaveDescriptorModifiersFor('a', false, true, true);
+							expect(obj.b).toBe(2);
+							expect(obj).toHaveDescriptorModifiersFor('b', true, false, true);
+							expect(obj.c).toBe(obj);
+							expect(obj).toHaveDescriptorModifiersFor('c', true, true, false);
+						}
+					);
+				});
+			});
+		});
+	});
 });
