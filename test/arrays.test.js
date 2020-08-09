@@ -198,4 +198,66 @@ describeWithAllOptions('Arrays', ({expectSerializedEqual}) => {
 			});
 		});
 	});
+
+	describe('Array subclass', () => {
+		it('empty array', () => {
+			class A extends Array {}
+			expectSerializedEqual(
+				new A(),
+				'(()=>{const a=Object.setPrototypeOf,b=Array,c=a(class A{constructor(...a){return Reflect.construct(Object.getPrototypeOf(A),a,A)}},b).prototype;a(c,b.prototype);return a([],c)})()',
+				(arr) => {
+					expect(arr).toBeArrayOfSize(0);
+					const proto = Object.getPrototypeOf(arr);
+					expect(proto.constructor).toBeFunction();
+					expect(proto.constructor.name).toBe('A');
+					expect(proto).toHavePrototype(Array.prototype);
+					arr[0] = 123;
+					expect(arr).toHaveLength(1);
+				}
+			);
+		});
+
+		it('non-circular entries', () => {
+			class A extends Array {}
+			expectSerializedEqual(
+				new A(1, 2, 3),
+				'(()=>{const a=Object.setPrototypeOf,b=Array,c=a(class A{constructor(...a){return Reflect.construct(Object.getPrototypeOf(A),a,A)}},b).prototype;a(c,b.prototype);return a([1,2,3],c)})()',
+				(arr) => {
+					expect(arr).toBeArrayOfSize(3);
+					expect(arr).toEqual([1, 2, 3]);
+					const proto = Object.getPrototypeOf(arr);
+					expect(proto.constructor).toBeFunction();
+					expect(proto.constructor.name).toBe('A');
+					expect(proto).toHavePrototype(Array.prototype);
+					arr[3] = 123;
+					expect(arr).toHaveLength(4);
+				}
+			);
+		});
+
+		it('circular entries', () => {
+			class A extends Array {}
+			const input = new A();
+			input[0] = input;
+			input[1] = 2;
+			input[2] = input;
+
+			expectSerializedEqual(
+				input,
+				'(()=>{const a=Object.setPrototypeOf,b=Array,c=a(class A{constructor(...a){return Reflect.construct(Object.getPrototypeOf(A),a,A)}},b).prototype,d=a([,2],c);a(c,b.prototype);d[0]=d;d[2]=d;return d})()',
+				(arr) => {
+					expect(arr).toBeArrayOfSize(3);
+					expect(arr[0]).toBe(arr);
+					expect(arr[1]).toBe(2);
+					expect(arr[2]).toBe(arr);
+					const proto = Object.getPrototypeOf(arr);
+					expect(proto.constructor).toBeFunction();
+					expect(proto.constructor.name).toBe('A');
+					expect(proto).toHavePrototype(Array.prototype);
+					arr[3] = 123;
+					expect(arr).toHaveLength(4);
+				}
+			);
+		});
+	});
 });
