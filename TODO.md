@@ -1,6 +1,5 @@
 # TODO
 
-* Tests for function inheritance (inc where also has properties)
 * Tests for classes
 * Tests for `super` (in class methods inc constructor + static methods)
 * Tests for anonymous class expressions having no name property

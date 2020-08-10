@@ -2834,4 +2834,89 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 			});
 		});
 	});
+
+	describe('inheritance', () => {
+		it('no extra props', () => {
+			const input = function F() {};
+			Object.setPrototypeOf(input, function E() {}); // eslint-disable-line prefer-arrow-callback
+
+			run(
+				input,
+				'Object.setPrototypeOf(function F(){},function E(){})',
+				(fn) => {
+					expect(fn).toBeFunction();
+					expect(fn.name).toBe('F');
+					const proto = Object.getPrototypeOf(fn);
+					expect(proto).toBeFunction();
+					expect(proto.name).toBe('E');
+				}
+			);
+		});
+
+		it('with extra props', () => {
+			const input = function F() {};
+			input.x = 1;
+			input.y = 2;
+			Object.setPrototypeOf(input, function E() {}); // eslint-disable-line prefer-arrow-callback
+
+			run(
+				input,
+				'(()=>{const a=Object;return a.setPrototypeOf(a.assign(function F(){},{x:1,y:2}),function E(){})})()',
+				(fn) => {
+					expect(fn).toBeFunction();
+					expect(fn.name).toBe('F');
+					const proto = Object.getPrototypeOf(fn);
+					expect(proto).toBeFunction();
+					expect(proto.name).toBe('E');
+					expect(fn.x).toBe(1);
+					expect(fn.y).toBe(2);
+				}
+			);
+		});
+
+		it('with extra descriptor props', () => {
+			const input = function F() {};
+			Object.defineProperty(input, 'x', {value: 1, enumerable: true});
+			Object.defineProperty(input, 'y', {value: 2, writable: true, enumerable: true});
+			Object.setPrototypeOf(input, function E() {}); // eslint-disable-line prefer-arrow-callback
+
+			run(
+				input,
+				'(()=>{const a=Object;return a.setPrototypeOf(a.defineProperties(function F(){},{x:{value:1,enumerable:true},y:{value:2,writable:true,enumerable:true}}),function E(){})})()',
+				(fn) => {
+					expect(fn).toBeFunction();
+					expect(fn.name).toBe('F');
+					const proto = Object.getPrototypeOf(fn);
+					expect(proto).toBeFunction();
+					expect(proto.name).toBe('E');
+					expect(fn.x).toBe(1);
+					expect(fn.y).toBe(2);
+					expect(fn).toHaveDescriptorModifiersFor('x', false, true, false);
+					expect(fn).toHaveDescriptorModifiersFor('y', true, true, false);
+				}
+			);
+		});
+
+		it('with prototype which itself inherits from another prototype', () => {
+			const input = function F() {};
+			function E() {}
+			Object.setPrototypeOf(input, E);
+			Object.setPrototypeOf(E, function D() {}); // eslint-disable-line prefer-arrow-callback
+
+			run(
+				input,
+				'(()=>{const a=Object.setPrototypeOf;return a(function F(){},a(function E(){},function D(){}))})()',
+				(fn) => {
+					expect(fn).toBeFunction();
+					expect(fn.name).toBe('F');
+					const proto = Object.getPrototypeOf(fn);
+					expect(proto).toBeFunction();
+					expect(proto.name).toBe('E');
+					const proto2 = Object.getPrototypeOf(proto);
+					expect(proto2).toBeFunction();
+					expect(proto2.name).toBe('D');
+				}
+			);
+		});
+	});
 });

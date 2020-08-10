@@ -2646,5 +2646,291 @@ describeWithAllOptions('Prototypes', ({run}) => {
 		});
 	});
 
-	// TODO Tests for inheritance
+	describe('prototype inheritance', () => {
+		describe('accessed via function', () => {
+			it('with no prototype props', () => {
+				function F() {}
+				function E() {}
+				Object.setPrototypeOf(F.prototype, E.prototype);
+
+				run(
+					F,
+					'(()=>{const a=function F(){};Object.setPrototypeOf(a.prototype,function E(){}.prototype);return a})()',
+					(fn) => {
+						expect(fn).toBeFunction();
+						expect(fn.name).toBe('F');
+						const {prototype} = fn;
+						expect(prototype).toHaveOwnPropertyNames(['constructor']);
+						expect(prototype.constructor).toBe(fn);
+						const proto = Object.getPrototypeOf(prototype);
+						const protoCtor = proto.constructor;
+						expect(protoCtor).toBeFunction();
+						expect(protoCtor.name).toBe('E');
+						expect(proto).toHavePrototype(Object.prototype);
+					}
+				);
+			});
+
+			describe('with non-circular prototype props', () => {
+				it('no descriptors', () => {
+					function F() {}
+					function E() {}
+					F.prototype.x = 1;
+					F.prototype.y = 2;
+					Object.setPrototypeOf(F.prototype, E.prototype);
+
+					run(
+						F,
+						'(()=>{const a=function F(){},b=a.prototype;b.x=1;b.y=2;Object.setPrototypeOf(b,function E(){}.prototype);return a})()',
+						(fn) => {
+							expect(fn).toBeFunction();
+							expect(fn.name).toBe('F');
+							const {prototype} = fn;
+							expect(prototype).toHaveOwnPropertyNames(['constructor', 'x', 'y']);
+							expect(prototype.x).toBe(1);
+							expect(prototype.y).toBe(2);
+							expect(prototype.constructor).toBe(fn);
+							const proto = Object.getPrototypeOf(prototype);
+							const protoCtor = proto.constructor;
+							expect(protoCtor).toBeFunction();
+							expect(protoCtor.name).toBe('E');
+							expect(proto).toHavePrototype(Object.prototype);
+						}
+					);
+				});
+
+				it('with descriptors', () => {
+					function F() {}
+					function E() {}
+					Object.defineProperty(F.prototype, 'x', {value: 1, enumerable: true});
+					Object.defineProperty(F.prototype, 'y', {value: 2, writable: true, enumerable: true});
+					Object.setPrototypeOf(F.prototype, E.prototype);
+
+					run(
+						F,
+						'(()=>{const a=function F(){},b=Object;b.setPrototypeOf(b.defineProperties(a.prototype,{x:{value:1,enumerable:true},y:{value:2,writable:true,enumerable:true}}),function E(){}.prototype);return a})()',
+						(fn) => {
+							expect(fn).toBeFunction();
+							expect(fn.name).toBe('F');
+							const {prototype} = fn;
+							expect(prototype).toHaveOwnPropertyNames(['constructor', 'x', 'y']);
+							expect(prototype.x).toBe(1);
+							expect(prototype.y).toBe(2);
+							expect(prototype).toHaveDescriptorModifiersFor('x', false, true, false);
+							expect(prototype).toHaveDescriptorModifiersFor('y', true, true, false);
+							expect(prototype.constructor).toBe(fn);
+							const proto = Object.getPrototypeOf(prototype);
+							const protoCtor = proto.constructor;
+							expect(protoCtor).toBeFunction();
+							expect(protoCtor.name).toBe('E');
+							expect(proto).toHavePrototype(Object.prototype);
+						}
+					);
+				});
+			});
+
+			describe('with circular prototype props', () => {
+				it('no descriptors', () => {
+					function F() {}
+					function E() {}
+					F.prototype.x = F.prototype;
+					F.prototype.y = F.prototype;
+					Object.setPrototypeOf(F.prototype, E.prototype);
+
+					run(
+						F,
+						'(()=>{const a=function F(){},b=a.prototype;b.x=b;b.y=b;Object.setPrototypeOf(b,function E(){}.prototype);return a})()',
+						(fn) => {
+							expect(fn).toBeFunction();
+							expect(fn.name).toBe('F');
+							const {prototype} = fn;
+							expect(prototype).toHaveOwnPropertyNames(['constructor', 'x', 'y']);
+							expect(prototype.x).toBe(prototype);
+							expect(prototype.y).toBe(prototype);
+							expect(prototype.constructor).toBe(fn);
+							const proto = Object.getPrototypeOf(prototype);
+							const protoCtor = proto.constructor;
+							expect(protoCtor).toBeFunction();
+							expect(protoCtor.name).toBe('E');
+							expect(proto).toHavePrototype(Object.prototype);
+						}
+					);
+				});
+
+				it('with descriptors', () => {
+					function F() {}
+					function E() {}
+					Object.defineProperty(F.prototype, 'x', {value: F.prototype, enumerable: true});
+					Object.defineProperty(
+						F.prototype, 'y', {value: F.prototype, writable: true, enumerable: true}
+					);
+					Object.setPrototypeOf(F.prototype, E.prototype);
+
+					run(
+						F,
+						'(()=>{const a=function F(){},b=a.prototype,c=Object;c.setPrototypeOf(c.defineProperties(b,{x:{value:b,enumerable:true},y:{value:b,writable:true,enumerable:true}}),function E(){}.prototype);return a})()',
+						(fn) => {
+							expect(fn).toBeFunction();
+							expect(fn.name).toBe('F');
+							const {prototype} = fn;
+							expect(prototype).toHaveOwnPropertyNames(['constructor', 'x', 'y']);
+							expect(prototype.x).toBe(prototype);
+							expect(prototype.y).toBe(prototype);
+							expect(prototype).toHaveDescriptorModifiersFor('x', false, true, false);
+							expect(prototype).toHaveDescriptorModifiersFor('y', true, true, false);
+							expect(prototype.constructor).toBe(fn);
+							const proto = Object.getPrototypeOf(prototype);
+							const protoCtor = proto.constructor;
+							expect(protoCtor).toBeFunction();
+							expect(protoCtor.name).toBe('E');
+							expect(proto).toHavePrototype(Object.prototype);
+						}
+					);
+				});
+			});
+		});
+
+		describe('accessed via prototype', () => {
+			it('with no prototype props', () => {
+				function F() {}
+				function E() {}
+				Object.setPrototypeOf(F.prototype, E.prototype);
+
+				run(
+					F.prototype,
+					'(()=>{const a=function F(){}.prototype;Object.setPrototypeOf(a,function E(){}.prototype);return a})()',
+					(prototype) => {
+						expect(prototype).toHaveOwnPropertyNames(['constructor']);
+						const ctor = prototype.constructor;
+						expect(ctor).toBeFunction();
+						expect(ctor.name).toBe('F');
+						expect(ctor.prototype).toBe(prototype);
+						const proto = Object.getPrototypeOf(prototype);
+						const protoCtor = proto.constructor;
+						expect(protoCtor).toBeFunction();
+						expect(protoCtor.name).toBe('E');
+						expect(proto).toHavePrototype(Object.prototype);
+					}
+				);
+			});
+
+			describe('with non-circular prototype props', () => {
+				it('no descriptors', () => {
+					function F() {}
+					function E() {}
+					F.prototype.x = 1;
+					F.prototype.y = 2;
+					Object.setPrototypeOf(F.prototype, E.prototype);
+
+					run(
+						F.prototype,
+						'(()=>{const a=function F(){}.prototype;a.x=1;a.y=2;Object.setPrototypeOf(a,function E(){}.prototype);return a})()',
+						(prototype) => {
+							expect(prototype).toHaveOwnPropertyNames(['constructor', 'x', 'y']);
+							expect(prototype.x).toBe(1);
+							expect(prototype.y).toBe(2);
+							const ctor = prototype.constructor;
+							expect(ctor).toBeFunction();
+							expect(ctor.name).toBe('F');
+							expect(ctor.prototype).toBe(prototype);
+							const proto = Object.getPrototypeOf(prototype);
+							const protoCtor = proto.constructor;
+							expect(protoCtor).toBeFunction();
+							expect(protoCtor.name).toBe('E');
+							expect(proto).toHavePrototype(Object.prototype);
+						}
+					);
+				});
+
+				it('with descriptors', () => {
+					function F() {}
+					function E() {}
+					Object.defineProperty(F.prototype, 'x', {value: 1, enumerable: true});
+					Object.defineProperty(F.prototype, 'y', {value: 2, writable: true, enumerable: true});
+					Object.setPrototypeOf(F.prototype, E.prototype);
+
+					run(
+						F.prototype,
+						'(()=>{const a=function F(){}.prototype,b=Object;b.setPrototypeOf(b.defineProperties(a,{x:{value:1,enumerable:true},y:{value:2,writable:true,enumerable:true}}),function E(){}.prototype);return a})()',
+						(prototype) => {
+							expect(prototype).toHaveOwnPropertyNames(['constructor', 'x', 'y']);
+							expect(prototype.x).toBe(1);
+							expect(prototype.y).toBe(2);
+							expect(prototype).toHaveDescriptorModifiersFor('x', false, true, false);
+							expect(prototype).toHaveDescriptorModifiersFor('y', true, true, false);
+							const ctor = prototype.constructor;
+							expect(ctor).toBeFunction();
+							expect(ctor.name).toBe('F');
+							expect(ctor.prototype).toBe(prototype);
+							const proto = Object.getPrototypeOf(prototype);
+							const protoCtor = proto.constructor;
+							expect(protoCtor).toBeFunction();
+							expect(protoCtor.name).toBe('E');
+							expect(proto).toHavePrototype(Object.prototype);
+						}
+					);
+				});
+			});
+
+			describe('with circular prototype props', () => {
+				it('no descriptors', () => {
+					function F() {}
+					function E() {}
+					F.prototype.x = F.prototype;
+					F.prototype.y = F.prototype;
+					Object.setPrototypeOf(F.prototype, E.prototype);
+
+					run(
+						F.prototype,
+						'(()=>{const a=function F(){}.prototype;a.x=a;a.y=a;Object.setPrototypeOf(a,function E(){}.prototype);return a})()',
+						(prototype) => {
+							expect(prototype).toHaveOwnPropertyNames(['constructor', 'x', 'y']);
+							expect(prototype.x).toBe(prototype);
+							expect(prototype.y).toBe(prototype);
+							const ctor = prototype.constructor;
+							expect(ctor).toBeFunction();
+							expect(ctor.name).toBe('F');
+							expect(ctor.prototype).toBe(prototype);
+							const proto = Object.getPrototypeOf(prototype);
+							const protoCtor = proto.constructor;
+							expect(protoCtor).toBeFunction();
+							expect(protoCtor.name).toBe('E');
+							expect(proto).toHavePrototype(Object.prototype);
+						}
+					);
+				});
+
+				it('with descriptors', () => {
+					function F() {}
+					function E() {}
+					Object.defineProperty(F.prototype, 'x', {value: F.prototype, enumerable: true});
+					Object.defineProperty(
+						F.prototype, 'y', {value: F.prototype, writable: true, enumerable: true}
+					);
+					Object.setPrototypeOf(F.prototype, E.prototype);
+
+					run(
+						F.prototype,
+						'(()=>{const a=function F(){}.prototype,b=Object;b.setPrototypeOf(b.defineProperties(a,{x:{value:a,enumerable:true},y:{value:a,writable:true,enumerable:true}}),function E(){}.prototype);return a})()',
+						(prototype) => {
+							expect(prototype).toHaveOwnPropertyNames(['constructor', 'x', 'y']);
+							expect(prototype.x).toBe(prototype);
+							expect(prototype.y).toBe(prototype);
+							expect(prototype).toHaveDescriptorModifiersFor('x', false, true, false);
+							expect(prototype).toHaveDescriptorModifiersFor('y', true, true, false);
+							const ctor = prototype.constructor;
+							expect(ctor).toBeFunction();
+							expect(ctor.name).toBe('F');
+							expect(ctor.prototype).toBe(prototype);
+							const proto = Object.getPrototypeOf(prototype);
+							const protoCtor = proto.constructor;
+							expect(protoCtor).toBeFunction();
+							expect(protoCtor.name).toBe('E');
+							expect(proto).toHavePrototype(Object.prototype);
+						}
+					);
+				});
+			});
+		});
+	});
 });
