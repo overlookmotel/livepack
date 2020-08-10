@@ -99,6 +99,30 @@ describeWithAllOptions('Numbers', ({expectSerializedEqual}) => {
 	});
 });
 
+/* eslint-disable node/no-unsupported-features/es-builtins */
+describeWithAllOptions('BigInts', ({expectSerializedEqual}) => {
+	it('zero', () => { // eslint-disable-line jest/no-identical-title
+		expectSerializedEqual(BigInt(0), '0n', bigInt => expect(bigInt).toBe(BigInt(0)));
+	});
+
+	it('small', () => {
+		expectSerializedEqual(BigInt(100), '100n', bigInt => expect(bigInt).toBe(BigInt(100)));
+	});
+
+	it('negative', () => {
+		expectSerializedEqual(BigInt(-100), '-100n', bigInt => expect(bigInt).toBe(BigInt(-100)));
+	});
+
+	it('huge', () => {
+		expectSerializedEqual(
+			BigInt('100000000000000000000'),
+			'100000000000000000000n',
+			bigInt => expect(bigInt).toBe(BigInt('100000000000000000000'))
+		);
+	});
+});
+/* eslint-enable node/no-unsupported-features/es-builtins */
+
 itWithAllOptions('null', ({expectSerializedEqual}) => {
 	expectSerializedEqual(null, 'null');
 });

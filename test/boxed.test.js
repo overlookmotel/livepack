@@ -242,3 +242,79 @@ describeWithAllOptions('Boxed Numbers', ({expectSerializedEqual}) => { // TODO
 		);
 	});
 });
+
+/* eslint-disable node/no-unsupported-features/es-builtins */
+describeWithAllOptions('Boxed BigInts', ({expectSerializedEqual}) => {
+	it('zero', () => { // eslint-disable-line jest/no-identical-title
+		expectSerializedEqual(
+			Object(BigInt(0)),
+			'Object(0n)',
+			(bigInt) => {
+				expect(typeof bigInt).toBe('object');
+				expect(typeof bigInt.valueOf()).toBe('bigint');
+				expect(bigInt.valueOf()).toBe(BigInt(0));
+				expect(bigInt).toHavePrototype(BigInt.prototype);
+			}
+		);
+	});
+
+	it('small', () => {
+		expectSerializedEqual(
+			Object(BigInt(100)),
+			'Object(100n)',
+			(bigInt) => {
+				expect(typeof bigInt).toBe('object');
+				expect(typeof bigInt.valueOf()).toBe('bigint');
+				expect(bigInt.valueOf()).toBe(BigInt(100));
+				expect(bigInt).toHavePrototype(BigInt.prototype);
+			}
+		);
+	});
+
+	it('negative', () => {
+		expectSerializedEqual(
+			Object(BigInt(-100)),
+			'Object(-100n)',
+			(bigInt) => {
+				expect(typeof bigInt).toBe('object');
+				expect(typeof bigInt.valueOf()).toBe('bigint');
+				expect(bigInt.valueOf()).toBe(BigInt(-100));
+				expect(bigInt).toHavePrototype(BigInt.prototype);
+			}
+		);
+	});
+
+	it('huge', () => {
+		expectSerializedEqual(
+			Object(BigInt('100000000000000000000')),
+			'Object(100000000000000000000n)',
+			(bigInt) => {
+				expect(typeof bigInt).toBe('object');
+				expect(typeof bigInt.valueOf()).toBe('bigint');
+				expect(bigInt.valueOf()).toBe(BigInt('100000000000000000000'));
+				expect(bigInt).toHavePrototype(BigInt.prototype);
+			}
+		);
+	});
+
+	it('BigInt subclass', () => { // eslint-disable-line jest/lowercase-name
+		class B extends BigInt {}
+		const input = Object(BigInt(100));
+		Object.setPrototypeOf(input, B.prototype);
+
+		expectSerializedEqual(
+			input,
+			'(()=>{const a=Object,b=a.setPrototypeOf,c=BigInt,d=b(class B{constructor(...a){return Reflect.construct(Object.getPrototypeOf(B),a,B)}},c).prototype;b(d,c.prototype);return b(a(100n),d)})()',
+			(bigInt) => {
+				expect(typeof bigInt).toBe('object');
+				expect(typeof bigInt.valueOf()).toBe('bigint');
+				expect(bigInt.valueOf()).toBe(BigInt(100));
+				const proto = Object.getPrototypeOf(bigInt);
+				expect(proto.constructor).toBeFunction();
+				expect(proto.constructor.name).toBe('B');
+				expect(proto).toHavePrototype(BigInt.prototype);
+			}
+		);
+	});
+});
+/* eslint-enable node/no-unsupported-features/es-builtins */
