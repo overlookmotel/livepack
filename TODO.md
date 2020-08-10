@@ -6,6 +6,7 @@
 * Tests for anonymous class expressions having no name property
 * Tests for ignoring `extends` var in class definitions e.g. ignore `Y` in `class X extends Y {}`
 * Tests for computed method keys (`{ [x]() {} }`) in classes (inc static methods)
+* Tests for ESM input
 * Tests for protecting `module`, `exports`, `require` etc vars from being overwritten in CJS mode
 
 * Solve problem with created vars (`tracker`, `scopeId`, `temp`) interfering with tracing scope of vars in code
