@@ -11,7 +11,6 @@
 
 * Solve problem with created vars (`tracker`, `scopeId`, `temp`) interfering with tracing scope of vars in code
 * Handle unscoped `this` in top-level arrow functions `() => this` (equals `exports` in Node CJS, `undefined` in Node ESM, `window` in browser script, don't know what in browser ESM)
-* Handle `new URL()` + `new URLSearchParams()`
 * Handle `new TextDecoder()` + `new TextEncoder()`
 * Handle `Int16Array` etc
 * Handle `Error`, `TypeError` etc (hide stack trace?)

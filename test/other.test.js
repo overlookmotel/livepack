@@ -140,3 +140,78 @@ describeWithAllOptions('Buffers', ({expectSerializedEqual, run}) => {
 function expectToBeBuffer(val) {
 	expect(val).toBeInstanceOf(Buffer);
 }
+
+describeWithAllOptions('URLs', ({expectSerializedEqual}) => {
+	it('URL', () => { // eslint-disable-line jest/lowercase-name
+		expectSerializedEqual(
+			new URL('http://foo.com/path/to/file.html?a=1&b=2'),
+			'new URL("http://foo.com/path/to/file.html?a=1&b=2")',
+			(url) => {
+				expect(url).toBeInstanceOf(URL);
+				expect(url.toString()).toBe('http://foo.com/path/to/file.html?a=1&b=2');
+			}
+		);
+	});
+
+	it('URL subclass', () => { // eslint-disable-line jest/lowercase-name
+		class U extends URL {}
+		expectSerializedEqual(
+			new U('http://foo.com/path/to/file.html?a=1&b=2'),
+			'(()=>{const a=URL,b=Object.setPrototypeOf,c=b(class U{constructor(...a){return Reflect.construct(Object.getPrototypeOf(U),a,U)}},a).prototype;b(c,a.prototype);return b(new a("http://foo.com/path/to/file.html?a=1&b=2"),c)})()',
+			(url) => {
+				expect(url).toBeInstanceOf(URL);
+				expect(url.toString()).toBe('http://foo.com/path/to/file.html?a=1&b=2');
+				const proto = Object.getPrototypeOf(url);
+				expect(proto.constructor).toBeFunction();
+				expect(proto.constructor.name).toBe('U');
+				expect(proto).toHavePrototype(URL.prototype);
+			}
+		);
+	});
+});
+
+describeWithAllOptions('URLSearchParams', ({expectSerializedEqual, run}) => {
+	it('without context', () => {
+		expectSerializedEqual(
+			new URLSearchParams('a=1&b=2'),
+			'new URLSearchParams("a=1&b=2")',
+			(params) => {
+				expect(params).toBeInstanceOf(URLSearchParams);
+				expect(params.toString()).toBe('a=1&b=2');
+			}
+		);
+	});
+
+	it('with context', () => {
+		expectSerializedEqual(
+			new URL('http://foo.com/path/to/file.html?a=1&b=2').searchParams,
+			'new URL("http://foo.com/path/to/file.html?a=1&b=2").searchParams',
+			(params) => {
+				expect(params).toBeInstanceOf(URLSearchParams);
+				expect(params.toString()).toBe('a=1&b=2');
+
+				const contextSymbol = Object.getOwnPropertySymbols(params)[1];
+				expect(contextSymbol.toString()).toBe('Symbol(context)');
+				const url = params[contextSymbol];
+				expect(url).toBeInstanceOf(URL);
+				expect(url.toString()).toBe('http://foo.com/path/to/file.html?a=1&b=2');
+			}
+		);
+	});
+
+	it('URLSearchParams subclass', () => { // eslint-disable-line jest/lowercase-name
+		class U extends URLSearchParams {}
+		run(
+			new U('a=1&b=2'),
+			'(()=>{const a=URLSearchParams,b=Object.setPrototypeOf,c=b(class U{constructor(...a){return Reflect.construct(Object.getPrototypeOf(U),a,U)}},a).prototype;b(c,a.prototype);return b(new a("a=1&b=2"),c)})()',
+			(params) => {
+				expect(params).toBeInstanceOf(URLSearchParams);
+				expect(params.toString()).toBe('a=1&b=2');
+				const proto = Object.getPrototypeOf(params);
+				expect(proto.constructor).toBeFunction();
+				expect(proto.constructor.name).toBe('U');
+				expect(proto).toHavePrototype(URLSearchParams.prototype);
+			}
+		);
+	});
+});
