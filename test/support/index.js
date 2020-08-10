@@ -62,14 +62,20 @@ function describeAllOptions(name, fn, topDescribe, describeOrIt) {
 								const options = {minify, inline, mangle, comments: true};
 								fn({
 									expectSerializedEqual: allOptionsTrue
-										? (input, expectedJs, validate) => (
-											expectSerializedEqual(input, options, expectedJs, validate)
+										? (input, expectedJs, validate, opts) => (
+											expectSerializedEqual(input, {...options, ...opts}, expectedJs, validate)
 										)
-										: (input, _, validate) => expectSerializedEqual(input, options, null, validate),
+										: (input, _, validate, opts) => (
+											expectSerializedEqual(input, {...options, ...opts}, null, validate)
+										),
 									run: allOptionsTrue
-										? (input, expectedJs, validate) => run(input, options, expectedJs, validate)
-										: (input, _, validate) => run(input, options, null, validate),
-									serialize: input => serialize(input, options),
+										? (input, expectedJs, validate, opts) => (
+											run(input, {...options, ...opts}, expectedJs, validate)
+										)
+										: (input, _, validate, opts) => (
+											run(input, {...options, ...opts}, null, validate)
+										),
+									serialize: (input, opts) => serialize(input, {...options, ...opts}),
 									exec,
 									...options
 								});
@@ -120,7 +126,7 @@ function run(input, options, expectedJs, validate) {
 	if (expectedJs != null) expect(removeEslintComments(js)).toBe(expectedJs);
 
 	// Execute JS
-	const output = exec(js);
+	const output = exec(js, options.format || 'js');
 
 	// Validate input + output
 	if (validate) {
@@ -135,10 +141,22 @@ function run(input, options, expectedJs, validate) {
 /**
  * Execute JS code and return value.
  * @param {string} js - Javascript code
+ * @param {string} format - 'js' / 'cjs' / 'esm'
  * @returns {*} - Result of evaluation
  */
-function exec(js) {
-	return new Function(`return ${js}`)(); // eslint-disable-line no-new-func
+function exec(js, format) {
+	if (format === 'js') {
+		return new Function('require', `return ${js}`)(require); // eslint-disable-line no-new-func
+	}
+
+	if (format === 'cjs') {
+		const mod = {exports: {}};
+		// eslint-disable-next-line no-new-func
+		new Function('module', 'exports', 'require', js)(mod, mod.exports, require);
+		return mod.exports;
+	}
+
+	throw new Error(`'${format}' format not supported`);
 }
 
 function removeEslintComments(js) {
