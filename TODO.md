@@ -2,7 +2,6 @@
 
 ## Before first release:
 
-* Solve problem with created vars (`tracker`, `scopeId`, `temp`) interfering with tracing scope of vars in code / test not a problem
 * Tests for classes
 * Tests for `super` (in class methods inc constructor + static methods)
 * Tests for anonymous class expressions having no name property

@@ -5,9 +5,6 @@
 
 'use strict';
 
-// Imports
-const babelPlugin = require('./babel.js');
-
 // Exports
 
 module.exports = {
@@ -20,9 +17,6 @@ module.exports = {
 		'<rootDir>/test/support/expect.js'
 	],
 	transform: {
-		'\\.js$': ['babel-jest', {
-			plugins: [babelPlugin],
-			generatorOpts: {retainLines: true, compact: false}
-		}]
+		'\\.js$': '<rootDir>/test/support/transform.js'
 	}
 };
