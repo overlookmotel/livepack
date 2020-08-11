@@ -11,6 +11,7 @@
 * Tests for ESM input
 * Tests for protecting `module`, `exports`, `require` etc vars from being overwritten in CJS mode
 * Resolve remaining TODO comments
+* Basic CLI
 
 * Delete `id` field from `records`, `blocks`, `scopes`, `functions`
 * Remove `@babel/core` dev dependency
