@@ -9,7 +9,6 @@
 * Tests for ignoring `extends` var in class definitions e.g. ignore `Y` in `class X extends Y {}`
 * Tests for computed method keys (`{ [x]() {} }`) in classes (inc static methods)
 * Tests for ESM input
-* Tests for protecting `module`, `exports`, `require` etc vars from being overwritten in CJS mode
 * Resolve remaining TODO comments
 * Basic CLI
 
