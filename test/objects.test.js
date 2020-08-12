@@ -989,4 +989,204 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 			});
 		});
 	});
+
+	describe('`__proto__` property', () => {
+		describe('standard object', () => {
+			describe('no other props', () => {
+				it('non-circular', () => {
+					expectSerializedEqual(
+						Object.defineProperty({}, '__proto__', {value: {x: 1}}),
+						'Object.defineProperty({},"__proto__",{value:{x:1}})',
+						(obj) => {
+							expect(obj).toBeObject();
+							expect(obj).toHaveOwnPropertyNames(['__proto__']);
+							expect(obj.__proto__).toEqual({x: 1}); // eslint-disable-line no-proto
+							expect(obj).toHaveDescriptorModifiersFor('__proto__', false, false, false);
+							expect(obj.x).toBeUndefined();
+							expect(obj).toHavePrototype(Object.prototype);
+						}
+					);
+				});
+
+				it('circular', () => {
+					const input = {};
+					Object.defineProperty(input, '__proto__', {value: input});
+					expectSerializedEqual(
+						input,
+						'(()=>{const a={};Object.defineProperty(a,"__proto__",{value:a});return a})()',
+						(obj) => {
+							expect(obj).toBeObject();
+							expect(obj).toHaveOwnPropertyNames(['__proto__']);
+							expect(obj.__proto__).toBe(obj); // eslint-disable-line no-proto
+							expect(obj).toHaveDescriptorModifiersFor('__proto__', false, false, false);
+							expect(obj).toHavePrototype(Object.prototype);
+						}
+					);
+				});
+			});
+
+			describe('prop before', () => {
+				it('non-circular', () => {
+					expectSerializedEqual(
+						Object.defineProperty({y: 2}, '__proto__', {value: {x: 1}}),
+						'(()=>{const a=Object;return a.defineProperty(a.defineProperties({},{y:{value:2,writable:true,enumerable:true,configurable:true}}),"__proto__",{value:{x:1}})})()',
+						(obj) => {
+							expect(obj).toBeObject();
+							expect(obj).toHaveOwnPropertyNames(['y', '__proto__']);
+							expect(obj.y).toBe(2);
+							expect(obj).toHaveDescriptorModifiersFor('y', true, true, true);
+							expect(obj.__proto__).toEqual({x: 1}); // eslint-disable-line no-proto
+							expect(obj).toHaveDescriptorModifiersFor('__proto__', false, false, false);
+							expect(obj.x).toBeUndefined();
+							expect(obj).toHavePrototype(Object.prototype);
+						}
+					);
+				});
+
+				it('circular', () => {
+					const input = {};
+					input.y = 2;
+					Object.defineProperty(input, '__proto__', {value: input});
+					expectSerializedEqual(
+						input,
+						'(()=>{const a={y:2};Object.defineProperty(a,"__proto__",{value:a});return a})()',
+						(obj) => {
+							expect(obj).toBeObject();
+							expect(obj).toHaveOwnPropertyNames(['y', '__proto__']);
+							expect(obj.y).toBe(2);
+							expect(obj).toHaveDescriptorModifiersFor('y', true, true, true);
+							expect(obj.__proto__).toBe(obj); // eslint-disable-line no-proto
+							expect(obj).toHaveDescriptorModifiersFor('__proto__', false, false, false);
+							expect(obj).toHavePrototype(Object.prototype);
+						}
+					);
+				});
+			});
+
+			describe('prop after', () => {
+				it('non-circular', () => {
+					const input = {};
+					Object.defineProperty(input, '__proto__', {value: {x: 1}});
+					input.y = 2;
+
+					expectSerializedEqual(
+						input,
+						'(()=>{const a=Object;return a.defineProperties(a.defineProperty({},"__proto__",{value:{x:1}}),{y:{value:2,writable:true,enumerable:true,configurable:true}})})()',
+						(obj) => {
+							expect(obj).toBeObject();
+							expect(obj).toHaveOwnPropertyNames(['__proto__', 'y']);
+							expect(obj.__proto__).toEqual({x: 1}); // eslint-disable-line no-proto
+							expect(obj).toHaveDescriptorModifiersFor('__proto__', false, false, false);
+							expect(obj.y).toBe(2);
+							expect(obj).toHaveDescriptorModifiersFor('y', true, true, true);
+							expect(obj.x).toBeUndefined();
+							expect(obj).toHavePrototype(Object.prototype);
+						}
+					);
+				});
+
+				it('circular', () => {
+					const input = {};
+					Object.defineProperty(input, '__proto__', {value: input});
+					input.y = 2;
+
+					expectSerializedEqual(
+						input,
+						'(()=>{const a={},b=Object;b.defineProperties(b.defineProperty(a,"__proto__",{value:a}),{y:{value:2,writable:true,enumerable:true,configurable:true}});return a})()',
+						(obj) => {
+							expect(obj).toBeObject();
+							expect(obj).toHaveOwnPropertyNames(['__proto__', 'y']);
+							expect(obj.__proto__).toBe(obj); // eslint-disable-line no-proto
+							expect(obj).toHaveDescriptorModifiersFor('__proto__', false, false, false);
+							expect(obj.y).toBe(2);
+							expect(obj).toHaveDescriptorModifiersFor('y', true, true, true);
+							expect(obj).toHavePrototype(Object.prototype);
+						}
+					);
+				});
+			});
+
+			describe('props before and after', () => {
+				it('non-circular', () => {
+					const input = {};
+					input.y = 2;
+					Object.defineProperty(input, '__proto__', {value: {x: 1}});
+					input.z = 3;
+
+					expectSerializedEqual(
+						input,
+						'(()=>{const a=Object,b=a.defineProperties;return b(a.defineProperty(b({},{y:{value:2,writable:true,enumerable:true,configurable:true}}),"__proto__",{value:{x:1}}),{z:{value:3,writable:true,enumerable:true,configurable:true}})})()',
+						(obj) => {
+							expect(obj).toBeObject();
+							expect(obj).toHaveOwnPropertyNames(['y', '__proto__', 'z']);
+							expect(obj.y).toBe(2);
+							expect(obj).toHaveDescriptorModifiersFor('y', true, true, true);
+							expect(obj.__proto__).toEqual({x: 1}); // eslint-disable-line no-proto
+							expect(obj).toHaveDescriptorModifiersFor('__proto__', false, false, false);
+							expect(obj.z).toBe(3);
+							expect(obj).toHaveDescriptorModifiersFor('z', true, true, true);
+							expect(obj.x).toBeUndefined();
+							expect(obj).toHavePrototype(Object.prototype);
+						}
+					);
+				});
+
+				it('circular', () => {
+					const input = {};
+					input.y = 2;
+					Object.defineProperty(input, '__proto__', {value: input});
+					input.z = 3;
+
+					expectSerializedEqual(
+						input,
+						'(()=>{const a={y:2},b=Object;b.defineProperties(b.defineProperty(a,"__proto__",{value:a}),{z:{value:3,writable:true,enumerable:true,configurable:true}});return a})()',
+						(obj) => {
+							expect(obj).toBeObject();
+							expect(obj).toHaveOwnPropertyNames(['y', '__proto__', 'z']);
+							expect(obj.y).toBe(2);
+							expect(obj).toHaveDescriptorModifiersFor('y', true, true, true);
+							expect(obj.__proto__).toBe(obj); // eslint-disable-line no-proto
+							expect(obj).toHaveDescriptorModifiersFor('__proto__', false, false, false);
+							expect(obj.z).toBe(3);
+							expect(obj).toHaveDescriptorModifiersFor('z', true, true, true);
+							expect(obj).toHavePrototype(Object.prototype);
+						}
+					);
+				});
+			});
+		});
+
+		describe('null prototype object', () => {
+			it('non-circular', () => {
+				expectSerializedEqual(
+					Object.defineProperty(Object.create(null), '__proto__', {value: {x: 1}}),
+					'(()=>{const a=Object;return a.defineProperty(a.create(null),"__proto__",{value:{x:1}})})()',
+					(obj) => {
+						expect(obj).toBeObject();
+						expect(obj).toHaveOwnPropertyNames(['__proto__']);
+						expect(obj.__proto__).toEqual({x: 1}); // eslint-disable-line no-proto
+						expect(obj).toHaveDescriptorModifiersFor('__proto__', false, false, false);
+						expect(obj.x).toBeUndefined();
+						expect(obj).toHavePrototype(null);
+					}
+				);
+			});
+
+			it('circular', () => {
+				const input = Object.create(null);
+				Object.defineProperty(input, '__proto__', {value: input});
+				expectSerializedEqual(
+					input,
+					'(()=>{const a=Object,b=a.create(null);a.defineProperty(b,"__proto__",{value:b});return b})()',
+					(obj) => {
+						expect(obj).toBeObject();
+						expect(obj).toHaveOwnPropertyNames(['__proto__']);
+						expect(obj.__proto__).toBe(obj); // eslint-disable-line no-proto
+						expect(obj).toHaveDescriptorModifiersFor('__proto__', false, false, false);
+						expect(obj).toHavePrototype(null);
+					}
+				);
+			});
+		});
+	});
 });

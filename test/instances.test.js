@@ -121,4 +121,92 @@ describeWithAllOptions('Instances', ({expectSerializedEqual}) => {
 			);
 		});
 	});
+
+	describe('where prototype has getter/setter for own prop', () => {
+		describe('getter', () => {
+			it('non-circular', () => {
+				function F() {}
+				Object.defineProperty(F.prototype, 'x', {get() { return 1; }});
+				const input = new F();
+				Object.defineProperty(input, 'x', {value: 2});
+
+				expectSerializedEqual(
+					input,
+					'(()=>{const a=Object,b=function F(){}.prototype;a.defineProperties(b,{x:{get(){return 1}}});return a.create(b,{x:{value:2}})})()',
+					(obj) => {
+						const ctor = Object.getPrototypeOf(obj).constructor;
+						expect(ctor).toBeFunction();
+						expect(ctor).not.toBe(Object);
+						expect(ctor.name).toBe('F');
+						expect(obj).toHaveOwnPropertyNames(['x']);
+						expect(obj.x).toBe(2);
+					}
+				);
+			});
+
+			it('circular', () => {
+				function F() {}
+				Object.defineProperty(F.prototype, 'x', {get() { return 1; }});
+				const input = new F();
+				Object.defineProperty(input, 'x', {value: input});
+
+				expectSerializedEqual(
+					input,
+					'(()=>{const a=Object,b=function F(){}.prototype,c=a.defineProperties,d=a.create(b);c(b,{x:{get(){return 1}}});c(d,{x:{value:d}});return d})()',
+					(obj) => {
+						const ctor = Object.getPrototypeOf(obj).constructor;
+						expect(ctor).toBeFunction();
+						expect(ctor).not.toBe(Object);
+						expect(ctor.name).toBe('F');
+						expect(obj).toHaveOwnPropertyNames(['x']);
+						expect(obj.x).toBe(obj);
+					}
+				);
+			});
+		});
+	});
+
+	describe('setter', () => {
+		it('non-circular', () => {
+			function F() {}
+			Object.defineProperty(F.prototype, 'x', {set(v) {}}); // eslint-disable-line no-unused-vars
+			const input = new F();
+			Object.defineProperty(input, 'x', {value: 2});
+
+			expectSerializedEqual(
+				input,
+				'(()=>{const a=Object,b=function F(){}.prototype;a.defineProperties(b,{x:{set(a){}}});return a.create(b,{x:{value:2}})})()',
+				(obj) => {
+					const ctor = Object.getPrototypeOf(obj).constructor;
+					expect(ctor).toBeFunction();
+					expect(ctor).not.toBe(Object);
+					expect(ctor.name).toBe('F');
+					expect(obj).toHaveOwnPropertyNames(['x']);
+					expect(obj.x).toBe(2);
+					expect(obj).toHaveDescriptorModifiersFor('x', false, false, false);
+				}
+			);
+		});
+
+		it('circular', () => {
+			function F() {}
+			Object.defineProperty(F.prototype, 'x', {set(v) {}}); // eslint-disable-line no-unused-vars
+			const input = new F();
+			Object.defineProperty(input, 'x', {value: input});
+
+			expectSerializedEqual(
+				input,
+				'(()=>{const a=Object,b=function F(){}.prototype,c=a.defineProperties,d=a.create(b);c(b,{x:{set(a){}}});c(d,{x:{value:d}});return d})()',
+				(obj) => {
+					const ctor = Object.getPrototypeOf(obj).constructor;
+					expect(ctor).toBeFunction();
+					expect(ctor).not.toBe(Object);
+					expect(ctor.name).toBe('F');
+					expect(obj).toHaveOwnPropertyNames(['x']);
+					expect(obj.x).toBe(obj);
+					expect(obj).toHaveDescriptorModifiersFor('x', false, false, false);
+				}
+			);
+		});
+	});
 });

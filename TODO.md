@@ -28,8 +28,6 @@
 * Handle class private keys + private methods
 * Handle Proxies
 * Treat function names differently for function expressions + declarations - in declarations, function name is a local var (acts like `let`) e.g. if function declaration, `function x() { x = 123; }` will redefine `x`; if function expression, `x = 123` error in strict mode, no-op in non-strict mode.
-* Fix bug with assignment of props where prototype of superclass has a setter for this class e.g. `class X {set a(v) {}}; const x = new X(); Object.defineProperty(x, 'a', {value: 1, writable: true, enumerable: true, configurable: true})` -> `class X {set a(v) {}}; const x = Object.assign(Object.create(X.prototype), {a: 1});` so obj has no `a` prop (it triggers setter). Need to either (a) use `Object.defineProperties()` instead of `Object.assign()` or (b) define prototype after assignment. Same problem applies when prop value is circular (`x.a === x`).
-* Fix bug where prop called `__proto__` is not defined correctly. `const x = {}; Object.defineProperty(x, '__proto__', {value: 1, writable: true, enumerable: true, configurable: true});` -> `{__proto__: 1}`. This defines the prototype of `x` rather than an own property `x.__proto__`. Needs to be defined with `Object.defineProperty(x, '__proto__', ...)` (NB NOT `Object.defineProperties(x, {__proto__: ...)` as this alters prototype on descriptor Object!). Therefore is independent from fix for other bug noted above.
 * Reference to class treated as circular var and injected into scope for class methods, when it doesn't need to be
 * Substitute globals used in functions for created global vars
 * Set strict mode on functions
