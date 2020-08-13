@@ -2,11 +2,6 @@
 
 ## Before first release:
 
-* Tests for classes
-* Tests for `super` (in class methods inc constructor + static methods)
-* Tests for anonymous class expressions having no name property
-* Tests for ignoring `extends` var in class definitions e.g. ignore `Y` in `class X extends Y {}`
-* Tests for computed method keys (`{ [x]() {} }`) in classes (inc static methods)
 * Tests for ESM input
 * Resolve remaining TODO comments
 * Basic CLI
