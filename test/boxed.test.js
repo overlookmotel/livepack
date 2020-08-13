@@ -117,7 +117,7 @@ describeWithAllOptions('Boxed Booleans', ({expectSerializedEqual}) => {
 	});
 });
 
-describeWithAllOptions('Boxed Numbers', ({expectSerializedEqual}) => { // TODO
+describeWithAllOptions('Boxed Numbers', ({expectSerializedEqual}) => {
 	it('positive integer', () => {
 		expectSerializedEqual(
 			new Number(1),
