@@ -2,6 +2,7 @@
 
 ## Before first release:
 
+* Remove pointless class constructors (including those inserted by Babel plugin) when class nested in function being serialized e.g. `Y => class extends Y {constructor(...args) { super(...args); }}`
 * Tests for ESM input
 * Resolve remaining TODO comments
 * Basic CLI
