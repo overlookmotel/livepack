@@ -1795,7 +1795,7 @@ describeWithAllOptions('Classes', ({run}) => {
 						expect(SuperClass.name).toBe('X');
 
 						Klass.bar();
-						expect(Klass).toHaveDescriptorFor('y');
+						expect(Klass).toHaveOwnProperty('y');
 						expect(Klass.y).toBe(2);
 
 						const instance = new Klass();
@@ -1886,7 +1886,7 @@ describeWithAllOptions('Classes', ({run}) => {
 						expect(SuperClass.name).toBe('X');
 
 						Klass.bar();
-						expect(Klass).toHaveDescriptorFor('y');
+						expect(Klass).toHaveOwnProperty('y');
 						expect(Klass.y).toBe(2);
 
 						const instance = new Klass();
@@ -1977,7 +1977,7 @@ describeWithAllOptions('Classes', ({run}) => {
 						expect(SuperClass.name).toBe('X');
 
 						Klass.bar(2, 3);
-						expect(Klass).toHaveDescriptorFor('y');
+						expect(Klass).toHaveOwnProperty('y');
 						expect(Klass.y).toBe(5);
 
 						const instance = new Klass();
@@ -2146,7 +2146,7 @@ describeWithAllOptions('Classes', ({run}) => {
 						expect(instance.x).toBe(1);
 
 						Klass.bar();
-						expect(Klass).toHaveDescriptorFor('y');
+						expect(Klass).toHaveOwnProperty('y');
 						expect(Klass.y).toBe(2);
 					}
 				);
@@ -2171,7 +2171,7 @@ describeWithAllOptions('Classes', ({run}) => {
 
 					const proto = Object.getPrototypeOf(instance);
 					expect(proto).toBeObject();
-					expect(proto).toHaveDescriptorFor('constructor');
+					expect(proto).toHaveOwnProperty('constructor');
 					const Klass = proto.constructor;
 					expect(Klass).toBeFunction();
 					expect(Klass.name).toBe('X');
@@ -2226,7 +2226,7 @@ describeWithAllOptions('Classes', ({run}) => {
 
 					const proto = Object.getPrototypeOf(instance);
 					expect(proto).toBeObject();
-					expect(proto).toHaveDescriptorFor('constructor');
+					expect(proto).toHaveOwnProperty('constructor');
 					const Klass = proto.constructor;
 					expect(Klass).toBeFunction();
 					expect(Klass.name).toBe('Y');
@@ -2235,7 +2235,7 @@ describeWithAllOptions('Classes', ({run}) => {
 
 					const superProto = Object.getPrototypeOf(proto);
 					expect(superProto).toBeObject();
-					expect(superProto).toHaveDescriptorFor('constructor');
+					expect(superProto).toHaveOwnProperty('constructor');
 					const SuperKlass = superProto.constructor;
 					expect(SuperKlass).toBeFunction();
 					expect(SuperKlass.name).toBe('X');

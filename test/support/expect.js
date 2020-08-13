@@ -32,11 +32,11 @@ expect.extend({
 		};
 	},
 
-	toHaveDescriptorFor(received, key) {
+	toHaveOwnProperty(received, key) {
 		const pass = !!Object.getOwnPropertyDescriptor(received, key);
 
 		return {
-			message: () => `expected ${printReceived(received)}.${printReceived(key)}${pass ? ' not' : ''} to have a property descriptor`,
+			message: () => `expected ${printReceived(received)}${pass ? ' not' : ''} to have a property ${printReceived(key)}`,
 			pass
 		};
 	},

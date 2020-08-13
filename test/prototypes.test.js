@@ -153,7 +153,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 								(fn) => {
 									expect(fn).toBeFunction();
 									expect(fn.name).toBe('');
-									expect(fn).not.toHaveDescriptorFor('name');
+									expect(fn).not.toHaveOwnProperty('name');
 									expect(fn).toContainAllKeys(['x', 'y', 'z']);
 									expect(fn.x).toBe(fn);
 									expect(fn.y).toBe(2);
@@ -183,9 +183,9 @@ describeWithAllOptions('Prototypes', ({run}) => {
 								(fn) => {
 									expect(fn).toBeFunction();
 									expect(fn.name).toBe('');
-									expect(fn).not.toHaveDescriptorFor('name');
+									expect(fn).not.toHaveOwnProperty('name');
 									expect(fn.length).toBe(0); // eslint-disable-line jest/prefer-to-have-length
-									expect(fn).not.toHaveDescriptorFor('length');
+									expect(fn).not.toHaveOwnProperty('length');
 									expect(fn).toContainAllKeys(['x', 'y', 'z']);
 									expect(fn.x).toBe(fn);
 									expect(fn.y).toBe(2);
@@ -325,7 +325,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 								(fn) => {
 									expect(fn).toBeFunction();
 									expect(fn.name).toBe('');
-									expect(fn).not.toHaveDescriptorFor('name');
+									expect(fn).not.toHaveOwnProperty('name');
 									expect(fn).toContainAllKeys(['x', 'y', 'z']);
 									expect(fn.x).toBe(fn);
 									expect(fn.y).toBe(2);
@@ -355,9 +355,9 @@ describeWithAllOptions('Prototypes', ({run}) => {
 								(fn) => {
 									expect(fn).toBeFunction();
 									expect(fn.name).toBe('');
-									expect(fn).not.toHaveDescriptorFor('name');
+									expect(fn).not.toHaveOwnProperty('name');
 									expect(fn.length).toBe(0); // eslint-disable-line jest/prefer-to-have-length
-									expect(fn).not.toHaveDescriptorFor('length');
+									expect(fn).not.toHaveOwnProperty('length');
 									expect(fn).toContainAllKeys(['x', 'y', 'z']);
 									expect(fn.x).toBe(fn);
 									expect(fn.y).toBe(2);
@@ -526,7 +526,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 									const fn = proto.constructor;
 									expect(fn).toBeFunction();
 									expect(fn.name).toBe('');
-									expect(fn).not.toHaveDescriptorFor('name');
+									expect(fn).not.toHaveOwnProperty('name');
 									expect(fn).toContainAllKeys(['x', 'y', 'z']);
 									expect(fn.x).toBe(fn);
 									expect(fn.y).toBe(2);
@@ -557,9 +557,9 @@ describeWithAllOptions('Prototypes', ({run}) => {
 									const fn = proto.constructor;
 									expect(fn).toBeFunction();
 									expect(fn.name).toBe('');
-									expect(fn).not.toHaveDescriptorFor('name');
+									expect(fn).not.toHaveOwnProperty('name');
 									expect(fn.length).toBe(0); // eslint-disable-line jest/prefer-to-have-length
-									expect(fn).not.toHaveDescriptorFor('length');
+									expect(fn).not.toHaveOwnProperty('length');
 									expect(fn).toContainAllKeys(['x', 'y', 'z']);
 									expect(fn.x).toBe(fn);
 									expect(fn.y).toBe(2);
@@ -704,7 +704,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 									const fn = proto.constructor;
 									expect(fn).toBeFunction();
 									expect(fn.name).toBe('');
-									expect(fn).not.toHaveDescriptorFor('name');
+									expect(fn).not.toHaveOwnProperty('name');
 									expect(fn).toContainAllKeys(['x', 'y', 'z']);
 									expect(fn.x).toBe(fn);
 									expect(fn.y).toBe(2);
@@ -735,9 +735,9 @@ describeWithAllOptions('Prototypes', ({run}) => {
 									const fn = proto.constructor;
 									expect(fn).toBeFunction();
 									expect(fn.name).toBe('');
-									expect(fn).not.toHaveDescriptorFor('name');
+									expect(fn).not.toHaveOwnProperty('name');
 									expect(fn.length).toBe(0); // eslint-disable-line jest/prefer-to-have-length
-									expect(fn).not.toHaveDescriptorFor('length');
+									expect(fn).not.toHaveOwnProperty('length');
 									expect(fn).toContainAllKeys(['x', 'y', 'z']);
 									expect(fn.x).toBe(fn);
 									expect(fn.y).toBe(2);
@@ -1940,7 +1940,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 				(fn) => {
 					expect(fn).toBeFunction();
 					expect(fn).toContainAllKeys([]);
-					expect(fn).not.toHaveDescriptorFor('prototype');
+					expect(fn).not.toHaveOwnProperty('prototype');
 				}
 			);
 		});
@@ -1994,7 +1994,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 				(fn) => {
 					expect(fn).toBeFunction();
 					expect(fn).toContainAllKeys([]);
-					expect(fn).not.toHaveDescriptorFor('prototype');
+					expect(fn).not.toHaveOwnProperty('prototype');
 				}
 			);
 		});
@@ -2048,7 +2048,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 				(fn) => {
 					expect(fn).toBeFunction();
 					expect(fn).toContainAllKeys([]);
-					expect(fn).not.toHaveDescriptorFor('prototype');
+					expect(fn).not.toHaveOwnProperty('prototype');
 				}
 			);
 		});

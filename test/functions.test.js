@@ -2619,7 +2619,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 				'(()=>{const a=(0,function(){});delete a.name;return a})()',
 				(fn) => {
 					expect(fn.name).toBe('');
-					expect(fn).not.toHaveDescriptorFor('name');
+					expect(fn).not.toHaveOwnProperty('name');
 				}
 			);
 		});
@@ -2703,7 +2703,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 				'(()=>{const a=function input(){};delete a.length;return a})()',
 				(fn) => {
 					expect(fn.length).toBe(0); // eslint-disable-line jest/prefer-to-have-length
-					expect(fn).not.toHaveDescriptorFor('length');
+					expect(fn).not.toHaveOwnProperty('length');
 				}
 			);
 		});
