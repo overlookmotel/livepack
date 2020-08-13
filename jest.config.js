@@ -10,7 +10,8 @@
 module.exports = {
 	testEnvironment: 'node',
 	coverageDirectory: 'coverage',
-	collectCoverageFrom: ['index.js', 'lib/**/*.js'],
+	coverageProvider: 'v8',
+	collectCoverageFrom: ['*.js', '!.eslintrc.js', '!jest.config.js', 'lib/**/*.js'],
 	setupFilesAfterEnv: [
 		'jest-extended',
 		'jest-expect-arguments',
