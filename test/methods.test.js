@@ -6,7 +6,7 @@
 'use strict';
 
 // Imports
-const {describeWithAllOptions} = require('./support/index.js');
+const {describeWithAllOptions, stripLineBreaks} = require('./support/index.js');
 
 // Tests
 
@@ -89,7 +89,7 @@ describeWithAllOptions('Object methods', ({run}) => {
 
 			run(
 				input,
-				`(()=>{
+				stripLineBreaks(`(()=>{
 					const a=(b=>[
 							a=>b=a,
 							{
@@ -119,7 +119,7 @@ describeWithAllOptions('Object methods', ({run}) => {
 						);
 					a[0](c);
 					return c
-				})()`.replace(/\n\s+/g, ''),
+				})()`),
 				(obj) => {
 					expect(obj).toBeObject();
 					expect(obj).toContainAllKeys(['x', 'y', 'z']);
@@ -250,7 +250,7 @@ describeWithAllOptions('Object methods', ({run}) => {
 
 			run(
 				input,
-				`(()=>{
+				stripLineBreaks(`(()=>{
 					const a=(b=>[
 							a=>b=a,
 							{
@@ -283,7 +283,7 @@ describeWithAllOptions('Object methods', ({run}) => {
 						);
 					a[0](b);
 					return b
-				})()`.replace(/\n\s+/g, ''),
+				})()`),
 				(obj) => {
 					expect(obj).toBeObject();
 					expect(obj).toContainAllKeys(['x', 'y', 'z']);

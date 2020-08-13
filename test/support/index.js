@@ -10,7 +10,7 @@ const serialize = require('livepack');
 
 // Exports
 
-module.exports = {describeWithAllOptions, itWithAllOptions};
+module.exports = {describeWithAllOptions, itWithAllOptions, stripLineBreaks};
 
 /**
  * Replacement for `describe` which runs tests with all serialize options.
@@ -163,4 +163,8 @@ function removeEslintComments(js) {
 	// NB Comments cause Babel to add semicolons at end of blocks, which it otherwise doesn't
 	return js.replace(/\/\/ eslint-disable-line [^\n]+\n/g, '')
 		.replace(/;}/g, '}');
+}
+
+function stripLineBreaks(js) {
+	return removeEslintComments(js).replace(/\n\s+/g, '');
 }
