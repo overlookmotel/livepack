@@ -215,3 +215,27 @@ describeWithAllOptions('URLSearchParams', ({expectSerializedEqual, run}) => {
 		);
 	});
 });
+
+describeWithAllOptions('TypedArray', ({expectSerializedEqual, run}) => {
+	it('class', () => {
+		const TypedArray = Object.getPrototypeOf(Uint8Array.prototype).constructor;
+		expectSerializedEqual(
+			TypedArray,
+			'Object.getPrototypeOf(Uint8Array.prototype).constructor',
+			(fn) => {
+				expect(fn).toBe(TypedArray);
+			}
+		);
+	});
+
+	it('prototype', () => {
+		const TypedArrayPrototype = Object.getPrototypeOf(Uint8Array.prototype);
+		run(
+			TypedArrayPrototype,
+			'Object.getPrototypeOf(Uint8Array.prototype)',
+			(fn) => {
+				expect(fn).toBe(TypedArrayPrototype);
+			}
+		);
+	});
+});
