@@ -60,7 +60,7 @@
     "test": "npm run lint && npm run test-main",
     "lint": "eslint .",
     "lint-fix": "eslint . --fix",
-    "test-main": "jest --runInBand",
+    "test-main": "jest",
     "cover": "npm run cover-main && rm -rf coverage",
     "coveralls": "npm run cover-main && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage",
     "cover-main": "jest --coverage"
