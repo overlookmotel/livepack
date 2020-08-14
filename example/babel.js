@@ -5,7 +5,7 @@
 // Modules
 const pathJoin = require('path').join,
 	{readFileSync} = require('fs'),
-	{transformSync} = require('@babel/core'), // eslint-disable-line import/no-extraneous-dependencies
+	{transformSync} = require('@babel/core'),
 	babelPlugin = require('../babel.js'); // require('livepack/babel')
 
 // Run
