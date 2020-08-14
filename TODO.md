@@ -8,7 +8,6 @@
 * Basic CLI
 
 * Delete `id` field from `records`, `blocks`, `scopes`, `functions`
-* Remove `@babel/core` dev dependency
 * Remove `example` directory
 * Remove `working` directory (move some of code into tests or Github issues)
 

@@ -6,7 +6,8 @@
 'use strict';
 
 // Imports
-const {describeWithAllOptions} = require('./support/index.js');
+const {describeWithAllOptions} = require('./support/index.js'),
+	{transpiledFiles} = require('../lib/internal.js');
 
 // Tests
 const ext = {};
@@ -30,10 +31,9 @@ describeWithAllOptions('Internal vars created by Babel plugin do not interfere w
 
 	it('`temp`', () => {
 		// Check the temp var name which Babel transform creates matches the one being tested for
-		// NB `__codeAfterBabelTransform__` var is injected in babel transform
+		// NB code for this file is injected into `files` in babel transform
 		// (see `test/support/transform.js`)
-		// eslint-disable-next-line no-undef
-		expect(__codeAfterBabelTransform__).toMatch(/\/\*livepack_temp:assign\*\/temp1_11/);
+		expect(transpiledFiles[__filename].code).toMatch(/\/\*livepack_temp:assign\*\/temp1_11/);
 
 		run(
 			Object.setPrototypeOf(
