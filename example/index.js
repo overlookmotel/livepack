@@ -5,7 +5,7 @@
 // Error.stackTraceLimit = 20;
 
 // Register babel plugin
-require('../register.js')(); // require('livepack/register')();
+require('../register.js'); // require('livepack/register');
 
 // Modules
 const serialize = require('../index.js'); // require('livepack')
