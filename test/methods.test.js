@@ -320,4 +320,7 @@ describeWithAllOptions('Object methods', ({run}) => {
 			);
 		});
 	});
+
+	// TODO async + generator + async generator methods
+	// TODO getter + setter methods
 });
