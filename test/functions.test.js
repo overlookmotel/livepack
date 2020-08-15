@@ -58,7 +58,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 						function(x, y) {
 							return [x, y, this]; // eslint-disable-line no-invalid-this
 						},
-						'(function(a,b){return[a,b,this]})',
+						'function(a,b){return[a,b,this]}',
 						(fn) => {
 							expect(fn).toBeFunction();
 							const param1 = {},
@@ -80,7 +80,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 						function input(x, y) {
 							return [x, y, this]; // eslint-disable-line no-invalid-this
 						},
-						'(function input(a,b){return[a,b,this]})',
+						'function input(a,b){return[a,b,this]}',
 						(fn) => {
 							expect(fn).toBeFunction();
 							const param1 = {},
@@ -103,7 +103,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 					return [x, y, this]; // eslint-disable-line no-invalid-this
 				}
 				run(
-					input, '(function input(a,b){return[a,b,this]})',
+					input, 'function input(a,b){return[a,b,this]}',
 					(fn) => {
 						expect(fn).toBeFunction();
 						const param1 = {},
@@ -834,7 +834,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 		describe('referencing local scope', () => {
 			it('in exported function', () => {
 				const input = function() { return this; }; // eslint-disable-line no-invalid-this
-				const out = run(input, '(function input(){return this})');
+				const out = run(input, 'function input(){return this}');
 
 				expect(out).toBeFunction();
 				const ctx = {};
@@ -847,7 +847,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 						function input() {
 							return function() { return this; }; // eslint-disable-line no-invalid-this
 						}
-						const out = run(input, '(function input(){return function(){return this}})');
+						const out = run(input, 'function input(){return function(){return this}}');
 
 						expect(out).toBeFunction();
 						const res = out();
@@ -860,7 +860,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 						const input = function() {
 							return function() { return this; }; // eslint-disable-line no-invalid-this
 						};
-						const out = run(input, '(function input(){return function(){return this}})');
+						const out = run(input, 'function input(){return function(){return this}}');
 
 						expect(out).toBeFunction();
 						const res = out();
@@ -889,7 +889,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 						function input() {
 							return () => this; // eslint-disable-line no-invalid-this
 						}
-						const out = run(input, '(function input(){return()=>this})');
+						const out = run(input, 'function input(){return()=>this}');
 
 						expect(out).toBeFunction();
 						const ctx = {};
@@ -902,7 +902,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 						function input() {
 							return () => () => this; // eslint-disable-line no-invalid-this
 						}
-						const out = run(input, '(function input(){return()=>()=>this})');
+						const out = run(input, 'function input(){return()=>()=>this}');
 
 						expect(out).toBeFunction();
 						const ctx = {};
@@ -923,7 +923,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 										return () => this; // eslint-disable-line no-invalid-this
 									};
 								}
-								const out = run(input, '(function input(){return function(){return()=>this}})');
+								const out = run(input, 'function input(){return function(){return()=>this}}');
 
 								expect(out).toBeFunction();
 								const res = out();
@@ -940,7 +940,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 										return () => () => this; // eslint-disable-line no-invalid-this
 									};
 								}
-								const out = run(input, '(function input(){return function(){return()=>()=>this}})');
+								const out = run(input, 'function input(){return function(){return()=>()=>this}}');
 
 								expect(out).toBeFunction();
 								const res = out();
@@ -961,7 +961,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 										return () => this; // eslint-disable-line no-invalid-this
 									};
 								};
-								const out = run(input, '(function input(){return function(){return()=>this}})');
+								const out = run(input, 'function input(){return function(){return()=>this}}');
 
 								expect(out).toBeFunction();
 								const res = out();
@@ -978,7 +978,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 										return () => () => this; // eslint-disable-line no-invalid-this
 									};
 								};
-								const out = run(input, '(function input(){return function(){return()=>()=>this}})');
+								const out = run(input, 'function input(){return function(){return()=>()=>this}}');
 
 								expect(out).toBeFunction();
 								const res = out();
@@ -1254,7 +1254,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 		describe('referencing local scope', () => {
 			it('in exported function', () => {
 				const input = function() { return arguments; }; // eslint-disable-line prefer-rest-params
-				const out = run(input, '(function input(){return arguments})');
+				const out = run(input, 'function input(){return arguments}');
 
 				expect(out).toBeFunction();
 				const argA = {argA: 1},
@@ -1272,7 +1272,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 						function input() {
 							return function() { return arguments; }; // eslint-disable-line prefer-rest-params
 						}
-						const out = run(input, '(function input(){return function(){return arguments}})');
+						const out = run(input, 'function input(){return function(){return arguments}}');
 
 						expect(out).toBeFunction();
 						const fn = out();
@@ -1290,7 +1290,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 						const input = function() {
 							return function() { return arguments; }; // eslint-disable-line prefer-rest-params
 						};
-						const out = run(input, '(function input(){return function(){return arguments}})');
+						const out = run(input, 'function input(){return function(){return arguments}}');
 
 						expect(out).toBeFunction();
 						const fn = out();
@@ -1329,7 +1329,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 						function input() {
 							return () => arguments; // eslint-disable-line prefer-rest-params
 						}
-						const out = run(input, '(function input(){return()=>arguments})');
+						const out = run(input, 'function input(){return()=>arguments}');
 
 						expect(out).toBeFunction();
 						const argA = {argA: 1},
@@ -1347,7 +1347,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 						function input() {
 							return () => () => arguments; // eslint-disable-line prefer-rest-params
 						}
-						const out = run(input, '(function input(){return()=>()=>arguments})');
+						const out = run(input, 'function input(){return()=>()=>arguments}');
 
 						expect(out).toBeFunction();
 						const argA = {argA: 1},
@@ -1373,7 +1373,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 										return () => arguments; // eslint-disable-line prefer-rest-params
 									};
 								}
-								const out = run(input, '(function input(){return function(){return()=>arguments}})');
+								const out = run(input, 'function input(){return function(){return()=>arguments}}');
 
 								expect(out).toBeFunction();
 								const fnBase = out();
@@ -1396,7 +1396,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 									};
 								}
 								const out = run(
-									input, '(function input(){return function(){return()=>()=>arguments}})'
+									input, 'function input(){return function(){return()=>()=>arguments}}'
 								);
 
 								expect(out).toBeFunction();
@@ -1423,7 +1423,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 										return () => arguments; // eslint-disable-line prefer-rest-params
 									};
 								};
-								const out = run(input, '(function input(){return function(){return()=>arguments}})');
+								const out = run(input, 'function input(){return function(){return()=>arguments}}');
 
 								expect(out).toBeFunction();
 								const fnBase = out();
@@ -1446,7 +1446,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 									};
 								};
 								const out = run(
-									input, '(function input(){return function(){return()=>()=>arguments}})'
+									input, 'function input(){return function(){return()=>()=>arguments}}'
 								);
 
 								expect(out).toBeFunction();
@@ -2177,7 +2177,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 			const input = function x() {
 				return x;
 			};
-			const out = run(input, '(function x(){return x})');
+			const out = run(input, 'function x(){return x}');
 
 			expect(out()).toBe(out);
 		});
@@ -2186,7 +2186,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 			const input = function x() {
 				return () => x;
 			};
-			const out = run(input, '(function x(){return()=>x})');
+			const out = run(input, 'function x(){return()=>x}');
 
 			expect(out()()).toBe(out);
 		});
@@ -2202,7 +2202,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 					extB = {extB: 3};
 				run(
 					fn.bind(ctx, extA, extB, 123),
-					'(function fn(a,b,c,d,e){return[this,a,b,c,d,e]}).bind({ctx:1},{extA:2},{extB:3},123)',
+					'function fn(a,b,c,d,e){return[this,a,b,c,d,e]}.bind({ctx:1},{extA:2},{extB:3},123)',
 					(boundFn) => {
 						expect(boundFn).toBeFunction();
 						expect(boundFn.name).toBe('bound fn');
@@ -2537,7 +2537,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 		it('unnamed function as object property', () => {
 			run(
 				{a: (0, function() {})},
-				'({a:(0,function(){})})',
+				'{a:(0,function(){})}',
 				(obj) => {
 					expect(obj).toBeObject();
 					expect(obj).toContainAllKeys(['a']);
@@ -2568,7 +2568,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 				Object.defineProperty(input, 'name', {value: 'foo'});
 				run(
 					input,
-					'(function foo(){})',
+					'function foo(){}',
 					(fn) => {
 						expect(fn.name).toBe('foo');
 						expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);

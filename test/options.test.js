@@ -31,25 +31,25 @@ describe('Options', () => {
 
 	describe('minify', () => {
 		it('default', () => {
-			expect(serialize({a: 1})).toBe('({a:1})');
+			expect(serialize({a: 1})).toBe('{a:1}');
 		});
 
 		it('true', () => {
-			expect(serialize({a: 1}, {minify: true})).toBe('({a:1})');
+			expect(serialize({a: 1}, {minify: true})).toBe('{a:1}');
 		});
 
 		it('false', () => {
-			expect(serialize({a: 1}, {minify: false, inline: true})).toBe('({\n  a: 1\n})\n');
+			expect(serialize({a: 1}, {minify: false, inline: true})).toBe('{\n  a: 1\n}\n');
 		});
 	});
 
 	describe('inline', () => {
 		it('default', () => {
-			expect(serialize({a: {b: 1}})).toBe('({a:{b:1}})');
+			expect(serialize({a: {b: 1}})).toBe('{a:{b:1}}');
 		});
 
 		it('true', () => {
-			expect(serialize({a: {b: 1}}, {inline: true})).toBe('({a:{b:1}})');
+			expect(serialize({a: {b: 1}}, {inline: true})).toBe('{a:{b:1}}');
 		});
 
 		it('false', () => {

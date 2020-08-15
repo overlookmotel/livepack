@@ -19,7 +19,7 @@ describeWithAllOptions('Classes', ({run}) => {
 		it('anonymous', () => {
 			run(
 				class {},
-				'(class{})',
+				'class{}',
 				(Klass) => {
 					expect(Klass).toBeFunction();
 					expect(Klass.name).toBe('');
@@ -30,7 +30,7 @@ describeWithAllOptions('Classes', ({run}) => {
 		it('named', () => {
 			run(
 				class C {},
-				'(class C{})',
+				'class C{}',
 				(Klass) => {
 					expect(Klass).toBeFunction();
 					expect(Klass.name).toBe('C');
@@ -47,7 +47,7 @@ describeWithAllOptions('Classes', ({run}) => {
 						this.x = param;
 					}
 				},
-				'(class{constructor(a){this.x=a}})',
+				'class{constructor(a){this.x=a}}',
 				(Klass) => {
 					expect(Klass).toBeFunction();
 					const instance = new Klass(1);

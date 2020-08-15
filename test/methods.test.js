@@ -23,7 +23,7 @@ describeWithAllOptions('Object methods', ({run}) => {
 
 			run(
 				input,
-				'({x(){return this},y(){return this},z(){return this}})',
+				'{x(){return this},y(){return this},z(){return this}}',
 				(obj) => {
 					expect(obj).toBeObject();
 					expect(obj).toContainAllKeys(['x', 'y', 'z']);

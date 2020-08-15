@@ -18,7 +18,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 			it('function has no other props', () => {
 				run(
 					function() {},
-					'(function(){})',
+					'function(){}',
 					(fn) => {
 						expect(fn).toBeFunction();
 						expect(fn).toContainAllKeys([]);
@@ -382,7 +382,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 			it('function has no other props', () => {
 				run(
 					(function() {}).prototype,
-					'(function(){}).prototype',
+					'function(){}.prototype',
 					(proto) => {
 						expect(proto).toBeObject();
 						expect(proto).toHaveOwnPropertyNames(['constructor']);
@@ -1501,7 +1501,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 					delete inputFn.prototype.constructor;
 					run(
 						inputFn.prototype,
-						'({})',
+						'{}',
 						(proto) => {
 							expect(proto).toBeObject();
 							expect(proto).toHaveOwnPropertyNames([]);
@@ -1990,7 +1990,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 		it('have no prototype by default', () => {
 			run(
 				async function() {}, // eslint-disable-line no-empty-function
-				'(async function(){})',
+				'async function(){}',
 				(fn) => {
 					expect(fn).toBeFunction();
 					expect(fn).toContainAllKeys([]);
@@ -2099,7 +2099,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 			it('function accessed', () => {
 				run(
 					function*() {}, // eslint-disable-line no-empty-function
-					'(function*(){})',
+					'function*(){}',
 					(fn) => {
 						expect(fn).toBeFunction();
 						expect(fn).toContainAllKeys([]);
@@ -2317,7 +2317,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 			it('function accessed', () => {
 				run(
 					async function*() {}, // eslint-disable-line no-empty-function
-					'(async function*(){})',
+					'async function*(){}',
 					(fn) => {
 						expect(fn).toBeFunction();
 						expect(fn).toContainAllKeys([]);

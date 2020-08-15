@@ -12,24 +12,24 @@ const {describeWithAllOptions} = require('./support/index.js');
 
 describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 	it('empty object', () => {
-		expectSerializedEqual({}, '({})');
+		expectSerializedEqual({}, '{}');
 	});
 
 	describe('properties', () => {
 		it('one property', () => {
-			expectSerializedEqual({a: 1}, '({a:1})');
+			expectSerializedEqual({a: 1}, '{a:1}');
 		});
 
 		it('multiple properties', () => {
-			expectSerializedEqual({a: 1, b: 2, c: 3}, '({a:1,b:2,c:3})');
+			expectSerializedEqual({a: 1, b: 2, c: 3}, '{a:1,b:2,c:3}');
 		});
 
 		it('properties with names which are not valid identifiers', () => {
-			expectSerializedEqual({'b-c': {'0a': 1, 'd.e': 2}}, '({"b-c":{"0a":1,"d.e":2}})');
+			expectSerializedEqual({'b-c': {'0a': 1, 'd.e': 2}}, '{"b-c":{"0a":1,"d.e":2}}');
 		});
 
 		it('numeric property keys', () => {
-			expectSerializedEqual({0: {1: 1, 23: 2, '04': 3}}, '({0:{1:1,23:2,"04":3}})');
+			expectSerializedEqual({0: {1: 1, 23: 2, '04': 3}}, '{0:{1:1,23:2,"04":3}}');
 		});
 
 		it('properties with names which are JS reserved words', () => {
@@ -37,14 +37,14 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 			// `mangle` and `inline` options false
 			expectSerializedEqual(
 				{if: {}, do: {}, this: {}, arguments: {}, repeat: {if: {}, do: {}, this: {}, arguments: {}}},
-				'({if:{},do:{},this:{},arguments:{},repeat:{if:{},do:{},this:{},arguments:{}}})'
+				'{if:{},do:{},this:{},arguments:{},repeat:{if:{},do:{},this:{},arguments:{}}}'
 			);
 		});
 
 		it('with undefined value', () => {
 			expectSerializedEqual(
 				{x: undefined},
-				'({x:void 0})',
+				'{x:void 0}',
 				(obj) => {
 					expect(obj).toHaveOwnPropertyNames(['x']);
 					expect(obj.x).toBeUndefined();
@@ -58,7 +58,7 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 			expectSerializedEqual({
 				a: {aa: 1},
 				b: 2
-			}, '({a:{aa:1},b:2})');
+			}, '{a:{aa:1},b:2}');
 		});
 
 		it('multiple nested objects', () => {
@@ -66,7 +66,7 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 				a: {aa: 1},
 				b: {ba: 2},
 				c: 3
-			}, '({a:{aa:1},b:{ba:2},c:3})');
+			}, '{a:{aa:1},b:{ba:2},c:3}');
 		});
 
 		it('multiple layers of nesting', () => {
@@ -98,7 +98,7 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 					},
 					bb: 9
 				}
-			}, '({a:{aa:{aaa:{aaaa:1,aaab:2},aab:{},aac:3},ab:{aba:{abaa:4},abb:5},ac:{},ad:6},b:{ba:{baa:{baaa:7,baab:8}},bb:9}})');
+			}, '{a:{aa:{aaa:{aaaa:1,aaab:2},aab:{},aac:3},ab:{aba:{abaa:4},abb:5},ac:{},ad:6},b:{ba:{baa:{baaa:7,baab:8}},bb:9}}');
 		});
 
 		describe('duplicated references', () => {
