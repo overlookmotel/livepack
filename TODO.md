@@ -2,6 +2,7 @@
 
 ## Before first release:
 
+* Fix bug: `const input = function() {}; // foo` causes error with `sourceMaps: true` option
 * Fix bug with circular references in scopes
 * Tests for calling functions not throwing when use destructured params (proxy solution)
 * Remove pointless class constructors (including those inserted by Babel plugin) when class nested in function being serialized e.g. `Y => class extends Y {constructor(...args) { super(...args); }}`
