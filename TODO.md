@@ -2,6 +2,10 @@
 
 ## Before first release:
 
+* Support JSX
+* Don't treat `module` + `exports` as globals - treat as vars in top scope of file
+* Handle `WeakMap` + `WeakSet`
+* Make `undefined` a var rather than `void 0` every time
 * Tests for calling functions not throwing when use destructured params (proxy solution)
 * Remove pointless class constructors (including those inserted by Babel plugin) when class nested in function being serialized e.g. `Y => class extends Y {constructor(...args) { super(...args); }}`
 * Tests for `files` option
@@ -17,7 +21,6 @@
 ## Raise as Github issues for later resolution:
 
 * Simplify structure of `dependencies` - each member of `dependencies` can be direct reference to `record` rather than `{record}`
-* Don't treat `module` + `exports` as globals - treat as vars in top scope of file
 * Handle unscoped `this` in top-level arrow functions `() => this` (equals `exports` in Node CJS, `undefined` in Node ESM, `window` in browser script, don't know what in browser ESM)
 * Handle `Int16Array` etc
 * Handle `TextDecoder` + `TextEncoder`
