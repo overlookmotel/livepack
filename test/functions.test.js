@@ -6,7 +6,7 @@
 'use strict';
 
 // Imports
-const {describeWithAllOptions} = require('./support/index.js');
+const {describeWithAllOptions, stripLineBreaks} = require('./support/index.js');
 
 // Tests
 
@@ -1831,6 +1831,82 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 							expect(fns[0]).not.toBe(fns[1]);
 							expect(fns[0]).not.toBe(fns[2]);
 							expect(fns[1]).not.toBe(fns[2]);
+						}
+					);
+				});
+			});
+
+			describe('2 functions in same scope referencing object containing one of functions', () => {
+				it('single instantiation', () => {
+					const ext = {x};
+					function x() { return ext; }
+					const input = function y() { return ext; };
+
+					run(
+						input,
+						stripLineBreaks(`(()=>{
+							const a=(
+								a=>[
+									b=>a=b,
+									function x(){return a},
+									function y(){return a}
+								]
+							)();
+							a[0]({x:a[1]});
+							return a[2]
+						})()`),
+						(fn1) => {
+							expect(fn1).toBeFunction();
+							expect(fn1.name).toBe('y');
+							const obj = fn1();
+							expect(obj).toBeObject();
+							const fn2 = obj.x;
+							expect(fn2).toBeFunction();
+							expect(fn2.name).toBe('x');
+							expect(fn2()).toBe(obj);
+						}
+					);
+				});
+
+				it('multiple instantiations', () => {
+					function outer(num) {
+						const ext = {num, x};
+						function x() { return ext; }
+						return function y() { return ext; };
+					}
+
+					const input = [0, 1, 2].map(num => outer(num));
+
+					run(
+						input,
+						stripLineBreaks(`(()=>{
+							const a=a=>[
+									b=>a=b,
+									function x(){return a},
+									function y(){return a}
+								],
+								b=a(),
+								c=a(),
+								d=a();
+							b[0]({num:0,x:b[1]});
+							c[0]({num:1,x:c[1]});
+							d[0]({num:2,x:d[1]});
+							return[b[2],c[2],d[2]]
+						})()`),
+						(arr) => {
+							expect(arr).toBeArrayOfSize(3);
+							arr.forEach((fn1, index) => {
+								expect(fn1).toBeFunction();
+								expect(fn1.name).toBe('y');
+								const obj = fn1();
+								expect(obj).toBeObject();
+								const fn2 = obj.x;
+								expect(fn2).toBeFunction();
+								expect(fn2.name).toBe('x');
+								expect(fn2()).toBe(obj);
+								expect(obj.num).toBe(index);
+								return {fn1, fn2};
+							});
 						}
 					);
 				});
