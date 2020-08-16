@@ -1,4 +1,4 @@
-/* eslint-disable no-console, import/order */
+/* eslint-disable no-console */
 
 'use strict';
 
@@ -8,20 +8,36 @@
 require('../register.js'); // require('livepack/register');
 
 // Modules
-const serialize = require('../index.js'); // require('livepack')
+const pathJoin = require('path').join,
+	{existsSync, mkdirSync, writeFileSync} = require('fs'),
+	serialize = require('../index.js'); // require('livepack')
 
 // Load source
 const res = require('./src/index.js');
 
 // Serialize to JS
-const js = serialize(res, {format: 'cjs', minify: false, inline: true, comments: true, mangle: false});
-console.log(js);
+const options = {
+	format: 'cjs',
+	exec: false,
+	minify: false,
+	inline: true,
+	comments: false,
+	mangle: false,
+	files: true,
+	sourceMaps: true
+};
 
-// Save output to file
-const pathJoin = require('path').join,
-	{existsSync, mkdirSync, writeFileSync} = require('fs');
+const output = serialize(res, options);
+const files = options.files ? output : [{filename: 'index.js', content: output}];
 
+// Print generated code
+console.log('----------');
+console.log(files[0].content);
+
+// Save output to file(s)
 const buildDirPath = pathJoin(__dirname, 'build');
 if (!existsSync(buildDirPath)) mkdirSync(buildDirPath);
-const buildPath = pathJoin(buildDirPath, 'index.js');
-writeFileSync(buildPath, js);
+for (const {filename, content} of files) {
+	const buildPath = pathJoin(buildDirPath, filename);
+	writeFileSync(buildPath, content);
+}
