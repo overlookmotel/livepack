@@ -92,4 +92,49 @@ describe('Options', () => {
 			expect(serialize(input, {comments: true})).toBe('()=>{/* foobar */}');
 		});
 	});
+
+	describe('shouldPrintComment', () => {
+		function input(
+			// single in params
+			/* block in params */
+			/*
+			multi-line
+			in params
+			*/
+			x
+		) {
+			// single in body
+			/* block in body */
+			/*
+			multi-line
+			in body
+			*/
+			return x;
+		}
+
+		it('default removes all comments', () => {
+			expect(serialize(input)).toBe('function input(a){return a}');
+		});
+
+		describe('does not remove comments which `shouldPrintComment()` returns true for', () => {
+			it('single line comments', () => {
+				expect(
+					serialize(input, {shouldPrintComment: comment => /single/.test(comment)})
+				).toBe('function input(// single in params\na){// single in body\nreturn a}');
+			});
+
+			it('block comments', () => {
+				expect(
+					serialize(input, {shouldPrintComment: comment => /block/.test(comment)})
+				).toBe('function input(/* block in params */a){/* block in body */return a}');
+			});
+
+			it('multi-line block comments', () => {
+				expect(
+					serialize(input, {shouldPrintComment: comment => /multi/.test(comment)})
+						.replace(/\n\s+/g, '\n')
+				).toBe('function input(/*\nmulti-line\nin params\n*/a){/*\nmulti-line\nin body\n*/return a}');
+			});
+		});
+	});
 });
