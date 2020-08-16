@@ -1728,7 +1728,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 			});
 		});
 
-		describe('circular references between functions defined in scope and above-scoped vars', () => {
+		describe('circular references between functions defined in scope and external vars', () => {
 			describe('function only', () => {
 				it('single instantiation', () => {
 					const ext = {};
@@ -1904,6 +1904,94 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 								expect(fn2).toBeFunction();
 								expect(fn2.name).toBe('x');
 								expect(fn2()).toBe(obj);
+								expect(obj.num).toBe(index);
+								return {fn1, fn2};
+							});
+						}
+					);
+				});
+			});
+
+			describe('function referencing object containing another function in same scope', () => {
+				it('single instantiation', () => {
+					const ext = {x};
+					function x() { return y; }
+					function y() { return ext; }
+					const input = y;
+
+					run(
+						input,
+						stripLineBreaks(`(()=>{
+							const a=(
+									(a,b)=>[
+										b=>a=b,
+										a=>b=a,
+										function x(){return a},
+										function y(){return b}
+									]
+								)(),
+								b=a[3];
+							a[0](b);
+							a[1]({x:a[2]});
+							return b
+						})()`),
+						(fn1) => {
+							expect(fn1).toBeFunction();
+							expect(fn1.name).toBe('y');
+							const obj = fn1();
+							expect(obj).toBeObject();
+							const fn2 = obj.x;
+							expect(fn2).toBeFunction();
+							expect(fn2.name).toBe('x');
+							expect(fn2()).toBe(fn1);
+						}
+					);
+				});
+
+				it('multiple instantiations', () => {
+					function outer(num) {
+						const ext = {num, x};
+						function x() { return y; }
+						function y() { return ext; }
+						return y;
+					}
+
+					const input = [0, 1, 2].map(num => outer(num));
+
+					run(
+						input,
+						stripLineBreaks(`(()=>{
+							const a=(a,b)=>[
+									b=>a=b,
+									a=>b=a,
+									function x(){return a},
+									function y(){return b}
+								],
+								b=a(),
+								c=b[3],
+								d=a(),
+								e=d[3],
+								f=a(),
+								g=f[3];
+							b[0](c);
+							b[1]({num:0,x:b[2]});
+							d[0](e);
+							d[1]({num:1,x:d[2]});
+							f[0](g);
+							f[1]({num:2,x:f[2]});
+							return[c,e,g]
+						})()`),
+						(arr) => {
+							expect(arr).toBeArrayOfSize(3);
+							arr.forEach((fn1, index) => {
+								expect(fn1).toBeFunction();
+								expect(fn1.name).toBe('y');
+								const obj = fn1();
+								expect(obj).toBeObject();
+								const fn2 = obj.x;
+								expect(fn2).toBeFunction();
+								expect(fn2.name).toBe('x');
+								expect(fn2()).toBe(fn1);
 								expect(obj.num).toBe(index);
 								return {fn1, fn2};
 							});
