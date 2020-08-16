@@ -1727,6 +1727,115 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 				expect(inner2s[0]).not.toBe(inner2s[2]);
 			});
 		});
+
+		describe('circular references between functions defined in scope and above-scoped vars', () => {
+			describe('function only', () => {
+				it('single instantiation', () => {
+					const ext = {};
+					const input = (0, () => ext);
+					ext.fn = input;
+
+					run(
+						input,
+						'(()=>{const a={},b=(a=>()=>a)(a);a.fn=b;return b})()',
+						(fn) => {
+							expect(fn).toBeFunction();
+							const obj = fn();
+							expect(obj).toBeObject();
+							expect(obj.fn).toBe(fn);
+						}
+					);
+				});
+
+				it('multiple instantiations', () => {
+					function outer(num) {
+						const ext = {num};
+						const fn = (0, () => ext);
+						ext.fn = fn;
+						return fn;
+					}
+
+					const input = [0, 1, 2].map(num => outer(num));
+
+					run(
+						input,
+						'(()=>{const a=a=>()=>a,b={num:0},c=a(b),d={num:1},e=a(d),f={num:2},g=a(f);b.fn=c;d.fn=e;f.fn=g;return[c,e,g]})()',
+						(arr) => {
+							expect(arr).toBeArrayOfSize(3);
+							const objs = arr.map((fn, index) => {
+								expect(fn).toBeFunction();
+								const obj = fn();
+								expect(obj).toBeObject();
+								expect(obj.fn).toBe(fn);
+								expect(obj.num).toBe(index);
+								return obj;
+							});
+
+							const fns = objs.map(({fn}) => fn);
+							expect(fns[0]).not.toBe(fns[1]);
+							expect(fns[0]).not.toBe(fns[2]);
+							expect(fns[1]).not.toBe(fns[2]);
+						}
+					);
+				});
+			});
+
+			describe('circular function referenced by another function', () => {
+				it('single instantiation', () => {
+					const ext = {};
+					const fn = (0, () => ext);
+					ext.x = fn;
+					const input = (0, () => fn);
+
+					run(
+						input,
+						'(()=>{const a={},b=((a,b)=>[a=>b=a,()=>a,()=>b])(a),c=b[1];a.x=c;b[0](c);return b[2]})()',
+						(fn1) => {
+							expect(fn1).toBeFunction();
+							const fn2 = fn1();
+							expect(fn2).toBeFunction();
+							const obj = fn2();
+							expect(obj).toBeObject();
+							expect(obj.x).toBe(fn2);
+						}
+					);
+				});
+
+				it('multiple instantiations', () => {
+					function outer(num) {
+						const ext = {num};
+						const fn = (0, () => ext);
+						ext.fn = fn;
+						return (0, () => fn);
+					}
+
+					const input = [0, 1, 2].map(num => outer(num));
+
+					run(
+						input,
+						'(()=>{const a=(a,b)=>[a=>b=a,()=>a,()=>b],b={num:0},c=a(b),d={num:1},e=a(d),f={num:2},g=a(f),h=c[1],i=e[1],j=g[1];b.fn=h;c[0](h);d.fn=i;e[0](i);f.fn=j;g[0](j);return[c[2],e[2],g[2]]})()',
+						(arr) => {
+							expect(arr).toBeArrayOfSize(3);
+							const objs = arr.map((fn1, index) => {
+								expect(fn1).toBeFunction();
+								const fn2 = fn1();
+								expect(fn2).toBeFunction();
+								const obj = fn2();
+								expect(obj).toBeObject();
+								expect(obj.fn).toBe(fn2);
+								expect(obj.num).toBe(index);
+								return obj;
+							});
+
+							const fns = objs.map(({fn}) => fn);
+							expect(fns[0]).not.toBe(fns[1]);
+							expect(fns[0]).not.toBe(fns[2]);
+							expect(fns[1]).not.toBe(fns[2]);
+						}
+					);
+				});
+			});
+		});
 	});
 
 	describe('with circular references', () => {
