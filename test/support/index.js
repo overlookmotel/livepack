@@ -104,8 +104,8 @@ function expectSerializedEqual(input, options, expectedJs, validate) {
 	const output = run(input, options, expectedJs);
 	expect(output).toEqual(input);
 	if (validate) {
-		validate(input);
-		validate(output);
+		validate(input, false);
+		validate(output, true);
 	}
 	return output;
 }
@@ -130,8 +130,8 @@ function run(input, options, expectedJs, validate) {
 
 	// Validate input + output
 	if (validate) {
-		validate(input);
-		validate(output);
+		validate(input, false);
+		validate(output, true);
 	}
 
 	// Return exported value
