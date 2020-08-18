@@ -2792,7 +2792,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 	});
 
 	it('distinguish scopes and functions with same block IDs from different files', () => {
-		const input = require('./fixtures/functionBlocks/index.js'); // eslint-disable-line global-require
+		const input = require('./fixtures/function blocks/index.js'); // eslint-disable-line global-require
 		const out = run(input);
 
 		expect(out).toBeObject();
