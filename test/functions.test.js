@@ -677,6 +677,1220 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 		});
 	});
 
+	describe('nested scopes instantiated out of order', () => {
+		describe('2 levels of nesting', () => {
+			describe('no scope shared between functions', () => {
+				it('shallower scope encountered first', () => {
+					let input;
+					const extA = {a: 1};
+					{
+						const extB = {b: 2};
+						input = {
+							x: function x() {
+								return {extA};
+							},
+							y: function y() {
+								return {extB};
+							}
+						};
+					}
+					run(
+						input,
+						stripLineBreaks(`{
+							x:(a=>function x(){return{extA:a}})({a:1}),
+							y:(a=>function y(){return{extB:a}})({b:2})
+						}`),
+						({x, y}) => {
+							expect(x).toBeFunction();
+							expect(x.name).toBe('x');
+							expect(y).toBeFunction();
+							expect(y.name).toBe('y');
+							expect(x().extA).toEqual({a: 1});
+							expect(y().extB).toEqual({b: 2});
+						}
+					);
+				});
+
+				it('deeper scope encountered first', () => {
+					let input;
+					const extA = {a: 1};
+					{
+						const extB = {b: 2};
+						input = {
+							x: function x() {
+								return {extB};
+							},
+							y: function y() {
+								return {extA};
+							}
+						};
+					}
+					run(
+						input,
+						stripLineBreaks(`{
+							x:(a=>function x(){return{extB:a}})({b:2}),
+							y:(a=>function y(){return{extA:a}})({a:1})
+						}`),
+						({x, y}) => {
+							expect(x).toBeFunction();
+							expect(x.name).toBe('x');
+							expect(y).toBeFunction();
+							expect(y.name).toBe('y');
+							expect(x().extB).toEqual({b: 2});
+							expect(y().extA).toEqual({a: 1});
+						}
+					);
+				});
+			});
+
+			describe('scope shared between functions', () => {
+				it('shallower scope encountered first', () => {
+					let input;
+					const extA = {a: 1};
+					{
+						const extB = {b: 2};
+						input = {
+							x: function x() {
+								return {extA};
+							},
+							y: function y() {
+								return {extA, extB};
+							}
+						};
+					}
+					run(
+						input,
+						stripLineBreaks(`(()=>{
+							const a=(
+								b=>[
+									function x(){return{extA:b}},
+									a=>function y(){return{extA:b,extB:a}}
+								]
+							)({a:1});
+							return{x:a[0],y:a[1]({b:2})}
+						})()`),
+						({x, y}) => {
+							expect(x).toBeFunction();
+							expect(x.name).toBe('x');
+							expect(y).toBeFunction();
+							expect(y.name).toBe('y');
+							const resX = x();
+							expect(resX.extA).toEqual({a: 1});
+							const resY = y();
+							expect(resY.extB).toEqual({b: 2});
+							expect(resY.extA).toBe(resX.extA);
+						}
+					);
+				});
+
+				it('deeper scope encountered first', () => {
+					let input;
+					const extA = {a: 1};
+					{
+						const extB = {b: 2};
+						input = {
+							x: function x() {
+								return {extB};
+							},
+							y: function y() {
+								return {extA, extB};
+							}
+						};
+					}
+					run(
+						input,
+						stripLineBreaks(`(()=>{
+							const a=(
+								b=>a=>[
+									function x(){return{extB:a}},
+									function y(){return{extA:b,extB:a}}
+								]
+							)({a:1})({b:2});
+							return{x:a[0],y:a[1]}
+						})()`),
+						({x, y}) => {
+							expect(x).toBeFunction();
+							expect(x.name).toBe('x');
+							expect(y).toBeFunction();
+							expect(y.name).toBe('y');
+							const resX = x();
+							expect(resX.extB).toEqual({b: 2});
+							const resY = y();
+							expect(resY.extA).toEqual({a: 1});
+							expect(resY.extB).toBe(resX.extB);
+						}
+					);
+				});
+
+				it('both scopes encountered singly first then together, shallower first', () => {
+					let input;
+					const extA = {a: 1};
+					{
+						const extB = {b: 2};
+						input = {
+							x: function x() {
+								return {extA};
+							},
+							y: function y() {
+								return {extB};
+							},
+							z: function z() {
+								return {extA, extB};
+							}
+						};
+					}
+					run(
+						input,
+						stripLineBreaks(`(()=>{
+							const a=(
+									b=>[
+										function x(){return{extA:b}},
+										a=>[
+											function y(){return{extB:a}},
+											function z(){return{extA:b,extB:a}}
+										]
+									]
+								)({a:1}),
+								b=a[1]({b:2});
+							return{x:a[0],y:b[0],z:b[1]}
+						})()`),
+						({x, y, z}) => {
+							expect(x).toBeFunction();
+							expect(x.name).toBe('x');
+							expect(y).toBeFunction();
+							expect(y.name).toBe('y');
+							expect(z).toBeFunction();
+							expect(z.name).toBe('z');
+							const resX = x();
+							expect(resX.extA).toEqual({a: 1});
+							const resY = y();
+							expect(resY.extB).toEqual({b: 2});
+							const resZ = z();
+							expect(resZ.extA).toBe(resX.extA);
+							expect(resZ.extB).toBe(resY.extB);
+						}
+					);
+				});
+
+				it('both scopes encountered singly first then together, deeper first', () => {
+					let input;
+					const extA = {a: 1};
+					{
+						const extB = {b: 2};
+						input = {
+							x: function x() {
+								return {extB};
+							},
+							y: function y() {
+								return {extA};
+							},
+							z: function z() {
+								return {extA, extB};
+							}
+						};
+					}
+					run(
+						input,
+						stripLineBreaks(`(()=>{
+							const a=(
+									b=>[
+										function y(){return{extA:b}},
+										a=>[
+											function x(){return{extB:a}},
+											function z(){return{extA:b,extB:a}}
+										]
+									]
+								)({a:1}),
+								b=a[1]({b:2});
+							return{x:b[0],y:a[0],z:b[1]}
+						})()`),
+						({x, y, z}) => {
+							expect(x).toBeFunction();
+							expect(x.name).toBe('x');
+							expect(y).toBeFunction();
+							expect(y.name).toBe('y');
+							expect(z).toBeFunction();
+							expect(z.name).toBe('z');
+							const resX = x();
+							expect(resX.extB).toEqual({b: 2});
+							const resY = y();
+							expect(resY.extA).toEqual({a: 1});
+							const resZ = z();
+							expect(resZ.extA).toBe(resY.extA);
+							expect(resZ.extB).toBe(resX.extB);
+						}
+					);
+				});
+			});
+		});
+
+		describe('3 levels of nesting', () => {
+			describe('1 encountered first', () => {
+				it('shallowest encountered first', () => {
+					let input;
+					const extA = {a: 1};
+					{
+						const extB = {b: 2};
+						{
+							const extC = {c: 3};
+							input = {
+								x: function x() {
+									return {extA};
+								},
+								y: function y() {
+									return {extA, extB, extC};
+								}
+							};
+						}
+					}
+					run(
+						input,
+						stripLineBreaks(`(()=>{
+						const a=(
+							c=>[
+								function x(){return{extA:c}},
+								b=>a=>function y(){return{extA:c,extB:b,extC:a}}
+							]
+						)({a:1});
+						return{
+							x:a[0],
+							y:a[1]({b:2})({c:3})
+						}
+					})()`),
+						({x, y}) => {
+							expect(x).toBeFunction();
+							expect(x.name).toBe('x');
+							expect(y).toBeFunction();
+							expect(y.name).toBe('y');
+							const resX = x();
+							expect(resX.extA).toEqual({a: 1});
+							const resY = y();
+							expect(resY.extA).toBe(resX.extA);
+							expect(resY.extB).toEqual({b: 2});
+							expect(resY.extC).toEqual({c: 3});
+						}
+					);
+				});
+
+				it('middle encountered first', () => {
+					let input;
+					const extA = {a: 1};
+					{
+						const extB = {b: 2};
+						{
+							const extC = {c: 3};
+							input = {
+								x: function x() {
+									return {extB};
+								},
+								y: function y() {
+									return {extA, extB, extC};
+								}
+							};
+						}
+					}
+					run(
+						input,
+						stripLineBreaks(`(()=>{
+						const a=(
+							c=>b=>[
+								function x(){return{extB:b}},
+								a=>function y(){return{extA:c,extB:b,extC:a}}
+							]
+						)({a:1})({b:2});
+						return{
+							x:a[0],
+							y:a[1]({c:3})
+						}
+					})()`),
+						({x, y}) => {
+							expect(x).toBeFunction();
+							expect(x.name).toBe('x');
+							expect(y).toBeFunction();
+							expect(y.name).toBe('y');
+							const resX = x();
+							expect(resX.extB).toEqual({b: 2});
+							const resY = y();
+							expect(resY.extA).toEqual({a: 1});
+							expect(resY.extB).toBe(resX.extB);
+							expect(resY.extC).toEqual({c: 3});
+						}
+					);
+				});
+
+				it('deepest encountered first', () => {
+					let input;
+					const extA = {a: 1};
+					{
+						const extB = {b: 2};
+						{
+							const extC = {c: 3};
+							input = {
+								x: function x() {
+									return {extC};
+								},
+								y: function y() {
+									return {extA, extB, extC};
+								}
+							};
+						}
+					}
+					run(
+						input,
+						stripLineBreaks(`(()=>{
+						const a=(
+							c=>b=>a=>[
+								function x(){return{extC:a}},
+								function y(){return{extA:c,extB:b,extC:a}}
+							]
+						)({a:1})({b:2})({c:3});
+						return{
+							x:a[0],
+							y:a[1]
+						}
+					})()`),
+						({x, y}) => {
+							expect(x).toBeFunction();
+							expect(x.name).toBe('x');
+							expect(y).toBeFunction();
+							expect(y.name).toBe('y');
+							const resX = x();
+							expect(resX.extC).toEqual({c: 3});
+							const resY = y();
+							expect(resY.extA).toEqual({a: 1});
+							expect(resY.extB).toEqual({b: 2});
+							expect(resY.extC).toBe(resX.extC);
+						}
+					);
+				});
+			});
+
+			describe('2 encountered first together, then all', () => {
+				it('shallowest two encountered first', () => {
+					let input;
+					const extA = {a: 1};
+					{
+						const extB = {b: 2};
+						{
+							const extC = {c: 3};
+							input = {
+								x: function x() {
+									return {extA, extB};
+								},
+								y: function y() {
+									return {extA, extB, extC};
+								}
+							};
+						}
+					}
+					run(
+						input,
+						stripLineBreaks(`(()=>{
+							const a=(
+								c=>b=>[
+									function x(){return{extA:c,extB:b}},
+									a=>function y(){return{extA:c,extB:b,extC:a}}
+								]
+							)({a:1})({b:2});
+							return{
+								x:a[0],
+								y:a[1]({c:3})
+							}
+						})()`),
+						({x, y}) => {
+							expect(x).toBeFunction();
+							expect(x.name).toBe('x');
+							expect(y).toBeFunction();
+							expect(y.name).toBe('y');
+							const resX = x();
+							expect(resX.extA).toEqual({a: 1});
+							expect(resX.extB).toEqual({b: 2});
+							const resY = y();
+							expect(resY.extA).toBe(resX.extA);
+							expect(resY.extB).toBe(resX.extB);
+							expect(resY.extC).toEqual({c: 3});
+						}
+					);
+				});
+
+				it('deepest two encountered first', () => {
+					let input;
+					const extA = {a: 1};
+					{
+						const extB = {b: 2};
+						{
+							const extC = {c: 3};
+							input = {
+								x: function x() {
+									return {extB, extC};
+								},
+								y: function y() {
+									return {extA, extB, extC};
+								}
+							};
+						}
+					}
+					run(
+						input,
+						stripLineBreaks(`(()=>{
+							const a=(
+								c=>b=>a=>[
+									function x(){return{extB:b,extC:a}},
+									function y(){return{extA:c,extB:b,extC:a}}
+								]
+							)({a:1})({b:2})({c:3});
+							return{
+								x:a[0],
+								y:a[1]
+							}
+						})()`),
+						({x, y}) => {
+							expect(x).toBeFunction();
+							expect(x.name).toBe('x');
+							expect(y).toBeFunction();
+							expect(y.name).toBe('y');
+							const resX = x();
+							expect(resX.extB).toEqual({b: 2});
+							expect(resX.extC).toEqual({c: 3});
+							const resY = y();
+							expect(resY.extA).toEqual({a: 1});
+							expect(resY.extB).toBe(resX.extB);
+							expect(resY.extC).toBe(resX.extC);
+						}
+					);
+				});
+
+				it('deepest and shallowest two encountered first', () => {
+					let input;
+					const extA = {a: 1};
+					{
+						const extB = {b: 2};
+						{
+							const extC = {c: 3};
+							input = {
+								x: function x() {
+									return {extA, extC};
+								},
+								y: function y() {
+									return {extA, extB, extC};
+								}
+							};
+						}
+					}
+					run(
+						input,
+						stripLineBreaks(`(()=>{
+							const a=(
+								c=>b=>a=>[
+									function x(){return{extA:c,extC:a}},
+									function y(){return{extA:c,extB:b,extC:a}}
+								]
+							)({a:1})({b:2})({c:3});
+							return{
+								x:a[0],
+								y:a[1]
+							}
+						})()`),
+						({x, y}) => {
+							expect(x).toBeFunction();
+							expect(x.name).toBe('x');
+							expect(y).toBeFunction();
+							expect(y.name).toBe('y');
+							const resX = x();
+							expect(resX.extA).toEqual({a: 1});
+							expect(resX.extC).toEqual({c: 3});
+							const resY = y();
+							expect(resY.extA).toBe(resX.extA);
+							expect(resY.extB).toEqual({b: 2});
+							expect(resY.extC).toBe(resX.extC);
+						}
+					);
+				});
+			});
+
+			describe('2 encountered first together, then last joined', () => {
+				it('shallowest two encountered first', () => {
+					let input;
+					const extA = {a: 1};
+					{
+						const extB = {b: 2};
+						{
+							const extC = {c: 3};
+							input = {
+								x: function x() {
+									return {extA, extB};
+								},
+								y: function y() {
+									return {extB, extC};
+								}
+							};
+						}
+					}
+					run(
+						input,
+						stripLineBreaks(`(()=>{
+							const a=(
+								c=>b=>[
+									function x(){return{extA:c,extB:b}},
+									a=>function y(){return{extB:b,extC:a}}
+								]
+							)({a:1})({b:2});
+							return{
+								x:a[0],
+								y:a[1]({c:3})
+							}
+						})()`),
+						({x, y}) => {
+							expect(x).toBeFunction();
+							expect(x.name).toBe('x');
+							expect(y).toBeFunction();
+							expect(y.name).toBe('y');
+							const resX = x();
+							expect(resX.extA).toEqual({a: 1});
+							expect(resX.extB).toEqual({b: 2});
+							const resY = y();
+							expect(resY.extB).toBe(resX.extB);
+							expect(resY.extC).toEqual({c: 3});
+						}
+					);
+				});
+
+				it('deepest two encountered first', () => {
+					let input;
+					const extA = {a: 1};
+					{
+						const extB = {b: 2};
+						{
+							const extC = {c: 3};
+							input = {
+								x: function x() {
+									return {extB, extC};
+								},
+								y: function y() {
+									return {extA, extC};
+								}
+							};
+						}
+					}
+					run(
+						input,
+						stripLineBreaks(`(()=>{
+							const a=(
+								c=>b=>a=>[
+									function x(){return{extB:b,extC:a}},
+									function y(){return{extA:c,extC:a}}
+								]
+							)({a:1})({b:2})({c:3});
+							return{
+								x:a[0],
+								y:a[1]
+							}
+						})()`),
+						({x, y}) => {
+							expect(x).toBeFunction();
+							expect(x.name).toBe('x');
+							expect(y).toBeFunction();
+							expect(y.name).toBe('y');
+							const resX = x();
+							expect(resX.extB).toEqual({b: 2});
+							expect(resX.extC).toEqual({c: 3});
+							const resY = y();
+							expect(resY.extA).toEqual({a: 1});
+							expect(resY.extC).toBe(resX.extC);
+						}
+					);
+				});
+
+				it('deepest and shallowest two encountered first', () => {
+					let input;
+					const extA = {a: 1};
+					{
+						const extB = {b: 2};
+						{
+							const extC = {c: 3};
+							input = {
+								x: function x() {
+									return {extA, extC};
+								},
+								y: function y() {
+									return {extB, extC};
+								}
+							};
+						}
+					}
+					run(
+						input,
+						stripLineBreaks(`(()=>{
+							const a=(
+								c=>b=>a=>[
+									function x(){return{extA:c,extC:a}},
+									function y(){return{extB:b,extC:a}}
+								]
+							)({a:1})({b:2})({c:3});
+							return{
+								x:a[0],
+								y:a[1]
+							}
+						})()`),
+						({x, y}) => {
+							expect(x).toBeFunction();
+							expect(x.name).toBe('x');
+							expect(y).toBeFunction();
+							expect(y.name).toBe('y');
+							const resX = x();
+							expect(resX.extA).toEqual({a: 1});
+							expect(resX.extC).toEqual({c: 3});
+							const resY = y();
+							expect(resY.extB).toEqual({b: 2});
+							expect(resY.extC).toBe(resX.extC);
+						}
+					);
+				});
+			});
+
+			describe('2 encountered first singly', () => {
+				it('shallowest two encountered first', () => {
+					let input;
+					const extA = {a: 1};
+					{
+						const extB = {b: 2};
+						{
+							const extC = {c: 3};
+							input = {
+								x: function x() {
+									return {extA};
+								},
+								y: function y() {
+									return {extB};
+								},
+								z: function z() {
+									return {extA, extB, extC};
+								}
+							};
+						}
+					}
+					run(
+						input,
+						stripLineBreaks(`(()=>{
+							const a=(
+								c=>[
+									function x(){return{extA:c}},
+									b=>[
+										function y(){return{extB:b}},
+										a=>function z(){return{extA:c,extB:b,extC:a}}
+									]
+								]
+							)({a:1}),
+							b=a[1]({b:2});
+							return{
+								x:a[0],
+								y:b[0],
+								z:b[1]({c:3})
+							}
+						})()`),
+						({x, y, z}) => {
+							expect(x).toBeFunction();
+							expect(x.name).toBe('x');
+							expect(y).toBeFunction();
+							expect(y.name).toBe('y');
+							expect(z).toBeFunction();
+							expect(z.name).toBe('z');
+							const resX = x();
+							expect(resX.extA).toEqual({a: 1});
+							const resY = y();
+							expect(resY.extB).toEqual({b: 2});
+							const resZ = z();
+							expect(resZ.extA).toBe(resX.extA);
+							expect(resZ.extB).toBe(resY.extB);
+							expect(resZ.extC).toEqual({c: 3});
+						}
+					);
+				});
+
+				it('deepest two encountered first', () => {
+					let input;
+					const extA = {a: 1};
+					{
+						const extB = {b: 2};
+						{
+							const extC = {c: 3};
+							input = {
+								x: function x() {
+									return {extB};
+								},
+								y: function y() {
+									return {extC};
+								},
+								z: function z() {
+									return {extA, extB, extC};
+								}
+							};
+						}
+					}
+					run(
+						input,
+						stripLineBreaks(`(()=>{
+							const a=(
+								c=>b=>[
+									function x(){return{extB:b}},
+									a=>[
+										function y(){return{extC:a}},
+										function z(){return{extA:c,extB:b,extC:a}}
+									]
+								]
+							)({a:1})({b:2}),
+							b=a[1]({c:3});
+							return{
+								x:a[0],
+								y:b[0],
+								z:b[1]
+							}
+						})()`),
+						({x, y, z}) => {
+							expect(x).toBeFunction();
+							expect(x.name).toBe('x');
+							expect(y).toBeFunction();
+							expect(y.name).toBe('y');
+							expect(z).toBeFunction();
+							expect(z.name).toBe('z');
+							const resX = x();
+							expect(resX.extB).toEqual({b: 2});
+							const resY = y();
+							expect(resY.extC).toEqual({c: 3});
+							const resZ = z();
+							expect(resZ.extA).toEqual({a: 1});
+							expect(resZ.extB).toBe(resX.extB);
+							expect(resZ.extC).toBe(resY.extC);
+						}
+					);
+				});
+
+				it('shallowest and deepest two encountered first', () => {
+					let input;
+					const extA = {a: 1};
+					{
+						const extB = {b: 2};
+						{
+							const extC = {c: 3};
+							input = {
+								x: function x() {
+									return {extA};
+								},
+								y: function y() {
+									return {extC};
+								},
+								z: function z() {
+									return {extA, extB, extC};
+								}
+							};
+						}
+					}
+					run(
+						input,
+						stripLineBreaks(`(()=>{
+							const a=(
+								c=>[
+									function x(){return{extA:c}},
+									b=>a=>[
+										function y(){return{extC:a}},
+										function z(){return{extA:c,extB:b,extC:a}}
+									]
+								]
+							)({a:1}),
+							b=a[1]({b:2})({c:3});
+							return{
+								x:a[0],
+								y:b[0],
+								z:b[1]
+							}
+						})()`),
+						({x, y, z}) => {
+							expect(x).toBeFunction();
+							expect(x.name).toBe('x');
+							expect(y).toBeFunction();
+							expect(y.name).toBe('y');
+							expect(z).toBeFunction();
+							expect(z.name).toBe('z');
+							const resX = x();
+							expect(resX.extA).toEqual({a: 1});
+							const resY = y();
+							expect(resY.extC).toEqual({c: 3});
+							const resZ = z();
+							expect(resZ.extA).toBe(resX.extA);
+							expect(resZ.extB).toEqual({b: 2});
+							expect(resZ.extC).toBe(resY.extC);
+						}
+					);
+				});
+			});
+		});
+
+		it('many levels of nesting', () => {
+			let input;
+			const extA = {a: 1};
+			{
+				const extB = {b: 2};
+				{
+					const extC = {c: 3};
+					{
+						const extD = {d: 4};
+						{
+							const extE = {e: 5};
+							{
+								const extF = {f: 6};
+								{
+									const extG = {g: 7};
+									{
+										const extH = {h: 8};
+										input = {
+											x: function x() {
+												return {extA, extC, extD, extF, extH};
+											},
+											y: function y() {
+												return {extB, extE};
+											},
+											z: function z() {
+												return {extE, extG, extH};
+											}
+										};
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			run(
+				input,
+				stripLineBreaks(`(()=>{
+					const a=(
+							h=>g=>f=>e=>d=>[
+								function y(){return{extB:g,extE:d}},
+								c=>b=>a=>[
+									function x(){return{extA:h,extC:f,extD:e,extF:c,extH:a}},
+									function z(){return{extE:d,extG:b,extH:a}}
+								]
+							]
+						)({a:1})({b:2})({c:3})({d:4})({e:5}),
+						b=a[1]({f:6})({g:7})({h:8});
+					return{
+						x:b[0],
+						y:a[0],
+						z:b[1]
+					}
+				})()`),
+				({x, y, z}) => {
+					expect(x).toBeFunction();
+					expect(x.name).toBe('x');
+					expect(y).toBeFunction();
+					expect(y.name).toBe('y');
+					expect(z).toBeFunction();
+					expect(z.name).toBe('z');
+					const resX = x();
+					expect(resX.extA).toEqual({a: 1});
+					expect(resX.extC).toEqual({c: 3});
+					expect(resX.extD).toEqual({d: 4});
+					expect(resX.extF).toEqual({f: 6});
+					expect(resX.extH).toEqual({h: 8});
+					const resY = y();
+					expect(resY.extB).toEqual({b: 2});
+					expect(resY.extE).toEqual({e: 5});
+					const resZ = z();
+					expect(resZ.extE).toBe(resY.extE);
+					expect(resZ.extG).toEqual({g: 7});
+					expect(resZ.extH).toBe(resX.extH);
+				}
+			);
+		});
+	});
+
+	describe('nested blocks where some missing scopes', () => {
+		it('1 missing block in 2 deep nesting', () => {
+			const extA = {a: 1};
+			function outer(extB) {
+				return {
+					x: function x() {
+						return {extA, extB};
+					},
+					y: function y() {
+						return {extB};
+					}
+				};
+			}
+			const res1 = outer({b: 2});
+			const res2 = outer({b: 12});
+			const input = {x: res1.x, y1: res1.y, y2: res2.y};
+
+			run(
+				input,
+				stripLineBreaks(`(()=>{
+					const a=(
+							b=>a=>[
+								function x(){return{extA:b,extB:a}},
+								function y(){return{extB:a}}
+							]
+						)({a:1}),
+						b=a({b:2});
+					return{
+						x:b[0],
+						y1:b[1],
+						y2:a({b:12})[1]
+					}
+				})()`),
+				({x, y1, y2}) => {
+					expect(x).toBeFunction();
+					expect(x.name).toBe('x');
+					expect(y1).toBeFunction();
+					expect(y1.name).toBe('y');
+					expect(y2).toBeFunction();
+					expect(y2.name).toBe('y');
+					const resX = x();
+					expect(resX.extA).toEqual({a: 1});
+					expect(resX.extB).toEqual({b: 2});
+					expect(y1().extB).toBe(resX.extB);
+					expect(y2().extB).toEqual({b: 12});
+				}
+			);
+		});
+
+		it('2 missing blocks in 3-deep nesting', () => {
+			const extA = {a: 1};
+			function outer(extB) {
+				return function inner(extC) {
+					return {
+						x: function x() {
+							return {extA, extB, extC};
+						},
+						y: function y() {
+							return {extC};
+						}
+					};
+				};
+			}
+			const inner = outer({b: 2});
+			const res1 = inner({c: 3});
+			const res2 = inner({c: 13});
+			const input = {x: res1.x, y1: res1.y, y2: res2.y};
+
+			run(
+				input,
+				stripLineBreaks(`(()=>{
+					const a=(
+							c=>b=>a=>[
+								function x(){return{extA:c,extB:b,extC:a}},
+								function y(){return{extC:a}}
+							]
+						)({a:1})({b:2}),
+						b=a({c:3});
+					return{
+						x:b[0],
+						y1:b[1],
+						y2:a({c:13})[1]
+					}
+				})()`),
+				({x, y1, y2}) => {
+					expect(x).toBeFunction();
+					expect(x.name).toBe('x');
+					expect(y1).toBeFunction();
+					expect(y1.name).toBe('y');
+					expect(y2).toBeFunction();
+					expect(y2.name).toBe('y');
+					const resX = x();
+					expect(resX.extA).toEqual({a: 1});
+					expect(resX.extB).toEqual({b: 2});
+					expect(resX.extC).toEqual({c: 3});
+					expect(y1().extC).toBe(resX.extC);
+					expect(y2().extC).toEqual({c: 13});
+				}
+			);
+		});
+
+		it('1 missing block in 3-deep nesting', () => {
+			const extA = {a: 1};
+			function outer(extB) {
+				return function inner(extC) {
+					return {
+						x: function x() {
+							return {extA, extB, extC};
+						},
+						y: function y() {
+							return {extA, extC};
+						}
+					};
+				};
+			}
+			const inner = outer({b: 2});
+			const res1 = inner({c: 3});
+			const res2 = inner({c: 13});
+			const input = {x: res1.x, y1: res1.y, y2: res2.y};
+
+			run(
+				input,
+				stripLineBreaks(`(()=>{
+					const a=(
+							c=>b=>a=>[
+								function x(){return{extA:c,extB:b,extC:a}},
+								function y(){return{extA:c,extC:a}}
+							]
+						)({a:1})({b:2}),
+						b=a({c:3});
+					return{
+						x:b[0],
+						y1:b[1],
+						y2:a({c:13})[1]
+					}
+				})()`),
+				({x, y1, y2}) => {
+					expect(x).toBeFunction();
+					expect(x.name).toBe('x');
+					expect(y1).toBeFunction();
+					expect(y1.name).toBe('y');
+					expect(y2).toBeFunction();
+					expect(y2.name).toBe('y');
+					const resX = x();
+					expect(resX.extA).toEqual({a: 1});
+					expect(resX.extB).toEqual({b: 2});
+					expect(resX.extC).toEqual({c: 3});
+					const resY1 = y1();
+					expect(resY1.extA).toBe(resX.extA);
+					expect(resY1.extC).toBe(resX.extC);
+					const resY2 = y2();
+					expect(resY2.extA).toBe(resX.extA);
+					expect(resY2.extC).toEqual({c: 13});
+				}
+			);
+		});
+
+		it('2 missing blocks in 4-deep nesting', () => {
+			const extA = {a: 1};
+			function outer(extB) {
+				return function inner(extC) {
+					return function innerInner(extD) {
+						return {
+							x: function x() {
+								return {extA, extB, extC, extD};
+							},
+							y: function y() {
+								return {extB, extD};
+							}
+						};
+					};
+				};
+			}
+			const inner1 = outer({b: 2});
+			const inner2 = outer({b: 12});
+			const innerInner1 = inner1({c: 3});
+			const innerInner2 = inner2({c: 13});
+			const res1 = innerInner1({d: 4});
+			const res2 = innerInner2({d: 14});
+			const input = {x: res1.x, y1: res1.y, y2: res2.y};
+
+			run(
+				input,
+				stripLineBreaks(`(()=>{
+					const a=(
+							d=>c=>b=>a=>[
+								function x(){return{extA:d,extB:c,extC:b,extD:a}},
+								function y(){return{extB:c,extD:a}}
+							]
+						)({a:1}),
+						b=a({b:2})({c:3})({d:4});
+					return{
+						x:b[0],
+						y1:b[1],
+						y2:a({b:12})()({d:14})[1]
+					}
+				})()`),
+				({x, y1, y2}) => {
+					expect(x).toBeFunction();
+					expect(x.name).toBe('x');
+					expect(y1).toBeFunction();
+					expect(y1.name).toBe('y');
+					expect(y2).toBeFunction();
+					expect(y2.name).toBe('y');
+					const resX = x();
+					expect(resX.extA).toEqual({a: 1});
+					expect(resX.extB).toEqual({b: 2});
+					expect(resX.extC).toEqual({c: 3});
+					expect(resX.extD).toEqual({d: 4});
+					const resY1 = y1();
+					expect(resY1.extB).toBe(resX.extB);
+					expect(resY1.extD).toBe(resX.extD);
+					const resY2 = y2();
+					expect(resY2.extB).toEqual({b: 12});
+					expect(resY2.extD).toEqual({d: 14});
+				}
+			);
+		});
+
+		it('3 missing blocks in 5-deep nesting', () => {
+			const extA = {a: 1};
+			function outer(extB) {
+				return function inner(extC) {
+					return function innerInner(extD) {
+						return function innerInnerInner(extE) {
+							return {
+								x: function x() {
+									return {extA, extB, extC, extD, extE};
+								},
+								y: function y() {
+									return {extB, extE};
+								}
+							};
+						};
+					};
+				};
+			}
+			const inner1 = outer({b: 2});
+			const inner2 = outer({b: 12});
+			const innerInner1 = inner1({c: 3});
+			const innerInner2 = inner2({c: 13});
+			const innerInnerInner1 = innerInner1({d: 4});
+			const innerInnerInner2 = innerInner2({d: 14});
+			const res1 = innerInnerInner1({e: 5});
+			const res2 = innerInnerInner2({e: 15});
+			const input = {x: res1.x, y1: res1.y, y2: res2.y};
+
+			run(
+				input,
+				stripLineBreaks(`(()=>{
+					const a=(
+							e=>d=>c=>b=>a=>[
+								function x(){return{extA:e,extB:d,extC:c,extD:b,extE:a}},
+								function y(){return{extB:d,extE:a}}
+							]
+						)({a:1}),
+						b=a({b:2})({c:3})({d:4})({e:5});
+					return{
+						x:b[0],
+						y1:b[1],
+						y2:a({b:12})()()({e:15})[1]
+					}
+				})()`),
+				({x, y1, y2}) => {
+					expect(x).toBeFunction();
+					expect(x.name).toBe('x');
+					expect(y1).toBeFunction();
+					expect(y1.name).toBe('y');
+					expect(y2).toBeFunction();
+					expect(y2.name).toBe('y');
+					const resX = x();
+					expect(resX.extA).toEqual({a: 1});
+					expect(resX.extB).toEqual({b: 2});
+					expect(resX.extC).toEqual({c: 3});
+					expect(resX.extD).toEqual({d: 4});
+					expect(resX.extE).toEqual({e: 5});
+					const resY1 = y1();
+					expect(resY1.extB).toBe(resX.extB);
+					expect(resY1.extE).toBe(resX.extE);
+					const resY2 = y2();
+					expect(resY2.extB).toEqual({b: 12});
+					expect(resY2.extE).toEqual({e: 15});
+				}
+			);
+		});
+	});
+
 	describe('including `this`', () => {
 		describe('referencing upper function scope', () => {
 			describe('1 level up', () => {

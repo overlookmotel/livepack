@@ -14,7 +14,7 @@
 * Resolve remaining TODO comments
 * Basic CLI
 
-* Delete `id` field from `records`, `blocks`, `scopes`, `functions`
+* Delete `id` field from `scopes` + `functions`?
 * Remove `example` directory
 * Remove `working` directory (move some of code into tests or Github issues)
 
