@@ -11,8 +11,8 @@ const {describeWithAllOptions} = require('./support/index.js');
 // Tests
 
 describeWithAllOptions('Globals', ({expectSerializedEqual, serialize, minify, mangle, inline}) => {
-	it('`global`', () => {
-		expectSerializedEqual(global, 'global', (res) => {
+	it('`globalThis`', () => {
+		expectSerializedEqual(global, 'globalThis', (res) => {
 			expect(res).toBe(global);
 		});
 	});
