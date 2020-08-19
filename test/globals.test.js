@@ -10,6 +10,10 @@ const {describeWithAllOptions} = require('./support/index.js');
 
 // Tests
 
+// `globalThis` is not defined on Node v10
+// eslint-disable-next-line node/no-unsupported-features/es-builtins
+if (typeof globalThis === 'undefined') global.globalThis = global;
+
 describeWithAllOptions('Globals', ({expectSerializedEqual, serialize, minify, mangle, inline}) => {
 	it('`globalThis`', () => {
 		expectSerializedEqual(global, 'globalThis', (res) => {
