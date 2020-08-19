@@ -2,7 +2,6 @@
 
 ## Before first release:
 
-* Support JSX
 * Handle `WeakMap` + `WeakSet`
 * Make `undefined` a var rather than `void 0` every time
 * Tests for calling functions not throwing when use destructured params (proxy solution)
@@ -10,6 +9,7 @@
 * Tests for `files` option
 * Tests for `exec` option
 * Tests for ESM input
+* Tests for `jsx` option
 * Resolve remaining TODO comments
 * Basic CLI
 
