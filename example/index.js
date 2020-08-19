@@ -16,6 +16,7 @@ const pathJoin = require('path').join,
 const res = require('./src/index.js');
 
 // Serialize to JS
+const outputPath = pathJoin(__dirname, 'build');
 const options = {
 	format: 'cjs',
 	exec: false,
@@ -24,7 +25,8 @@ const options = {
 	comments: false,
 	mangle: false,
 	files: true,
-	sourceMaps: true
+	sourceMaps: true,
+	outputDir: outputPath
 };
 
 const output = serialize(res, options);
@@ -35,9 +37,7 @@ console.log('----------');
 console.log(files[0].content);
 
 // Save output to file(s)
-const buildDirPath = pathJoin(__dirname, 'build');
-if (!existsSync(buildDirPath)) mkdirSync(buildDirPath);
+if (!existsSync(outputPath)) mkdirSync(outputPath);
 for (const {filename, content} of files) {
-	const buildPath = pathJoin(buildDirPath, filename);
-	writeFileSync(buildPath, content);
+	writeFileSync(pathJoin(outputPath, filename), content);
 }
