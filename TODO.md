@@ -3,6 +3,7 @@
 ## Before first release:
 
 * Support JSX
+* Deal with input files which have existing source maps
 * Handle `WeakMap` + `WeakSet`
 * Make `undefined` a var rather than `void 0` every time
 * Tests for calling functions not throwing when use destructured params (proxy solution)
