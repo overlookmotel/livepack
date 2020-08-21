@@ -1,28 +1,23 @@
-'use strict';
+import React, {useState} from 'react';
+import {render} from 'react-dom';
 
-const {last} = require('lodash');
+function Hello({name}) {
+	const [count, setCount] = useState(1);
 
-let a = 1;
-function outer() {
-	let b = a;
+	if (count === 10) throw new Error(`Well holy moley ${name}`);
 
-	function inner() {
-		return `a = ${a}, b = ${b}`;
-	}
-	function setA(newA) {
-		a = newA;
-	}
-	function setB(newB) {
-		b = newB;
-	}
-
-	return {inner, setA, setB};
+	return (
+		<div>
+			<div>Hello {name}</div>
+			<div>Counter {count}</div>
+			<button onClick={() => setCount(c => c + 1)}>Increment counter</button>
+		</div>
+	);
 }
 
-const {inner: inner1, setA, setB: setB1} = outer();
-setA(100);
-const {inner: inner2, setB: setB2} = outer();
-setB1(200);
-setB2(300);
-
-module.exports = {inner1, inner2, last};
+export default () => {
+	render(
+		<Hello name="Burt" />,
+		document.getElementById('root') // eslint-disable-line no-undef
+	);
+};

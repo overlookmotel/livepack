@@ -5,7 +5,7 @@
 // Error.stackTraceLimit = 20;
 
 // Register babel plugin
-require('../register.js'); // require('livepack/register');
+require('../register.js')({esm: true, jsx: true}); // require('livepack/register');
 
 // Modules
 const pathJoin = require('path').join,
@@ -13,13 +13,13 @@ const pathJoin = require('path').join,
 	serialize = require('../index.js'); // require('livepack')
 
 // Load source
-const res = require('./src/index.js');
+const res = require('./src/index.js').default;
 
 // Serialize to JS
 const outputPath = pathJoin(__dirname, 'build');
 const options = {
 	format: 'cjs',
-	exec: false,
+	exec: true,
 	minify: false,
 	inline: true,
 	comments: false,
