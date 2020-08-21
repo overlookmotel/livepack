@@ -127,6 +127,19 @@ itWithAllOptions('null', ({expectSerializedEqual}) => {
 	expectSerializedEqual(null, 'null');
 });
 
-itWithAllOptions('undefined', ({expectSerializedEqual}) => {
-	expectSerializedEqual(undefined, 'void 0');
+describeWithAllOptions('undefined', ({expectSerializedEqual}) => {
+	it('serializes as `void 0`', () => {
+		expectSerializedEqual(undefined, 'void 0', undef => expect(undef).toBeUndefined());
+	});
+
+	it('is de-duplicated if used multiple times', () => {
+		expectSerializedEqual(
+			{x: undefined, y: undefined},
+			'(()=>{const a=void 0;return{x:a,y:a}})()',
+			(obj) => {
+				expect(obj.x).toBeUndefined();
+				expect(obj.y).toBeUndefined();
+			}
+		);
+	});
 });
