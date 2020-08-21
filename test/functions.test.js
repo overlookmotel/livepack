@@ -3218,53 +3218,107 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 
 	describe('with circular references', () => {
 		it('nested in object 1 level deep', () => {
-			const input = {
-				fn: () => input
-			};
-			const out = run(input);
-
-			expect(out).toBeObject();
-			expect(out).toContainAllKeys(['fn']);
-			const {fn} = out;
-			expect(fn).toBeFunction();
-			expect(fn()).toBe(out);
+			const input = {};
+			input.fn = () => input;
+			run(
+				input,
+				'(()=>{const a=(a=>[b=>a=b,()=>a])(),b={fn:a[1]};a[0](b);return b})()',
+				(obj) => {
+					expect(obj).toBeObject();
+					expect(obj).toContainAllKeys(['fn']);
+					const {fn} = obj;
+					expect(fn).toBeFunction();
+					expect(fn()).toBe(obj);
+				}
+			);
 		});
 
 		it('nested in object 2 levels deep', () => {
-			const input = {
-				inner: {
-					fn: () => input
+			const input = {inner: {}};
+			input.inner.fn = () => input;
+			run(
+				input,
+				'(()=>{const a=(a=>[b=>a=b,()=>a])(),b={inner:{fn:a[1]}};a[0](b);return b})()',
+				(obj) => {
+					expect(obj).toBeObject();
+					expect(obj).toContainAllKeys(['inner']);
+					const {inner} = obj;
+					expect(inner).toBeObject();
+					expect(inner).toContainAllKeys(['fn']);
+					const {fn} = inner;
+					expect(fn).toBeFunction();
+					expect(fn()).toBe(obj);
 				}
-			};
-			const out = run(input);
-
-			expect(out).toBeObject();
-			expect(out).toContainAllKeys(['inner']);
-			const {inner} = out;
-			expect(inner).toBeObject();
-			expect(inner).toContainAllKeys(['fn']);
-			const {fn} = inner;
-			expect(fn).toBeFunction();
-			expect(fn()).toBe(out);
+			);
 		});
 
 		it('reference nested in nested function', () => {
-			const input = {
-				fn: x => () => [x, input]
-			};
-			const out = run(input);
+			const input = {};
+			input.fn = x => () => [x, input];
+			run(
+				input,
+				'(()=>{const a=(b=>[a=>b=a,a=>()=>[a,b]])(),b={fn:a[1]};a[0](b);return b})()',
+				(out) => {
+					expect(out).toBeObject();
+					expect(out).toContainAllKeys(['fn']);
+					const {fn} = out;
+					expect(fn).toBeFunction();
+					const param = {};
+					const fnInner = fn(param);
+					expect(fnInner).toBeFunction();
+					const res = fnInner();
+					expect(res).toBeArrayOfSize(2);
+					expect(res[0]).toBe(param);
+					expect(res[1]).toBe(out);
+				}
+			);
+		});
 
-			expect(out).toBeObject();
-			expect(out).toContainAllKeys(['fn']);
-			const {fn} = out;
-			expect(fn).toBeFunction();
-			const param = {};
-			const fnInner = fn(param);
-			expect(fnInner).toBeFunction();
-			const res = fnInner();
-			expect(res).toBeArrayOfSize(2);
-			expect(res[0]).toBe(param);
-			expect(res[1]).toBe(out);
+		describe('leaving gaps in params', () => {
+			it('1 gap', () => {
+				const input = {};
+				const ext = {x: 1};
+				input.fn = () => [input, ext];
+				run(
+					input,
+					'(()=>{const a=((a,b)=>[b=>a=b,()=>[a,b]])(void 0,{x:1}),b={fn:a[1]};a[0](b);return b})()',
+					(obj) => {
+						expect(obj).toBeObject();
+						expect(obj).toContainAllKeys(['fn']);
+						const {fn} = obj;
+						expect(fn).toBeFunction();
+						const arr = fn();
+						expect(arr).toBeArrayOfSize(2);
+						expect(arr[0]).toBe(obj);
+						expect(arr[1]).toEqual({x: 1});
+					}
+				);
+			});
+
+			it('2 gaps', () => {
+				const inner = {};
+				const input = {inner};
+				const ext = {x: 1};
+				inner.fn = () => [input, inner, ext];
+				run(
+					input,
+					'(()=>{const a=void 0,b=((a,b,c)=>[b=>a=b,a=>b=a,()=>[a,b,c]])(a,a,{x:1}),c={fn:b[2]},d={inner:c};b[0](d);b[1](c);return d})()',
+					(obj) => {
+						expect(obj).toBeObject();
+						expect(obj).toContainAllKeys(['inner']);
+						const innerObj = obj.inner;
+						expect(innerObj).toBeObject();
+						expect(innerObj).toContainAllKeys(['fn']);
+						const {fn} = innerObj;
+						expect(fn).toBeFunction();
+						const arr = fn();
+						expect(arr).toBeArrayOfSize(3);
+						expect(arr[0]).toBe(obj);
+						expect(arr[1]).toBe(innerObj);
+						expect(arr[2]).toEqual({x: 1});
+					}
+				);
+			});
 		});
 	});
 
