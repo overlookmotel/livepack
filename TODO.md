@@ -2,10 +2,10 @@
 
 ## Before first release:
 
-* Handle `WeakMap` + `WeakSet`
 * Make `undefined` a var rather than `void 0` every time
 * Tests for calling functions not throwing when use destructured params (proxy solution)
 * Remove pointless class constructors (including those inserted by Babel plugin) when class nested in function being serialized e.g. `Y => class extends Y {constructor(...args) { super(...args); }}`
+* Tests for `WeakMap` + `WeakSet`
 * Tests for `files` option
 * Tests for `exec` option
 * Tests for ESM input
