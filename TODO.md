@@ -3,7 +3,6 @@
 ## Before first release:
 
 * Tests for calling functions not throwing when use destructured params (proxy solution)
-* Remove pointless class constructors (including those inserted by Babel plugin) when class nested in function being serialized e.g. `Y => class extends Y {constructor(...args) { super(...args); }}`
 * Tests for `WeakMap` + `WeakSet`
 * Tests for `files` option
 * Tests for `exec` option

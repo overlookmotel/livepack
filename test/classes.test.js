@@ -2154,6 +2154,122 @@ describeWithAllOptions('Classes', ({run}) => {
 		});
 	});
 
+	describe('classes nested in functions left untouched', () => {
+		describe('not extending another class', () => {
+			it('empty', () => {
+				run(
+					() => class {},
+					'()=>class{}',
+					(fn) => {
+						expect(fn).toBeFunction();
+						const Klass = fn();
+						expect(Klass).toBeFunction();
+						expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype']);
+						expect(Klass.prototype).toHaveOwnPropertyNames(['constructor']);
+					}
+				);
+			});
+
+			it('with constructor and methods', () => {
+				run(
+					() => class {
+						constructor(x) {
+							this.x = x;
+						}
+						foo(y) {
+							this.x = y;
+						}
+						static bar(z) {
+							this.z = z;
+						}
+					},
+					'()=>class{constructor(a){this.x=a}foo(b){this.x=b}static bar(c){this.z=c}}',
+					(fn) => {
+						expect(fn).toBeFunction();
+						const Klass = fn();
+						expect(Klass).toBeFunction();
+						expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'bar']);
+						Klass.bar(3);
+						expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'bar', 'z']);
+						expect(Klass.z).toBe(3);
+
+						expect(Klass.prototype).toHaveOwnPropertyNames(['constructor', 'foo']);
+						const instance = new Klass(1);
+						expect(instance.x).toBe(1);
+						instance.foo(2);
+						expect(instance.x).toBe(2);
+					}
+				);
+			});
+		});
+
+		describe('extending another class', () => {
+			it('empty', () => {
+				run(
+					X => class Y extends X {},
+					'a=>class Y extends a{}',
+					(fn) => {
+						expect(fn).toBeFunction();
+						const SuperClass = class X {};
+						const Klass = fn(SuperClass);
+						expect(Klass).toBeFunction();
+						expect(Klass).toHaveOwnPropertyNames(['length', 'prototype', 'name']);
+						expect(Klass.prototype).toHaveOwnPropertyNames(['constructor']);
+						expect(Klass.name).toBe('Y');
+						expect(Klass).toHavePrototype(SuperClass);
+						expect(Klass.prototype).toHavePrototype(SuperClass.prototype);
+					}
+				);
+			});
+
+			it('with constructor and methods', () => {
+				run(
+					X => class extends X {
+						constructor(x) {
+							super(x * 2);
+						}
+						foo(y) {
+							super.foo(y * 2);
+						}
+						static bar(z) {
+							super.bar(z * 2);
+						}
+					},
+					'a=>class extends a{constructor(b){super(b*2)}foo(c){super.foo(c*2)}static bar(d){super.bar(d*2)}}',
+					(fn) => {
+						expect(fn).toBeFunction();
+						const SuperClass = class X {
+							constructor(x) {
+								this.x = x;
+							}
+							foo(y) {
+								this.x = y;
+							}
+							static bar(z) {
+								this.z = z;
+							}
+						};
+						const Klass = fn(SuperClass);
+						expect(Klass).toBeFunction();
+						expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'bar']);
+						Klass.bar(3);
+						expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'bar', 'z']);
+						expect(Klass.z).toBe(6);
+
+						expect(Klass.prototype).toHaveOwnPropertyNames(['constructor', 'foo']);
+						const instance = new Klass(1);
+						expect(instance.x).toBe(2);
+						instance.foo(2);
+						expect(instance.x).toBe(4);
+
+						expect(Klass).toHavePrototype(SuperClass);
+						expect(Klass.prototype).toHavePrototype(SuperClass.prototype);
+					}
+				);
+			});
+		});
+	});
+
 	describe('instances', () => {
 		it('of base class', () => {
 			class X {
