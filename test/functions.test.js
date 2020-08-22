@@ -4269,109 +4269,224 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 
 	describe('with extra properties', () => {
 		describe('non-circular', () => {
-			it('without descriptors', () => {
-				const input = function() {};
-				input.x = 1;
-				input.y = 2;
-				run(input, 'Object.assign(function input(){},{x:1,y:2})', (fn) => {
-					expect(fn).toBeFunction();
-					expect(fn.x).toBe(1);
-					expect(fn.y).toBe(2);
+			describe('string keys', () => {
+				it('without descriptors', () => {
+					const input = function() {};
+					input.x = 1;
+					input.y = 2;
+					run(input, 'Object.assign(function input(){},{x:1,y:2})', (fn) => {
+						expect(fn).toBeFunction();
+						expect(fn.x).toBe(1);
+						expect(fn.y).toBe(2);
+					});
+				});
+
+				it('with descriptors', () => {
+					const input = function() {};
+					Object.defineProperty(input, 'x', {value: 1, enumerable: true});
+					Object.defineProperty(input, 'y', {value: 2, writable: true, configurable: true});
+					run(
+						input,
+						'Object.defineProperties(function input(){},{x:{value:1,enumerable:true},y:{value:2,writable:true,configurable:true}})',
+						(fn) => {
+							expect(fn).toBeFunction();
+							expect(
+								Object.getOwnPropertyNames(fn)
+									.filter(n => !['length', 'name', 'prototype', 'arguments', 'caller'].includes(n))
+							).toEqual(['x', 'y']);
+							expect(fn.x).toBe(1);
+							expect(fn.y).toBe(2);
+							expect(fn).toHaveDescriptorModifiersFor('x', false, true, false);
+							expect(fn).toHaveDescriptorModifiersFor('y', true, false, true);
+						}
+					);
+				});
+
+				it('with getter', () => {
+					const input = function() {};
+					Object.defineProperty(input, 'x', {value: 1, enumerable: true});
+					Object.defineProperty(input, 'y', {get: (0, () => 2)});
+					run(
+						input,
+						'Object.defineProperties(function input(){},{x:{value:1,enumerable:true},y:{get:(0,()=>2)}})',
+						(fn) => {
+							expect(fn).toBeFunction();
+							expect(
+								Object.getOwnPropertyNames(fn)
+									.filter(n => !['length', 'name', 'prototype', 'arguments', 'caller'].includes(n))
+							).toEqual(['x', 'y']);
+							expect(fn.x).toBe(1);
+							expect(fn.y).toBe(2);
+							expect(Object.getOwnPropertyDescriptor(fn, 'y').get).toBeFunction();
+							expect(fn).toHaveDescriptorModifiersFor('x', false, true, false);
+							expect(fn).toHaveDescriptorModifiersFor('y', undefined, false, false);
+						}
+					);
 				});
 			});
 
-			it('with descriptors', () => {
-				const input = function() {};
-				Object.defineProperty(input, 'x', {value: 1, enumerable: true});
-				Object.defineProperty(input, 'y', {value: 2, writable: true, configurable: true});
-				run(
-					input,
-					'Object.defineProperties(function input(){},{x:{value:1,enumerable:true},y:{value:2,writable:true,configurable:true}})',
-					(fn) => {
+			describe('integer keys', () => {
+				it('without descriptors', () => {
+					const input = function() {};
+					input[0] = 1;
+					input[5] = 2;
+					run(input, 'Object.assign(function input(){},{0:1,5:2})', (fn) => {
 						expect(fn).toBeFunction();
-						expect(
-							Object.getOwnPropertyNames(fn)
-								.filter(n => !['length', 'name', 'prototype', 'arguments', 'caller'].includes(n))
-						).toEqual(['x', 'y']);
-						expect(fn.x).toBe(1);
-						expect(fn.y).toBe(2);
-						expect(fn).toHaveDescriptorModifiersFor('x', false, true, false);
-						expect(fn).toHaveDescriptorModifiersFor('y', true, false, true);
-					}
-				);
-			});
+						expect(fn[0]).toBe(1);
+						expect(fn[5]).toBe(2);
+					});
+				});
 
-			it('with getter', () => {
-				const input = function() {};
-				Object.defineProperty(input, 'x', {value: 1, enumerable: true});
-				Object.defineProperty(input, 'y', {get: (0, () => 2)});
-				run(
-					input,
-					'Object.defineProperties(function input(){},{x:{value:1,enumerable:true},y:{get:(0,()=>2)}})',
-					(fn) => {
-						expect(fn).toBeFunction();
-						expect(
-							Object.getOwnPropertyNames(fn)
-								.filter(n => !['length', 'name', 'prototype', 'arguments', 'caller'].includes(n))
-						).toEqual(['x', 'y']);
-						expect(fn.x).toBe(1);
-						expect(fn.y).toBe(2);
-						expect(fn).toHaveDescriptorModifiersFor('x', false, true, false);
-						expect(fn).toHaveDescriptorModifiersFor('y', undefined, false, false);
-					}
-				);
+				it('with descriptors', () => {
+					const input = function() {};
+					Object.defineProperty(input, 0, {value: 1, enumerable: true});
+					Object.defineProperty(input, 5, {value: 2, writable: true, configurable: true});
+					run(
+						input,
+						'Object.defineProperties(function input(){},{0:{value:1,enumerable:true},5:{value:2,writable:true,configurable:true}})',
+						(fn) => {
+							expect(fn).toBeFunction();
+							expect(
+								Object.getOwnPropertyNames(fn)
+									.filter(n => !['length', 'name', 'prototype', 'arguments', 'caller'].includes(n))
+							).toEqual(['0', '5']);
+							expect(fn[0]).toBe(1);
+							expect(fn[5]).toBe(2);
+							expect(fn).toHaveDescriptorModifiersFor(0, false, true, false);
+							expect(fn).toHaveDescriptorModifiersFor(5, true, false, true);
+						}
+					);
+				});
+
+				it('with getter', () => {
+					const input = function() {};
+					Object.defineProperty(input, 0, {value: 1, enumerable: true});
+					Object.defineProperty(input, 5, {get: (0, () => 2)});
+					run(
+						input,
+						'Object.defineProperties(function input(){},{0:{value:1,enumerable:true},5:{get:(0,()=>2)}})',
+						(fn) => {
+							expect(fn).toBeFunction();
+							expect(
+								Object.getOwnPropertyNames(fn)
+									.filter(n => !['length', 'name', 'prototype', 'arguments', 'caller'].includes(n))
+							).toEqual(['0', '5']);
+							expect(fn[0]).toBe(1);
+							expect(fn[5]).toBe(2);
+							expect(Object.getOwnPropertyDescriptor(fn, 5).get).toBeFunction();
+							expect(fn).toHaveDescriptorModifiersFor(0, false, true, false);
+							expect(fn).toHaveDescriptorModifiersFor(5, undefined, false, false);
+						}
+					);
+				});
 			});
 		});
 
 		describe('circular references', () => {
-			it('without descriptors', () => {
-				const input = function() {};
-				input.x = input;
-				input.y = input;
-				run(input, '(()=>{const a=function input(){};a.x=a;a.y=a;return a})()', (fn) => {
-					expect(fn).toBeFunction();
-					expect(fn.x).toBe(fn);
-					expect(fn.y).toBe(fn);
-				});
-			});
-
-			it('with descriptors', () => {
-				const input = function() {};
-				Object.defineProperty(input, 'x', {value: input, enumerable: true});
-				Object.defineProperty(input, 'y', {value: input, writable: true, configurable: true});
-				run(input, null, (fn) => {
-					expect(fn).toBeFunction();
-					expect(
-						Object.getOwnPropertyNames(fn)
-							.filter(n => !['length', 'name', 'prototype', 'arguments', 'caller'].includes(n))
-					).toEqual(['x', 'y']);
-					expect(fn.x).toBe(fn);
-					expect(fn.y).toBe(fn);
-					expect(fn).toHaveDescriptorModifiersFor('x', false, true, false);
-					expect(fn).toHaveDescriptorModifiersFor('y', true, false, true);
-				});
-			});
-
-			it('with getter', () => {
-				const input = function() { return 2; };
-				Object.defineProperty(input, 'x', {value: 1, enumerable: true});
-				Object.defineProperty(input, 'y', {get: input});
-				run(
-					input,
-					'(()=>{const a=Object.defineProperties,b=a(function input(){return 2},{x:{value:1,enumerable:true}});a(b,{y:{get:b}});return b})()',
-					(fn) => {
+			describe('string keys', () => {
+				it('without descriptors', () => {
+					const input = function() {};
+					input.x = input;
+					input.y = input;
+					run(input, '(()=>{const a=function input(){};a.x=a;a.y=a;return a})()', (fn) => {
 						expect(fn).toBeFunction();
-						expect(fn()).toEqual(2);
+						expect(fn.x).toBe(fn);
+						expect(fn.y).toBe(fn);
+					});
+				});
+
+				it('with descriptors', () => {
+					const input = function() {};
+					Object.defineProperty(input, 'x', {value: input, enumerable: true});
+					Object.defineProperty(input, 'y', {value: input, writable: true, configurable: true});
+					run(input, null, (fn) => {
+						expect(fn).toBeFunction();
 						expect(
 							Object.getOwnPropertyNames(fn)
 								.filter(n => !['length', 'name', 'prototype', 'arguments', 'caller'].includes(n))
 						).toEqual(['x', 'y']);
-						expect(fn.x).toBe(1);
-						expect(fn.y).toBe(2);
+						expect(fn.x).toBe(fn);
+						expect(fn.y).toBe(fn);
 						expect(fn).toHaveDescriptorModifiersFor('x', false, true, false);
-						expect(fn).toHaveDescriptorModifiersFor('y', undefined, false, false);
-					}
-				);
+						expect(fn).toHaveDescriptorModifiersFor('y', true, false, true);
+					});
+				});
+
+				it('with getter', () => {
+					const input = function() { return 2; };
+					Object.defineProperty(input, 'x', {value: 1, enumerable: true});
+					Object.defineProperty(input, 'y', {get: input});
+					run(
+						input,
+						'(()=>{const a=Object.defineProperties,b=a(function input(){return 2},{x:{value:1,enumerable:true}});a(b,{y:{get:b}});return b})()',
+						(fn) => {
+							expect(fn).toBeFunction();
+							expect(fn()).toEqual(2);
+							expect(
+								Object.getOwnPropertyNames(fn)
+									.filter(n => !['length', 'name', 'prototype', 'arguments', 'caller'].includes(n))
+							).toEqual(['x', 'y']);
+							expect(fn.x).toBe(1);
+							expect(fn.y).toBe(2);
+							expect(Object.getOwnPropertyDescriptor(fn, 'y').get).toBeFunction();
+							expect(fn).toHaveDescriptorModifiersFor('x', false, true, false);
+							expect(fn).toHaveDescriptorModifiersFor('y', undefined, false, false);
+						}
+					);
+				});
+			});
+
+			describe('integer keys', () => {
+				it('without descriptors', () => {
+					const input = function() {};
+					input[0] = input;
+					input[5] = input;
+					run(input, '(()=>{const a=function input(){};a[0]=a;a[5]=a;return a})()', (fn) => {
+						expect(fn).toBeFunction();
+						expect(fn[0]).toBe(fn);
+						expect(fn[5]).toBe(fn);
+					});
+				});
+
+				it('with descriptors', () => {
+					const input = function() {};
+					Object.defineProperty(input, 0, {value: input, enumerable: true});
+					Object.defineProperty(input, 5, {value: input, writable: true, configurable: true});
+					run(input, null, (fn) => {
+						expect(fn).toBeFunction();
+						expect(
+							Object.getOwnPropertyNames(fn)
+								.filter(n => !['length', 'name', 'prototype', 'arguments', 'caller'].includes(n))
+						).toEqual(['0', '5']);
+						expect(fn[0]).toBe(fn);
+						expect(fn[5]).toBe(fn);
+						expect(fn).toHaveDescriptorModifiersFor(0, false, true, false);
+						expect(fn).toHaveDescriptorModifiersFor(5, true, false, true);
+					});
+				});
+
+				it('with getter', () => {
+					const input = function() { return 2; };
+					Object.defineProperty(input, 0, {value: 1, enumerable: true});
+					Object.defineProperty(input, 5, {get: input});
+					run(
+						input,
+						'(()=>{const a=Object.defineProperties,b=a(function input(){return 2},{0:{value:1,enumerable:true}});a(b,{5:{get:b}});return b})()',
+						(fn) => {
+							expect(fn).toBeFunction();
+							expect(fn()).toEqual(2);
+							expect(
+								Object.getOwnPropertyNames(fn)
+									.filter(n => !['length', 'name', 'prototype', 'arguments', 'caller'].includes(n))
+							).toEqual(['0', '5']);
+							expect(fn[0]).toBe(1);
+							expect(fn[5]).toBe(2);
+							expect(Object.getOwnPropertyDescriptor(fn, 5).get).toBeFunction();
+							expect(fn).toHaveDescriptorModifiersFor(0, false, true, false);
+							expect(fn).toHaveDescriptorModifiersFor(5, undefined, false, false);
+						}
+					);
+				});
 			});
 		});
 	});
