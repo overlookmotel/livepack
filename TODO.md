@@ -17,6 +17,7 @@
 
 ## Raise as Github issues for later resolution:
 
+* Delete and reassign of function `.prototype` fails - output is `delete f.prototype; Object.defineProperties(f, {prototype: {value: f.prototype}});`
 * Simplify structure of `dependencies` - each member of `dependencies` can be direct reference to `record` rather than `{record}`
 * Handle unscoped `this` in top-level arrow functions `() => this` (equals `exports` in Node CJS, `undefined` in Node ESM, `window` in browser script, don't know what in browser ESM)
 * Handle `Int16Array` etc
