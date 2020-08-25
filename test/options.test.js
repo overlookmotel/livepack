@@ -29,6 +29,41 @@ describe('Options', () => {
 		});
 	});
 
+	describe('exec', () => {
+		it('default', () => {
+			const input = (0, function() { console.log('foo'); }); // eslint-disable-line no-console
+			expect(serialize(input)).toBe('function(){console.log("foo")}');
+		});
+
+		it('false', () => {
+			const input = (0, function() { console.log('foo'); }); // eslint-disable-line no-console
+			expect(serialize(input, {exec: false})).toBe('function(){console.log("foo")}');
+		});
+
+		describe('true', () => {
+			it('single-line pure function', () => {
+				const input = (0, function() { console.log('foo'); }); // eslint-disable-line no-console
+				expect(serialize(input, {exec: true})).toBe('console.log("foo")');
+			});
+
+			it('multiple-line pure function', () => {
+				const input = (0, function() {
+					const x = 'foo';
+					console.log(x); // eslint-disable-line no-console
+				});
+				expect(serialize(input, {exec: true})).toBe('const a="foo";console.log(a)');
+			});
+
+			it('impure function', () => {
+				const x = 'foo';
+				const input = (0, function() {
+					console.log(x); // eslint-disable-line no-console
+				});
+				expect(serialize(input, {exec: true})).toBe('(a=>function(){console.log(a)})("foo")()');
+			});
+		});
+	});
+
 	describe('minify', () => {
 		it('default', () => {
 			expect(serialize({a: 1})).toBe('{a:1}');

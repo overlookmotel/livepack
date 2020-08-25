@@ -2,7 +2,6 @@
 
 ## Before first release:
 
-* Tests for `exec` option
 * Tests for ESM input
 * Tests for `jsx` option
 * Tests for source maps
