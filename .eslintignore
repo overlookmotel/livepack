@@ -1,4 +1,6 @@
 !.*
 coverage
+test/fixtures/source maps/existing map/inline
+test/fixtures/source maps/existing map/external
 
 example/build
