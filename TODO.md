@@ -6,6 +6,7 @@
 * Tests for `exec` option
 * Tests for ESM input
 * Tests for `jsx` option
+* Tests for source maps
 * Resolve remaining TODO comments
 * Basic CLI
 
