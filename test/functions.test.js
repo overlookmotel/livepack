@@ -3486,6 +3486,19 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 					expect(res[4][1]).toBe(param6);
 				});
 			});
+
+			it('also referencing external scope', () => {
+				const ext = {extA: 1};
+				run(
+					({vv: {vvv: {v}, ww: [w, [x], ...y]}, ...z}) => [ext, v, w, x, y, z],
+					'(f=>({vv:{vvv:{v:a},ww:[b,[c],...d]},...e})=>[f,a,b,c,d,e])({extA:1})',
+					(fn) => {
+						expect(fn).toBeFunction();
+						const res = fn({vv: {vvv: {v: 1}, ww: [2, [3], 4, 5, 6]}, e: 7, f: 8});
+						expect(res).toEqual([{extA: 1}, 1, 2, 3, [4, 5, 6], {e: 7, f: 8}]);
+					}
+				);
+			});
 		});
 	});
 
@@ -3520,6 +3533,19 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 			expect(res[1]).toBe(param2);
 			expect(res[2][0]).toBe(param3);
 			expect(res[2][1]).toBe(param4);
+		});
+
+		it('also referencing external scope', () => {
+			const ext = {extA: 1};
+			run(
+				(x, y, ...z) => [ext, x, y, z],
+				'(d=>(a,b,...c)=>[d,a,b,c])({extA:1})',
+				(fn) => {
+					expect(fn).toBeFunction();
+					const res = fn(1, 2, 3, 4, 5);
+					expect(res).toEqual([{extA: 1}, 1, 2, [3, 4, 5]]);
+				}
+			);
 		});
 	});
 

@@ -2,7 +2,6 @@
 
 ## Before first release:
 
-* Tests for calling functions not throwing when use destructured params (proxy solution)
 * Tests for `WeakMap` + `WeakSet`
 * Tests for `files` option
 * Tests for `exec` option
