@@ -5,6 +5,9 @@
 
 'use strict';
 
+// Modules
+const parseNodeVersion = require('parse-node-version');
+
 // Imports
 const {describeWithAllOptions} = require('./support/index.js');
 
@@ -149,5 +152,66 @@ describeWithAllOptions('Maps', ({expectSerializedEqual, run}) => {
 				}
 			);
 		});
+	});
+});
+
+const describeWithAllOptionsIfNode14 = parseNodeVersion(process.version).major >= 14
+	? describeWithAllOptions
+	: describeWithAllOptions.skip;
+
+describeWithAllOptionsIfNode14('WeakMaps', ({run}) => {
+	it('empty', () => {
+		run(
+			new WeakMap(),
+			'new WeakMap',
+			(weakMap) => {
+				expect(weakMap).toBeInstanceOf(WeakMap);
+			}
+		);
+	});
+
+	it('with non-circular contents', () => {
+		const x = {a: 1},
+			xv = {aa: 11},
+			y = {b: 2},
+			yv = {bb: 22};
+		const input = {key1: x, key2: y, weakMap: new WeakMap([[x, xv], [y, yv]])};
+
+		run(
+			input,
+			'(()=>{const a={a:1},b={b:2};return{key1:a,key2:b,weakMap:new WeakMap([[a,{aa:11}],[b,{bb:22}]])}})()',
+			(obj) => {
+				expect(obj).toBeObject();
+				const {key1, key2, weakMap} = obj;
+				expect(weakMap).toBeInstanceOf(WeakMap);
+				expect(key1).toEqual({a: 1});
+				expect(key2).toEqual({b: 2});
+				expect(weakMap.get(key1)).toEqual({aa: 11});
+				expect(weakMap.get(key2)).toEqual({bb: 22});
+			}
+		);
+	});
+
+	it('with circular contents', () => {
+		const weak = new WeakMap();
+		const x = {a: 1},
+			y = {b: 2};
+		weak.set(x, weak);
+		weak.set(weak, y);
+		const input = {obj1: x, obj2: y, weakMap: weak};
+
+		run(
+			input,
+			'(()=>{const a={a:1},b={b:2},c=new WeakMap;c.set(a,c);c.set(c,b);return{obj1:a,obj2:b,weakMap:c}})()',
+			(obj) => {
+				expect(obj).toBeObject();
+				const {obj1, obj2, weakMap} = obj;
+				expect(weakMap).toBeInstanceOf(WeakMap);
+				expect(obj1).toEqual({a: 1});
+				expect(obj2).toEqual({b: 2});
+				expect(weakMap.get(obj1)).toBe(weakMap);
+				expect(weakMap.get(weakMap)).toEqual(obj2);
+			}
+		);
 	});
 });

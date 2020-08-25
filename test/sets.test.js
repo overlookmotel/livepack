@@ -5,6 +5,9 @@
 
 'use strict';
 
+// Modules
+const parseNodeVersion = require('parse-node-version');
+
 // Imports
 const {describeWithAllOptions} = require('./support/index.js');
 
@@ -141,5 +144,55 @@ describeWithAllOptions('Sets', ({expectSerializedEqual, run}) => {
 				}
 			);
 		});
+	});
+});
+
+const describeWithAllOptionsIfNode14 = parseNodeVersion(process.version).major >= 14
+	? describeWithAllOptions
+	: describeWithAllOptions.skip;
+
+describeWithAllOptionsIfNode14('WeakSets', ({run}) => {
+	it('empty', () => {
+		run(
+			new WeakSet(),
+			'new WeakSet',
+			(weakSet) => {
+				expect(weakSet).toBeInstanceOf(WeakSet);
+			}
+		);
+	});
+
+	it('with non-circular contents', () => {
+		const x = {a: 1},
+			y = {b: 2};
+		const input = {obj1: x, obj2: y, weakSet: new WeakSet([x, y])};
+
+		run(
+			input,
+			'(()=>{const a={a:1},b={b:2};return{obj1:a,obj2:b,weakSet:new WeakSet([a,b])}})()',
+			(obj) => {
+				expect(obj).toBeObject();
+				const {obj1, obj2, weakSet} = obj;
+				expect(weakSet).toBeInstanceOf(WeakSet);
+				expect(obj1).toEqual({a: 1});
+				expect(obj2).toEqual({b: 2});
+				expect(weakSet.has(obj1)).toBeTrue();
+				expect(weakSet.has(obj2)).toBeTrue();
+			}
+		);
+	});
+
+	it('with circular contents', () => {
+		const input = new WeakSet();
+		input.add(input);
+
+		run(
+			input,
+			'(()=>{const a=new WeakSet;a.add(a);return a})()',
+			(weakSet) => {
+				expect(weakSet).toBeInstanceOf(WeakSet);
+				expect(weakSet.has(weakSet)).toBeTrue();
+			}
+		);
 	});
 });
