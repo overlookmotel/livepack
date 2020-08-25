@@ -93,6 +93,42 @@ describe('Options', () => {
 		});
 	});
 
+	describe('files', () => {
+		const input = (0, function(x) { return x + 10; });
+
+		it('default', () => {
+			expect(serialize(input)).toBe('function(a){return a+10}');
+		});
+
+		it('false', () => {
+			expect(serialize(input, {files: false})).toBe('function(a){return a+10}');
+		});
+
+		describe('true', () => {
+			it('without source maps', () => {
+				const out = serialize(input, {files: true});
+				expect(out).toBeArrayOfSize(1);
+				expect(out[0]).toEqual({
+					filename: 'index.js',
+					content: 'function(a){return a+10}'
+				});
+			});
+
+			it('with source maps', () => {
+				const out = serialize(input, {files: true, sourceMaps: true});
+				expect(out).toBeArrayOfSize(2);
+				expect(out[0]).toEqual({
+					filename: 'index.js',
+					content: 'function(a){return a+10}\n//# sourceMappingURL=index.js.map'
+				});
+				expect(out[1]).toBeObject();
+				expect(out[1]).toContainKeys(['filename', 'content']);
+				expect(out[1].filename).toBe('index.js.map');
+				expect(out[1].content).toBeString();
+			});
+		});
+	});
+
 	describe('shouldPrintComment', () => {
 		function input(
 			// single in params

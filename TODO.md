@@ -2,7 +2,6 @@
 
 ## Before first release:
 
-* Tests for `files` option
 * Tests for `exec` option
 * Tests for ESM input
 * Tests for `jsx` option
