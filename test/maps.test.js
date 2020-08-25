@@ -13,7 +13,7 @@ const {describeWithAllOptions} = require('./support/index.js');
 describeWithAllOptions('Maps', ({expectSerializedEqual, run}) => {
 	it('no entries', () => {
 		expectSerializedEqual(new Map(), 'new Map', (map) => {
-			expectToBeMap(map);
+			expect(map).toBeInstanceOf(Map);
 			expect(map.size).toBe(0);
 		});
 	});
@@ -24,7 +24,7 @@ describeWithAllOptions('Maps', ({expectSerializedEqual, run}) => {
 			const input = new Map([[extA, 1], [2, extA], [3, 4]]);
 
 			expectSerializedEqual(input, null, (map) => {
-				expectToBeMap(map);
+				expect(map).toBeInstanceOf(Map);
 				expect(map.size).toBe(3);
 				const entries = [...map.entries()];
 				expect(entries).toEqual([[extA, 1], [2, extA], [3, 4]]);
@@ -37,7 +37,7 @@ describeWithAllOptions('Maps', ({expectSerializedEqual, run}) => {
 			input.x = 123;
 
 			expectSerializedEqual(input, 'Object.assign(new Map,{x:123})', (map) => {
-				expectToBeMap(map);
+				expect(map).toBeInstanceOf(Map);
 				expect(map.size).toBe(0);
 				expect(map.x).toBe(123);
 			});
@@ -55,7 +55,7 @@ describeWithAllOptions('Maps', ({expectSerializedEqual, run}) => {
 				input,
 				'(()=>{const a=new Map([[1,2]]);a.set(a,3);a.set(4,a);a.set(5,6);return a})()',
 				(map) => {
-					expectToBeMap(map);
+					expect(map).toBeInstanceOf(Map);
 					expect(map.size).toBe(4);
 					const entries = [...map.entries()];
 					expect(entries).toEqual([[1, 2], [map, 3], [4, map], [5, 6]]);
@@ -76,7 +76,7 @@ describeWithAllOptions('Maps', ({expectSerializedEqual, run}) => {
 				input,
 				'(()=>{const a=new Map([[1,2]]);a.set(a,3);a.set(4,a);a.set(5,6);a.x=a;return a})()',
 				(map) => {
-					expectToBeMap(map);
+					expect(map).toBeInstanceOf(Map);
 					expect(map.size).toBe(4);
 					const entries = [...map.entries()];
 					expect(entries).toEqual([[1, 2], [map, 3], [4, map], [5, 6]]);
@@ -95,7 +95,7 @@ describeWithAllOptions('Maps', ({expectSerializedEqual, run}) => {
 				new M(),
 				'(()=>{const a=Map,b=Object.setPrototypeOf,c=b(class M{constructor(...a){return Reflect.construct(Object.getPrototypeOf(M),a,M)}},a).prototype;b(c,a.prototype);return b(new a,c)})()',
 				(map) => {
-					expectToBeMap(map);
+					expect(map).toBeInstanceOf(Map);
 					expect(map.size).toBe(0);
 					const proto = Object.getPrototypeOf(map);
 					expect(proto.constructor).toBeFunction();
@@ -111,7 +111,7 @@ describeWithAllOptions('Maps', ({expectSerializedEqual, run}) => {
 				new M([[1, 2], [3, 4], [5, 6]]),
 				'(()=>{const a=Map,b=Object.setPrototypeOf,c=b(class M{constructor(...a){return Reflect.construct(Object.getPrototypeOf(M),a,M)}},a).prototype;b(c,a.prototype);return b(new a([[1,2],[3,4],[5,6]]),c)})()',
 				(map) => {
-					expectToBeMap(map);
+					expect(map).toBeInstanceOf(Map);
 					expect(map.size).toBe(3);
 					expect([...map.entries()]).toEqual([[1, 2], [3, 4], [5, 6]]);
 					const proto = Object.getPrototypeOf(map);
@@ -133,7 +133,7 @@ describeWithAllOptions('Maps', ({expectSerializedEqual, run}) => {
 				input,
 				'(()=>{const a=Map,b=Object.setPrototypeOf,c=b(class M{constructor(...a){return Reflect.construct(Object.getPrototypeOf(M),a,M)}},a).prototype,d=b(new a([[1,2]]),c);b(c,a.prototype);d.set(d,3);d.set(4,d);d.set(5,6);return d})()',
 				(map) => {
-					expectToBeMap(map);
+					expect(map).toBeInstanceOf(Map);
 					expect(map.size).toBe(4);
 					const entries = [...map.entries()];
 					expect(entries[0]).toEqual([1, 2]);
@@ -151,7 +151,3 @@ describeWithAllOptions('Maps', ({expectSerializedEqual, run}) => {
 		});
 	});
 });
-
-function expectToBeMap(val) {
-	expect(val).toBeInstanceOf(Map);
-}

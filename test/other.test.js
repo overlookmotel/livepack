@@ -14,22 +14,26 @@ const {describeWithAllOptions} = require('./support/index.js');
 
 describeWithAllOptions('RegExps', ({expectSerializedEqual}) => {
 	it('with no flags', () => {
-		expectSerializedEqual(/^foo$/, '/^foo$/', expectToBeRegex);
+		expectSerializedEqual(/^foo$/, '/^foo$/', regex => expect(regex).toBeInstanceOf(RegExp));
 	});
 
 	it('with flags', () => {
-		expectSerializedEqual(/^foo$/gu, '/^foo$/gu', expectToBeRegex);
+		expectSerializedEqual(/^foo$/gu, '/^foo$/gu', regex => expect(regex).toBeInstanceOf(RegExp));
 	});
 
 	it('with escaped chars', () => {
-		expectSerializedEqual(/^(foo)\.bar\/qu[xy]$/, '/^(foo)\\.bar\\/qu[xy]$/', expectToBeRegex);
+		expectSerializedEqual(
+			/^(foo)\.bar\/qu[xy]$/,
+			'/^(foo)\\.bar\\/qu[xy]$/',
+			regex => expect(regex).toBeInstanceOf(RegExp)
+		);
 	});
 
 	it('with extra props', () => {
 		const input = /^foo$/;
 		input.x = 'bar';
 		expectSerializedEqual(input, null, (regex) => {
-			expectToBeRegex(regex);
+			expect(regex).toBeInstanceOf(RegExp);
 			expect(regex.x).toBe('bar');
 		});
 	});
@@ -40,7 +44,7 @@ describeWithAllOptions('RegExps', ({expectSerializedEqual}) => {
 			new R('^foo$', 'gu'),
 			'(()=>{const a=Object.setPrototypeOf,b=RegExp,c=a(class R{constructor(...a){return Reflect.construct(Object.getPrototypeOf(R),a,R)}},b).prototype;a(c,b.prototype);return a(/^foo$/gu,c)})()',
 			(regex) => {
-				expectToBeRegex(regex);
+				expect(regex).toBeInstanceOf(RegExp);
 				expect(regex.source).toBe('^foo$');
 				expect(regex.flags).toBe('gu');
 				const proto = Object.getPrototypeOf(regex);
@@ -51,10 +55,6 @@ describeWithAllOptions('RegExps', ({expectSerializedEqual}) => {
 		);
 	});
 });
-
-function expectToBeRegex(val) {
-	expect(val).toBeInstanceOf(RegExp);
-}
 
 describeWithAllOptions('Dates', ({expectSerializedEqual}) => {
 	it('without extra props', () => {
@@ -97,7 +97,7 @@ describeWithAllOptions('Buffers', ({expectSerializedEqual, run}) => {
 		expectSerializedEqual(
 			input, 'Buffer.from("QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVo=","base64")',
 			(buf) => {
-				expectToBeBuffer(buf);
+				expect(buf).toBeInstanceOf(Buffer);
 				expect(buf.toString()).toBe('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
 			}
 		);
@@ -110,7 +110,7 @@ describeWithAllOptions('Buffers', ({expectSerializedEqual, run}) => {
 			input,
 			'Object.assign(Buffer.from("QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVo=","base64"),{x:"bar"})',
 			(buf) => {
-				expectToBeBuffer(buf);
+				expect(buf).toBeInstanceOf(Buffer);
 				expect(buf.toString()).toBe('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
 				expect(buf.x).toBe('bar');
 			}
@@ -126,7 +126,7 @@ describeWithAllOptions('Buffers', ({expectSerializedEqual, run}) => {
 			input,
 			'(()=>{const a=Buffer,b=Object.setPrototypeOf,c=b(class B{constructor(...a){return Reflect.construct(Object.getPrototypeOf(B),a,B)}},a).prototype;b(c,a.prototype);return b(a.from("QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVo=","base64"),c)})()',
 			(buf) => {
-				expectToBeBuffer(buf);
+				expect(buf).toBeInstanceOf(Buffer);
 				expect(buf.toString()).toBe('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
 				const proto = Object.getPrototypeOf(buf);
 				expect(proto.constructor).toBeFunction();
@@ -136,10 +136,6 @@ describeWithAllOptions('Buffers', ({expectSerializedEqual, run}) => {
 		);
 	});
 });
-
-function expectToBeBuffer(val) {
-	expect(val).toBeInstanceOf(Buffer);
-}
 
 describeWithAllOptions('URLs', ({expectSerializedEqual}) => {
 	it('URL', () => { // eslint-disable-line jest/lowercase-name

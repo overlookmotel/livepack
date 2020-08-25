@@ -13,7 +13,7 @@ const {describeWithAllOptions} = require('./support/index.js');
 describeWithAllOptions('Sets', ({expectSerializedEqual, run}) => {
 	it('no entries', () => {
 		expectSerializedEqual(new Set(), 'new Set', (set) => {
-			expectToBeSet(set);
+			expect(set).toBeInstanceOf(Set);
 			expect(set.size).toBe(0);
 		});
 	});
@@ -24,7 +24,7 @@ describeWithAllOptions('Sets', ({expectSerializedEqual, run}) => {
 			const input = new Set([extA, {extA}, 1, 2]);
 
 			expectSerializedEqual(input, null, (set) => {
-				expectToBeSet(set);
+				expect(set).toBeInstanceOf(Set);
 				expect(set.size).toBe(4);
 				const values = [...set.values()];
 				expect(values).toEqual([extA, {extA}, 1, 2]);
@@ -37,7 +37,7 @@ describeWithAllOptions('Sets', ({expectSerializedEqual, run}) => {
 			input.x = 123;
 
 			expectSerializedEqual(input, 'Object.assign(new Set,{x:123})', (set) => {
-				expectToBeSet(set);
+				expect(set).toBeInstanceOf(Set);
 				expect(set.size).toBe(0);
 				expect(set.x).toBe(123);
 			});
@@ -54,7 +54,7 @@ describeWithAllOptions('Sets', ({expectSerializedEqual, run}) => {
 				input,
 				'(()=>{const a=new Set([1]);a.add(a);a.add(2);return a})()',
 				(set) => {
-					expectToBeSet(set);
+					expect(set).toBeInstanceOf(Set);
 					expect(set.size).toBe(3);
 					const values = [...set.values()];
 					expect(values).toEqual([1, set, 2]);
@@ -73,7 +73,7 @@ describeWithAllOptions('Sets', ({expectSerializedEqual, run}) => {
 				input,
 				'(()=>{const a=new Set([1]);a.add(a);a.add(2);a.x=a;return a})()',
 				(set) => {
-					expectToBeSet(set);
+					expect(set).toBeInstanceOf(Set);
 					expect(set.size).toBe(3);
 					const values = [...set.values()];
 					expect(values).toEqual([1, set, 2]);
@@ -91,7 +91,7 @@ describeWithAllOptions('Sets', ({expectSerializedEqual, run}) => {
 				new S(),
 				'(()=>{const a=Set,b=Object.setPrototypeOf,c=b(class S{constructor(...a){return Reflect.construct(Object.getPrototypeOf(S),a,S)}},a).prototype;b(c,a.prototype);return b(new a,c)})()',
 				(set) => {
-					expectToBeSet(set);
+					expect(set).toBeInstanceOf(Set);
 					expect(set.size).toBe(0);
 					const proto = Object.getPrototypeOf(set);
 					expect(proto.constructor).toBeFunction();
@@ -107,7 +107,7 @@ describeWithAllOptions('Sets', ({expectSerializedEqual, run}) => {
 				new S([1, 2, 3]),
 				'(()=>{const a=Set,b=Object.setPrototypeOf,c=b(class S{constructor(...a){return Reflect.construct(Object.getPrototypeOf(S),a,S)}},a).prototype;b(c,a.prototype);return b(new a([1,2,3]),c)})()',
 				(set) => {
-					expectToBeSet(set);
+					expect(set).toBeInstanceOf(Set);
 					expect(set.size).toBe(3);
 					expect([...set.values()]).toEqual([1, 2, 3]);
 					const proto = Object.getPrototypeOf(set);
@@ -128,7 +128,7 @@ describeWithAllOptions('Sets', ({expectSerializedEqual, run}) => {
 				input,
 				'(()=>{const a=Set,b=Object.setPrototypeOf,c=b(class S{constructor(...a){return Reflect.construct(Object.getPrototypeOf(S),a,S)}},a).prototype,d=b(new a([1]),c);b(c,a.prototype);d.add(d);d.add(2);return d})()',
 				(set) => {
-					expectToBeSet(set);
+					expect(set).toBeInstanceOf(Set);
 					expect(set.size).toBe(3);
 					const values = [...set.values()];
 					expect(values[0]).toBe(1);
@@ -143,7 +143,3 @@ describeWithAllOptions('Sets', ({expectSerializedEqual, run}) => {
 		});
 	});
 });
-
-function expectToBeSet(val) {
-	expect(val).toBeInstanceOf(Set);
-}
