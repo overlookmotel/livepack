@@ -199,6 +199,77 @@ describeWithAllOptions('Arrays', ({expectSerializedEqual}) => {
 		});
 	});
 
+	describe('descriptors', () => {
+		describe('modifiers', () => {
+			it('non-circular', () => {
+				const input = [1, 2, 3];
+				Object.defineProperty(input, 0, {writable: false});
+				Object.defineProperty(input, 1, {enumerable: false});
+				Object.defineProperty(input, 2, {configurable: false});
+				expectSerializedEqual(
+					input,
+					'Object.defineProperties([1,2,3],{0:{writable:false},1:{enumerable:false},2:{configurable:false}})',
+					(arr) => {
+						expect(arr).toBeArrayOfSize(3);
+						expect(arr).toEqual([1, 2, 3]);
+						expect(arr).toHaveDescriptorModifiersFor(0, false, true, true);
+						expect(arr).toHaveDescriptorModifiersFor(1, true, false, true);
+						expect(arr).toHaveDescriptorModifiersFor(2, true, true, false);
+					}
+				);
+			});
+
+			it('circular', () => {
+				const input = [, 2]; // eslint-disable-line no-sparse-arrays
+				Object.defineProperty(input, 0, {value: input, enumerable: true, configurable: true});
+				input[1] = 2;
+				Object.defineProperty(input, 2, {value: input, writable: true, enumerable: true});
+				expectSerializedEqual(
+					input,
+					'(()=>{const a=[,2];Object.defineProperties(a,{0:{value:a,enumerable:true,configurable:true},2:{value:a,writable:true,enumerable:true}});return a})()',
+					(arr) => {
+						expect(arr).toBeArrayOfSize(3);
+						expect(arr).toEqual([arr, 2, arr]);
+						expect(arr[0]).toBe(arr);
+						expect(arr[2]).toBe(arr);
+						expect(arr).toHaveDescriptorModifiersFor(0, false, true, true);
+						expect(arr).toHaveDescriptorModifiersFor(1, true, true, true);
+						expect(arr).toHaveDescriptorModifiersFor(2, true, true, false);
+					}
+				);
+			});
+		});
+
+		it('getters + setters', () => {
+			const input = [1, 2, 3];
+			Object.defineProperties(input, {
+				0: {get() { return 11; }, set(v) { this[1] = v * 2; }},
+				2: {get() { return 33; }, set(v) { this[1] = v * 3; }}
+			});
+			expectSerializedEqual(
+				input,
+				'Object.defineProperties([,2],{0:{get(){return 11},set(a){this[1]=a*2},enumerable:true,configurable:true},2:{get(){return 33},set(a){this[1]=a*3},enumerable:true,configurable:true}})',
+				(arr) => {
+					expect(arr).toBeArrayOfSize(3);
+					expect(arr[0]).toBe(11);
+					expect(arr[1]).toBe(2);
+					expect(arr[2]).toBe(33);
+					arr[0] = 2;
+					expect(arr[1]).toBe(4);
+					arr[2] = 2;
+					expect(arr[1]).toBe(6);
+					expect(Object.getOwnPropertyDescriptor(arr, 0).get).toBeFunction();
+					expect(Object.getOwnPropertyDescriptor(arr, 0).set).toBeFunction();
+					expect(Object.getOwnPropertyDescriptor(arr, 2).get).toBeFunction();
+					expect(Object.getOwnPropertyDescriptor(arr, 2).set).toBeFunction();
+					expect(arr).toHaveDescriptorModifiersFor(0, undefined, true, true);
+					expect(arr).toHaveDescriptorModifiersFor(1, true, true, true);
+					expect(arr).toHaveDescriptorModifiersFor(2, undefined, true, true);
+				}
+			);
+		});
+	});
+
 	describe('Array subclass', () => {
 		it('empty array', () => {
 			class A extends Array {}
