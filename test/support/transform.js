@@ -25,6 +25,8 @@ const LIVEPACK_INTERNALS_PATH = pathJoin(__dirname, '..', '..', 'lib', 'internal
 const transformer = babelJest.createTransformer({
 	ignore: [],
 	root: pathParse(__dirname).root,
+	configFile: false,
+	babelrc: false,
 	sourceType: 'script',
 	plugins: [babelPlugin],
 	generatorOpts: {retainLines: true, compact: false}
