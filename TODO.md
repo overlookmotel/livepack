@@ -5,7 +5,6 @@
 * Tests for ESM input
 * Tests for `jsx` option
 * Resolve remaining TODO comments
-* Basic CLI
 
 * Delete `id` field from `scopes` + `functions`?
 * Remove `example` directory
