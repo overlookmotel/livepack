@@ -3,9 +3,8 @@
  * Tests for `arguments` within functions
  * ------------------*/
 
-/* eslint-disable prefer-rest-params */
-
-'use strict';
+/* eslint-disable strict, prefer-rest-params */
+// NB No strict mode to allow tests for when `arguments` is a user-defined var.
 
 // Imports
 const {describeWithAllOptions} = require('./support/index.js');
@@ -487,6 +486,86 @@ describeWithAllOptions('Functions including `arguments`', ({run}) => {
 					});
 				});
 			});
+		});
+	});
+
+	describe('referencing var in upper scope', () => {
+		it('from 1 level up', () => {
+			const arguments = {args: 1}; // eslint-disable-line no-shadow-restricted-names
+			const input = (0, () => arguments);
+			run(
+				input,
+				'(a=>()=>a)({args:1})',
+				(fn) => {
+					expect(fn).toBeFunction();
+					const res = fn();
+					expect(res).not.toBeArguments();
+					expect(res).toEqual({args: 1});
+				}
+			);
+		});
+
+		it('from 2 levels up', () => {
+			const arguments = {args: 1}; // eslint-disable-line no-shadow-restricted-names
+			const input = (0, () => () => arguments);
+			run(
+				input,
+				'(a=>()=>()=>a)({args:1})',
+				(fn) => {
+					expect(fn).toBeFunction();
+					const fn2 = fn();
+					expect(fn2).toBeFunction();
+					const res = fn2();
+					expect(res).not.toBeArguments();
+					expect(res).toEqual({args: 1});
+				}
+			);
+		});
+	});
+
+	describe('ignores var called `arguments` in upper scope', () => {
+		it('when `arguments` refers to within exported function', () => {
+			const arguments = {args: 1}; // eslint-disable-line no-shadow-restricted-names, no-unused-vars
+			function input() {
+				return arguments;
+			}
+			run(
+				input,
+				'function input(){return arguments}',
+				(fn) => {
+					expect(fn).toBeFunction();
+					const argA = {argA: 1},
+						argB = {argB: 2};
+					const res = fn(argA, argB);
+					expect(res).toBeArguments();
+					expect(res).toHaveLength(2);
+					expect(res[0]).toBe(argA);
+					expect(res[1]).toBe(argB);
+				}
+			);
+		});
+
+		it('when `arguments` refers to outside exported function', () => {
+			const arguments = {args: 1}; // eslint-disable-line no-shadow-restricted-names, no-unused-vars
+			function outer() {
+				return () => arguments;
+			}
+			const argA = {argA: 1},
+				argB = {argB: 2};
+			const input = outer(argA, argB);
+
+			run(
+				input,
+				'(a=>()=>a)(function(){return arguments}({argA:1},{argB:2}))',
+				(fn) => {
+					expect(fn).toBeFunction();
+					const res = fn();
+					expect(res).toBeArguments();
+					expect(res).toHaveLength(2);
+					expect(res[0]).toEqual(argA);
+					expect(res[1]).toEqual(argB);
+				}
+			);
 		});
 	});
 });
