@@ -38,7 +38,8 @@ describeWithAllOptions('Built-in modules', ({
 				it('ESM format', () => { // eslint-disable-line jest/lowercase-name
 					const js = serialize(pathModule, {format: 'esm'});
 					expect(stripSourceMapComment(js)).toBe(
-						mangle ? 'import a from"path";export default a'
+						mangle
+							? 'import a from"path";export default a'
 							: 'import path from"path";export default path'
 					);
 				});

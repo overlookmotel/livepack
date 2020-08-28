@@ -111,9 +111,8 @@ describe('Source maps', () => {
 		const input = require('./fixtures/source maps/simple/index.js');
 		const out = serialize(input, {sourceMaps: true, files: true, outputDir: outputDirPath});
 
-		expect(out[0].content).toBe(
-			'function(){throw new Error("oops")}\n//# sourceMappingURL=index.js.map'
-		);
+		expect(out[0].content)
+			.toBe('function(){throw new Error("oops")}\n//# sourceMappingURL=index.js.map');
 
 		const map = JSON.parse(out[1].content);
 		const consumer = new SourceMapConsumer(map);
@@ -139,9 +138,8 @@ describe('Source maps', () => {
 			const input = require('./fixtures/source maps/existing map/inline/index.js');
 			const out = serialize(input, {sourceMaps: true, files: true, outputDir: outputDirPath});
 
-			expect(out[0].content).toBe(
-				'(a=>function(){throw new Error(a)})("foo")\n//# sourceMappingURL=index.js.map'
-			);
+			expect(out[0].content)
+				.toBe('(a=>function(){throw new Error(a)})("foo")\n//# sourceMappingURL=index.js.map');
 
 			const map = JSON.parse(out[1].content);
 			const consumer = new SourceMapConsumer(map);
@@ -166,9 +164,8 @@ describe('Source maps', () => {
 			const input = require('./fixtures/source maps/existing map/external/index.js');
 			const out = serialize(input, {sourceMaps: true, files: true, outputDir: outputDirPath});
 
-			expect(out[0].content).toBe(
-				'(a=>function(){throw new Error(a)})("foo")\n//# sourceMappingURL=index.js.map'
-			);
+			expect(out[0].content)
+				.toBe('(a=>function(){throw new Error(a)})("foo")\n//# sourceMappingURL=index.js.map');
 
 			const map = JSON.parse(out[1].content);
 			const consumer = new SourceMapConsumer(map);
