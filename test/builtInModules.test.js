@@ -6,7 +6,7 @@
 'use strict';
 
 // Imports
-const {describeWithAllOptions} = require('./support/index.js');
+const {describeWithAllOptions, stripSourceMapComment} = require('./support/index.js');
 
 // Tests
 
@@ -37,7 +37,7 @@ describeWithAllOptions('Built-in modules', ({
 			if (minify) {
 				it('ESM format', () => { // eslint-disable-line jest/lowercase-name
 					const js = serialize(pathModule, {format: 'esm'});
-					expect(js).toBe(
+					expect(stripSourceMapComment(js)).toBe(
 						mangle ? 'import a from"path";export default a'
 							: 'import path from"path";export default path'
 					);
@@ -81,7 +81,7 @@ describeWithAllOptions('Built-in modules', ({
 						{path: pathModule, path2: pathModule, path3: pathModule},
 						{format: 'esm'}
 					);
-					expect(js).toBe(
+					expect(stripSourceMapComment(js)).toBe(
 						mangle // eslint-disable-line no-nested-ternary
 							? inline
 								? 'import a from"path";export default{path:a,path2:a,path3:a}'
@@ -119,7 +119,7 @@ describeWithAllOptions('Built-in modules', ({
 			if (minify) {
 				it('ESM format', () => { // eslint-disable-line jest/lowercase-name
 					const js = serialize(pathJoin, {format: 'esm'});
-					expect(js).toBe(
+					expect(stripSourceMapComment(js)).toBe(
 						mangle // eslint-disable-line no-nested-ternary
 							? inline
 								? 'import a from"path";export default a.join'
@@ -168,7 +168,7 @@ describeWithAllOptions('Built-in modules', ({
 						{pathJoin, pathJoin2: pathJoin, pathJoin3: pathJoin},
 						{format: 'esm'}
 					);
-					expect(js).toBe(
+					expect(stripSourceMapComment(js)).toBe(
 						mangle // eslint-disable-line no-nested-ternary
 							? inline
 								? 'import a from"path";const b=a.join;export default{pathJoin:b,pathJoin2:b,pathJoin3:b}'

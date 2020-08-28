@@ -10,7 +10,7 @@ const serialize = require('livepack');
 
 // Exports
 
-module.exports = {describeWithAllOptions, itWithAllOptions, stripLineBreaks};
+module.exports = {describeWithAllOptions, itWithAllOptions, stripLineBreaks, stripSourceMapComment};
 
 /**
  * Replacement for `describe` which runs tests with all serialize options.
@@ -59,7 +59,7 @@ function describeAllOptions(name, fn, topDescribe, describeOrIt) {
 							describeOrIt(`with mangle option ${mangle}`, () => {
 								// Only perform check of expected JS if all options true
 								const allOptionsTrue = minify && inline && mangle;
-								const options = {minify, inline, mangle, comments: true};
+								const options = {minify, inline, mangle, comments: true, sourceMaps: true};
 								fn({
 									expectSerializedEqual: allOptionsTrue
 										? (input, expectedJs, validate, opts) => (
@@ -123,7 +123,7 @@ function run(input, options, expectedJs, validate) {
 	const js = serialize(input, options);
 
 	// Check expected JS output
-	if (expectedJs != null) expect(removeEslintComments(js)).toBe(expectedJs);
+	if (expectedJs != null) expect(stripComments(js)).toBe(expectedJs);
 
 	// Execute JS
 	const output = exec(js, options.format || 'js');
@@ -159,12 +159,20 @@ function exec(js, format) {
 	throw new Error(`'${format}' format not supported`);
 }
 
-function removeEslintComments(js) {
+function stripComments(js) {
+	return stripSourceMapComment(stripEslintComments(js));
+}
+
+function stripEslintComments(js) {
 	// NB Comments cause Babel to add semicolons at end of blocks, which it otherwise doesn't
 	return js.replace(/\/\/ eslint-disable-line [^\n]+\n/g, '')
 		.replace(/;}/g, '}');
 }
 
+function stripSourceMapComment(js) {
+	return js.replace(/\n\/\/# sourceMappingURL=[^\n]+$/, '');
+}
+
 function stripLineBreaks(js) {
-	return removeEslintComments(js).replace(/\n\s+/g, '');
+	return stripComments(js).replace(/\n\s+/g, '');
 }

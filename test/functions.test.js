@@ -6,7 +6,7 @@
 'use strict';
 
 // Imports
-const {describeWithAllOptions, stripLineBreaks} = require('./support/index.js');
+const {describeWithAllOptions, stripLineBreaks, stripSourceMapComment} = require('./support/index.js');
 
 // Tests
 
@@ -3527,18 +3527,19 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 			it('with globals', () => {
 				if (mangle) {
 					const input = (0, (x, y) => [a, x, y]); // eslint-disable-line no-undef
-					expect(serialize(input)).toBe('(b,c)=>[a,b,c]');
+					expect(stripSourceMapComment(serialize(input))).toBe('(b,c)=>[a,b,c]');
 				} else {
 					const fn = (0, (x, y) => [a, x, y]); // eslint-disable-line no-undef
 					const input = {a: fn, b: fn};
-					expect(serialize(input)).toBe('(()=>{const a$0=(0,(x,y)=>[a,x,y]);return{a:a$0,b:a$0}})()');
+					expect(stripSourceMapComment(serialize(input)))
+						.toBe('(()=>{const a$0=(0,(x,y)=>[a,x,y]);return{a:a$0,b:a$0}})()');
 				}
 			});
 
 			if (mangle) {
 				it('with function names', () => {
 					const input = (0, (x, y) => function a() { return [x, y]; });
-					expect(serialize(input)).toBe('(b,c)=>function a(){return[b,c]}');
+					expect(stripSourceMapComment(serialize(input))).toBe('(b,c)=>function a(){return[b,c]}');
 				});
 			}
 
@@ -3546,7 +3547,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 				let a = function() { return a; };
 				const input = a;
 				a = 123;
-				expect(serialize(input)).toBe(
+				expect(stripSourceMapComment(serialize(input))).toBe(
 					mangle ? '(b=>function a(){return b})(123)' : '(a$0=>function a(){return a$0})(123)'
 				);
 			});
@@ -3554,7 +3555,7 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 			it('with globals with function names added by livepack', () => {
 				// eslint-disable-next-line object-shorthand
 				const input = {console: function() { return console; }}.console;
-				expect(serialize(input)).toBe(
+				expect(stripSourceMapComment(serialize(input))).toBe(
 					'Object.defineProperties(function(){return console},{name:{value:"console"}})'
 				);
 			});

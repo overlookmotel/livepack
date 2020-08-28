@@ -6,7 +6,7 @@
 'use strict';
 
 // Imports
-const {describeWithAllOptions} = require('./support/index.js');
+const {describeWithAllOptions, stripSourceMapComment} = require('./support/index.js');
 
 // Tests
 
@@ -37,7 +37,8 @@ describeWithAllOptions('Symbols', ({run, serialize, minify, mangle, inline}) => 
 			const input = [s, s];
 			const js = serialize(input);
 
-			expect(js).toBe('(()=>{const foo_bar=Symbol("foo bar");return[foo_bar,foo_bar]})()');
+			expect(stripSourceMapComment(js))
+				.toBe('(()=>{const foo_bar=Symbol("foo bar");return[foo_bar,foo_bar]})()');
 		});
 	}
 });

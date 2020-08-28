@@ -6,7 +6,7 @@
 'use strict';
 
 // Imports
-const {describeWithAllOptions} = require('./support/index.js');
+const {describeWithAllOptions, stripSourceMapComment} = require('./support/index.js');
 
 // Tests
 
@@ -69,7 +69,7 @@ describeWithAllOptions('Globals', ({expectSerializedEqual, serialize, minify, ma
 		if (minify && !mangle && inline) {
 			it('vars named with full path', () => {
 				const js = serialize({a: Object.assign, b: Object.assign});
-				expect(js).toBe(
+				expect(stripSourceMapComment(js)).toBe(
 					'(()=>{const ObjectAssign=Object.assign;return{a:ObjectAssign,b:ObjectAssign}})()'
 				);
 			});
@@ -104,7 +104,7 @@ describeWithAllOptions('Globals', ({expectSerializedEqual, serialize, minify, ma
 			it('vars named with full path', () => {
 				const {slice} = Array.prototype;
 				const js = serialize({a: slice, b: slice});
-				expect(js).toBe(
+				expect(stripSourceMapComment(js)).toBe(
 					'(()=>{const ArrayPrototypeSlice=Array.prototype.slice;return{a:ArrayPrototypeSlice,b:ArrayPrototypeSlice}})()'
 				);
 			});
