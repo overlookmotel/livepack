@@ -6,12 +6,16 @@
 'use strict';
 
 // Modules
-const serialize = require('livepack');
+const livepack = require('livepack');
 
 // Tests
 
 describe('Package', () => {
+	it('exports object', () => {
+		expect(livepack).toBeObject();
+	});
+
 	it('exports serialize function', () => {
-		expect(serialize).toBeFunction();
+		expect(livepack.serialize).toBeFunction();
 	});
 });

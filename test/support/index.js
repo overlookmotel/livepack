@@ -6,7 +6,7 @@
 'use strict';
 
 // Modules
-const serialize = require('livepack');
+const {serialize} = require('livepack');
 
 // Exports
 

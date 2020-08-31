@@ -12,7 +12,7 @@ const pathJoin = require('path').join,
 	{readFileSync} = require('fs'),
 	sourceMapFromComment = require('convert-source-map').fromComment,
 	{SourceMapConsumer} = require('source-map'),
-	serialize = require('livepack');
+	{serialize} = require('livepack');
 
 // Tests
 
