@@ -10,7 +10,7 @@ require('../register.js'); // require('livepack/register');
 // Modules
 const pathJoin = require('path').join,
 	{existsSync, mkdirSync, writeFileSync} = require('fs'),
-	serialize = require('../index.js'); // require('livepack')
+	{serialize} = require('../index.js'); // require('livepack')
 
 // Load source
 const res = require('./src/index.js');
