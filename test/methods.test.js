@@ -321,6 +321,66 @@ describeWithAllOptions('Object methods', ({run}) => {
 		});
 	});
 
-	// TODO async + generator + async generator methods
+	it('async methods', () => {
+		run(
+			{
+				async x() { this.y = 1; }
+			},
+			'{async x(){this.y=1}}',
+			(obj) => {
+				expect(obj).toBeObject();
+				expect(obj).toContainAllKeys(['x']);
+				expect(obj.x).toBeFunction();
+				expect(obj.x.prototype).toBeUndefined();
+				const res = obj.x();
+				expect(res).toBeInstanceOf(Promise);
+				expect(obj).toContainAllKeys(['x', 'y']);
+				expect(obj.y).toBe(1);
+			}
+		);
+	});
+
+	it('generator methods', () => {
+		run(
+			{
+				*x() { this.y = 1; } // eslint-disable-line require-yield
+			},
+			'{*x(){this.y=1}}',
+			(obj) => {
+				expect(obj).toBeObject();
+				expect(obj).toContainAllKeys(['x']);
+				expect(obj.x).toBeFunction();
+				expect(obj.x.prototype).toBeObject();
+				const res = obj.x();
+				expect(obj).toContainAllKeys(['x']);
+				expect(res).toBeObject();
+				res.next();
+				expect(obj).toContainAllKeys(['x', 'y']);
+				expect(obj.y).toBe(1);
+			}
+		);
+	});
+
+	it('async generator methods', () => {
+		run(
+			{
+				async*x() { this.y = 1; } // eslint-disable-line require-yield
+			},
+			'{async*x(){this.y=1}}',
+			(obj) => {
+				expect(obj).toBeObject();
+				expect(obj).toContainAllKeys(['x']);
+				expect(obj.x).toBeFunction();
+				expect(obj.x.prototype).toBeObject();
+				const res = obj.x();
+				expect(obj).toContainAllKeys(['x']);
+				expect(res).toBeObject();
+				expect(res.next()).toBeInstanceOf(Promise);
+				expect(obj).toContainAllKeys(['x', 'y']);
+				expect(obj.y).toBe(1);
+			}
+		);
+	});
+
 	// TODO getter + setter methods
 });
