@@ -13,16 +13,21 @@ const pathJoin = require('path').join,
 
 // Run
 
-console.log('--------------------');
-console.log('--------------------');
-console.log('--------------------');
-
-const esm = true,
+const useConfig = false,
+	esm = false,
 	jsx = false;
+
+console.log('--------------------');
+console.log('--------------------');
+console.log('--------------------');
 
 const path = pathJoin(__dirname, 'src/index.js');
 const inputJs = readFileSync(path, 'utf8');
 const outputJs = transformSync(inputJs, {
+	ignore: [],
+	configFile: useConfig,
+	babelrc: useConfig,
+	sourceType: esm ? 'module' : 'script',
 	plugins: [
 		// Transform JSX if `jsx` option set
 		...(jsx ? [pluginTransformJsx] : []),
@@ -31,8 +36,7 @@ const outputJs = transformSync(inputJs, {
 		babelPlugin
 	],
 	filename: path,
-	generatorOpts: {retainLines: true},
-	sourceType: esm ? 'module' : 'script'
+	generatorOpts: {retainLines: true, compact: false}
 }).code;
 
 console.log(outputJs);
