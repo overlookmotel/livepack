@@ -2,6 +2,9 @@
 
 ## Before first release:
 
+* Tests for prototype of class methods i.e. `class {static foo() {}}.foo.prototype === undefined`, `isObject(class {static *foo() {}}.foo.prototype)` + for async, generator, async generator methods
+* Support `.mjs` extension in ESM mode - if possible, or document that not supported
+
 * Tests for ESM input
 * Tests for `jsx` option
 * Resolve remaining TODO comments
@@ -13,7 +16,7 @@
 ## Raise as Github issues for later resolution:
 
 * Bug: Delete and reassign of function `.prototype` fails - output is `delete f.prototype; Object.defineProperties(f, {prototype: {value: f.prototype}});`
-* Bug: Treat function names differently for function expressions + declarations - in declarations, function name is a local var (acts like `let`) e.g. if function declaration, `function x() { x = 123; }` will redefine `x`; if function expression, `x = 123` error in strict mode, no-op in non-strict mode.
+* Bug: Treat function names differently for function expressions + declarations - in declarations, function name is a local var (acts like `let`) e.g. if function declaration, `function x() { x = 123; }` will redefine `x`; if function expression, `x = 123` error in strict mode, no-op in non-strict mode. NB in class declarations, reference to class name always refers to class, not local var (i.e. behaves same as function expressions, not function declarations).
 * Bug: Reference to function name within function does not get renamed when function has name changed from what it was when defined e.g. `function f() { return f; }; Object.defineProperty(f, 'name', {value: 'g'});` => `function g() { return f; }`
 * Handle unscoped `this` in top-level arrow functions `() => this` (equals `exports` in Node CJS, `undefined` in Node ESM, `window` in browser script, don't know what in browser ESM). Probably best to leave it as `this` in output.
 * Simplify structure of `dependencies` - each member of `dependencies` can be direct reference to `record` rather than `{record}`
