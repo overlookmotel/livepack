@@ -174,9 +174,9 @@ function stripEslintComments(js) {
 }
 
 function stripSourceMapComment(js) {
-	return js.replace(/\n\/\/# sourceMappingURL=[^\n]+$/, '');
+	return js.replace(/\n\/\/# sourceMappingURL=[^\n]+\n?$/, '');
 }
 
 function stripLineBreaks(js) {
-	return stripComments(js).replace(/\n\s+/g, '');
+	return stripComments(js).replace(/\n\s*/g, '');
 }

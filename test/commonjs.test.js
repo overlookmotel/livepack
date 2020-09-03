@@ -8,7 +8,7 @@
 'use strict';
 
 // Imports
-const {describeWithAllOptions} = require('./support/index.js');
+const {describeWithAllOptions, stripLineBreaks} = require('./support/index.js');
 
 // Tests
 
@@ -88,6 +88,60 @@ describeWithAllOptions('`exports`', ({run}) => {
 				// Delete prop for next run
 				if (!isOutput) delete exp.y;
 			}
+		);
+	});
+});
+
+describeWithAllOptions('`__dirname`', ({run, serialize, inline, minify, mangle}) => {
+	it('exported directly is source path', () => {
+		const input = __dirname;
+		run(
+			input,
+			`${JSON.stringify(__dirname)}`,
+			str => expect(str).toBe(__dirname)
+		);
+	});
+
+	it('in scope of function is build path', () => {
+		expect(stripLineBreaks(serialize(() => __dirname))).toBe(
+			minify // eslint-disable-line no-nested-ternary
+				? inline // eslint-disable-line no-nested-ternary
+					? '()=>__dirname'
+					: mangle
+						? '(()=>{const a=(0,()=>__dirname);return a})()'
+						: '(()=>{const exports$0=(0,()=>__dirname);return exports$0})()'
+				: inline // eslint-disable-line no-nested-ternary
+					? '() => __dirname'
+					: mangle
+						? '(() => {const a = (0, () => __dirname);return a;})()'
+						: '(() => {const exports$0 = (0, () => __dirname);return exports$0;})()'
+		);
+	});
+});
+
+describeWithAllOptions('`__filename`', ({run, serialize, inline, minify, mangle}) => {
+	it('exported directly is source path', () => { // eslint-disable-line jest/no-identical-title
+		const input = __filename;
+		run(
+			input,
+			`${JSON.stringify(__filename)}`,
+			str => expect(str).toBe(__filename)
+		);
+	});
+
+	it('in scope of function is build path', () => { // eslint-disable-line jest/no-identical-title
+		expect(stripLineBreaks(serialize(() => __filename))).toBe(
+			minify // eslint-disable-line no-nested-ternary
+				? inline // eslint-disable-line no-nested-ternary
+					? '()=>__filename'
+					: mangle
+						? '(()=>{const a=(0,()=>__filename);return a})()'
+						: '(()=>{const exports$0=(0,()=>__filename);return exports$0})()'
+				: inline // eslint-disable-line no-nested-ternary
+					? '() => __filename'
+					: mangle
+						? '(() => {const a = (0, () => __filename);return a;})()'
+						: '(() => {const exports$0 = (0, () => __filename);return exports$0;})()'
 		);
 	});
 });
