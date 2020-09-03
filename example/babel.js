@@ -7,7 +7,6 @@ const pathJoin = require('path').join,
 	{readFileSync} = require('fs'),
 	{transformSync} = require('@babel/core'),
 	pluginModulesToCommonJs = require('@babel/plugin-transform-modules-commonjs').default,
-	pluginImportMeta = require('babel-plugin-transform-import-meta').default,
 	pluginTransformJsx = require('@babel/plugin-transform-react-jsx').default,
 	babelPlugin = require('../babel.js'); // require('livepack/babel')
 
@@ -32,7 +31,7 @@ const outputJs = transformSync(inputJs, {
 		// Transform JSX if `jsx` option set
 		...(jsx ? [pluginTransformJsx] : []),
 		// Convert ESM to CJS if `esm` option set
-		...(esm ? [pluginModulesToCommonJs, pluginImportMeta] : []),
+		...(esm ? [pluginModulesToCommonJs] : []),
 		babelPlugin
 	],
 	filename: path,
