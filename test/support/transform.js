@@ -10,7 +10,7 @@
 'use strict';
 
 // Modules
-const {join: pathJoin, parse: pathParse} = require('path'),
+const pathJoin = require('path').join,
 	babelJest = require('babel-jest');
 
 // Imports
@@ -24,7 +24,6 @@ const LIVEPACK_INTERNALS_PATH = pathJoin(__dirname, '..', '..', 'lib', 'internal
 
 const transformer = babelJest.createTransformer({
 	ignore: [],
-	root: pathParse(__dirname).root,
 	configFile: false,
 	babelrc: false,
 	sourceType: 'script',
