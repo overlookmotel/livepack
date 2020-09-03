@@ -677,6 +677,67 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 		});
 	});
 
+	describe('with external scope vars undefined', () => {
+		describe('all external scope vars undefined', () => {
+			it('1 external var undefined', () => {
+				let ext;
+				const input = (0, () => ext);
+				run(
+					input,
+					'(a=>()=>a)()',
+					(fn) => {
+						expect(fn).toBeFunction();
+						expect(fn()).toBeUndefined();
+					}
+				);
+			});
+
+			it('multiple external vars undefined', () => {
+				let extA, extB;
+				const input = (0, () => [extA, extB]);
+				run(
+					input,
+					'((a,b)=>()=>[a,b])()',
+					(fn) => {
+						expect(fn).toBeFunction();
+						expect(fn()).toEqual([undefined, undefined]);
+					}
+				);
+			});
+		});
+
+		describe('some external scope vars undefined', () => {
+			it('1 external var undefined', () => {
+				const extA = undefined,
+					extB = 1;
+				const input = (0, () => [extA, extB]);
+				run(
+					input,
+					'((a,b)=>()=>[a,b])(void 0,1)',
+					(fn) => {
+						expect(fn).toBeFunction();
+						expect(fn()).toEqual([undefined, 1]);
+					}
+				);
+			});
+
+			it('multiple external vars undefined', () => {
+				const extA = undefined,
+					extB = undefined,
+					extC = 1;
+				const input = (0, () => [extA, extB, extC]);
+				run(
+					input,
+					'(()=>{const a=void 0;return((a,b,c)=>()=>[a,b,c])(a,a,1)})()',
+					(fn) => {
+						expect(fn).toBeFunction();
+						expect(fn()).toEqual([undefined, undefined, 1]);
+					}
+				);
+			});
+		});
+	});
+
 	describe('nested scopes instantiated out of order', () => {
 		describe('2 levels of nesting', () => {
 			describe('no scope shared between functions', () => {
