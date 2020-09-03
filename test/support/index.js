@@ -6,11 +6,15 @@
 'use strict';
 
 // Modules
-const {serialize} = require('livepack');
+const {serialize} = require('livepack'),
+	parseNodeVersion = require('parse-node-version');
 
 // Exports
 
 module.exports = {describeWithAllOptions, itWithAllOptions, stripLineBreaks, stripSourceMapComment};
+
+// Disable source maps on Node 10 on CI as causes out of memory errors
+const NO_SOURCE_MAPS = !!process.env.CI && parseNodeVersion(process.version).major < 12;
 
 /**
  * Replacement for `describe` which runs tests with all serialize options.
@@ -59,7 +63,7 @@ function describeAllOptions(name, fn, topDescribe, describeOrIt) {
 							describeOrIt(`with mangle option ${mangle}`, () => {
 								// Only perform check of expected JS if all options true
 								const allOptionsTrue = minify && inline && mangle;
-								const options = {minify, inline, mangle, comments: true, sourceMaps: true};
+								const options = {minify, inline, mangle, comments: true, sourceMaps: !NO_SOURCE_MAPS};
 								fn({
 									expectSerializedEqual: allOptionsTrue
 										? (input, expectedJs, validate, opts) => (
