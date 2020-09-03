@@ -382,5 +382,175 @@ describeWithAllOptions('Object methods', ({run}) => {
 		);
 	});
 
-	// TODO getter + setter methods
+	describe('getter and setter methods', () => {
+		it('without super', () => {
+			run(
+				{
+					get x() { return this.y; },
+					set x(v) { this.y = v; }
+				},
+				stripLineBreaks(`
+					Object.defineProperties({},{
+						x:{
+							get:{"get x"(){return this.y}}["get x"],
+							set:{"set x"(a){this.y=a}}["set x"],
+							enumerable:true,
+							configurable:true
+						}
+					})
+				`),
+				(obj) => {
+					expect(obj).toBeObject();
+					expect(obj).toContainAllKeys(['x']);
+					const descriptor = Object.getOwnPropertyDescriptor(obj, 'x');
+					expect(descriptor.get).toBeFunction();
+					expect(descriptor.set).toBeFunction();
+					expect(obj).toHaveDescriptorModifiersFor('x', undefined, true, true);
+					expect(obj.x).toBeUndefined();
+					obj.x = 1;
+					expect(obj).toContainAllKeys(['x', 'y']);
+					expect(obj.y).toBe(1);
+					expect(obj.x).toBe(1);
+				}
+			);
+		});
+
+		describe('with super', () => {
+			it('standalone assignment', () => {
+				run(
+					Object.setPrototypeOf(
+						{
+							get foo() {
+								return super.foo * 2;
+							},
+							set foo(v) {
+								super.foo = v * 5;
+							}
+						},
+						{
+							get foo() {
+								return 1;
+							},
+							set foo(v) {
+								this.x = v * 3;
+							}
+						}
+					),
+					stripLineBreaks(`
+						(()=>{
+							const a=(
+								b=>[
+									a=>b=a,
+									{"get foo"(){
+										return Reflect.get(Object.getPrototypeOf(b),"foo",this)*2
+									}}["get foo"],
+									{"set foo"(a){
+										Reflect.set(Object.getPrototypeOf(b),"foo",a*5,this)
+									}}["set foo"]
+								]
+							)(),
+							b=Object,
+							c=b.create(
+								b.defineProperties({},{
+									foo:{
+										get:{"get foo"(){return 1}}["get foo"],
+										set:{"set foo"(a){this.x=a*3}}["set foo"],
+										enumerable:true,
+										configurable:true
+									}
+								}),
+								{
+									foo:{
+										get:a[1],
+										set:a[2],
+										enumerable:true,
+										configurable:true
+									}
+								}
+							);
+							a[0](c);
+							return c
+						})()
+					`),
+					(obj) => {
+						expect(obj).toBeObject();
+						expect(obj).toHaveOwnPropertyNames(['foo']);
+						expect(obj.foo).toEqual(2);
+						obj.foo = 1;
+						expect(obj.x).toBe(15);
+					}
+				);
+			});
+
+			it('assignment part of another expression', () => {
+				// `temp` var is to check temp var created by livepack doesn't clash with existing var name
+				run(
+					Object.setPrototypeOf(
+						{
+							get foo() {
+								return super.foo * 2;
+							},
+							set foo(v) {
+								const temp = 'foo';
+								this.y = super[temp] = v * 5; // eslint-disable-line no-multi-assign
+							}
+						},
+						{
+							get foo() {
+								return 1;
+							},
+							set foo(v) {
+								this.x = v * 3;
+							}
+						}
+					),
+					stripLineBreaks(`
+						(()=>{
+							const a=(
+								d=>[
+									a=>d=a,
+									{"get foo"(){
+										return Reflect.get(Object.getPrototypeOf(d),"foo",this)*2
+									}}["get foo"],
+									{"set foo"(a){
+										const b="foo";
+										this.y=((b,c)=>(Reflect.set(Object.getPrototypeOf(d),b,c,this),c))(b,a*5)
+									}}["set foo"]
+								]
+							)(),
+							b=Object,
+							c=b.create(
+								b.defineProperties({},{
+									foo:{
+										get:{"get foo"(){return 1}}["get foo"],
+										set:{"set foo"(a){this.x=a*3}}["set foo"],
+										enumerable:true,
+										configurable:true
+									}
+								}),
+								{
+									foo:{
+										get:a[1],
+										set:a[2],
+										enumerable:true,
+										configurable:true
+									}
+								}
+							);
+							a[0](c);
+							return c
+						})()
+					`),
+					(obj) => {
+						expect(obj).toBeObject();
+						expect(obj).toHaveOwnPropertyNames(['foo']);
+						expect(obj.foo).toEqual(2);
+						obj.foo = 1;
+						expect(obj.x).toBe(15);
+						expect(obj.y).toBe(5);
+					}
+				);
+			});
+		});
+	});
 });

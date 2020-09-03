@@ -1385,7 +1385,7 @@ describeWithAllOptions('Classes', ({run}) => {
 				);
 			});
 
-			it('with `super()` with no params', () => {
+			it('with `super.prop()` with no params', () => {
 				class X {
 					constructor() {
 						this.x = 1;
@@ -1478,7 +1478,7 @@ describeWithAllOptions('Classes', ({run}) => {
 				);
 			});
 
-			it('with `super()` with params', () => {
+			it('with `super.prop()` with params', () => {
 				class X {
 					constructor() {
 						this.x = 1;
@@ -1692,12 +1692,21 @@ describeWithAllOptions('Classes', ({run}) => {
 									}
 								},
 								c
-							);
+							),
+							e=(
+								a=>[
+									b=>a=b,
+									{foo(){
+										Reflect.set(Object.getPrototypeOf(a.prototype),"y",2,this)
+									}}.foo
+								]
+							)();
+						e[0](d);
 						b(
 							a.defineProperties(
 								d.prototype,
 								{
-									foo:{value:{foo(){this.y=2}}.foo,writable:true,configurable:true}
+									foo:{value:e[1],writable:true,configurable:true}
 								}
 							),
 							c.prototype
@@ -1727,6 +1736,105 @@ describeWithAllOptions('Classes', ({run}) => {
 						instance.foo();
 						expect(instance).toHaveOwnPropertyNames(['x', 'y']);
 						expect(instance.y).toBe(2);
+					}
+				);
+			});
+
+			it('with getter and setter', () => {
+				class X {
+					get foo() { // eslint-disable-line class-methods-use-this
+						return 1;
+					}
+					set foo(v) {
+						this.x = v * 3;
+					}
+				}
+				const input = class Y extends X {
+					get foo() {
+						return super.foo * 2;
+					}
+					set foo(v) {
+						super.foo = v * 5;
+					}
+				};
+				run(
+					input,
+					stripLineBreaks(`
+						(()=>{
+							const a=Object,
+								b=a.setPrototypeOf,
+								c=class X{},
+								d=c.prototype,
+								e=a.defineProperties,
+								f=b(
+									class Y{
+										constructor(...a){
+											return Reflect.construct(Object.getPrototypeOf(Y),a,Y)
+										}
+									},
+									c
+								),
+								g=(
+									b=>[
+										a=>b=a,
+										{"get foo"(){
+											return Reflect.get(Object.getPrototypeOf(b.prototype),"foo",this)*2
+										}}["get foo"],
+										{"set foo"(a){
+											Reflect.set(Object.getPrototypeOf(b.prototype),"foo",a*5,this)
+										}}["set foo"]
+									]
+								)();
+							e(
+								d,
+								{
+									foo:{
+										get:{"get foo"(){return 1}}["get foo"],
+										set:{"set foo"(a){this.x=a*3}}["set foo"],
+										configurable:true
+									}
+								}
+							);
+							g[0](f);
+							b(
+								e(
+									f.prototype,
+									{
+										foo:{
+											get:g[1],
+											set:g[2],
+											configurable:true
+										}
+									}
+								),
+								d
+							);
+							return f
+						})()
+					`),
+					(Klass) => {
+						expect(Klass).toBeFunction();
+						expect(Klass.name).toBe('Y');
+						const {prototype} = Klass;
+						expect(prototype).toBeObject();
+						expect(prototype.constructor).toBe(Klass);
+						const proto = Object.getPrototypeOf(prototype);
+						expect(proto).toBeObject();
+						expect(proto).not.toBe(Object.prototype);
+						expect(proto).toHavePrototype(Object.prototype);
+						const SuperClass = proto.constructor;
+						expect(SuperClass).toBeFunction();
+						expect(SuperClass.name).toBe('X');
+
+						const instance = new Klass();
+						expect(instance).toBeInstanceOf(Klass);
+						expect(instance).toBeInstanceOf(SuperClass);
+						expect(instance).toHaveOwnPropertyNames([]);
+
+						expect(instance.foo).toBe(2);
+						instance.foo = 1;
+						expect(instance).toHaveOwnProperty('x');
+						expect(instance.x).toBe(15);
 					}
 				);
 			});
@@ -1807,7 +1915,7 @@ describeWithAllOptions('Classes', ({run}) => {
 				);
 			});
 
-			it('with `super()` with no params', () => {
+			it('with `super.prop()` with no params', () => {
 				class X {
 					constructor() {
 						this.x = 1;
@@ -1898,7 +2006,7 @@ describeWithAllOptions('Classes', ({run}) => {
 				);
 			});
 
-			it('with `super()` with params', () => {
+			it('with `super.prop()` with params', () => {
 				class X {
 					constructor() {
 						this.x = 1;
@@ -2094,16 +2202,24 @@ describeWithAllOptions('Classes', ({run}) => {
 				run(
 					input,
 					stripLineBreaks(`(()=>{
-						const a=Object,
-							b=a.defineProperties,
-							c=a.setPrototypeOf,
-							d=class X{
+						const a=(
+								a=>[
+									b=>a=b,
+									{bar(){
+										Reflect.set(Object.getPrototypeOf(a),"y",2,this)
+									}}.bar
+								]
+							)(),
+							b=Object,
+							c=b.defineProperties,
+							d=b.setPrototypeOf,
+							e=class X{
 								constructor(){
 									this.x=1
 								}
 							},
-							e=c(
-								b(
+							f=d(
+								c(
 									class Y{
 										constructor(...a){
 											return Reflect.construct(Object.getPrototypeOf(Y),a,Y)
@@ -2111,19 +2227,19 @@ describeWithAllOptions('Classes', ({run}) => {
 									},
 									{
 										bar:{
-											value:{
-												bar(){this.y=2}
-											}.bar,
-											writable:true,configurable:true
+											value:a[1],
+											writable:true,
+											configurable:true
 										}
 									}
 								),
-								d
+								e
 							);
-						delete e.name;
-						b(e,{name:{value:"Y",configurable:true}});
-						c(e.prototype,d.prototype);
-						return e
+						a[0](f);
+						delete f.name;
+						c(f,{name:{value:"Y",configurable:true}});
+						d(f.prototype,e.prototype);
+						return f
 					})()`),
 					(Klass) => {
 						expect(Klass).toBeFunction();
@@ -2148,6 +2264,98 @@ describeWithAllOptions('Classes', ({run}) => {
 						Klass.bar();
 						expect(Klass).toHaveOwnProperty('y');
 						expect(Klass.y).toBe(2);
+					}
+				);
+			});
+
+			it('with getter and setter', () => {
+				class X {
+					static get bar() {
+						return 1;
+					}
+					static set bar(v) {
+						this.y = v * 3;
+					}
+				}
+				const input = class Y extends X {
+					static get bar() {
+						return super.bar * 2;
+					}
+					static set bar(v) {
+						super.bar = v * 5;
+					}
+				};
+				run(
+					input,
+					stripLineBreaks(`
+						(()=>{
+							const a=(
+									b=>[
+										a=>b=a,
+										{"get bar"(){
+											return Reflect.get(Object.getPrototypeOf(b),"bar",this)*2
+										}}["get bar"],
+										{"set bar"(a){
+											Reflect.set(Object.getPrototypeOf(b),"bar",a*5,this)
+										}}["set bar"]
+									]
+								)(),
+								b=Object,
+								c=b.defineProperties,
+								d=b.setPrototypeOf,
+								e=c(
+									class{},
+									{
+										bar:{
+											get:{"get bar"(){return 1}}["get bar"],
+											set:{"set bar"(a){this.y=a*3}}["set bar"],
+											configurable:true
+										},
+										name:{value:"X",configurable:true}
+									}
+								),
+								f=d(
+									c(
+										class Y{
+											constructor(...a){
+												return Reflect.construct(Object.getPrototypeOf(Y),a,Y)
+											}
+										},
+										{
+											bar:{
+												get:a[1],
+												set:a[2],
+												configurable:true
+											}
+										}
+									),
+									e
+								);
+							a[0](f);
+							delete f.name;
+							c(f,{name:{value:"Y",configurable:true}});
+							d(f.prototype,e.prototype);
+							return f
+						})()
+					`),
+					(Klass) => {
+						expect(Klass).toBeFunction();
+						expect(Klass.name).toBe('Y');
+						const {prototype} = Klass;
+						expect(prototype).toBeObject();
+						expect(prototype.constructor).toBe(Klass);
+						const proto = Object.getPrototypeOf(prototype);
+						expect(proto).toBeObject();
+						expect(proto).not.toBe(Object.prototype);
+						expect(proto).toHavePrototype(Object.prototype);
+						const SuperClass = proto.constructor;
+						expect(SuperClass).toBeFunction();
+						expect(SuperClass.name).toBe('X');
+
+						expect(Klass.bar).toBe(2);
+						Klass.bar = 1;
+						expect(Klass).toHaveOwnProperty('y');
+						expect(Klass.y).toBe(15);
 					}
 				);
 			});
