@@ -31,13 +31,16 @@
     "@babel/types": "^7.11.0",
     "babel-plugin-transform-import-meta": "^1.0.1",
     "convert-source-map": "^1.7.0",
+    "find-up": "^5.0.0",
     "fs-extra": "^9.0.1",
     "is-arguments": "^1.0.4",
     "is-it-type": "^5.0.0",
     "lodash": "^4.17.19",
     "pirates": "^4.0.1",
     "reserved-words": "^0.1.2",
+    "simple-invariant": "^2.0.0",
     "source-map": "^0.5.7",
+    "strip-json-comments": "^3.1.1",
     "yargs": "^15.4.1"
   },
   "devDependencies": {
