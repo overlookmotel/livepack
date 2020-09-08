@@ -5,16 +5,22 @@
 
 'use strict';
 
+// Module
+const fs = require('fs'),
+	parseNodeVersion = require('parse-node-version');
+
 // Imports
 const {describeWithAllOptions, stripSourceMapComment} = require('./support/index.js');
 
 // Tests
 
+const itIfNode12Plus = parseNodeVersion(process.version).major > 10 ? it : it.skip;
+
 // `globalThis` is not defined on Node v10
 // eslint-disable-next-line node/no-unsupported-features/es-builtins
 if (typeof globalThis === 'undefined') global.globalThis = global;
 
-describeWithAllOptions('Globals', ({expectSerializedEqual, serialize, minify, mangle, inline}) => {
+describeWithAllOptions('Globals', ({expectSerializedEqual, run, serialize, minify, mangle, inline}) => {
 	it('`globalThis`', () => {
 		expectSerializedEqual(global, 'globalThis', (res) => {
 			expect(res).toBe(global);
@@ -106,6 +112,33 @@ describeWithAllOptions('Globals', ({expectSerializedEqual, serialize, minify, ma
 				expect(stripSourceMapComment(js)).toBe('(()=>{const ArrayPrototypeSlice=Array.prototype.slice;return{a:ArrayPrototypeSlice,b:ArrayPrototypeSlice}})()');
 			});
 		}
+	});
+
+	describe('getter + setters', () => {
+		it('getter', () => {
+			const input = Object.getOwnPropertyDescriptor(fs, 'promises').get;
+			run(
+				input,
+				'Object.getOwnPropertyDescriptor(require("fs"),"promises").get',
+				(fn) => {
+					expect(fn).toBeFunction();
+					expect(fn).toBe(input);
+				}
+			);
+		});
+
+		// Node v10 does not use setters for `fs.ReadStream` etc
+		itIfNode12Plus('setter', () => {
+			const input = Object.getOwnPropertyDescriptor(fs, 'ReadStream').set;
+			run(
+				input,
+				'Object.getOwnPropertyDescriptor(require("fs"),"ReadStream").set',
+				(fn) => {
+					expect(fn).toBeFunction(); // eslint-disable-line jest/no-standalone-expect
+					expect(fn).toBe(input); // eslint-disable-line jest/no-standalone-expect
+				}
+			);
+		});
 	});
 
 	describe('shimmed globals', () => {
