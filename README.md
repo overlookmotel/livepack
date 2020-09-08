@@ -21,7 +21,7 @@ const externalVar = 123;
 function foo() { return externalVar; }
 ```
 
-...you get `(externalVar => function foo() {return externalVar;})(123)`. The var in upper scope is captured. This work even with complex nested functions, currying etc.
+...you get `(externalVar => function foo() {return externalVar;})(123)`. The var in upper scope is captured. This works even with complex nested functions, currying etc.
 
 ### What's included in the output?
 
@@ -29,7 +29,7 @@ Everything.
 
 Whatever values are referenced in functions you serialize is included in the output. This includes code and objects that came from packages in `node_modules`.
 
-The entire app is output as a single `.js` file.
+The entire app is output as a single `.js` file, with no dependencies.
 
 ### Why is this a good thing?
 
@@ -99,7 +99,9 @@ If your app needs to do some async work before serializing, export a Promise.
 module.exports = (async () => {
   // Do async stuff
   const obj = await Promise.resolve({x: 1, y: 2});
-  return obj;
+  return function() {
+    console.log(obj.x * obj.y);
+  };
 })();
 ```
 
@@ -164,9 +166,9 @@ There are two parts to the programmatic API.
 
 #### Require hook
 
-Livepack instruments the code as it runs, by patching NodeJS's `require()` function (using [@babel/register](https://babeljs.io/docs/en/babel-register)). This is what allows it to capture the value of variables in closures.
+Livepack instruments the code as it runs, by patching NodeJS's `require()` function. It uses [@babel/register](https://babeljs.io/docs/en/babel-register) internally. This instrumentation what allows Livepack to capture the value of variables in closures.
 
-Your app must have an entry point which registers the require hook and then `require()`s the app itself.
+Your app must have an entry point which registers the require hook, and then `require()`s the app itself.
 
 ```js
 // index.js
@@ -181,9 +183,9 @@ module.exports = function() {
 };
 ```
 
-You **must** register the require hook before *any* other code runs. The input file must just be an entry point which `require()`s the app. Code in the entry point file will not be instrumented and so cannot be serialized.
+You **must** register the require hook before **any** other `require()` calls. The input file should be just be an entry point which `require()`s the app and exports it. Code in the entry point file will not be instrumented and so cannot be serialized.
 
-The entry point must be CommonJS. The rest of the app can be written in ESM (see below).
+The entry point file must be CommonJS. The rest of the app can be written in ESM (use `esm` option).
 
 #### Require hook options
 
@@ -202,6 +204,8 @@ require('livepack/register')( {
 | `configFile` | `boolean` or `string` | Babel config file (optional). If a `string`, should be path to Babel config file. | `false` |
 | `babelrc` | `boolean` | If `true`, code will be transpiled with Babel `.babelrc` files while loading | `true` if `configFile` option set, otherwise `false` |
 | `cache` | `boolean` | If `true`, Babel cache is used to speed up Livepack | `true` |
+
+These options correspond to CLI options, but sometimes named slightly differently.
 
 ### Serialization
 
@@ -233,6 +237,8 @@ serialize( {x: 1}, {
 | `files` | `boolean` | `true` to output source maps in separate file not inline (see [below](#files)) | `false` |
 | `sourceMaps` | `boolean` | Create source maps | `false` |
 | `outputDir` | `string` | Path to dir code would be output to. If provided, source maps will use relative paths (relative to output path). | `undefined` |
+
+All these options (except `files` and `outputDir`) correspond to CLI options of the same names. Unlike the programmatic API, in the CLI `exec` and `files` options default to `true` and `minify` to `false`.
 
 #### Output formats
 
@@ -287,9 +293,9 @@ Code is always output as a single file. There is no facility for code splitting 
 
 ### Browser code
 
-This works in part. You can, for example, build a simple React app.
+This works in part. You can, for example, build a simple React app with Livepack.
 
-However, there are outstanding problems, which mean that Livepack is presently really only suitable for NodeJS server code.
+However, there are outstanding problems, which mean that Livepack is presently really only suitable for NodeJS server-side code.
 
 * Code size is not typically great (optimizations are possible which will tackle this in future)
 * No code splitting
