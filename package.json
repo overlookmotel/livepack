@@ -38,7 +38,7 @@
     "pirates": "^4.0.1",
     "reserved-words": "^0.1.2",
     "simple-invariant": "^2.0.0",
-    "source-map": "^0.5.7",
+    "source-map": "^0.7.3",
     "strip-json-comments": "^3.1.1",
     "yargs": "^15.4.1"
   },
