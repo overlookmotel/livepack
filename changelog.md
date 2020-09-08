@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.2
+
+Docs:
+
+* Fix CLI examples
+
 ## 0.1.1
 
 Docs:
