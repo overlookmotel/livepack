@@ -168,10 +168,10 @@ describeWithAllOptions('URLSearchParams', ({expectSerializedEqual, run}) => {
 
 describeWithAllOptions('TypedArray', ({expectSerializedEqual, run}) => {
 	it('class', () => {
-		const TypedArray = Object.getPrototypeOf(Uint8Array.prototype).constructor;
+		const TypedArray = Object.getPrototypeOf(Uint8Array);
 		expectSerializedEqual(
 			TypedArray,
-			'Object.getPrototypeOf(Uint8Array.prototype).constructor',
+			'Object.getPrototypeOf(Uint8Array)',
 			(fn) => {
 				expect(fn).toBe(TypedArray);
 			}

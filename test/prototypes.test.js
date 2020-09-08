@@ -2238,7 +2238,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 			it('prototype accessed', () => {
 				run(
 					function*() {}.prototype, // eslint-disable-line no-empty-function
-					'(()=>{const a=Object;return a.create(a.getPrototypeOf(function*(){}).prototype)})()',
+					'(()=>{const a=Object;return a.create(a.getPrototypeOf(function*(){}.prototype))})()',
 					(proto) => {
 						expect(proto).toBeObject();
 						expect(proto).toHaveOwnPropertyNames([]);
@@ -2307,7 +2307,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 				inputFn.x = {xx: 1};
 				run(
 					inputFn.prototype,
-					'(()=>{const a=Object;return a.create(a.getPrototypeOf(function*(){}).prototype)})()',
+					'(()=>{const a=Object;return a.create(a.getPrototypeOf(function*(){}.prototype))})()',
 					(proto) => {
 						expect(proto).toBeObject();
 						expect(proto).toHaveOwnPropertyNames([]);
@@ -2364,7 +2364,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 				inputFn.prototype.x = {xx: 1};
 				run(
 					inputFn,
-					'(()=>{const a=Object,b=a.assign;return b(function*(){},{prototype:b(a.create(a.getPrototypeOf(function*(){}).prototype),{x:{xx:1}})})})()',
+					'(()=>{const a=Object,b=a.assign;return b(function*(){},{prototype:b(a.create(a.getPrototypeOf(function*(){}.prototype)),{x:{xx:1}})})})()',
 					(fn) => {
 						expect(fn).toBeFunction();
 						expect(fn).toContainAllKeys([]);
@@ -2383,7 +2383,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 				inputFn.prototype.x = {xx: 1};
 				run(
 					inputFn.prototype,
-					'(()=>{const a=Object;return a.assign(a.create(a.getPrototypeOf(function*(){}).prototype),{x:{xx:1}})})()',
+					'(()=>{const a=Object;return a.assign(a.create(a.getPrototypeOf(function*(){}.prototype)),{x:{xx:1}})})()',
 					(proto) => {
 						expect(proto).toBeObject();
 						expect(proto).toHaveOwnPropertyNames(['x']);
@@ -2398,7 +2398,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 				inputFn.prototype.x = {xx: 1};
 				run(
 					{fn: inputFn, proto: inputFn.prototype},
-					'(()=>{const a=Object,b=a.assign,c=b(a.create(a.getPrototypeOf(function*(){}).prototype),{x:{xx:1}});return{fn:b(function*(){},{prototype:c}),proto:c}})()',
+					'(()=>{const a=Object,b=a.assign,c=b(a.create(a.getPrototypeOf(function*(){}.prototype)),{x:{xx:1}});return{fn:b(function*(){},{prototype:c}),proto:c}})()',
 					(obj) => {
 						expect(obj).toBeObject();
 						expect(obj).toHaveOwnPropertyNames(['fn', 'proto']);
@@ -2419,7 +2419,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 				inputFn.prototype.x = {xx: 1};
 				run(
 					{proto: inputFn.prototype, fn: inputFn},
-					'(()=>{const a=Object,b=a.assign,c=b(a.create(a.getPrototypeOf(function*(){}).prototype),{x:{xx:1}});return{proto:c,fn:b(function*(){},{prototype:c})}})()',
+					'(()=>{const a=Object,b=a.assign,c=b(a.create(a.getPrototypeOf(function*(){}.prototype)),{x:{xx:1}});return{proto:c,fn:b(function*(){},{prototype:c})}})()',
 					(obj) => {
 						expect(obj).toBeObject();
 						expect(obj).toHaveOwnPropertyNames(['proto', 'fn']);
@@ -2456,7 +2456,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 			it('prototype accessed', () => {
 				run(
 					async function*() {}.prototype, // eslint-disable-line no-empty-function
-					'(()=>{const a=Object;return a.create(a.getPrototypeOf(async function*(){}).prototype)})()',
+					'(()=>{const a=Object;return a.create(a.getPrototypeOf(async function*(){}.prototype))})()',
 					(proto) => {
 						expect(proto).toBeObject();
 						expect(proto).toHaveOwnPropertyNames([]);
@@ -2525,7 +2525,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 				inputFn.x = {xx: 1};
 				run(
 					inputFn.prototype,
-					'(()=>{const a=Object;return a.create(a.getPrototypeOf(async function*(){}).prototype)})()',
+					'(()=>{const a=Object;return a.create(a.getPrototypeOf(async function*(){}.prototype))})()',
 					(proto) => {
 						expect(proto).toBeObject();
 						expect(proto).toHaveOwnPropertyNames([]);
@@ -2582,7 +2582,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 				inputFn.prototype.x = {xx: 1};
 				run(
 					inputFn,
-					'(()=>{const a=Object,b=a.assign;return b(async function*(){},{prototype:b(a.create(a.getPrototypeOf(async function*(){}).prototype),{x:{xx:1}})})})()',
+					'(()=>{const a=Object,b=a.assign;return b(async function*(){},{prototype:b(a.create(a.getPrototypeOf(async function*(){}.prototype)),{x:{xx:1}})})})()',
 					(fn) => {
 						expect(fn).toBeFunction();
 						expect(fn).toContainAllKeys([]);
@@ -2601,7 +2601,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 				inputFn.prototype.x = {xx: 1};
 				run(
 					inputFn.prototype,
-					'(()=>{const a=Object;return a.assign(a.create(a.getPrototypeOf(async function*(){}).prototype),{x:{xx:1}})})()',
+					'(()=>{const a=Object;return a.assign(a.create(a.getPrototypeOf(async function*(){}.prototype)),{x:{xx:1}})})()',
 					(proto) => {
 						expect(proto).toBeObject();
 						expect(proto).toHaveOwnPropertyNames(['x']);
@@ -2616,7 +2616,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 				inputFn.prototype.x = {xx: 1};
 				run(
 					{fn: inputFn, proto: inputFn.prototype},
-					'(()=>{const a=Object,b=a.assign,c=b(a.create(a.getPrototypeOf(async function*(){}).prototype),{x:{xx:1}});return{fn:b(async function*(){},{prototype:c}),proto:c}})()',
+					'(()=>{const a=Object,b=a.assign,c=b(a.create(a.getPrototypeOf(async function*(){}.prototype)),{x:{xx:1}});return{fn:b(async function*(){},{prototype:c}),proto:c}})()',
 					(obj) => {
 						expect(obj).toBeObject();
 						expect(obj).toHaveOwnPropertyNames(['fn', 'proto']);
@@ -2637,7 +2637,7 @@ describeWithAllOptions('Prototypes', ({run}) => {
 				inputFn.prototype.x = {xx: 1};
 				run(
 					{proto: inputFn.prototype, fn: inputFn},
-					'(()=>{const a=Object,b=a.assign,c=b(a.create(a.getPrototypeOf(async function*(){}).prototype),{x:{xx:1}});return{proto:c,fn:b(async function*(){},{prototype:c})}})()',
+					'(()=>{const a=Object,b=a.assign,c=b(a.create(a.getPrototypeOf(async function*(){}.prototype)),{x:{xx:1}});return{proto:c,fn:b(async function*(){},{prototype:c})}})()',
 					(obj) => {
 						expect(obj).toBeObject();
 						expect(obj).toHaveOwnPropertyNames(['proto', 'fn']);

@@ -141,6 +141,24 @@ describeWithAllOptions('Globals', ({expectSerializedEqual, run, serialize, minif
 		});
 	});
 
+	describe('values behind getters', () => {
+		it('fs.ReadStream', () => {
+			run(
+				fs.ReadStream,
+				'require("fs").ReadStream',
+				val => expect(val).toBe(fs.ReadStream)
+			);
+		});
+
+		it('fs.WriteStream', () => {
+			run(
+				fs.WriteStream,
+				'require("fs").WriteStream',
+				val => expect(val).toBe(fs.WriteStream)
+			);
+		});
+	});
+
 	describe('shimmed globals', () => {
 		it('Symbol', () => { // eslint-disable-line jest/lowercase-name
 			expectSerializedEqual(Symbol, 'Symbol');
