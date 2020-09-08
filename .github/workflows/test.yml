@@ -1,0 +1,75 @@
+name: Test
+
+on:
+  push
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Cache NPM
+      uses: actions/cache@v2
+      with:
+        path: ~/.npm
+        key: ${{ runner.OS }}-npm-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: ${{ runner.os }}-npm-
+    - run: npm ci
+    - run: npm run lint
+
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x, 12.x, 10.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Cache NPM
+      uses: actions/cache@v2
+      with:
+        path: ~/.npm
+        key: ${{ runner.OS }}-npm-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: ${{ runner.os }}-npm-
+    - run: npm ci
+    - run: npm run test-main
+
+  coverage:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Cache NPM
+      uses: actions/cache@v2
+      with:
+        path: ~/.npm
+        key: ${{ runner.OS }}-npm-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: ${{ runner.os }}-npm-
+    - run: npm ci
+    - run: npm run cover-main
+    - name: Send report to Coveralls
+      uses: coverallsapp/github-action@v1.1.1
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}

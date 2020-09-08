@@ -1,0 +1,1 @@
+{"version":3,"sources":["../src.js"],"names":[],"mappings":"AAAA;;AAEA,IAAM,OAAO,GAAG,KAAhB;;AACA,MAAM,CAAC,OAAP,GAAiB,YAAM;AAAE,QAAM,IAAI,KAAJ,CAAU,OAAV,CAAN;AAA2B,CAApD","file":"index.js","sourcesContent":["'use strict';\n\nconst message = 'foo';\nmodule.exports = () => { throw new Error(message); };\n"]}

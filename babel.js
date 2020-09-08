@@ -1,10 +1,10 @@
 /* --------------------
  * livepack module
- * Entry point
+ * Babel plugin entry point
  * ------------------*/
 
 'use strict';
 
 // Exports
 
-module.exports = require('./lib/index.js');
+module.exports = require('./lib/babel.js');

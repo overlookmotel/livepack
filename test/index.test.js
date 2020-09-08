@@ -8,13 +8,14 @@
 // Modules
 const livepack = require('livepack');
 
-// Init
-require('./support/index.js');
-
 // Tests
 
-describe('tests', () => {
-	it.skip('all', () => { // eslint-disable-line jest/no-disabled-tests
-		expect(livepack).not.toBeUndefined();
+describe('Package', () => {
+	it('exports object', () => {
+		expect(livepack).toBeObject();
+	});
+
+	it('exports serialize function', () => {
+		expect(livepack.serialize).toBeFunction();
 	});
 });

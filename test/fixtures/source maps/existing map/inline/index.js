@@ -1,0 +1,9 @@
+'use strict';
+
+var message = 'foo';
+
+module.exports = function () {
+  throw new Error(message);
+};
+
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uL3NyYy5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQTs7QUFFQSxJQUFNLE9BQU8sR0FBRyxLQUFoQjs7QUFDQSxNQUFNLENBQUMsT0FBUCxHQUFpQixZQUFNO0FBQUUsUUFBTSxJQUFJLEtBQUosQ0FBVSxPQUFWLENBQU47QUFBMkIsQ0FBcEQiLCJmaWxlIjoiaW5kZXguanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIHN0cmljdCc7XG5cbmNvbnN0IG1lc3NhZ2UgPSAnZm9vJztcbm1vZHVsZS5leHBvcnRzID0gKCkgPT4geyB0aHJvdyBuZXcgRXJyb3IobWVzc2FnZSk7IH07XG4iXX0=

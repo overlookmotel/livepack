@@ -13,6 +13,9 @@ module.exports = {
 	],
 	rules: {
 		'import/no-unresolved': ['error', {ignore: ['^livepack$']}],
-		'node/no-missing-require': ['error', {allowModules: ['livepack']}]
+		'node/no-missing-require': ['error', {allowModules: ['livepack']}],
+		'jest/expect-expect': ['error', {
+			assertFunctionNames: ['expect', 'expectSerializedEqual']
+		}]
 	}
 };
