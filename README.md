@@ -72,13 +72,13 @@ Livepack has an emphasis on correctness. It will not always output the most comp
 ### Installation
 
 ```sh
-npm install livepack
+npm install -D livepack
 ```
 
 ### CLI
 
 ```sh
-livepack <input> -o <output dir>
+npx livepack <input> -o <output dir>
 ```
 
 Input should be the entry point of the app/value to be packed.
@@ -152,7 +152,7 @@ You can set options in a `livepack.config.json` file rather than on command line
 The run Livepack with:
 
 ```js
-livepack
+npx livepack
 ```
 
 All of the above options are optional except `input` and `output`.
