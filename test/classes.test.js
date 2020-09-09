@@ -2599,7 +2599,7 @@ describeWithAllOptions('Classes', ({run}) => {
 		describe('transpiled super treats computed object property names correctly', () => {
 			// These tests are primarily to ensure the Babel plugin works correctly,
 			// rather than the serialization.
-			// Tests for the code at `lib/babel.js` line 729, where temp var type is 'key'.
+			// Tests for the code at `lib/babel/visitor.js` line 684, where temp var type is 'key'.
 			it('function call used as object prop key only called once', () => {
 				const fn = spy(() => 'Y');
 				class X {}

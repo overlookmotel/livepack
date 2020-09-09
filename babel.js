@@ -7,4 +7,4 @@
 
 // Exports
 
-module.exports = require('./lib/babel.js');
+module.exports = require('./lib/babel/index.js');
