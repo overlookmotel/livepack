@@ -280,12 +280,22 @@ This is a new and experimental project. There are some major gaps at present.
 
 ### JS features
 
-Livepack can serialize pretty much all Javascript Functions and Objects. However, the following are not yet supported:
+Livepack can serialize pretty much all Javascript Functions and Objects. However, the following cannot yet be serialized:
 
+* Promises
 * Proxies
 * Error objects
+* WeakRefs + FinalizationRegistrys
 * Private class methods + properties
 * TypedArrays which share an underlying buffer
+
+NB Applications can *use* any of these within functions, just that instances of these classes can't be serialized.
+
+* Supported: `export default Promise;`
+* Supported: `const P = Promise; export default function() { return P; };`
+* Supported: `export default function() { return Promise.resolve(); };`
+* Unsupported: `export default Promise.resolve();` (Promise instance serialized directly)
+* Unsupported: `const p = return Promise.resolve(); export default function f() { return p; };` (Promise instance in outer scope)
 
 ### Code splitting
 
