@@ -15,7 +15,7 @@ const pathJoin = require('path').join,
 
 // Imports
 const babelPlugin = require('../../babel.js'),
-	{parseSourceMapFromCode} = require('../../lib/shared.js');
+	{parseSourceMapFromCode} = require('../../lib/shared/functions.js');
 
 // Constants
 const LIVEPACK_INTERNALS_PATH = pathJoin(__dirname, '../../lib/internal.js');
