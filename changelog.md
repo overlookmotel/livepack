@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.3
+
+Docs:
+
+* Fix GitHub CI badge [fix]
+
 ## 0.1.2
 
 Docs:
