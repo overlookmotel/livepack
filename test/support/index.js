@@ -16,6 +16,7 @@ module.exports = {
 	itWithAllOptions,
 	stripLineBreaks,
 	stripSourceMapComment,
+	tryCatch,
 	spy: jest.fn
 };
 
@@ -185,4 +186,16 @@ function stripSourceMapComment(js) {
 
 function stripLineBreaks(js) {
 	return stripComments(js).replace(/\n\s*/g, '');
+}
+
+/**
+ * Execute function and return error it throws, or `undefined` if it doesn't throw.
+ * @param {Function} fn - Function
+ */
+function tryCatch(fn) { // eslint-disable-line consistent-return
+	try {
+		fn();
+	} catch (err) {
+		return err;
+	}
 }
