@@ -50,6 +50,18 @@ describeWithAllOptions('Functions', ({run, serialize, minify, mangle, inline}) =
 						}
 					);
 				});
+
+				it('returning object expression', () => {
+					// Test for workaround for https://github.com/babel/babel/issues/12055
+					run(
+						() => ({}),
+						'()=>({})',
+						(fn) => {
+							expect(fn).toBeFunction();
+							expect(fn()).toBeObject();
+						}
+					);
+				});
 			});
 
 			describe('function expression', () => {
