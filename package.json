@@ -29,6 +29,7 @@
     "@babel/register": "^7.11.5",
     "@babel/traverse": "^7.11.5",
     "@babel/types": "^7.11.5",
+    "babel-plugin-dynamic-import-node": "^2.3.3",
     "convert-source-map": "^1.7.0",
     "find-up": "^5.0.0",
     "fs-extra": "^9.0.1",
