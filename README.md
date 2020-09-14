@@ -43,7 +43,7 @@ When you run the built app, the bootstrapping work is already done - it was done
 
 #### Tree-shaking by default
 
-Livepack doesn't perform tree-shaking exactly, but works more like a garbage collector - any value which is not referenced in the the objects/functions you serialize are omitted from the build.
+Livepack doesn't perform tree-shaking exactly, but works more like a garbage collector - any value which is not referenced in the the objects/functions you serialize is omitted from the build.
 
 This is more effective than tree-shaking as it doesn't rely on static analysis of the code, which can miss opportunities to discard unreferenced values.
 
@@ -149,7 +149,7 @@ You can set options in a `livepack.config.json` file rather than on command line
 }
 ```
 
-The run Livepack with:
+Then run Livepack with:
 
 ```js
 npx livepack
@@ -242,7 +242,7 @@ All these options (except `files` and `outputDir`) correspond to CLI options of 
 
 #### Output formats
 
-* `js` (default) - output an expression which can be `eval()`-ed e.g. `function() {}`
+* `js` (default) - output an expression which can be inserted into code e.g. `function() {}`
 * `cjs` - output a CommonJs module e.g. `module.exports = function() {}`
 * `esm` - output an ESM module e.g. `export default function() {}`
 
