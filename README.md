@@ -297,6 +297,8 @@ NB Applications can *use* any of these within functions, just that instances of 
 * Unsupported: `export default Promise.resolve();` (Promise instance serialized directly)
 * Unsupported: `const p = return Promise.resolve(); export default function f() { return p; };` (Promise instance in outer scope)
 
+`with (...) {...}` is also not supported where it alters the scope of a function being serialized.
+
 ### Code splitting
 
 Code is always output as a single file. There is no facility for code splitting yet.
