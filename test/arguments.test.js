@@ -568,4 +568,108 @@ describeWithAllOptions('Functions including `arguments`', ({run}) => {
 			);
 		});
 	});
+
+	describe('altered', () => {
+		it('extra properties', () => {
+			function outer() {
+				return arguments;
+			}
+			const argA = {argA: 1},
+				argB = {argB: 2};
+			const input = outer(argA, argB);
+			input.x = 3;
+			input[3] = 4;
+			input[5] = 5;
+
+			run(
+				input,
+				'Object.assign(function(){return arguments}({argA:1},{argB:2}),{3:4,5:5,x:3})',
+				(args) => {
+					expect(args).toBeArguments();
+					expect(args).toHaveLength(2);
+					expect(args).toHaveOwnPropertyNames(['0', '1', '3', '5', 'length', 'callee', 'x']);
+					expect(args[0]).toEqual(argA);
+					expect(args[1]).toEqual(argB);
+					expect(args.x).toBe(3);
+					expect(args[3]).toBe(4);
+					expect(args[5]).toBe(5);
+				}
+			);
+		});
+
+		it('descriptors altered', () => {
+			function outer() {
+				return arguments;
+			}
+			const argA = {argA: 1},
+				argB = {argB: 2};
+			const input = outer(argA, argB);
+			Object.defineProperty(input, 0, {enumerable: false});
+			Object.defineProperty(input, 1, {writable: false, configurable: false});
+
+			run(
+				input,
+				'Object.defineProperties(function(){return arguments}({argA:1},{argB:2}),{0:{enumerable:false},1:{writable:false,configurable:false}})',
+				(args) => {
+					expect(args).toBeArguments();
+					expect(args).toHaveLength(2);
+					expect(args).toHaveOwnPropertyNames(['0', '1', 'length', 'callee']);
+					expect(args[0]).toEqual(argA);
+					expect(args[1]).toEqual(argB);
+					expect(args).toHaveDescriptorModifiersFor(0, true, false, true);
+					expect(args).toHaveDescriptorModifiersFor(1, false, true, false);
+				}
+			);
+		});
+
+		it('getter + setter', () => {
+			function outer() {
+				return arguments;
+			}
+			const argA = {argA: 1},
+				argB = {argB: 2};
+			const input = outer(argA, argB);
+			Object.defineProperty(input, 0, {
+				get() { return 3; },
+				set(v) { this[1] = v; }
+			});
+
+			run(
+				input,
+				'Object.defineProperties(function(){return arguments}(3,{argB:2}),{0:{get(){return 3},set(a){this[1]=a}}})',
+				(args) => {
+					expect(args).toBeArguments();
+					expect(args).toHaveLength(2);
+					expect(args).toHaveOwnPropertyNames(['0', '1', 'length', 'callee']);
+					expect(args[0]).toBe(3);
+					expect(args[1]).toEqual(argB);
+					args[0] = 4;
+					expect(args[1]).toBe(4);
+				}
+			);
+		});
+
+		it('prototype altered', () => {
+			function outer() {
+				return arguments;
+			}
+			const argA = {argA: 1},
+				argB = {argB: 2};
+			const input = outer(argA, argB);
+			Object.setPrototypeOf(input, Date.prototype);
+
+			run(
+				input,
+				'Object.setPrototypeOf(function(){return arguments}({argA:1},{argB:2}),Date.prototype)',
+				(args) => {
+					expect(args).toBeArguments();
+					expect(args).toHaveLength(2);
+					expect(args).toHaveOwnPropertyNames(['0', '1', 'length', 'callee']);
+					expect(args[0]).toEqual(argA);
+					expect(args[1]).toEqual(argB);
+					expect(args).toHavePrototype(Date.prototype);
+				}
+			);
+		});
+	});
 });
