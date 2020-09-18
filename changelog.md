@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.5
+
+Bug fixes:
+
+* Source mapping failures log not throw
+
+Docs:
+
+* Fix typos
+
 ## 0.1.4
 
 Features:
