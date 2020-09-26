@@ -6,7 +6,7 @@
 'use strict';
 
 // Modules
-const {promisify} = require('util');
+const {promisify, debuglog} = require('util');
 
 // Imports
 const {describeWithAllOptions} = require('./support/index.js');
@@ -41,6 +41,24 @@ describeWithAllOptions('Built-in functions', ({run}) => {
 					expect(fn()).toBe(2);
 					expect(fn).toHaveDescriptorModifiersFor(promisify.custom, false, false, true);
 				}
+			);
+		});
+	});
+
+	describe("require('util').debuglog", () => {
+		it('without callback', () => {
+			run(
+				debuglog('foo'),
+				'require("util").debuglog("foo")',
+				fn => expect(fn).toBeFunction()
+			);
+		});
+
+		it('with callback', () => {
+			run(
+				debuglog('foo', () => {}),
+				'require("util").debuglog("foo",()=>{})',
+				fn => expect(fn).toBeFunction()
 			);
 		});
 	});
