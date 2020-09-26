@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.6
+
+Bug fixes:
+
+* Serialize functions returned by `require('util').promisify()`
+* Fix serialization of `require('util').debuglog()` functions
+
+No code:
+
+* Correct code comments
+
 ## 0.1.5
 
 Bug fixes:
