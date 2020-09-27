@@ -18,6 +18,6 @@ module.exports = {
 		'<rootDir>/test/support/expect.js'
 	],
 	transform: {
-		'\\.js$': '<rootDir>/test/support/transform.js'
+		'\\.js$': '<rootDir>/jest-transform.js'
 	}
 };
