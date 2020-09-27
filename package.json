@@ -52,7 +52,7 @@
     "coveralls": "^3.1.0",
     "cross-env": "^7.0.2",
     "escape-string-regexp": "^4.0.0",
-    "eslint": "^7.9.0",
+    "eslint": "^7.10.0",
     "eslint-config-airbnb-base": "^14.2.0",
     "eslint-plugin-eslint-comments": "^3.2.0",
     "eslint-plugin-import": "^2.22.0",
