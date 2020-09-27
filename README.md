@@ -10,9 +10,9 @@
 
 Most bundlers/transpilers convert Javascript code as *text* to some other form of Javascript code, also in text form.
 
-Livepack is different - it transpiles a NodeJS app from the live code *as it's running*. Essentially it's a serializer.
+Livepack is different - it takes a NodeJS app and produces Javascript from the live code *as it's running*. Essentially it's a serializer.
 
-The difference from other serializers like [serialize-javascript](https://www.npmjs.com/package/serialize-javascript) is that Livepack can handle function scopes and closures, so it's capable of serializing entire programs.
+The difference from other serializers like [serialize-javascript](https://www.npmjs.com/package/serialize-javascript) is that Livepack can handle function scopes and closures, so it's capable of serializing entire applications.
 
 If you pack this with Livepack:
 
@@ -49,7 +49,7 @@ This is more effective than tree-shaking as it doesn't rely on static analysis o
 
 #### Mix build-time and run-time code
 
-Any values which are calculated before serialization are included in the build pre-calculated. `ONE_MB = 1024 * 1024 * 1024;` is serialized as the result, `1073741824`. This is a trivial example, but any calculation of arbitrary complexity can be performed at build time.
+Any values which are calculated before serialization are included in the build pre-calculated. `ONE_GB = 1024 * 1024 * 1024;` is serialized as the result, `1073741824`. This is a trivial example, but any calculation of arbitrary complexity can be performed at build time.
 
 #### Dynamic builds
 
@@ -166,7 +166,7 @@ There are two parts to the programmatic API.
 
 #### Require hook
 
-Livepack instruments the code as it runs, by patching NodeJS's `require()` function. It uses [@babel/register](https://babeljs.io/docs/en/babel-register) internally. This instrumentation what allows Livepack to capture the value of variables in closures.
+Livepack instruments the code as it runs, by patching NodeJS's `require()` function. It uses [@babel/register](https://babeljs.io/docs/en/babel-register) internally. This instrumentation is what allows Livepack to capture the value of variables in closures.
 
 Your app must have an entry point which registers the require hook, and then `require()`s the app itself.
 
@@ -236,7 +236,7 @@ serialize( {x: 1}, {
 | `inline` | `boolean` | Less verbose output | `true` |
 | `files` | `boolean` | `true` to output source maps in separate file not inline (see [below](#files)) | `false` |
 | `sourceMaps` | `boolean` | Create source maps | `false` |
-| `outputDir` | `string` | Path to dir code would be output to. If provided, source maps will use relative paths (relative to output path). | `undefined` |
+| `outputDir` | `string` | Path to dir code would be output to. If provided, source maps will use relative paths (relative to `outputDir`). | `undefined` |
 
 All these options (except `files` and `outputDir`) correspond to CLI options of the same names. Unlike the programmatic API, in the CLI `exec` and `files` options default to `true` and `minify` to `false`.
 
@@ -295,7 +295,7 @@ NB Applications can *use* any of these within functions, just that instances of 
 * Supported: `const P = Promise; export default function() { return P; };`
 * Supported: `export default function() { return Promise.resolve(); };`
 * Unsupported: `export default Promise.resolve();` (Promise instance serialized directly)
-* Unsupported: `const p = return Promise.resolve(); export default function f() { return p; };` (Promise instance in outer scope)
+* Unsupported: `const p = Promise.resolve(); export default function f() { return p; };` (Promise instance in outer scope of exported function)
 
 `with (...) {...}` is also not supported where it alters the scope of a function being serialized.
 
