@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.7
+
+Features:
+
+* Provide Jest transformer `livepack/jest-transform`
+
+Dev:
+
+* Update dev dependencies
+
 ## 0.1.6
 
 Bug fixes:
