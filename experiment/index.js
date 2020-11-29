@@ -11,8 +11,8 @@ const serializeFunction = require('./serialize.js');
 
 const x = {a: 123};
 function outer(y) {
-	return function inner() {
-		console.log('vars:', {x, y});
+	return function inner(z) { console.log('first line'); // eslint-disable-line brace-style
+		console.log('vars:', {x, y, z});
 	};
 }
 
@@ -24,14 +24,19 @@ const f3 = () => {
 };
 
 const f1Info = serializeFunction(f1);
-const f2Info = serializeFunction(f2);
-const f3Info = serializeFunction(f3);
+// const f2Info = serializeFunction(f2);
+// const f3Info = serializeFunction(f3);
 
+console.log('got info');
+console.log('x:', x);
+
+/*
 console.dir({
 	f1Info,
 	f2Info,
-	f3Info,
+	f3Info
 	f1XEqual: f1Info.scopes[0].values.x === x,
 	f2XEqual: f2Info.scopes[0].values.x === x,
 	f3XEqual: f3Info.scopes[0].values.x === x
 }, {depth: 10});
+*/
