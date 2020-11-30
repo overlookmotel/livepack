@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable no-console */
 
 'use strict';
@@ -9,7 +10,7 @@ const serializeFunction = require('./serialize.js');
 
 // Run
 
-const x = {a: 123};
+const x = 123; // {a: 123};
 function outer(y) {
 	return function inner(z) { console.log('first line'); // eslint-disable-line brace-style
 		console.log('vars:', {x, y, z});
@@ -19,16 +20,19 @@ function outer(y) {
 const f1 = outer({b: 456});
 const f2 = outer({b: 789});
 
-const f3 = () => {
-	console.log('x:', x);
-};
+const q = {qq: 123};
+const r = () => {};
 
-const f1Info = serializeFunction(f1);
+const f3 = () => { console.log('f3 vars:', {x, q, r}); };
+
+// const f1Info = serializeFunction(f1);
 // const f2Info = serializeFunction(f2);
-// const f3Info = serializeFunction(f3);
+const f3Info = serializeFunction(f3);
 
 console.log('got info');
-console.log('x:', x);
+console.log({x, q, r});
+
+console.log('f3Info:', f3Info);
 
 /*
 console.dir({
