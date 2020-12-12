@@ -53,8 +53,8 @@ describe('Source maps', () => {
 		const path = pathJoin(__dirname, 'fixtures/source maps/simple/index.js');
 		const originalContent = readFileSync(path, 'utf8');
 
-		const input = require('./fixtures/source maps/simple/index.js');
-		const out = serialize(input, {sourceMaps: true, files: true});
+		const fn = require('./fixtures/source maps/simple/index.js');
+		const out = serialize(fn, {sourceMaps: true, files: true});
 		expect(out).toEqual([
 			{
 				filename: 'index.js',
@@ -81,8 +81,8 @@ describe('Source maps', () => {
 		const outputDirPath = pathJoin(srcDirPath, '../build');
 		const originalContent = readFileSync(pathJoin(srcDirPath, 'index.js'), 'utf8');
 
-		const input = require('./fixtures/source maps/simple/index.js');
-		const out = serialize(input, {sourceMaps: true, files: true, outputDir: outputDirPath});
+		const fn = require('./fixtures/source maps/simple/index.js');
+		const out = serialize(fn, {sourceMaps: true, files: true, outputDir: outputDirPath});
 		expect(out).toEqual([
 			{
 				filename: 'index.js',
@@ -108,8 +108,8 @@ describe('Source maps', () => {
 		const srcDirPath = pathJoin(__dirname, 'fixtures/source maps/simple');
 		const outputDirPath = pathJoin(srcDirPath, '../build');
 
-		const input = require('./fixtures/source maps/simple/index.js');
-		const out = serialize(input, {sourceMaps: true, files: true, outputDir: outputDirPath});
+		const fn = require('./fixtures/source maps/simple/index.js');
+		const out = serialize(fn, {sourceMaps: true, files: true, outputDir: outputDirPath});
 
 		expect(out[0].content)
 			.toBe('function(){throw new Error("oops")}\n//# sourceMappingURL=index.js.map');
@@ -135,8 +135,8 @@ describe('Source maps', () => {
 			const srcDirPath = pathJoin(__dirname, 'fixtures/source maps/existing map/inline');
 			const outputDirPath = pathJoin(srcDirPath, '../build');
 
-			const input = require('./fixtures/source maps/existing map/inline/index.js');
-			const out = serialize(input, {sourceMaps: true, files: true, outputDir: outputDirPath});
+			const fn = require('./fixtures/source maps/existing map/inline/index.js');
+			const out = serialize(fn, {sourceMaps: true, files: true, outputDir: outputDirPath});
 
 			expect(out[0].content)
 				.toBe('(a=>function(){throw new Error(a)})("foo")\n//# sourceMappingURL=index.js.map');
@@ -161,8 +161,8 @@ describe('Source maps', () => {
 			const srcDirPath = pathJoin(__dirname, 'fixtures/source maps/existing map/external');
 			const outputDirPath = pathJoin(srcDirPath, '../build');
 
-			const input = require('./fixtures/source maps/existing map/external/index.js');
-			const out = serialize(input, {sourceMaps: true, files: true, outputDir: outputDirPath});
+			const fn = require('./fixtures/source maps/existing map/external/index.js');
+			const out = serialize(fn, {sourceMaps: true, files: true, outputDir: outputDirPath});
 
 			expect(out[0].content)
 				.toBe('(a=>function(){throw new Error(a)})("foo")\n//# sourceMappingURL=index.js.map');

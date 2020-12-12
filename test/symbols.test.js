@@ -6,39 +6,49 @@
 'use strict';
 
 // Imports
-const {describeWithAllOptions, stripSourceMapComment} = require('./support/index.js');
+const {itSerializes, stripSourceMapComment} = require('./support/index.js');
 
 // Tests
 
-describeWithAllOptions('Symbols', ({run, serialize, minify, mangle, inline}) => {
-	it('named symbol', () => {
-		const output = run(Symbol('foo'), 'Symbol("foo")');
-		expect(typeof output).toBe('symbol');
+describe('Symbols', () => {
+	itSerializes('named symbol', {
+		in: () => Symbol('foo'),
+		out: 'Symbol("foo")',
+		validate: sym => expect(typeof sym).toBe('symbol')
 	});
 
-	it('unnamed symbol', () => {
-		const output = run(Symbol(), 'Symbol()'); // eslint-disable-line symbol-description
-		expect(typeof output).toBe('symbol');
+	itSerializes('unnamed symbol', {
+		in: () => Symbol(), // eslint-disable-line symbol-description
+		out: 'Symbol()',
+		validate: sym => expect(typeof sym).toBe('symbol')
 	});
 
-	it('symbol with empty string description', () => {
-		const output = run(Symbol(''), 'Symbol("")');
-		expect(typeof output).toBe('symbol');
+	itSerializes('symbol with empty string description', {
+		in: () => Symbol(''),
+		out: 'Symbol("")',
+		validate: sym => expect(typeof sym).toBe('symbol')
 	});
 
-	it('global symbol', () => {
-		const output = run(Symbol.for('bar'), 'Symbol.for("bar")');
-		expect(typeof output).toBe('symbol');
+	itSerializes('global symbol', {
+		in: () => Symbol.for('bar'),
+		out: 'Symbol.for("bar")',
+		validate(sym, {isOutput, input}) {
+			expect(typeof sym).toBe('symbol');
+			if (isOutput) expect(sym).toBe(input);
+		}
 	});
 
-	if (minify && inline && !mangle) {
-		it('name var after symbol description', () => {
+	itSerializes('name var after symbol description', {
+		minify: true,
+		inline: true,
+		mangle: false,
+		in() {
 			const s = Symbol('foo bar');
-			const input = [s, s];
-			const js = serialize(input);
-
-			expect(stripSourceMapComment(js))
+			return [s, s];
+		},
+		validateOutput(arr, {outputJs}) {
+			expect(stripSourceMapComment(outputJs))
 				.toBe('(()=>{const foo_bar=Symbol("foo bar");return[foo_bar,foo_bar]})()');
-		});
-	}
+		}
+	});
 });

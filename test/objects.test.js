@@ -6,79 +6,66 @@
 'use strict';
 
 // Imports
-const {describeWithAllOptions} = require('./support/index.js');
+const {itSerializes, itSerializesEqual} = require('./support/index.js');
 
 // Tests
 
-describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
-	it('empty object', () => {
-		expectSerializedEqual({}, '{}');
-	});
+describe('Objects', () => {
+	itSerializesEqual('empty object', () => ({}), '{}');
 
 	describe('properties', () => {
-		it('one property', () => {
-			expectSerializedEqual({a: 1}, '{a:1}');
+		itSerializesEqual('one property', () => ({a: 1}), '{a:1}');
+
+		itSerializesEqual('multiple properties', () => ({a: 1, b: 2, c: 3}), '{a:1,b:2,c:3}');
+
+		itSerializesEqual('properties with names which are not valid identifiers', {
+			in: () => ({'b-c': {'0a': 1, 'd.e': 2}}),
+			out: '{"b-c":{"0a":1,"d.e":2}}'
 		});
 
-		it('multiple properties', () => {
-			expectSerializedEqual({a: 1, b: 2, c: 3}, '{a:1,b:2,c:3}');
+		itSerializesEqual('numeric property keys', {
+			in: () => ({0: {1: 1, 23: 2, '04': 3}}),
+			out: '{0:{1:1,23:2,"04":3}}'
 		});
 
-		it('properties with names which are not valid identifiers', () => {
-			expectSerializedEqual({'b-c': {'0a': 1, 'd.e': 2}}, '{"b-c":{"0a":1,"d.e":2}}');
-		});
-
-		it('numeric property keys', () => {
-			expectSerializedEqual({0: {1: 1, 23: 2, '04': 3}}, '{0:{1:1,23:2,"04":3}}');
-		});
-
-		it('numeric property keys above max integer level', () => {
+		itSerializesEqual('numeric property keys above max integer level', {
 			// 4294967294 is max integer key - integers above max are not moved to first position
-			expectSerializedEqual(
-				{a: 3, 4294967294: 1, 4294967295: 2},
-				'{4294967294:1,a:3,4294967295:2}'
-			);
+			in: () => ({a: 3, 4294967294: 1, 4294967295: 2}),
+			out: '{4294967294:1,a:3,4294967295:2}'
 		});
 
-		it('properties with names which are JS reserved words', () => {
+		itSerializesEqual('properties with names which are JS reserved words', {
 			// This test is to ensure doesn't create illegally-named intermediate vars when
 			// `mangle` and `inline` options false
-			expectSerializedEqual(
-				{if: {}, do: {}, this: {}, arguments: {}, repeat: {if: {}, do: {}, this: {}, arguments: {}}},
-				'{if:{},do:{},this:{},arguments:{},repeat:{if:{},do:{},this:{},arguments:{}}}'
-			);
+			in: () => ({
+				if: {}, do: {}, this: {}, arguments: {}, repeat: {if: {}, do: {}, this: {}, arguments: {}}
+			}),
+			out: '{if:{},do:{},this:{},arguments:{},repeat:{if:{},do:{},this:{},arguments:{}}}'
 		});
 
-		it('with undefined value', () => {
-			expectSerializedEqual(
-				{x: undefined},
-				'{x:void 0}',
-				(obj) => {
-					expect(obj).toHaveOwnPropertyNames(['x']);
-					expect(obj.x).toBeUndefined();
-				}
-			);
+		itSerializesEqual('with undefined value', {
+			in: () => ({x: undefined}),
+			out: '{x:void 0}',
+			validate(obj) {
+				expect(obj).toHaveOwnPropertyNames(['x']);
+				expect(obj.x).toBeUndefined();
+			}
 		});
 	});
 
 	describe('nested objects', () => {
-		it('one nested object', () => {
-			expectSerializedEqual({
-				a: {aa: 1},
-				b: 2
-			}, '{a:{aa:1},b:2}');
+		itSerializesEqual('one nested object', {
+			in: () => ({a: {aa: 1}, b: 2}),
+			out: '{a:{aa:1},b:2}'
 		});
 
-		it('multiple nested objects', () => {
-			expectSerializedEqual({
-				a: {aa: 1},
-				b: {ba: 2},
-				c: 3
-			}, '{a:{aa:1},b:{ba:2},c:3}');
+		itSerializesEqual('multiple nested objects', {
+			in: () => ({a: {aa: 1}, b: {ba: 2}, c: 3}),
+			out: '{a:{aa:1},b:{ba:2},c:3}'
 		});
 
-		it('multiple layers of nesting', () => {
-			expectSerializedEqual({
+		itSerializesEqual('multiple layers of nesting', {
+			in: () => ({
 				a: {
 					aa: {
 						aaa: {
@@ -106,119 +93,135 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 					},
 					bb: 9
 				}
-			}, '{a:{aa:{aaa:{aaaa:1,aaab:2},aab:{},aac:3},ab:{aba:{abaa:4},abb:5},ac:{},ad:6},b:{ba:{baa:{baaa:7,baab:8}},bb:9}}');
+			}),
+			out: `{
+				a:{
+					aa:{aaa:{aaaa:1,aaab:2},aab:{},aac:3},
+					ab:{aba:{abaa:4},abb:5},
+					ac:{},
+					ad:6
+				},
+				b:{
+					ba:{baa:{baaa:7,baab:8}},
+					bb:9
+				}
+			}`
 		});
 
 		describe('duplicated references', () => {
-			it('where nested before', () => {
-				const a = {aa: 1};
-				const input = {
-					c: {
-						d: a
-					},
-					a,
-					b: a
-				};
-				const output = expectSerializedEqual(input, '(()=>{const a={aa:1};return{c:{d:a},a,b:a}})()');
-				expect(output.a).toEqual(a);
-				expect(output.b).toBe(output.a);
-				expect(output.c.d).toBe(output.a);
+			itSerializesEqual('where nested before', {
+				in() {
+					const x = {xx: 1};
+					return {
+						c: {d: x},
+						a: x,
+						b: x
+					};
+				},
+				out: '(()=>{const a={xx:1};return{c:{d:a},a,b:a}})()',
+				validate(obj) {
+					expect(obj.a).toEqual({xx: 1});
+					expect(obj.b).toBe(obj.a);
+					expect(obj.c.d).toBe(obj.a);
+				}
 			});
 
-			it('where nested after', () => {
-				const a = {aa: 1};
-				const input = {
-					a,
-					b: a,
-					c: {
-						d: a
-					}
-				};
-				const output = expectSerializedEqual(input, '(()=>{const a={aa:1};return{a,b:a,c:{d:a}}})()');
-				expect(output.a).toEqual(a);
-				expect(output.b).toBe(output.a);
-				expect(output.c.d).toBe(output.a);
+			itSerializesEqual('where nested after', {
+				in() {
+					const x = {xx: 1};
+					return {
+						a: x,
+						b: x,
+						c: {d: x}
+					};
+				},
+				out: '(()=>{const a={xx:1};return{a,b:a,c:{d:a}}})()',
+				validate(obj) {
+					expect(obj.a).toEqual({xx: 1});
+					expect(obj.b).toBe(obj.a);
+					expect(obj.c.d).toBe(obj.a);
+				}
 			});
 		});
 
 		describe('circular references', () => {
 			describe('direct', () => {
-				it('one level deep', () => {
-					const input = {};
-					input.a = input;
-
-					const output = expectSerializedEqual(
-						input, '(()=>{const a={};a.a=a;return a})()'
-					);
-					expect(output.a).toBe(output);
+				itSerializesEqual('one level deep', {
+					in() {
+						const obj = {};
+						obj.a = obj;
+						return obj;
+					},
+					out: '(()=>{const a={};a.a=a;return a})()',
+					validate: obj => expect(obj.a).toBe(obj)
 				});
 
-				it('multiple levels deep', () => {
-					const input = {
-						a: {
-							b: {}
-						}
-					};
-					input.a.b.c = input;
-
-					const output = expectSerializedEqual(
-						input, '(()=>{const a={},b={a:{b:a}};a.c=b;return b})()'
-					);
-					expect(output.a.b.c).toBe(output);
+				itSerializesEqual('multiple levels deep', {
+					in() {
+						const obj = {
+							a: {
+								b: {}
+							}
+						};
+						obj.a.b.c = obj;
+						return obj;
+					},
+					out: '(()=>{const a={},b={a:{b:a}};a.c=b;return b})()',
+					validate: obj => expect(obj.a.b.c).toBe(obj)
 				});
 
-				it('property names which are not valid identifiers', () => {
-					const input = {};
-					input['0a'] = input;
-
-					const output = expectSerializedEqual(
-						input, '(()=>{const a={};a["0a"]=a;return a})()'
-					);
-					expect(output['0a']).toBe(output);
+				itSerializesEqual('property names which are not valid identifiers', {
+					in() {
+						const obj = {};
+						obj['0a'] = obj;
+						return obj;
+					},
+					out: '(()=>{const a={};a["0a"]=a;return a})()',
+					validate: obj => expect(obj['0a']).toBe(obj)
 				});
 
-				it('numeric property keys', () => {
-					const input = {};
-					input[0] = input;
-					input[1] = input;
-					input[23] = input;
-					input['04'] = input;
-					expectSerializedEqual(
-						input,
-						'(()=>{const a={};a[0]=a;a[1]=a;a[23]=a;a["04"]=a;return a})()',
-						(obj) => {
-							expect(obj[0]).toBe(obj);
-							expect(obj[1]).toBe(obj);
-							expect(obj[23]).toBe(obj);
-							expect(obj['04']).toBe(obj);
-						}
-					);
+				itSerializesEqual('numeric property keys', {
+					in() {
+						const obj = {};
+						obj[0] = obj;
+						obj[1] = obj;
+						obj[23] = obj;
+						obj['04'] = obj;
+						return obj;
+					},
+					out: '(()=>{const a={};a[0]=a;a[1]=a;a[23]=a;a["04"]=a;return a})()',
+					validate(obj) {
+						expect(obj[0]).toBe(obj);
+						expect(obj[1]).toBe(obj);
+						expect(obj[23]).toBe(obj);
+						expect(obj['04']).toBe(obj);
+					}
 				});
 			});
 
 			describe('inside another object', () => {
-				it('one level deep', () => {
-					const a = {};
-					a.b = a;
-					const input = {a};
-
-					const output = expectSerializedEqual(input, '(()=>{const a={};a.b=a;return{a}})()');
-					expect(output.a.b).toBe(output.a);
+				itSerializesEqual('one level deep', {
+					in() {
+						const x = {};
+						x.b = x;
+						return {a: x};
+					},
+					out: '(()=>{const a={};a.b=a;return{a}})()',
+					validate: obj => expect(obj.a.b).toBe(obj.a)
 				});
 
-				it('multiple levels deep', () => {
-					const a = {
-						b: {
-							c: {}
-						}
-					};
-					a.b.c.d = a;
-					const input = {a};
-
-					const output = expectSerializedEqual(
-						input, '(()=>{const a={},b={b:{c:a}};a.d=b;return{a:b}})()'
-					);
-					expect(output.a.b.c.d).toBe(output.a);
+				itSerializesEqual('multiple levels deep', {
+					in() {
+						const x = {
+							b: {
+								c: {}
+							}
+						};
+						x.b.c.d = x;
+						return {x};
+					},
+					out: '(()=>{const a={},b={b:{c:a}};a.d=b;return{x:b}})()',
+					validate: obj => expect(obj.x.b.c.d).toBe(obj.x)
 				});
 			});
 		});
@@ -226,15 +229,15 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 
 	describe('with symbol keys', () => {
 		describe('no descriptors', () => {
-			it('no circular properties', () => {
-				const input = {
+			itSerializes('no circular properties', {
+				in: () => ({
 					x: 1,
 					y: {yy: 2},
 					[Symbol('symbol1')]: 3,
 					[Symbol('symbol2')]: {ss: 4}
-				};
-
-				run(input, null, (obj) => {
+				}),
+				out: '(()=>{const a=Symbol;return{x:1,y:{yy:2},[a("symbol1")]:3,[a("symbol2")]:{ss:4}}})()',
+				validate(obj) {
 					const symbolKeys = Object.getOwnPropertySymbols(obj);
 					expect(symbolKeys).toBeArrayOfSize(2);
 					expect(Object.keys(obj)).toBeArrayOfSize(2);
@@ -246,14 +249,16 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 					expect(obj[s2]).toEqual({ss: 4});
 					expect(obj.x).toBe(1);
 					expect(obj.y).toEqual({yy: 2});
-				});
+				}
 			});
 
-			it('repeated key', () => {
-				const s = Symbol('symbol1');
-				const input = {obj1: {[s]: 1}, obj2: {[s]: 2}};
-
-				run(input, null, (obj) => {
+			itSerializes('repeated key', {
+				in() {
+					const s = Symbol('symbol1');
+					return {obj1: {[s]: 1}, obj2: {[s]: 2}};
+				},
+				out: '(()=>{const a=Symbol("symbol1");return{obj1:{[a]:1},obj2:{[a]:2}}})()',
+				validate(obj) {
 					expect(obj).toBeObject();
 					expect(obj).toContainAllKeys(['obj1', 'obj2']);
 					const {obj1, obj2} = obj;
@@ -268,14 +273,17 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 					expect(s2).toBe(s1);
 					expect(obj1[s1]).toBe(1);
 					expect(obj2[s1]).toBe(2);
-				});
+				}
 			});
 
-			it('circular properties', () => {
-				const input = {x: 1, y: 2};
-				input[Symbol('symbol1')] = input;
-
-				run(input, null, (obj) => {
+			itSerializes('circular properties', {
+				in() {
+					const obj = {x: 1, y: 2};
+					obj[Symbol('symbol1')] = obj;
+					return obj;
+				},
+				out: '(()=>{const a={x:1,y:2};a[Symbol("symbol1")]=a;return a})()',
+				validate(obj) {
 					const symbolKeys = Object.getOwnPropertySymbols(obj);
 					expect(symbolKeys).toBeArrayOfSize(1);
 					expect(Object.keys(obj)).toBeArrayOfSize(2);
@@ -284,15 +292,18 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 					expect(obj[s]).toBe(obj);
 					expect(obj.x).toBe(1);
 					expect(obj.y).toBe(2);
-				});
+				}
 			});
 
-			it('circular properties duplicated', () => {
-				const input = {x: 1, y: 2};
-				input[Symbol('symbol1')] = input;
-				input[Symbol('symbol2')] = input;
-
-				run(input, null, (obj) => {
+			itSerializes('circular properties duplicated', {
+				in() {
+					const obj = {x: 1, y: 2};
+					obj[Symbol('symbol1')] = obj;
+					obj[Symbol('symbol2')] = obj;
+					return obj;
+				},
+				out: '(()=>{const a={x:1,y:2},b=Symbol;a[b("symbol1")]=a;a[b("symbol2")]=a;return a})()',
+				validate(obj) {
 					const symbolKeys = Object.getOwnPropertySymbols(obj);
 					expect(symbolKeys).toBeArrayOfSize(2);
 					expect(Object.keys(obj)).toBeArrayOfSize(2);
@@ -304,19 +315,30 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 					expect(obj[s2]).toBe(obj);
 					expect(obj.x).toBe(1);
 					expect(obj.y).toBe(2);
-				});
+				}
 			});
 		});
 
 		describe('with descriptors', () => {
-			it('no circular properties', () => {
-				const input = {x: 1, y: {yy: 2}};
-				Object.defineProperties(input, {
-					[Symbol('symbol1')]: {value: 3, writable: true, configurable: true},
-					[Symbol('symbol2')]: {value: {ss: 4}, writable: true, configurable: true}
-				});
-
-				run(input, null, (obj) => {
+			itSerializes('no circular properties', {
+				in() {
+					const obj = {x: 1, y: {yy: 2}};
+					Object.defineProperties(obj, {
+						[Symbol('symbol1')]: {value: 3, writable: true, configurable: true},
+						[Symbol('symbol2')]: {value: {ss: 4}, writable: true, configurable: true}
+					});
+					return obj;
+				},
+				out: `(()=>{
+					const a=Symbol;
+					return Object.defineProperties({},{
+						x:{value:1,writable:true,enumerable:true,configurable:true},
+						y:{value:{yy:2},writable:true,enumerable:true,configurable:true},
+						[a("symbol1")]:{value:3,writable:true,configurable:true},
+						[a("symbol2")]:{value:{ss:4},writable:true,configurable:true}
+					})
+				})()`,
+				validate(obj) {
 					const symbolKeys = Object.getOwnPropertySymbols(obj);
 					expect(symbolKeys).toBeArrayOfSize(2);
 					expect(Object.keys(obj)).toBeArrayOfSize(2);
@@ -330,16 +352,26 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 					expect(obj).toHaveDescriptorModifiersFor(s2, true, false, true);
 					expect(obj.x).toBe(1);
 					expect(obj.y).toEqual({yy: 2});
-				});
+				}
 			});
 
-			it('repeated key', () => {
-				const s = Symbol('symbol1');
-				const input = {obj1: {}, obj2: {}};
-				Object.defineProperty(input.obj1, s, {value: 1, writable: true, configurable: true});
-				Object.defineProperty(input.obj2, s, {value: 2, writable: true, configurable: true});
-
-				run(input, null, (obj) => {
+			itSerializes('repeated key', {
+				in() {
+					const s = Symbol('symbol1');
+					const obj = {obj1: {}, obj2: {}};
+					Object.defineProperty(obj.obj1, s, {value: 1, writable: true, configurable: true});
+					Object.defineProperty(obj.obj2, s, {value: 2, writable: true, configurable: true});
+					return obj;
+				},
+				out: `(()=>{
+					const a=Symbol("symbol1"),
+						b=Object.defineProperties;
+					return{
+						obj1:b({},{[a]:{value:1,writable:true,configurable:true}}),
+						obj2:b({},{[a]:{value:2,writable:true,configurable:true}})
+					}
+				})()`,
+				validate(obj) {
 					expect(obj).toBeObject();
 					expect(obj).toContainAllKeys(['obj1', 'obj2']);
 					const {obj1, obj2} = obj;
@@ -356,16 +388,23 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 					expect(obj2[s1]).toBe(2);
 					expect(obj1).toHaveDescriptorModifiersFor(s1, true, false, true);
 					expect(obj2).toHaveDescriptorModifiersFor(s1, true, false, true);
-				});
+				}
 			});
 
-			it('circular properties', () => {
-				const input = {x: 1, y: 2};
-				Object.defineProperty(input, Symbol('symbol1'), {
-					value: input, writable: true, configurable: true
-				});
-
-				run(input, null, (obj) => {
+			itSerializes('circular properties', {
+				in() {
+					const obj = {x: 1, y: 2};
+					Object.defineProperty(obj, Symbol('symbol1'), {
+						value: obj, writable: true, configurable: true
+					});
+					return obj;
+				},
+				out: `(()=>{
+					const a={x:1,y:2};
+					Object.defineProperties(a,{[Symbol("symbol1")]:{value:a,writable:true,configurable:true}});
+					return a
+				})()`,
+				validate(obj) {
 					const symbolKeys = Object.getOwnPropertySymbols(obj);
 					expect(symbolKeys).toBeArrayOfSize(1);
 					expect(Object.keys(obj)).toBeArrayOfSize(2);
@@ -375,17 +414,28 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 					expect(obj).toHaveDescriptorModifiersFor(s, true, false, true);
 					expect(obj.x).toBe(1);
 					expect(obj.y).toBe(2);
-				});
+				}
 			});
 
-			it('circular properties duplicated', () => {
-				const input = {x: 1, y: 2};
-				Object.defineProperties(input, {
-					[Symbol('symbol1')]: {value: input, writable: true, configurable: true},
-					[Symbol('symbol2')]: {value: input, writable: true, configurable: true}
-				});
-
-				run(input, null, (obj) => {
+			itSerializes('circular properties duplicated', {
+				in() {
+					const obj = {x: 1, y: 2};
+					Object.defineProperties(obj, {
+						[Symbol('symbol1')]: {value: obj, writable: true, configurable: true},
+						[Symbol('symbol2')]: {value: obj, writable: true, configurable: true}
+					});
+					return obj;
+				},
+				out: `(()=>{
+					const a={x:1,y:2},
+						b=Symbol;
+					Object.defineProperties(a,{
+						[b("symbol1")]:{value:a,writable:true,configurable:true},
+						[b("symbol2")]:{value:a,writable:true,configurable:true}
+					});
+					return a
+				})()`,
+				validate(obj) {
 					const symbolKeys = Object.getOwnPropertySymbols(obj);
 					expect(symbolKeys).toBeArrayOfSize(2);
 					expect(Object.keys(obj)).toBeArrayOfSize(2);
@@ -399,72 +449,87 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 					expect(obj).toHaveDescriptorModifiersFor(s2, true, false, true);
 					expect(obj.x).toBe(1);
 					expect(obj.y).toBe(2);
-				});
+				}
 			});
 		});
 	});
 
 	describe('with descriptors', () => {
 		describe('no circular properties', () => {
-			it('has correct prototype', () => {
-				const input = {x: 1};
-				Object.defineProperty(input, 'y', {value: 2, writable: true, configurable: true});
-				expectSerializedEqual(input, null, (obj) => {
-					expect(obj).toHavePrototype(Object.prototype);
-				});
+			itSerializesEqual('has correct prototype', {
+				in() {
+					const obj = {x: 1};
+					Object.defineProperty(obj, 'y', {value: 2, writable: true, configurable: true});
+					return obj;
+				},
+				out: 'Object.defineProperties({},{x:{value:1,writable:true,enumerable:true,configurable:true},y:{value:2,writable:true,configurable:true}})',
+				validate: obj => expect(obj).toHavePrototype(Object.prototype)
 			});
 
-			it('has correct value', () => {
-				const input = {x: 1};
-				Object.defineProperty(input, 'y', {value: 2, writable: true, configurable: true});
-				expectSerializedEqual(input, null, (obj) => {
-					expect(obj.y).toBe(2);
-				});
+			itSerializesEqual('has correct value', {
+				in() {
+					const obj = {x: 1};
+					Object.defineProperty(obj, 'y', {value: 2, writable: true, configurable: true});
+					return obj;
+				},
+				out: 'Object.defineProperties({},{x:{value:1,writable:true,enumerable:true,configurable:true},y:{value:2,writable:true,configurable:true}})',
+				validate: obj => expect(obj.y).toBe(2)
 			});
 
 			describe('with descriptor props', () => {
-				it.each( // eslint-disable-next-line no-bitwise
+				describe.each( // eslint-disable-next-line no-bitwise
 					[0, 1, 2, 3, 4, 5, 6, 7].map(n => [!(n & 4), !(n & 2), !(n & 1)])
 				)(
 					'{writable: %p, enumerable: %p, configurable: %p}',
 					(writable, enumerable, configurable) => {
-						const input = {x: 1};
-						Object.defineProperty(input, 'y', {value: 2, writable, enumerable, configurable});
-
-						expectSerializedEqual(input, null, (obj) => {
-							expect(obj).toHaveOwnPropertyNames(['x', 'y']);
-							expect(obj.x).toBe(1);
-							expect(obj.y).toBe(2);
-							expect(obj).toHaveDescriptorModifiersFor('x', true, true, true);
-							expect(obj).toHaveDescriptorModifiersFor('y', writable, enumerable, configurable);
+						// TODO Implement `itSerializesEqual.each()`
+						itSerializesEqual('has correct descriptor props', {
+							in() {
+								const obj = {x: 1};
+								Object.defineProperty(obj, 'y', {value: 2, writable, enumerable, configurable});
+								return obj;
+							},
+							validate(obj) {
+								expect(obj).toHaveOwnPropertyNames(['x', 'y']);
+								expect(obj.x).toBe(1);
+								expect(obj.y).toBe(2);
+								expect(obj).toHaveDescriptorModifiersFor('x', true, true, true);
+								expect(obj).toHaveDescriptorModifiersFor('y', writable, enumerable, configurable);
+							}
 						});
 					}
 				);
 			});
 
 			describe('with getter / setter', () => {
-				it('getter', () => {
-					const input = {
+				itSerializesEqual('getter', {
+					in: () => ({
 						x: 1,
 						get y() { return 2; }
-					};
-
-					expectSerializedEqual(input, null, (obj) => {
+					}),
+					out: `Object.defineProperties({},{
+						x:{value:1,writable:true,enumerable:true,configurable:true},
+						y:{get:{"get y"(){return 2}}["get y"],enumerable:true,configurable:true}
+					})`,
+					validate(obj) {
 						expect(obj.y).toBe(2);
 						expect(Object.keys(obj)).toEqual(['x', 'y']);
 						expect(Object.getOwnPropertyDescriptor(obj, 'y')).toEqual({
 							get: expect.any(Function), set: undefined, enumerable: true, configurable: true
 						});
-					});
+					}
 				});
 
-				it('setter', () => {
-					const input = {
+				itSerializesEqual('setter', {
+					in: () => ({
 						x: 1,
 						set y(newX) { this.x = newX; }
-					};
-
-					expectSerializedEqual(input, null, (obj) => {
+					}),
+					out: `Object.defineProperties({},{
+						x:{value:1,writable:true,enumerable:true,configurable:true},
+						y:{set:{"set y"(a){this.x=a}}["set y"],enumerable:true,configurable:true}
+					})`,
+					validate(obj) {
 						expect(obj.x).toBe(1);
 						expect(obj.y).toBeUndefined();
 						expect(Object.keys(obj)).toEqual(['x', 'y']);
@@ -475,239 +540,291 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 						obj.y = 2;
 						expect(obj.x).toBe(2);
 						expect(obj.y).toBeUndefined();
-					});
+					}
 				});
 
-				it('getter and setter undefined', () => {
-					const input = {x: 1};
-					Object.defineProperty(input, 'y', {get: undefined, enumerable: true});
-
-					expectSerializedEqual(input, null, (obj) => {
+				itSerializesEqual('getter and setter undefined', {
+					in() {
+						const obj = {x: 1};
+						Object.defineProperty(obj, 'y', {get: undefined, enumerable: true});
+						return obj;
+					},
+					out: 'Object.defineProperties({},{x:{value:1,writable:true,enumerable:true,configurable:true},y:{get:void 0,enumerable:true}})',
+					validate(obj) {
 						expect(Object.keys(obj)).toEqual(['x', 'y']);
 						expect(Object.getOwnPropertyDescriptor(obj, 'y')).toEqual({
 							get: undefined, set: undefined, enumerable: true, configurable: false
 						});
-					});
+					}
 				});
 			});
 
-			it('with property names which are not valid identifiers', () => {
-				const input = {};
-				Object.defineProperty(input, '0a', {value: 1, writable: true});
-				expectSerializedEqual(
-					input,
-					'Object.defineProperties({},{"0a":{value:1,writable:true}})'
-				);
+			itSerializesEqual('with property names which are not valid identifiers', {
+				in() {
+					const obj = {};
+					Object.defineProperty(obj, '0a', {value: 1, writable: true});
+					return obj;
+				},
+				out: 'Object.defineProperties({},{"0a":{value:1,writable:true}})'
 			});
 
-			it('with numeric property keys', () => {
-				const input = {};
-				Object.defineProperty(input, 0, {value: 1, writable: true});
-				Object.defineProperty(input, 1, {value: 2, writable: true});
-				Object.defineProperty(input, 23, {value: 3, writable: true});
-				Object.defineProperty(input, '04', {value: 4, writable: true});
-				expectSerializedEqual(
-					input,
-					'Object.defineProperties({},{0:{value:1,writable:true},1:{value:2,writable:true},23:{value:3,writable:true},"04":{value:4,writable:true}})'
-				);
-			});
-
-			it('with undefined value', () => {
-				expectSerializedEqual(
-					Object.defineProperty({}, 'x', {writable: true}),
-					'Object.defineProperties({},{x:{writable:true}})',
-					(obj) => {
-						expect(obj).toHaveOwnPropertyNames(['x']);
-						expect(obj.x).toBeUndefined();
+			itSerializesEqual('with numeric property keys', {
+				in() {
+					const obj = {};
+					Object.defineProperty(obj, 0, {value: 1, writable: true});
+					Object.defineProperty(obj, 1, {value: 2, writable: true});
+					Object.defineProperty(obj, 23, {value: 3, writable: true});
+					Object.defineProperty(obj, '04', {value: 4, writable: true});
+					return obj;
+				},
+				out: `Object.defineProperties(
+					{},
+					{
+						0:{value:1,writable:true},
+						1:{value:2,writable:true},
+						23:{value:3,writable:true},
+						"04":{value:4,writable:true}
 					}
-				);
+				)`
+			});
+
+			itSerializesEqual('with undefined value', {
+				in: () => Object.defineProperty({}, 'x', {writable: true}),
+				out: 'Object.defineProperties({},{x:{writable:true}})',
+				validate(obj) {
+					expect(obj).toHaveOwnPropertyNames(['x']);
+					expect(obj.x).toBeUndefined();
+				}
 			});
 		});
 
 		describe('circular properties', () => {
-			it('has correct prototype', () => {
-				const input = {x: 1};
-				Object.defineProperty(input, 'y', {value: input, writable: true, configurable: true});
-				expectSerializedEqual(input, null, (obj) => {
-					expect(obj).toHavePrototype(Object.prototype);
-				});
+			itSerializesEqual('has correct prototype', {
+				in() {
+					const obj = {x: 1};
+					Object.defineProperty(obj, 'y', {value: obj, writable: true, configurable: true});
+					return obj;
+				},
+				out: '(()=>{const a={x:1};Object.defineProperties(a,{y:{value:a,writable:true,configurable:true}});return a})()',
+				validate: obj => expect(obj).toHavePrototype(Object.prototype)
 			});
 
-			it('has correct value', () => {
-				const input = {x: 1};
-				Object.defineProperty(input, 'y', {value: input, writable: true, configurable: true});
-				expectSerializedEqual(input, null, (obj) => {
-					expect(obj.y).toBe(obj);
-				});
+			itSerializesEqual('has correct value', {
+				in() {
+					const obj = {x: 1};
+					Object.defineProperty(obj, 'y', {value: obj, writable: true, configurable: true});
+					return obj;
+				},
+				out: '(()=>{const a={x:1};Object.defineProperties(a,{y:{value:a,writable:true,configurable:true}});return a})()',
+				validate: obj => expect(obj.y).toBe(obj)
 			});
 
 			describe('with descriptor props', () => {
-				it.each( // eslint-disable-next-line no-bitwise
+				describe.each( // eslint-disable-next-line no-bitwise
 					[0, 1, 2, 3, 4, 5, 6, 7].map(n => [!(n & 4), !(n & 2), !(n & 1)])
 				)(
 					'{writable: %p, enumerable: %p, configurable: %p}',
 					(writable, enumerable, configurable) => {
-						const input = {w: 1};
-						Object.defineProperty(input, 'x', {value: input, writable, enumerable, configurable});
-						input.y = 2;
-						Object.defineProperty(input, 'z', {value: input, writable, enumerable, configurable});
-
-						expectSerializedEqual(input, null, (obj) => {
-							expect(obj).toHaveOwnPropertyNames(['w', 'x', 'y', 'z']);
-							expect(obj.w).toBe(1);
-							expect(obj.x).toBe(obj);
-							expect(obj.y).toBe(2);
-							expect(obj.z).toBe(obj);
-							expect(obj).toHaveDescriptorModifiersFor('w', true, true, true);
-							expect(obj).toHaveDescriptorModifiersFor('x', writable, enumerable, configurable);
-							expect(obj).toHaveDescriptorModifiersFor('y', true, true, true);
-							expect(obj).toHaveDescriptorModifiersFor('z', writable, enumerable, configurable);
+						// TODO Implement `itSerializesEqual.each()`
+						itSerializesEqual('has correct descriptor props', {
+							in() {
+								const obj = {w: 1};
+								Object.defineProperty(obj, 'x', {value: obj, writable, enumerable, configurable});
+								obj.y = 2;
+								Object.defineProperty(obj, 'z', {value: obj, writable, enumerable, configurable});
+								return obj;
+							},
+							validate(obj) {
+								expect(obj).toHaveOwnPropertyNames(['w', 'x', 'y', 'z']);
+								expect(obj.w).toBe(1);
+								expect(obj.x).toBe(obj);
+								expect(obj.y).toBe(2);
+								expect(obj.z).toBe(obj);
+								expect(obj).toHaveDescriptorModifiersFor('w', true, true, true);
+								expect(obj).toHaveDescriptorModifiersFor('x', writable, enumerable, configurable);
+								expect(obj).toHaveDescriptorModifiersFor('y', true, true, true);
+								expect(obj).toHaveDescriptorModifiersFor('z', writable, enumerable, configurable);
+							}
 						});
 					}
 				);
 			});
 
-			it('with getter', () => {
-				const input = {
-					x: 1,
-					get y() { return input; }
-				};
-
-				expectSerializedEqual(input, null, (obj) => {
-					expect(obj.y).toEqual(input);
+			itSerializesEqual('with getter', {
+				in() {
+					const obj = {
+						x: 1,
+						get y() { return obj; }
+					};
+					return obj;
+				},
+				out: `(()=>{
+					const a=(a=>[b=>a=b,{"get y"(){return a}}["get y"]])(),
+						b=Object.defineProperties({},{
+							x:{value:1,writable:true,enumerable:true,configurable:true},
+							y:{get:a[1],enumerable:true,configurable:true}
+						});
+					a[0](b);
+					return b
+				})()`,
+				validate(obj) {
+					expect(obj.y).toBe(obj);
 					expect(Object.keys(obj)).toEqual(['x', 'y']);
 					expect(Object.getOwnPropertyDescriptor(obj, 'y')).toEqual({
 						get: expect.any(Function), set: undefined, enumerable: true, configurable: true
 					});
-				});
+				}
 			});
 
-			it('with setter', () => {
-				const input = {
-					x: 1,
-					set y(_) { this.z = input; }
-				};
-
-				expectSerializedEqual(input, null, (obj) => {
+			itSerializesEqual('with setter', {
+				in() {
+					const obj = {
+						x: 1,
+						set y(_) { this.z = obj; }
+					};
+					return obj;
+				},
+				out: `(()=>{
+					const a=(b=>[a=>b=a,{"set y"(a){this.z=b}}["set y"]])(),
+						b=Object.defineProperties({},{
+							x:{value:1,writable:true,enumerable:true,configurable:true},
+							y:{set:a[1],enumerable:true,configurable:true}
+						});
+					a[0](b);
+					return b
+				})()`,
+				validate(obj) {
 					expect(Object.keys(obj)).toEqual(['x', 'y']);
 					obj.y = 2;
-					expect(obj.z).toEqual(input);
+					expect(obj.z).toBe(obj);
 					expect(Object.getOwnPropertyDescriptor(obj, 'y')).toEqual({
 						get: undefined, set: expect.any(Function), enumerable: true, configurable: true
 					});
-				});
+				}
 			});
 
-			it('with property names which are not valid identifiers', () => {
-				const input = {};
-				Object.defineProperty(input, '0a', {value: input, writable: true});
-				expectSerializedEqual(
-					input,
-					'(()=>{const a={};Object.defineProperties(a,{"0a":{value:a,writable:true}});return a})()',
-					obj => expect(obj['0a']).toBe(obj)
-				);
+			itSerializesEqual('with property names which are not valid identifiers', {
+				in() {
+					const obj = {};
+					Object.defineProperty(obj, '0a', {value: obj, writable: true});
+					return obj;
+				},
+				out: '(()=>{const a={};Object.defineProperties(a,{"0a":{value:a,writable:true}});return a})()',
+				validate: obj => expect(obj['0a']).toBe(obj)
 			});
 
-			it('with numeric property keys', () => {
-				const input = {};
-				Object.defineProperty(input, 0, {value: input, writable: true});
-				Object.defineProperty(input, 1, {value: input, writable: true});
-				Object.defineProperty(input, 23, {value: input, writable: true});
-				Object.defineProperty(input, '04', {value: input, writable: true});
-				expectSerializedEqual(
-					input,
-					'(()=>{const a={};Object.defineProperties(a,{0:{value:a,writable:true},1:{value:a,writable:true},23:{value:a,writable:true},"04":{value:a,writable:true}});return a})()',
-					(obj) => {
-						expect(obj[0]).toBe(obj);
-						expect(obj[1]).toBe(obj);
-						expect(obj[23]).toBe(obj);
-						expect(obj['04']).toBe(obj);
-					}
-				);
+			itSerializesEqual('with numeric property keys', {
+				in() {
+					const obj = {};
+					Object.defineProperty(obj, 0, {value: obj, writable: true});
+					Object.defineProperty(obj, 1, {value: obj, writable: true});
+					Object.defineProperty(obj, 23, {value: obj, writable: true});
+					Object.defineProperty(obj, '04', {value: obj, writable: true});
+					return obj;
+				},
+				out: `(()=>{
+					const a={};
+					Object.defineProperties(a,{
+						0:{value:a,writable:true},
+						1:{value:a,writable:true},
+						23:{value:a,writable:true},
+						"04":{value:a,writable:true}
+					});
+					return a
+				})()`,
+				validate(obj) {
+					expect(obj[0]).toBe(obj);
+					expect(obj[1]).toBe(obj);
+					expect(obj[23]).toBe(obj);
+					expect(obj['04']).toBe(obj);
+				}
 			});
 		});
 	});
 
 	describe('null prototype object', () => {
-		it('no properties', () => {
-			expectSerializedEqual(Object.create(null), 'Object.create(null)', (obj) => {
+		itSerializesEqual('no properties', {
+			in: () => Object.create(null),
+			out: 'Object.create(null)',
+			validate(obj) {
 				expect(obj).toHavePrototype(null);
 				expect(obj).toContainAllKeys([]);
-			});
+			}
 		});
 
 		describe('no circular props', () => {
-			it('properties', () => {
-				const input = Object.create(null);
-				input.x = 1;
-				input.y = 2;
-
-				expectSerializedEqual(
-					input, '(()=>{const a=Object;return a.assign(a.create(null),{x:1,y:2})})()',
-					(obj) => {
-						expect(obj).toHavePrototype(null);
-						expect(obj).toContainAllKeys(['x', 'y']);
-						expect(obj.x).toBe(1);
-						expect(obj.y).toBe(2);
-					}
-				);
+			itSerializesEqual('properties', {
+				in() {
+					const obj = Object.create(null);
+					obj.x = 1;
+					obj.y = 2;
+					return obj;
+				},
+				out: '(()=>{const a=Object;return a.assign(a.create(null),{x:1,y:2})})()',
+				validate(obj) {
+					expect(obj).toHavePrototype(null);
+					expect(obj).toContainAllKeys(['x', 'y']);
+					expect(obj.x).toBe(1);
+					expect(obj.y).toBe(2);
+				}
 			});
 
-			it('properties with descriptors', () => {
-				const input = Object.create(null);
-				input.x = 1;
-				Object.defineProperty(input, 'y', {value: 2, writable: true, configurable: true});
-
-				expectSerializedEqual(
-					input,
-					'Object.create(null,{x:{value:1,writable:true,enumerable:true,configurable:true},y:{value:2,writable:true,configurable:true}})',
-					(obj) => {
-						expect(obj).toHavePrototype(null);
-						expect(obj).toHaveOwnPropertyNames(['x', 'y']);
-						expect(Object.keys(obj)).toEqual(['x']);
-						expect(obj.x).toBe(1);
-						expect(obj.y).toBe(2);
-						expect(obj).toHaveDescriptorModifiersFor('x', true, true, true);
-						expect(obj).toHaveDescriptorModifiersFor('y', true, false, true);
-					}
-				);
+			itSerializesEqual('properties with descriptors', {
+				in() {
+					const obj = Object.create(null);
+					obj.x = 1;
+					Object.defineProperty(obj, 'y', {value: 2, writable: true, configurable: true});
+					return obj;
+				},
+				out: `Object.create(null,{
+					x:{value:1,writable:true,enumerable:true,configurable:true},
+					y:{value:2,writable:true,configurable:true}
+				})`,
+				validate(obj) {
+					expect(obj).toHavePrototype(null);
+					expect(obj).toHaveOwnPropertyNames(['x', 'y']);
+					expect(Object.keys(obj)).toEqual(['x']);
+					expect(obj.x).toBe(1);
+					expect(obj.y).toBe(2);
+					expect(obj).toHaveDescriptorModifiersFor('x', true, true, true);
+					expect(obj).toHaveDescriptorModifiersFor('y', true, false, true);
+				}
 			});
 		});
 
 		describe('circular props', () => {
-			it('properties', () => {
-				const input = Object.create(null);
-				input.x = 1;
-				input.y = input;
-
-				expectSerializedEqual(
-					input, '(()=>{const a=Object,b=a.assign(a.create(null),{x:1});b.y=b;return b})()',
-					(obj) => {
-						expect(obj).toHavePrototype(null);
-						expect(obj).toContainAllKeys(['x', 'y']);
-						expect(obj.x).toBe(1);
-						expect(obj.y).toBe(obj);
-					}
-				);
+			itSerializesEqual('properties', {
+				in() {
+					const obj = Object.create(null);
+					obj.x = 1;
+					obj.y = obj;
+					return obj;
+				},
+				out: '(()=>{const a=Object,b=a.assign(a.create(null),{x:1});b.y=b;return b})()',
+				validate(obj) {
+					expect(obj).toHavePrototype(null);
+					expect(obj).toContainAllKeys(['x', 'y']);
+					expect(obj.x).toBe(1);
+					expect(obj.y).toBe(obj);
+				}
 			});
 
-			it('properties with descriptors', () => {
-				const input = Object.create(null);
-				input.x = 1;
-				Object.defineProperty(input, 'y', {value: input, writable: true, configurable: true});
-
-				expectSerializedEqual(
-					input,
-					'(()=>{const a=Object,b=a.assign(a.create(null),{x:1});a.defineProperties(b,{y:{value:b,writable:true,configurable:true}});return b})()',
-					(obj) => {
-						expect(obj).toHavePrototype(null);
-						expect(obj).toHaveOwnPropertyNames(['x', 'y']);
-						expect(Object.keys(obj)).toEqual(['x']);
-						expect(obj.x).toBe(1);
-						expect(obj.y).toBe(obj);
-						expect(obj).toHaveDescriptorModifiersFor('y', true, false, true);
-					}
-				);
+			itSerializesEqual('properties with descriptors', {
+				in() {
+					const obj = Object.create(null);
+					obj.x = 1;
+					Object.defineProperty(obj, 'y', {value: obj, writable: true, configurable: true});
+					return obj;
+				},
+				out: '(()=>{const a=Object,b=a.assign(a.create(null),{x:1});a.defineProperties(b,{y:{value:b,writable:true,configurable:true}});return b})()',
+				validate(obj) {
+					expect(obj).toHavePrototype(null);
+					expect(obj).toHaveOwnPropertyNames(['x', 'y']);
+					expect(Object.keys(obj)).toEqual(['x']);
+					expect(obj.x).toBe(1);
+					expect(obj.y).toBe(obj);
+					expect(obj).toHaveDescriptorModifiersFor('y', true, false, true);
+				}
 			});
 		});
 	});
@@ -715,284 +832,323 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 	describe('non-extensible', () => {
 		describe('frozen', () => {
 			describe('no circular properties', () => {
-				it('no descriptors', () => {
-					expectSerializedEqual(
-						Object.freeze({a: 1}),
-						'Object.freeze({a:1})',
-						(obj) => {
-							expect(obj).toBeObject();
-							expect(Object.isFrozen(obj)).toBeTrue();
-							expect(obj).toHaveOwnPropertyNames(['a']);
-							expect(obj.a).toBe(1);
-							expect(obj).toHaveDescriptorModifiersFor('a', false, true, false);
-						}
-					);
+				itSerializesEqual('no descriptors', {
+					in: () => Object.freeze({a: 1}),
+					out: 'Object.freeze({a:1})',
+					validate(obj) {
+						expect(obj).toBeObject();
+						expect(Object.isFrozen(obj)).toBeTrue();
+						expect(obj).toHaveOwnPropertyNames(['a']);
+						expect(obj.a).toBe(1);
+						expect(obj).toHaveDescriptorModifiersFor('a', false, true, false);
+					}
 				});
 
-				it('descriptors', () => {
-					expectSerializedEqual(
-						Object.freeze(Object.defineProperty({a: 1}, 'a', {enumerable: false})),
-						'(()=>{const a=Object;return a.freeze(a.defineProperties({},{a:{value:1}}))})()',
-						(obj) => {
-							expect(obj).toBeObject();
-							expect(Object.isFrozen(obj)).toBeTrue();
-							expect(obj).toHaveOwnPropertyNames(['a']);
-							expect(obj.a).toBe(1);
-							expect(obj).toHaveDescriptorModifiersFor('a', false, false, false);
-						}
-					);
+				itSerializesEqual('descriptors', {
+					in: () => Object.freeze(Object.defineProperty({a: 1}, 'a', {enumerable: false})),
+					out: '(()=>{const a=Object;return a.freeze(a.defineProperties({},{a:{value:1}}))})()',
+					validate(obj) {
+						expect(obj).toBeObject();
+						expect(Object.isFrozen(obj)).toBeTrue();
+						expect(obj).toHaveOwnPropertyNames(['a']);
+						expect(obj.a).toBe(1);
+						expect(obj).toHaveDescriptorModifiersFor('a', false, false, false);
+					}
 				});
 			});
 
 			describe('circular properties', () => {
-				it('no descriptors', () => {
-					const input = {};
-					input.a = input;
-					input.b = 2;
-					input.c = input;
-					Object.freeze(input);
-
-					expectSerializedEqual(
-						input,
-						'(()=>{const a={a:void 0,b:2};a.a=a;a.c=a;Object.freeze(a);return a})()',
-						(obj) => {
-							expect(obj).toBeObject();
-							expect(Object.isFrozen(obj)).toBeTrue();
-							expect(obj).toHaveOwnPropertyNames(['a', 'b', 'c']);
-							expect(obj.a).toBe(obj);
-							expect(obj).toHaveDescriptorModifiersFor('a', false, true, false);
-							expect(obj.b).toBe(2);
-							expect(obj).toHaveDescriptorModifiersFor('b', false, true, false);
-							expect(obj.c).toBe(obj);
-							expect(obj).toHaveDescriptorModifiersFor('c', false, true, false);
-						}
-					);
+				itSerializesEqual('no descriptors', {
+					in() {
+						const obj = {};
+						obj.a = obj;
+						obj.b = 2;
+						obj.c = obj;
+						Object.freeze(obj);
+						return obj;
+					},
+					out: '(()=>{const a={a:void 0,b:2};a.a=a;a.c=a;Object.freeze(a);return a})()',
+					validate(obj) {
+						expect(obj).toBeObject();
+						expect(Object.isFrozen(obj)).toBeTrue();
+						expect(obj).toHaveOwnPropertyNames(['a', 'b', 'c']);
+						expect(obj.a).toBe(obj);
+						expect(obj).toHaveDescriptorModifiersFor('a', false, true, false);
+						expect(obj.b).toBe(2);
+						expect(obj).toHaveDescriptorModifiersFor('b', false, true, false);
+						expect(obj.c).toBe(obj);
+						expect(obj).toHaveDescriptorModifiersFor('c', false, true, false);
+					}
 				});
 
-				it('descriptors', () => {
-					const input = {};
-					input.a = input;
-					input.b = 2;
-					input.c = input;
-					Object.defineProperty(input, 'a', {enumerable: false});
-					Object.defineProperty(input, 'b', {enumerable: false});
-					Object.defineProperty(input, 'c', {enumerable: false});
-					Object.freeze(input);
-
-					expectSerializedEqual(
-						input,
-						'(()=>{const a=Object,b=a.defineProperties,c=b({},{a:{writable:true,enumerable:true,configurable:true},b:{value:2}});a.freeze(b(c,{a:{value:c,enumerable:false},c:{value:c}}));return c})()',
-						(obj) => {
-							expect(obj).toBeObject();
-							expect(Object.isFrozen(obj)).toBeTrue();
-							expect(obj).toHaveOwnPropertyNames(['a', 'b', 'c']);
-							expect(obj.a).toBe(obj);
-							expect(obj).toHaveDescriptorModifiersFor('a', false, false, false);
-							expect(obj.b).toBe(2);
-							expect(obj).toHaveDescriptorModifiersFor('b', false, false, false);
-							expect(obj.c).toBe(obj);
-							expect(obj).toHaveDescriptorModifiersFor('c', false, false, false);
-						}
-					);
+				itSerializesEqual('descriptors', {
+					in() {
+						const obj = {};
+						obj.a = obj;
+						obj.b = 2;
+						obj.c = obj;
+						Object.defineProperty(obj, 'a', {enumerable: false});
+						Object.defineProperty(obj, 'b', {enumerable: false});
+						Object.defineProperty(obj, 'c', {enumerable: false});
+						Object.freeze(obj);
+						return obj;
+					},
+					out: `(()=>{
+						const a=Object,
+							b=a.defineProperties,
+							c=b({},{
+								a:{writable:true,enumerable:true,configurable:true},
+								b:{value:2}
+							});
+						a.freeze(
+							b(
+								c,{
+									a:{value:c,enumerable:false},
+									c:{value:c}
+								}
+							)
+						);
+						return c
+					})()`,
+					validate(obj) {
+						expect(obj).toBeObject();
+						expect(Object.isFrozen(obj)).toBeTrue();
+						expect(obj).toHaveOwnPropertyNames(['a', 'b', 'c']);
+						expect(obj.a).toBe(obj);
+						expect(obj).toHaveDescriptorModifiersFor('a', false, false, false);
+						expect(obj.b).toBe(2);
+						expect(obj).toHaveDescriptorModifiersFor('b', false, false, false);
+						expect(obj.c).toBe(obj);
+						expect(obj).toHaveDescriptorModifiersFor('c', false, false, false);
+					}
 				});
 			});
 		});
 
 		describe('sealed', () => {
 			describe('no circular properties', () => {
-				it('no descriptors', () => {
-					expectSerializedEqual(
-						Object.seal({a: 1}),
-						'Object.seal({a:1})',
-						(obj) => {
-							expect(obj).toBeObject();
-							expect(Object.isFrozen(obj)).toBeFalse();
-							expect(Object.isSealed(obj)).toBeTrue();
-							expect(obj).toHaveOwnPropertyNames(['a']);
-							expect(obj.a).toBe(1);
-							expect(obj).toHaveDescriptorModifiersFor('a', true, true, false);
-						}
-					);
+				itSerializesEqual('no descriptors', {
+					in: () => Object.seal({a: 1}),
+					out: 'Object.seal({a:1})',
+					validate(obj) {
+						expect(obj).toBeObject();
+						expect(Object.isFrozen(obj)).toBeFalse();
+						expect(Object.isSealed(obj)).toBeTrue();
+						expect(obj).toHaveOwnPropertyNames(['a']);
+						expect(obj.a).toBe(1);
+						expect(obj).toHaveDescriptorModifiersFor('a', true, true, false);
+					}
 				});
 
-				it('descriptors', () => {
-					expectSerializedEqual(
-						Object.seal(Object.defineProperties({a: 1, b: 2, c: 3, d: 4}, {
-							a: {writable: false, enumerable: false},
-							b: {writable: true, enumerable: false},
-							c: {writable: false, enumerable: true},
-							d: {writable: true, enumerable: true}
-						})),
-						'(()=>{const a=Object;return a.seal(a.defineProperties({},{a:{value:1},b:{value:2,writable:true},c:{value:3,enumerable:true},d:{value:4,writable:true,enumerable:true}}))})()',
-						(obj) => {
-							expect(obj).toBeObject();
-							expect(Object.isFrozen(obj)).toBeFalse();
-							expect(Object.isSealed(obj)).toBeTrue();
-							expect(obj).toHaveOwnPropertyNames(['a', 'b', 'c', 'd']);
-							expect(obj.a).toBe(1);
-							expect(obj).toHaveDescriptorModifiersFor('a', false, false, false);
-							expect(obj.b).toBe(2);
-							expect(obj).toHaveDescriptorModifiersFor('b', true, false, false);
-							expect(obj.c).toBe(3);
-							expect(obj).toHaveDescriptorModifiersFor('c', false, true, false);
-							expect(obj.d).toBe(4);
-							expect(obj).toHaveDescriptorModifiersFor('d', true, true, false);
-						}
-					);
-				});
-			});
-
-			describe('circular properties', () => {
-				it('no descriptors', () => {
-					const input = {};
-					input.a = input;
-					input.b = 2;
-					input.c = input;
-					Object.seal(input);
-
-					expectSerializedEqual(
-						input,
-						'(()=>{const a={a:void 0,b:2};a.a=a;a.c=a;Object.seal(a);return a})()',
-						(obj) => {
-							expect(obj).toBeObject();
-							expect(Object.isFrozen(obj)).toBeFalse();
-							expect(Object.isSealed(obj)).toBeTrue();
-							expect(obj).toHaveOwnPropertyNames(['a', 'b', 'c']);
-							expect(obj.a).toBe(obj);
-							expect(obj).toHaveDescriptorModifiersFor('a', true, true, false);
-							expect(obj.b).toBe(2);
-							expect(obj).toHaveDescriptorModifiersFor('b', true, true, false);
-							expect(obj.c).toBe(obj);
-							expect(obj).toHaveDescriptorModifiersFor('c', true, true, false);
-						}
-					);
-				});
-
-				it('descriptors', () => {
-					const input = {};
-					input.a = input;
-					input.b = 2;
-					input.c = input;
-					input.d = input;
-					Object.defineProperties(input, {
+				itSerializesEqual('descriptors', {
+					in: () => Object.seal(Object.defineProperties({a: 1, b: 2, c: 3, d: 4}, {
 						a: {writable: false, enumerable: false},
 						b: {writable: true, enumerable: false},
 						c: {writable: false, enumerable: true},
 						d: {writable: true, enumerable: true}
-					});
-					Object.seal(input);
+					})),
+					out: `(()=>{
+						const a=Object;
+						return a.seal(
+							a.defineProperties({},{
+								a:{value:1},
+								b:{value:2,writable:true},
+								c:{value:3,enumerable:true},
+								d:{value:4,writable:true,enumerable:true}
+							})
+						)
+					})()`,
+					validate(obj) {
+						expect(obj).toBeObject();
+						expect(Object.isFrozen(obj)).toBeFalse();
+						expect(Object.isSealed(obj)).toBeTrue();
+						expect(obj).toHaveOwnPropertyNames(['a', 'b', 'c', 'd']);
+						expect(obj.a).toBe(1);
+						expect(obj).toHaveDescriptorModifiersFor('a', false, false, false);
+						expect(obj.b).toBe(2);
+						expect(obj).toHaveDescriptorModifiersFor('b', true, false, false);
+						expect(obj.c).toBe(3);
+						expect(obj).toHaveDescriptorModifiersFor('c', false, true, false);
+						expect(obj.d).toBe(4);
+						expect(obj).toHaveDescriptorModifiersFor('d', true, true, false);
+					}
+				});
+			});
 
-					expectSerializedEqual(
-						input,
-						'(()=>{const a=Object,b=a.defineProperties,c=b({},{a:{writable:true,enumerable:true,configurable:true},b:{value:2,writable:true}});a.seal(b(c,{a:{value:c,writable:false,enumerable:false},c:{value:c,enumerable:true},d:{value:c,writable:true,enumerable:true}}));return c})()',
-						(obj) => {
-							expect(obj).toBeObject();
-							expect(Object.isFrozen(obj)).toBeFalse();
-							expect(Object.isSealed(obj)).toBeTrue();
-							expect(obj).toHaveOwnPropertyNames(['a', 'b', 'c', 'd']);
-							expect(obj.a).toBe(obj);
-							expect(obj).toHaveDescriptorModifiersFor('a', false, false, false);
-							expect(obj.b).toBe(2);
-							expect(obj).toHaveDescriptorModifiersFor('b', true, false, false);
-							expect(obj.c).toBe(obj);
-							expect(obj).toHaveDescriptorModifiersFor('c', false, true, false);
-							expect(obj.d).toBe(obj);
-							expect(obj).toHaveDescriptorModifiersFor('d', true, true, false);
-						}
-					);
+			describe('circular properties', () => {
+				itSerializesEqual('no descriptors', {
+					in() {
+						const obj = {};
+						obj.a = obj;
+						obj.b = 2;
+						obj.c = obj;
+						Object.seal(obj);
+						return obj;
+					},
+					out: '(()=>{const a={a:void 0,b:2};a.a=a;a.c=a;Object.seal(a);return a})()',
+					validate(obj) {
+						expect(obj).toBeObject();
+						expect(Object.isFrozen(obj)).toBeFalse();
+						expect(Object.isSealed(obj)).toBeTrue();
+						expect(obj).toHaveOwnPropertyNames(['a', 'b', 'c']);
+						expect(obj.a).toBe(obj);
+						expect(obj).toHaveDescriptorModifiersFor('a', true, true, false);
+						expect(obj.b).toBe(2);
+						expect(obj).toHaveDescriptorModifiersFor('b', true, true, false);
+						expect(obj.c).toBe(obj);
+						expect(obj).toHaveDescriptorModifiersFor('c', true, true, false);
+					}
+				});
+
+				itSerializesEqual('descriptors', {
+					in() {
+						const obj = {};
+						obj.a = obj;
+						obj.b = 2;
+						obj.c = obj;
+						obj.d = obj;
+						Object.defineProperties(obj, {
+							a: {writable: false, enumerable: false},
+							b: {writable: true, enumerable: false},
+							c: {writable: false, enumerable: true},
+							d: {writable: true, enumerable: true}
+						});
+						Object.seal(obj);
+						return obj;
+					},
+					out: `(()=>{
+						const a=Object,
+							b=a.defineProperties,
+							c=b({},{
+								a:{writable:true,enumerable:true,configurable:true},
+								b:{value:2,writable:true}
+							});
+						a.seal(
+							b(
+								c,{
+									a:{value:c,writable:false,enumerable:false},
+									c:{value:c,enumerable:true},
+									d:{value:c,writable:true,enumerable:true}
+								}
+							)
+						);
+						return c
+					})()`,
+					validate(obj) {
+						expect(obj).toBeObject();
+						expect(Object.isFrozen(obj)).toBeFalse();
+						expect(Object.isSealed(obj)).toBeTrue();
+						expect(obj).toHaveOwnPropertyNames(['a', 'b', 'c', 'd']);
+						expect(obj.a).toBe(obj);
+						expect(obj).toHaveDescriptorModifiersFor('a', false, false, false);
+						expect(obj.b).toBe(2);
+						expect(obj).toHaveDescriptorModifiersFor('b', true, false, false);
+						expect(obj.c).toBe(obj);
+						expect(obj).toHaveDescriptorModifiersFor('c', false, true, false);
+						expect(obj.d).toBe(obj);
+						expect(obj).toHaveDescriptorModifiersFor('d', true, true, false);
+					}
 				});
 			});
 		});
 
 		describe('extensions prevented', () => {
 			describe('no circular properties', () => {
-				it('no descriptors', () => {
-					expectSerializedEqual(
-						Object.preventExtensions({a: 1}),
-						'Object.preventExtensions({a:1})',
-						(obj) => {
-							expect(obj).toBeObject();
-							expect(Object.isFrozen(obj)).toBeFalse();
-							expect(Object.isSealed(obj)).toBeFalse();
-							expect(Object.isExtensible(obj)).toBeFalse();
-							expect(obj).toHaveOwnPropertyNames(['a']);
-							expect(obj.a).toBe(1);
-							expect(obj).toHaveDescriptorModifiersFor('a', true, true, true);
-						}
-					);
+				itSerializesEqual('no descriptors', {
+					in: () => Object.preventExtensions({a: 1}),
+					out: 'Object.preventExtensions({a:1})',
+					validate(obj) {
+						expect(obj).toBeObject();
+						expect(Object.isFrozen(obj)).toBeFalse();
+						expect(Object.isSealed(obj)).toBeFalse();
+						expect(Object.isExtensible(obj)).toBeFalse();
+						expect(obj).toHaveOwnPropertyNames(['a']);
+						expect(obj.a).toBe(1);
+						expect(obj).toHaveDescriptorModifiersFor('a', true, true, true);
+					}
 				});
 
-				it('descriptors', () => {
-					expectSerializedEqual(
-						Object.preventExtensions(Object.defineProperty({a: 1}, 'a', {enumerable: false})),
-						'(()=>{const a=Object;return a.preventExtensions(a.defineProperties({},{a:{value:1,writable:true,configurable:true}}))})()',
-						(obj) => {
-							expect(obj).toBeObject();
-							expect(Object.isFrozen(obj)).toBeFalse();
-							expect(Object.isSealed(obj)).toBeFalse();
-							expect(Object.isExtensible(obj)).toBeFalse();
-							expect(obj).toHaveOwnPropertyNames(['a']);
-							expect(obj.a).toBe(1);
-							expect(obj).toHaveDescriptorModifiersFor('a', true, false, true);
-						}
-					);
+				itSerializesEqual('descriptors', {
+					in: () => Object.preventExtensions(Object.defineProperty({a: 1}, 'a', {enumerable: false})),
+					out: '(()=>{const a=Object;return a.preventExtensions(a.defineProperties({},{a:{value:1,writable:true,configurable:true}}))})()',
+					validate(obj) {
+						expect(obj).toBeObject();
+						expect(Object.isFrozen(obj)).toBeFalse();
+						expect(Object.isSealed(obj)).toBeFalse();
+						expect(Object.isExtensible(obj)).toBeFalse();
+						expect(obj).toHaveOwnPropertyNames(['a']);
+						expect(obj.a).toBe(1);
+						expect(obj).toHaveDescriptorModifiersFor('a', true, false, true);
+					}
 				});
 			});
 
 			describe('circular properties', () => {
-				it('no descriptors', () => {
-					const input = {};
-					input.a = input;
-					input.b = 2;
-					input.c = input;
-					Object.preventExtensions(input);
-
-					expectSerializedEqual(
-						input,
-						'(()=>{const a={a:void 0,b:2};a.a=a;a.c=a;Object.preventExtensions(a);return a})()',
-						(obj) => {
-							expect(obj).toBeObject();
-							expect(Object.isFrozen(obj)).toBeFalse();
-							expect(Object.isSealed(obj)).toBeFalse();
-							expect(Object.isExtensible(obj)).toBeFalse();
-							expect(obj).toHaveOwnPropertyNames(['a', 'b', 'c']);
-							expect(obj.a).toBe(obj);
-							expect(obj).toHaveDescriptorModifiersFor('a', true, true, true);
-							expect(obj.b).toBe(2);
-							expect(obj).toHaveDescriptorModifiersFor('b', true, true, true);
-							expect(obj.c).toBe(obj);
-							expect(obj).toHaveDescriptorModifiersFor('c', true, true, true);
-						}
-					);
+				itSerializesEqual('no descriptors', {
+					in() {
+						const obj = {};
+						obj.a = obj;
+						obj.b = 2;
+						obj.c = obj;
+						Object.preventExtensions(obj);
+						return obj;
+					},
+					out: '(()=>{const a={a:void 0,b:2};a.a=a;a.c=a;Object.preventExtensions(a);return a})()',
+					validate(obj) {
+						expect(obj).toBeObject();
+						expect(Object.isFrozen(obj)).toBeFalse();
+						expect(Object.isSealed(obj)).toBeFalse();
+						expect(Object.isExtensible(obj)).toBeFalse();
+						expect(obj).toHaveOwnPropertyNames(['a', 'b', 'c']);
+						expect(obj.a).toBe(obj);
+						expect(obj).toHaveDescriptorModifiersFor('a', true, true, true);
+						expect(obj.b).toBe(2);
+						expect(obj).toHaveDescriptorModifiersFor('b', true, true, true);
+						expect(obj.c).toBe(obj);
+						expect(obj).toHaveDescriptorModifiersFor('c', true, true, true);
+					}
 				});
 
-				it('descriptors', () => {
-					const input = {};
-					input.a = input;
-					input.b = 2;
-					input.c = input;
-					Object.defineProperty(input, 'a', {writable: false});
-					Object.defineProperty(input, 'b', {enumerable: false});
-					Object.defineProperty(input, 'c', {configurable: false});
-					Object.preventExtensions(input);
-
-					expectSerializedEqual(
-						input,
-						'(()=>{const a=Object,b=a.defineProperties,c=b({},{a:{writable:true,enumerable:true,configurable:true},b:{value:2,writable:true,configurable:true}});a.preventExtensions(b(c,{a:{value:c,writable:false},c:{value:c,writable:true,enumerable:true}}));return c})()',
-						(obj) => {
-							expect(obj).toBeObject();
-							expect(Object.isFrozen(obj)).toBeFalse();
-							expect(Object.isSealed(obj)).toBeFalse();
-							expect(Object.isExtensible(obj)).toBeFalse();
-							expect(obj).toHaveOwnPropertyNames(['a', 'b', 'c']);
-							expect(obj.a).toBe(obj);
-							expect(obj).toHaveDescriptorModifiersFor('a', false, true, true);
-							expect(obj.b).toBe(2);
-							expect(obj).toHaveDescriptorModifiersFor('b', true, false, true);
-							expect(obj.c).toBe(obj);
-							expect(obj).toHaveDescriptorModifiersFor('c', true, true, false);
-						}
-					);
+				itSerializesEqual('descriptors', {
+					in() {
+						const obj = {};
+						obj.a = obj;
+						obj.b = 2;
+						obj.c = obj;
+						Object.defineProperty(obj, 'a', {writable: false});
+						Object.defineProperty(obj, 'b', {enumerable: false});
+						Object.defineProperty(obj, 'c', {configurable: false});
+						Object.preventExtensions(obj);
+						return obj;
+					},
+					out: `(()=>{
+						const a=Object,
+							b=a.defineProperties,
+							c=b({},{
+								a:{writable:true,enumerable:true,configurable:true},
+								b:{value:2,writable:true,configurable:true}
+							});
+						a.preventExtensions(
+							b(c,{
+								a:{value:c,writable:false},
+								c:{value:c,writable:true,enumerable:true}
+							})
+						);
+						return c
+					})()`,
+					validate(obj) {
+						expect(obj).toBeObject();
+						expect(Object.isFrozen(obj)).toBeFalse();
+						expect(Object.isSealed(obj)).toBeFalse();
+						expect(Object.isExtensible(obj)).toBeFalse();
+						expect(obj).toHaveOwnPropertyNames(['a', 'b', 'c']);
+						expect(obj.a).toBe(obj);
+						expect(obj).toHaveDescriptorModifiersFor('a', false, true, true);
+						expect(obj.b).toBe(2);
+						expect(obj).toHaveDescriptorModifiersFor('b', true, false, true);
+						expect(obj.c).toBe(obj);
+						expect(obj).toHaveDescriptorModifiersFor('c', true, true, false);
+					}
 				});
 			});
 		});
@@ -1001,199 +1157,237 @@ describeWithAllOptions('Objects', ({expectSerializedEqual, run}) => {
 	describe('`__proto__` property', () => {
 		describe('standard object', () => {
 			describe('no other props', () => {
-				it('non-circular', () => {
-					expectSerializedEqual(
-						Object.defineProperty({}, '__proto__', {value: {x: 1}}),
-						'Object.defineProperty({},"__proto__",{value:{x:1}})',
-						(obj) => {
-							expect(obj).toBeObject();
-							expect(obj).toHaveOwnPropertyNames(['__proto__']);
-							expect(obj.__proto__).toEqual({x: 1}); // eslint-disable-line no-proto
-							expect(obj).toHaveDescriptorModifiersFor('__proto__', false, false, false);
-							expect(obj.x).toBeUndefined();
-							expect(obj).toHavePrototype(Object.prototype);
-						}
-					);
-				});
-
-				it('circular', () => {
-					const input = {};
-					Object.defineProperty(input, '__proto__', {value: input});
-					expectSerializedEqual(
-						input,
-						'(()=>{const a={};Object.defineProperty(a,"__proto__",{value:a});return a})()',
-						(obj) => {
-							expect(obj).toBeObject();
-							expect(obj).toHaveOwnPropertyNames(['__proto__']);
-							expect(obj.__proto__).toBe(obj); // eslint-disable-line no-proto
-							expect(obj).toHaveDescriptorModifiersFor('__proto__', false, false, false);
-							expect(obj).toHavePrototype(Object.prototype);
-						}
-					);
-				});
-			});
-
-			describe('prop before', () => {
-				it('non-circular', () => {
-					expectSerializedEqual(
-						Object.defineProperty({y: 2}, '__proto__', {value: {x: 1}}),
-						'(()=>{const a=Object;return a.defineProperty(a.defineProperties({},{y:{value:2,writable:true,enumerable:true,configurable:true}}),"__proto__",{value:{x:1}})})()',
-						(obj) => {
-							expect(obj).toBeObject();
-							expect(obj).toHaveOwnPropertyNames(['y', '__proto__']);
-							expect(obj.y).toBe(2);
-							expect(obj).toHaveDescriptorModifiersFor('y', true, true, true);
-							expect(obj.__proto__).toEqual({x: 1}); // eslint-disable-line no-proto
-							expect(obj).toHaveDescriptorModifiersFor('__proto__', false, false, false);
-							expect(obj.x).toBeUndefined();
-							expect(obj).toHavePrototype(Object.prototype);
-						}
-					);
-				});
-
-				it('circular', () => {
-					const input = {};
-					input.y = 2;
-					Object.defineProperty(input, '__proto__', {value: input});
-					expectSerializedEqual(
-						input,
-						'(()=>{const a={y:2};Object.defineProperty(a,"__proto__",{value:a});return a})()',
-						(obj) => {
-							expect(obj).toBeObject();
-							expect(obj).toHaveOwnPropertyNames(['y', '__proto__']);
-							expect(obj.y).toBe(2);
-							expect(obj).toHaveDescriptorModifiersFor('y', true, true, true);
-							expect(obj.__proto__).toBe(obj); // eslint-disable-line no-proto
-							expect(obj).toHaveDescriptorModifiersFor('__proto__', false, false, false);
-							expect(obj).toHavePrototype(Object.prototype);
-						}
-					);
-				});
-			});
-
-			describe('prop after', () => {
-				it('non-circular', () => {
-					const input = {};
-					Object.defineProperty(input, '__proto__', {value: {x: 1}});
-					input.y = 2;
-
-					expectSerializedEqual(
-						input,
-						'(()=>{const a=Object;return a.defineProperties(a.defineProperty({},"__proto__",{value:{x:1}}),{y:{value:2,writable:true,enumerable:true,configurable:true}})})()',
-						(obj) => {
-							expect(obj).toBeObject();
-							expect(obj).toHaveOwnPropertyNames(['__proto__', 'y']);
-							expect(obj.__proto__).toEqual({x: 1}); // eslint-disable-line no-proto
-							expect(obj).toHaveDescriptorModifiersFor('__proto__', false, false, false);
-							expect(obj.y).toBe(2);
-							expect(obj).toHaveDescriptorModifiersFor('y', true, true, true);
-							expect(obj.x).toBeUndefined();
-							expect(obj).toHavePrototype(Object.prototype);
-						}
-					);
-				});
-
-				it('circular', () => {
-					const input = {};
-					Object.defineProperty(input, '__proto__', {value: input});
-					input.y = 2;
-
-					expectSerializedEqual(
-						input,
-						'(()=>{const a={},b=Object;b.defineProperties(b.defineProperty(a,"__proto__",{value:a}),{y:{value:2,writable:true,enumerable:true,configurable:true}});return a})()',
-						(obj) => {
-							expect(obj).toBeObject();
-							expect(obj).toHaveOwnPropertyNames(['__proto__', 'y']);
-							expect(obj.__proto__).toBe(obj); // eslint-disable-line no-proto
-							expect(obj).toHaveDescriptorModifiersFor('__proto__', false, false, false);
-							expect(obj.y).toBe(2);
-							expect(obj).toHaveDescriptorModifiersFor('y', true, true, true);
-							expect(obj).toHavePrototype(Object.prototype);
-						}
-					);
-				});
-			});
-
-			describe('props before and after', () => {
-				it('non-circular', () => {
-					const input = {};
-					input.y = 2;
-					Object.defineProperty(input, '__proto__', {value: {x: 1}});
-					input.z = 3;
-
-					expectSerializedEqual(
-						input,
-						'(()=>{const a=Object,b=a.defineProperties;return b(a.defineProperty(b({},{y:{value:2,writable:true,enumerable:true,configurable:true}}),"__proto__",{value:{x:1}}),{z:{value:3,writable:true,enumerable:true,configurable:true}})})()',
-						(obj) => {
-							expect(obj).toBeObject();
-							expect(obj).toHaveOwnPropertyNames(['y', '__proto__', 'z']);
-							expect(obj.y).toBe(2);
-							expect(obj).toHaveDescriptorModifiersFor('y', true, true, true);
-							expect(obj.__proto__).toEqual({x: 1}); // eslint-disable-line no-proto
-							expect(obj).toHaveDescriptorModifiersFor('__proto__', false, false, false);
-							expect(obj.z).toBe(3);
-							expect(obj).toHaveDescriptorModifiersFor('z', true, true, true);
-							expect(obj.x).toBeUndefined();
-							expect(obj).toHavePrototype(Object.prototype);
-						}
-					);
-				});
-
-				it('circular', () => {
-					const input = {};
-					input.y = 2;
-					Object.defineProperty(input, '__proto__', {value: input});
-					input.z = 3;
-
-					expectSerializedEqual(
-						input,
-						'(()=>{const a={y:2},b=Object;b.defineProperties(b.defineProperty(a,"__proto__",{value:a}),{z:{value:3,writable:true,enumerable:true,configurable:true}});return a})()',
-						(obj) => {
-							expect(obj).toBeObject();
-							expect(obj).toHaveOwnPropertyNames(['y', '__proto__', 'z']);
-							expect(obj.y).toBe(2);
-							expect(obj).toHaveDescriptorModifiersFor('y', true, true, true);
-							expect(obj.__proto__).toBe(obj); // eslint-disable-line no-proto
-							expect(obj).toHaveDescriptorModifiersFor('__proto__', false, false, false);
-							expect(obj.z).toBe(3);
-							expect(obj).toHaveDescriptorModifiersFor('z', true, true, true);
-							expect(obj).toHavePrototype(Object.prototype);
-						}
-					);
-				});
-			});
-		});
-
-		describe('null prototype object', () => {
-			it('non-circular', () => {
-				expectSerializedEqual(
-					Object.defineProperty(Object.create(null), '__proto__', {value: {x: 1}}),
-					'(()=>{const a=Object;return a.defineProperty(a.create(null),"__proto__",{value:{x:1}})})()',
-					(obj) => {
+				itSerializesEqual('non-circular', {
+					in: () => Object.defineProperty({}, '__proto__', {value: {x: 1}}),
+					out: 'Object.defineProperty({},"__proto__",{value:{x:1}})',
+					validate(obj) {
 						expect(obj).toBeObject();
 						expect(obj).toHaveOwnPropertyNames(['__proto__']);
 						expect(obj.__proto__).toEqual({x: 1}); // eslint-disable-line no-proto
 						expect(obj).toHaveDescriptorModifiersFor('__proto__', false, false, false);
 						expect(obj.x).toBeUndefined();
-						expect(obj).toHavePrototype(null);
+						expect(obj).toHavePrototype(Object.prototype);
 					}
-				);
-			});
+				});
 
-			it('circular', () => {
-				const input = Object.create(null);
-				Object.defineProperty(input, '__proto__', {value: input});
-				expectSerializedEqual(
-					input,
-					'(()=>{const a=Object,b=a.create(null);a.defineProperty(b,"__proto__",{value:b});return b})()',
-					(obj) => {
+				itSerializesEqual('circular', {
+					in() {
+						const obj = {};
+						Object.defineProperty(obj, '__proto__', {value: obj});
+						return obj;
+					},
+					out: '(()=>{const a={};Object.defineProperty(a,"__proto__",{value:a});return a})()',
+					validate(obj) {
 						expect(obj).toBeObject();
 						expect(obj).toHaveOwnPropertyNames(['__proto__']);
 						expect(obj.__proto__).toBe(obj); // eslint-disable-line no-proto
 						expect(obj).toHaveDescriptorModifiersFor('__proto__', false, false, false);
-						expect(obj).toHavePrototype(null);
+						expect(obj).toHavePrototype(Object.prototype);
 					}
-				);
+				});
+			});
+
+			describe('prop before', () => {
+				itSerializesEqual('non-circular', {
+					in: () => Object.defineProperty({y: 2}, '__proto__', {value: {x: 1}}),
+					out: `(()=>{
+						const a=Object;
+						return a.defineProperty(
+							a.defineProperties({},{y:{value:2,writable:true,enumerable:true,configurable:true}}),
+							"__proto__",
+							{value:{x:1}}
+						)
+					})()`,
+					validate(obj) {
+						expect(obj).toBeObject();
+						expect(obj).toHaveOwnPropertyNames(['y', '__proto__']);
+						expect(obj.y).toBe(2);
+						expect(obj).toHaveDescriptorModifiersFor('y', true, true, true);
+						expect(obj.__proto__).toEqual({x: 1}); // eslint-disable-line no-proto
+						expect(obj).toHaveDescriptorModifiersFor('__proto__', false, false, false);
+						expect(obj.x).toBeUndefined();
+						expect(obj).toHavePrototype(Object.prototype);
+					}
+				});
+
+				itSerializesEqual('circular', {
+					in() {
+						const obj = {};
+						obj.y = 2;
+						Object.defineProperty(obj, '__proto__', {value: obj});
+						return obj;
+					},
+					out: '(()=>{const a={y:2};Object.defineProperty(a,"__proto__",{value:a});return a})()',
+					validate(obj) {
+						expect(obj).toBeObject();
+						expect(obj).toHaveOwnPropertyNames(['y', '__proto__']);
+						expect(obj.y).toBe(2);
+						expect(obj).toHaveDescriptorModifiersFor('y', true, true, true);
+						expect(obj.__proto__).toBe(obj); // eslint-disable-line no-proto
+						expect(obj).toHaveDescriptorModifiersFor('__proto__', false, false, false);
+						expect(obj).toHavePrototype(Object.prototype);
+					}
+				});
+			});
+
+			describe('prop after', () => {
+				itSerializesEqual('non-circular', {
+					in() {
+						const obj = {};
+						Object.defineProperty(obj, '__proto__', {value: {x: 1}});
+						obj.y = 2;
+						return obj;
+					},
+					out: `(()=>{
+						const a=Object;
+						return a.defineProperties(
+							a.defineProperty({},"__proto__",{value:{x:1}}),
+							{y:{value:2,writable:true,enumerable:true,configurable:true}}
+						)
+					})()`,
+					validate(obj) {
+						expect(obj).toBeObject();
+						expect(obj).toHaveOwnPropertyNames(['__proto__', 'y']);
+						expect(obj.__proto__).toEqual({x: 1}); // eslint-disable-line no-proto
+						expect(obj).toHaveDescriptorModifiersFor('__proto__', false, false, false);
+						expect(obj.y).toBe(2);
+						expect(obj).toHaveDescriptorModifiersFor('y', true, true, true);
+						expect(obj.x).toBeUndefined();
+						expect(obj).toHavePrototype(Object.prototype);
+					}
+				});
+
+				itSerializesEqual('circular', {
+					in() {
+						const obj = {};
+						Object.defineProperty(obj, '__proto__', {value: obj});
+						obj.y = 2;
+						return obj;
+					},
+					out: `(()=>{
+						const a={},
+							b=Object;
+						b.defineProperties(
+							b.defineProperty(a,"__proto__",{value:a}),
+							{y:{value:2,writable:true,enumerable:true,configurable:true}}
+						);
+						return a
+					})()`,
+					validate(obj) {
+						expect(obj).toBeObject();
+						expect(obj).toHaveOwnPropertyNames(['__proto__', 'y']);
+						expect(obj.__proto__).toBe(obj); // eslint-disable-line no-proto
+						expect(obj).toHaveDescriptorModifiersFor('__proto__', false, false, false);
+						expect(obj.y).toBe(2);
+						expect(obj).toHaveDescriptorModifiersFor('y', true, true, true);
+						expect(obj).toHavePrototype(Object.prototype);
+					}
+				});
+			});
+
+			describe('props before and after', () => {
+				itSerializesEqual('non-circular', {
+					in() {
+						const obj = {};
+						obj.y = 2;
+						Object.defineProperty(obj, '__proto__', {value: {x: 1}});
+						obj.z = 3;
+						return obj;
+					},
+					out: `(()=>{
+						const a=Object,
+							b=a.defineProperties;
+							return b(
+								a.defineProperty(
+									b({},{y:{value:2,writable:true,enumerable:true,configurable:true}}),
+									"__proto__",
+									{value:{x:1}}
+								),
+								{z:{value:3,writable:true,enumerable:true,configurable:true}}
+							)
+						})()`,
+					validate(obj) {
+						expect(obj).toBeObject();
+						expect(obj).toHaveOwnPropertyNames(['y', '__proto__', 'z']);
+						expect(obj.y).toBe(2);
+						expect(obj).toHaveDescriptorModifiersFor('y', true, true, true);
+						expect(obj.__proto__).toEqual({x: 1}); // eslint-disable-line no-proto
+						expect(obj).toHaveDescriptorModifiersFor('__proto__', false, false, false);
+						expect(obj.z).toBe(3);
+						expect(obj).toHaveDescriptorModifiersFor('z', true, true, true);
+						expect(obj.x).toBeUndefined();
+						expect(obj).toHavePrototype(Object.prototype);
+					}
+				});
+
+				itSerializesEqual('circular', {
+					in() {
+						const obj = {};
+						obj.y = 2;
+						Object.defineProperty(obj, '__proto__', {value: obj});
+						obj.z = 3;
+						return obj;
+					},
+					out: `(()=>{
+						const a={y:2},
+							b=Object;
+						b.defineProperties(
+							b.defineProperty(a,"__proto__",{value:a}),
+							{z:{value:3,writable:true,enumerable:true,configurable:true}}
+						);
+						return a
+					})()`,
+					validate(obj) {
+						expect(obj).toBeObject();
+						expect(obj).toHaveOwnPropertyNames(['y', '__proto__', 'z']);
+						expect(obj.y).toBe(2);
+						expect(obj).toHaveDescriptorModifiersFor('y', true, true, true);
+						expect(obj.__proto__).toBe(obj); // eslint-disable-line no-proto
+						expect(obj).toHaveDescriptorModifiersFor('__proto__', false, false, false);
+						expect(obj.z).toBe(3);
+						expect(obj).toHaveDescriptorModifiersFor('z', true, true, true);
+						expect(obj).toHavePrototype(Object.prototype);
+					}
+				});
+			});
+		});
+
+		describe('null prototype object', () => {
+			itSerializesEqual('non-circular', {
+				in: () => Object.defineProperty(Object.create(null), '__proto__', {value: {x: 1}}),
+				out: `(()=>{
+					const a=Object;
+					return a.defineProperty(a.create(null),"__proto__",{value:{x:1}})
+				})()`,
+				validate(obj) {
+					expect(obj).toBeObject();
+					expect(obj).toHaveOwnPropertyNames(['__proto__']);
+					expect(obj.__proto__).toEqual({x: 1}); // eslint-disable-line no-proto
+					expect(obj).toHaveDescriptorModifiersFor('__proto__', false, false, false);
+					expect(obj.x).toBeUndefined();
+					expect(obj).toHavePrototype(null);
+				}
+			});
+
+			itSerializesEqual('circular', {
+				in() {
+					const obj = Object.create(null);
+					Object.defineProperty(obj, '__proto__', {value: obj});
+					return obj;
+				},
+				out: `(()=>{
+					const a=Object,
+						b=a.create(null);
+					a.defineProperty(b,"__proto__",{value:b});
+					return b
+				})()`,
+				validate(obj) {
+					expect(obj).toBeObject();
+					expect(obj).toHaveOwnPropertyNames(['__proto__']);
+					expect(obj.__proto__).toBe(obj); // eslint-disable-line no-proto
+					expect(obj).toHaveDescriptorModifiersFor('__proto__', false, false, false);
+					expect(obj).toHavePrototype(null);
+				}
 			});
 		});
 	});
