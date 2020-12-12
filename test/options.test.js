@@ -31,35 +31,35 @@ describe('Options', () => {
 
 	describe('exec', () => {
 		it('default', () => {
-			const input = (0, function() { console.log('foo'); }); // eslint-disable-line no-console
-			expect(serialize(input)).toBe('function(){console.log("foo")}');
+			const fn = (0, function() { console.log('foo'); }); // eslint-disable-line no-console
+			expect(serialize(fn)).toBe('function(){console.log("foo")}');
 		});
 
 		it('false', () => {
-			const input = (0, function() { console.log('foo'); }); // eslint-disable-line no-console
-			expect(serialize(input, {exec: false})).toBe('function(){console.log("foo")}');
+			const fn = (0, function() { console.log('foo'); }); // eslint-disable-line no-console
+			expect(serialize(fn, {exec: false})).toBe('function(){console.log("foo")}');
 		});
 
 		describe('true', () => {
 			it('single-line pure function', () => {
-				const input = (0, function() { console.log('foo'); }); // eslint-disable-line no-console
-				expect(serialize(input, {exec: true})).toBe('console.log("foo")');
+				const fn = (0, function() { console.log('foo'); }); // eslint-disable-line no-console
+				expect(serialize(fn, {exec: true})).toBe('console.log("foo")');
 			});
 
 			it('multiple-line pure function', () => {
-				const input = (0, function() {
+				const fn = (0, function() {
 					const x = 'foo';
 					console.log(x); // eslint-disable-line no-console
 				});
-				expect(serialize(input, {exec: true})).toBe('const a="foo";console.log(a)');
+				expect(serialize(fn, {exec: true})).toBe('const a="foo";console.log(a)');
 			});
 
 			it('impure function', () => {
 				const x = 'foo';
-				const input = (0, function() {
+				const fn = (0, function() {
 					console.log(x); // eslint-disable-line no-console
 				});
-				expect(serialize(input, {exec: true})).toBe('(a=>function(){console.log(a)})("foo")()');
+				expect(serialize(fn, {exec: true})).toBe('(a=>function(){console.log(a)})("foo")()');
 			});
 		});
 	});
@@ -93,55 +93,55 @@ describe('Options', () => {
 	});
 
 	describe('mangle', () => {
-		let input;
+		let obj;
 		beforeEach(() => {
 			const foo = {};
-			input = {foo, foo2: foo};
+			obj = {foo, foo2: foo};
 		});
 
 		it('default', () => {
-			expect(serialize(input)).toBe('(()=>{const a={};return{foo:a,foo2:a}})()');
+			expect(serialize(obj)).toBe('(()=>{const a={};return{foo:a,foo2:a}})()');
 		});
 
 		it('true', () => {
-			expect(serialize(input, {mangle: true})).toBe('(()=>{const a={};return{foo:a,foo2:a}})()');
+			expect(serialize(obj, {mangle: true})).toBe('(()=>{const a={};return{foo:a,foo2:a}})()');
 		});
 
 		it('false', () => {
-			expect(serialize(input, {mangle: false})).toBe('(()=>{const foo={};return{foo,foo2:foo}})()');
+			expect(serialize(obj, {mangle: false})).toBe('(()=>{const foo={};return{foo,foo2:foo}})()');
 		});
 	});
 
 	describe('comments', () => {
-		const input = (0, () => { /* foobar */ });
+		const fn = (0, () => { /* foobar */ });
 
 		it('default', () => {
-			expect(serialize(input)).toBe('()=>{}');
+			expect(serialize(fn)).toBe('()=>{}');
 		});
 
 		it('false', () => {
-			expect(serialize(input, {comments: false})).toBe('()=>{}');
+			expect(serialize(fn, {comments: false})).toBe('()=>{}');
 		});
 
 		it('true', () => {
-			expect(serialize(input, {comments: true})).toBe('()=>{/* foobar */}');
+			expect(serialize(fn, {comments: true})).toBe('()=>{/* foobar */}');
 		});
 	});
 
 	describe('files', () => {
-		const input = (0, function(x) { return x + 10; });
+		const fn = (0, function(x) { return x + 10; });
 
 		it('default', () => {
-			expect(serialize(input)).toBe('function(a){return a+10}');
+			expect(serialize(fn)).toBe('function(a){return a+10}');
 		});
 
 		it('false', () => {
-			expect(serialize(input, {files: false})).toBe('function(a){return a+10}');
+			expect(serialize(fn, {files: false})).toBe('function(a){return a+10}');
 		});
 
 		describe('true', () => {
 			it('without source maps', () => {
-				const out = serialize(input, {files: true});
+				const out = serialize(fn, {files: true});
 				expect(out).toBeArrayOfSize(1);
 				expect(out[0]).toEqual({
 					filename: 'index.js',
@@ -150,7 +150,7 @@ describe('Options', () => {
 			});
 
 			it('with source maps', () => {
-				const out = serialize(input, {files: true, sourceMaps: true});
+				const out = serialize(fn, {files: true, sourceMaps: true});
 				expect(out).toBeArrayOfSize(2);
 				expect(out[0]).toEqual({
 					filename: 'index.js',
@@ -165,7 +165,7 @@ describe('Options', () => {
 	});
 
 	describe('shouldPrintComment', () => {
-		function input(
+		function fn(
 			// single in params
 			/* block in params */
 			/*
@@ -184,27 +184,27 @@ describe('Options', () => {
 		}
 
 		it('default removes all comments', () => {
-			expect(serialize(input)).toBe('function input(a){return a}');
+			expect(serialize(fn)).toBe('function fn(a){return a}');
 		});
 
 		describe('does not remove comments which `shouldPrintComment()` returns true for', () => {
 			it('single line comments', () => {
 				expect(
-					serialize(input, {shouldPrintComment: comment => /single/.test(comment)})
-				).toBe('function input(// single in params\na){// single in body\nreturn a}');
+					serialize(fn, {shouldPrintComment: comment => /single/.test(comment)})
+				).toBe('function fn(// single in params\na){// single in body\nreturn a}');
 			});
 
 			it('block comments', () => {
 				expect(
-					serialize(input, {shouldPrintComment: comment => /block/.test(comment)})
-				).toBe('function input(/* block in params */a){/* block in body */return a}');
+					serialize(fn, {shouldPrintComment: comment => /block/.test(comment)})
+				).toBe('function fn(/* block in params */a){/* block in body */return a}');
 			});
 
 			it('multi-line block comments', () => {
 				expect(
-					serialize(input, {shouldPrintComment: comment => /multi/.test(comment)})
+					serialize(fn, {shouldPrintComment: comment => /multi/.test(comment)})
 						.replace(/\n\s+/g, '\n')
-				).toBe('function input(/*\nmulti-line\nin params\n*/a){/*\nmulti-line\nin body\n*/return a}');
+				).toBe('function fn(/*\nmulti-line\nin params\n*/a){/*\nmulti-line\nin body\n*/return a}');
 			});
 		});
 	});

@@ -6,140 +6,116 @@
 'use strict';
 
 // Imports
-const {describeWithAllOptions, itWithAllOptions} = require('./support/index.js');
+const {itSerializesEqual} = require('./support/index.js');
 
 // Tests
 
-describeWithAllOptions('Strings', ({expectSerializedEqual}) => {
-	it('non-empty string', () => {
-		expectSerializedEqual('abc', '"abc"');
-	});
-
-	it('empty string', () => {
-		expectSerializedEqual('', '""');
-	});
+describe('Strings', () => {
+	itSerializesEqual('non-empty string', () => 'abc', '"abc"');
+	itSerializesEqual('empty string', () => '', '""');
 });
 
-describeWithAllOptions('Booleans', ({expectSerializedEqual}) => {
-	it('true', () => {
-		expectSerializedEqual(true, 'true');
-	});
-
-	it('false', () => {
-		expectSerializedEqual(false, 'false');
-	});
+describe('booleans', () => {
+	itSerializesEqual('true', () => true, 'true');
+	itSerializesEqual('false', () => false, 'false');
 });
 
-describeWithAllOptions('Numbers', ({expectSerializedEqual}) => {
-	it('positive integers', () => {
-		expectSerializedEqual(1, '1');
-		expectSerializedEqual(123, '123');
+describe('numbers', () => {
+	describe('positive integers', () => {
+		itSerializesEqual('1', () => 1, '1');
+		itSerializesEqual('123', () => 123, '123');
 	});
 
-	it('negative integers', () => {
-		expectSerializedEqual(-1, '-1');
-		expectSerializedEqual(-123, '-123');
+	describe('negative integers', () => {
+		itSerializesEqual('-1', () => -1, '-1');
+		itSerializesEqual('-123', () => -123, '-123');
 	});
 
-	it('zero', () => {
-		expectSerializedEqual(0, '0');
+	itSerializesEqual('zero', () => 0, '0');
+
+	itSerializesEqual('minus zero', () => -0, '-0');
+
+	describe('positive floats', () => {
+		itSerializesEqual('0.1', () => 0.1, '0.1');
+		itSerializesEqual('123.0001', () => 123.0001, '123.0001');
 	});
 
-	it('minus zero', () => {
-		expectSerializedEqual(-0, '-0');
+	describe('negative floats', () => {
+		itSerializesEqual('0.1', () => -0.1, '-0.1');
+		itSerializesEqual('-123.0001', () => -123.0001, '-123.0001');
 	});
 
-	it('positive floats', () => {
-		expectSerializedEqual(0.1, '0.1');
-		expectSerializedEqual(123.0001, '123.0001');
-	});
+	describe('infinity', () => {
+		itSerializesEqual('serializes correctly', () => 1 / 0, 'Infinity');
 
-	it('negative floats', () => {
-		expectSerializedEqual(-0.1, '-0.1');
-		expectSerializedEqual(-123.0001, '-123.0001');
-	});
-
-	describe('Infinity', () => {
-		it('serializes correctly', () => {
-			expectSerializedEqual(1 / 0, 'Infinity');
-		});
-
-		it('treated as a global var', () => {
-			expectSerializedEqual(
-				{Infinity: 1 / 0, y: 1 / 0},
-				'(()=>{const a=Infinity;return{Infinity:a,y:a}})()'
-			);
+		itSerializesEqual('treated as a global var', {
+			in: () => ({x: 1 / 0, y: 1 / 0}),
+			out: '(()=>{const a=Infinity;return{x:a,y:a}})()'
 		});
 	});
 
 	describe('negative Infinity', () => {
-		it('serializes correctly', () => {
-			expectSerializedEqual(-1 / 0, '-Infinity');
-		});
+		itSerializesEqual('serializes correctly', () => -1 / 0, '-Infinity');
 
-		it('treated as a global var', () => {
-			expectSerializedEqual(
-				{minusInfinity: -1 / 0, y: -1 / 0},
-				'(()=>{const a=-Infinity;return{minusInfinity:a,y:a}})()'
-			);
+		itSerializesEqual('treated as a global var', {
+			in: () => ({x: -1 / 0, y: -1 / 0}),
+			out: '(()=>{const a=-Infinity;return{x:a,y:a}})()'
 		});
 	});
 
-	describe('NaN', () => {
-		it('serializes correctly', () => {
-			expectSerializedEqual(undefined * 1, 'NaN');
-		});
+	describe('NaN', () => { // eslint-disable-line jest/lowercase-name
+		itSerializesEqual('serializes correctly', () => undefined * 1, 'NaN');
 
-		it('treated as a global var', () => {
-			expectSerializedEqual(
-				{x: undefined * 1, y: undefined * 1},
-				'(()=>{const a=NaN;return{x:a,y:a}})()'
-			);
+		itSerializesEqual('treated as a global var', {
+			in: () => ({x: undefined * 1, y: undefined * 1}),
+			out: '(()=>{const a=NaN;return{x:a,y:a}})()'
 		});
 	});
 });
 
 /* eslint-disable node/no-unsupported-features/es-builtins */
-describeWithAllOptions('BigInts', ({expectSerializedEqual}) => {
-	it('zero', () => { // eslint-disable-line jest/no-identical-title
-		expectSerializedEqual(BigInt(0), '0n', bigInt => expect(bigInt).toBe(BigInt(0)));
+describe('bigInts', () => {
+	itSerializesEqual('zero', {
+		in: () => BigInt(0),
+		out: '0n',
+		validate: bigInt => expect(bigInt).toBe(BigInt(0))
 	});
 
-	it('small', () => {
-		expectSerializedEqual(BigInt(100), '100n', bigInt => expect(bigInt).toBe(BigInt(100)));
+	itSerializesEqual('small', {
+		in: () => BigInt(100),
+		out: '100n',
+		validate: bigInt => expect(bigInt).toBe(BigInt(100))
 	});
 
-	it('negative', () => {
-		expectSerializedEqual(BigInt(-100), '-100n', bigInt => expect(bigInt).toBe(BigInt(-100)));
+	itSerializesEqual('negative', {
+		in: () => BigInt(-100),
+		out: '-100n',
+		validate: bigInt => expect(bigInt).toBe(BigInt(-100))
 	});
 
-	it('huge', () => {
-		expectSerializedEqual(
-			BigInt('100000000000000000000'),
-			'100000000000000000000n',
-			bigInt => expect(bigInt).toBe(BigInt('100000000000000000000'))
-		);
+	itSerializesEqual('huge', {
+		in: () => BigInt('100000000000000000000'),
+		out: '100000000000000000000n',
+		validate: bigInt => expect(bigInt).toBe(BigInt('100000000000000000000'))
 	});
 });
 /* eslint-enable node/no-unsupported-features/es-builtins */
 
-itWithAllOptions('null', ({expectSerializedEqual}) => {
-	expectSerializedEqual(null, 'null');
-});
+itSerializesEqual('null', () => null, 'null');
 
-describeWithAllOptions('undefined', ({expectSerializedEqual}) => {
-	it('serializes as `void 0`', () => {
-		expectSerializedEqual(undefined, 'void 0', undef => expect(undef).toBeUndefined());
+describe('undefined', () => {
+	itSerializesEqual('serializes as `void 0`', {
+		in: () => undefined,
+		out: 'void 0',
+		validate: undef => expect(undef).toBeUndefined()
 	});
 
-	it('is de-duplicated if used multiple times', () => {
-		expectSerializedEqual(
-			{x: undefined, y: undefined},
-			'(()=>{const a=void 0;return{x:a,y:a}})()',
-			(obj) => {
-				expect(obj.x).toBeUndefined();
-				expect(obj.y).toBeUndefined();
-			}
-		);
+	itSerializesEqual('is de-duplicated if used multiple times', {
+		in: () => ({x: undefined, y: undefined}),
+		out: '(()=>{const a=void 0;return{x:a,y:a}})()',
+		validate(obj) {
+			expect(obj.x).toBeUndefined();
+			expect(obj.y).toBeUndefined();
+		}
 	});
 });
