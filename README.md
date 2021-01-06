@@ -111,7 +111,6 @@ module.exports = (async () => {
 |-|-|-|
 | `--output` / `-o` | Output directory (required) | |
 | `--format` / `-f` | Output format - either `esm` or `cjs` | `esm` |
-| `--esm` | Enable if codebase being serialized contains ECMAScript modules (`import x from 'x'`) | Disabled |
 | `--jsx` | Enable if codebase being serialized contains JSX | Disabled |
 | `--minify` / `-m` | Minify output | Disabled |
 | `--mangle` / `--no-mangle` | Mangle (shorten) var names | Follows `minify` |
@@ -134,7 +133,6 @@ You can set options in a `livepack.config.json` file rather than on command line
   "input": "./src/index.js",
   "output": "build",
   "format": "esm",
-  "esm": true,
   "jsx": true,
   "minify": true,
   "mangle": true,
@@ -185,7 +183,9 @@ module.exports = function() {
 
 You **must** register the require hook before **any** other `require()` calls. The input file should be just be an entry point which `require()`s the app and exports it. Code in the entry point file will not be instrumented and so cannot be serialized.
 
-The entry point file must be CommonJS. The rest of the app can be written in ESM (use `esm` option).
+The entry point file must be CommonJS. The rest of the app can be written as ES modules if you like.
+
+As in NodeJS, ES module files must either have extension `.mjs` or be inside a directory with a `package.json` file with `type` field defined as `'module'`.
 
 #### Require hook options
 
@@ -199,7 +199,6 @@ require('livepack/register')( {
 
 | Option | Type | Usage | Default |
 |-|-|-|-|
-| `esm` | `boolean` | Set to `true` if codebase being serialized contains ECMAScript modules (`import x from 'x'`) | `false` |
 | `jsx` | `boolean` | Set to `true` if codebase being serialized contains JSX | `false` |
 | `configFile` | `boolean` or `string` | Babel config file (optional). If a `string`, should be path to Babel config file. | `false` |
 | `babelrc` | `boolean` | If `true`, code will be transpiled with Babel `.babelrc` files while loading | `true` if `configFile` option set, otherwise `false` |
