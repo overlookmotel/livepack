@@ -448,6 +448,128 @@ describe('Functions', () => {
 				});
 			});
 		});
+
+		describe('only serializes variable values which are read', () => {
+			describe('assignment only', () => {
+				itSerializes('direct assignment', {
+					in() {
+						let extA = {extA: 1};
+						return () => extA = 123; // eslint-disable-line no-unused-vars, no-return-assign
+					},
+					out: '(a=>()=>a=123)()',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						expect(fn()).toBe(123);
+					}
+				});
+
+				itSerializes('array destructuring', {
+					in() {
+						let extA = {extA: 1};
+						return () => [extA] = [123]; // eslint-disable-line no-unused-vars, no-return-assign
+					},
+					out: '(a=>()=>[a]=[123])()',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						expect(fn()).toEqual([123]);
+					}
+				});
+
+				itSerializes('array rest destructuring', {
+					in() {
+						let extA = {extA: 1};
+						return () => [...extA] = [123]; // eslint-disable-line no-unused-vars, no-return-assign
+					},
+					out: '(a=>()=>[...a]=[123])()',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						expect(fn()).toEqual([123]);
+					}
+				});
+
+				itSerializes('object destructuring', {
+					in() {
+						let extA = {extA: 1};
+						return () => ({x: extA} = {x: 123}); // eslint-disable-line no-unused-vars, no-return-assign
+					},
+					out: '(a=>()=>({x:a}={x:123}))()',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						expect(fn()).toEqual({x: 123});
+					}
+				});
+			});
+
+			describe('assignment and reading', () => {
+				itSerializes('assignment with operator which reads', {
+					in() {
+						let extA = 100;
+						return () => extA += 50; // eslint-disable-line no-return-assign
+					},
+					out: '(a=>()=>a+=50)(100)',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						expect(fn()).toBe(150);
+					}
+				});
+
+				itSerializes('assignment with operator which reads', {
+					in() {
+						let extA = 100;
+						return [
+							() => extA,
+							newExtA => extA = newExtA // eslint-disable-line no-return-assign
+						];
+					},
+					out: `(()=>{
+						const a=(
+								b=>[
+									()=>b,
+									a=>b=a
+								]
+							)(100);
+						return[a[0],a[1]]
+					})()`,
+					validate(arr) {
+						expect(arr).toBeArrayOfSize(2);
+						const [get, set] = arr;
+						expect(get).toBeFunction();
+						expect(set).toBeFunction();
+						expect(get()).toBe(100);
+						expect(set(200)).toBe(200);
+						expect(get()).toBe(200);
+					}
+				});
+
+				itSerializes('assignment in some scopes only', {
+					in() {
+						const fns = [11, 22, 33].map(num => ({
+							get: (0, () => num),
+							set: (0, newNum => num = newNum) // eslint-disable-line no-return-assign
+						}));
+						return [fns[0].set, fns[1].set, fns[2].set, fns[1].get];
+					},
+					out: `(()=>{
+						const a=b=>[
+								a=>b=a,
+								()=>b
+							],
+							b=a(22);
+						return[a()[0],b[0],a()[0],b[1]]
+					})()`,
+					validate(arr) {
+						expect(arr).toBeArrayOfSize(4);
+						arr.forEach(fn => expect(fn).toBeFunction());
+						const [set1, set2, set3, get2] = arr;
+						expect(get2()).toBe(22);
+						expect(set1(4)).toBe(4);
+						expect(set2(5)).toBe(5);
+						expect(set3(6)).toBe(6);
+						expect(get2()).toBe(5);
+					}
+				});
+			});
+		});
 	});
 
 	describe('with external scope 2 levels up', () => {
