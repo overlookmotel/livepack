@@ -2710,13 +2710,13 @@ describe('Functions', () => {
 							(a,b,c)=>[
 								a=>b=a,
 								a=>c=a,
-								function inner2(){return[a,b]},
-								function inner1(){return[a,c]}
+								function inner2(){return[a,c]},
+								function inner1(){return[a,b]}
 							]
 						)({extA:1}),
 						b=a[3];
-					a[0](b);
-					a[1](a[2]);
+					a[0](a[2]);
+					a[1](b);
 					return b
 				})()`,
 				validate(fn) {
@@ -2749,8 +2749,8 @@ describe('Functions', () => {
 					const a=(a,b,c)=>[
 							a=>b=a,
 							a=>c=a,
-							function inner2(){return[a,b]},
-							function inner1(){return[a,c]}
+							function inner2(){return[a,c]},
+							function inner1(){return[a,b]}
 						],
 						b=a({extA1:1}),
 						c=b[3],
@@ -2758,12 +2758,12 @@ describe('Functions', () => {
 						e=d[3],
 						f=a({extA3:3}),
 						g=f[3];
-					b[0](c);
-					b[1](b[2]);
-					d[0](e);
-					d[1](d[2]);
-					f[0](g);
-					f[1](f[2]);
+					b[0](b[2]);
+					b[1](c);
+					d[0](d[2]);
+					d[1](e);
+					f[0](f[2]);
+					f[1](g);
 					return[c,e,g]
 				})()`,
 				validate(arr, {ctx: {extAs}}) {
@@ -2863,7 +2863,7 @@ describe('Functions', () => {
 					},
 					out: `(()=>{
 						const a={},
-							b=((a,b)=>[a=>b=a,()=>a,()=>b])(a),
+							b=((a,b)=>[b=>a=b,()=>b,()=>a])(void 0,a),
 							c=b[1];
 						a.x=c;
 						b[0](c);
@@ -2892,26 +2892,27 @@ describe('Functions', () => {
 					},
 					out: `(()=>{
 						const a=(a,b)=>[
-								a=>b=a,
-								()=>a,
-								()=>b
+								b=>a=b,
+								()=>b,
+								()=>a
 							],
 							b={num:0},
-							c=a(b),
-							d={num:1},
-							e=a(d),
-							f={num:2},
-							g=a(f),
-							h=c[1],
-							i=e[1],
-							j=g[1];
-						b.fn=h;
-						c[0](h);
-						d.fn=i;
-						e[0](i);
-						f.fn=j;
-						g[0](j);
-						return[c[2],e[2],g[2]]
+							c=void 0,
+							d=a(c,b),
+							e={num:1},
+							f=a(c,e),
+							g={num:2},
+							h=a(c,g),
+							i=d[1],
+							j=f[1],
+							k=h[1];
+						b.fn=i;
+						d[0](i);
+						e.fn=j;
+						f[0](j);
+						g.fn=k;
+						h[0](k);
+						return[d[2],f[2],h[2]]
 					})()`,
 					validate(arr) {
 						expect(arr).toBeArrayOfSize(3);
@@ -3019,13 +3020,13 @@ describe('Functions', () => {
 								(a,b)=>[
 									b=>a=b,
 									a=>b=a,
-									function x(){return a},
-									function y(){return b}
+									function x(){return b},
+									function y(){return a}
 								]
 							)(),
 							b=a[3];
-						a[0](b);
-						a[1]({x:a[2]});
+						a[0]({x:a[2]});
+						a[1](b);
 						return b
 					})()`,
 					validate(fn1) {
@@ -3055,8 +3056,8 @@ describe('Functions', () => {
 						const a=(a,b)=>[
 								b=>a=b,
 								a=>b=a,
-								function x(){return a},
-								function y(){return b}
+								function x(){return b},
+								function y(){return a}
 							],
 							b=a(),
 							c=b[3],
@@ -3064,12 +3065,12 @@ describe('Functions', () => {
 							e=d[3],
 							f=a(),
 							g=f[3];
-						b[0](c);
-						b[1]({num:0,x:b[2]});
-						d[0](e);
-						d[1]({num:1,x:d[2]});
-						f[0](g);
-						f[1]({num:2,x:f[2]});
+						b[0]({num:0,x:b[2]});
+						b[1](c);
+						d[0]({num:1,x:d[2]});
+						d[1](e);
+						f[0]({num:2,x:f[2]});
+						f[1](g);
 						return[c,e,g]
 					})()`,
 					validate(arr) {
