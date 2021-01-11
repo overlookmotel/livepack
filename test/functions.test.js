@@ -52,7 +52,8 @@ describe('Functions', () => {
 				});
 
 				itSerializes('returning object expression', {
-					// Test for workaround for https://github.com/babel/babel/issues/12055
+					// Testing object is wrapped in brackets
+					// https://github.com/babel/babel/issues/12055
 					in() {
 						return () => ({});
 					},
