@@ -789,6 +789,67 @@ describe('Classes', () => {
 				expect(Klass.x).toBe(2);
 			}
 		});
+
+		describe('computed key containing function', () => {
+			itSerializes('not nested', {
+				in() {
+					return class {
+						[(() => 'y')()]() {
+							this.x = 1;
+						}
+					};
+				},
+				out: `(()=>{
+					const a=(0,class{});
+					Object.defineProperties(
+						a.prototype,
+						{
+							y:{value:{y(){this.x=1}}.y,
+							writable:true,
+							configurable:true
+						}
+					});
+					return a
+				})()`,
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					expect(Klass.prototype.y).toBeFunction();
+					expect(Klass.prototype.y.prototype).toBeUndefined();
+					const instance = new Klass();
+					expect(instance).toBeObject();
+					expect(instance).toContainAllKeys([]);
+					instance.y();
+					expect(instance).toContainAllKeys(['x']);
+					expect(instance.x).toBe(1);
+				}
+			});
+
+			itSerializes('nested in a function', {
+				in() {
+					return function() {
+						return class {
+							[(() => 'y')()]() {
+								this.x = 1;
+							}
+						};
+					};
+				},
+				out: 'function(){return class{[(()=>"y")()](){this.x=1}}}',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					const Klass = fn();
+					expect(Klass).toBeFunction();
+					expect(Klass.prototype.y).toBeFunction();
+					expect(Klass.prototype.y.prototype).toBeUndefined();
+					const instance = new Klass();
+					expect(instance).toBeObject();
+					expect(instance).toContainAllKeys([]);
+					instance.y();
+					expect(instance).toContainAllKeys(['x']);
+					expect(instance.x).toBe(1);
+				}
+			});
+		});
 	});
 
 	describe('async methods', () => {

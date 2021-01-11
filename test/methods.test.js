@@ -614,4 +614,44 @@ describe('Object methods', () => {
 			});
 		});
 	});
+
+	describe('with computed key containing function', () => {
+		itSerializes('not nested', {
+			in() {
+				return {
+					[(() => 'x')()]() { return this; }
+				};
+			},
+			out: '{x(){return this}}',
+			validate(obj) {
+				expect(obj).toBeObject();
+				expect(obj).toContainAllKeys(['x']);
+				const {x} = obj;
+				expect(x).toBeFunction();
+				expect(x.prototype).toBeUndefined();
+				expect(obj.x()).toBe(obj);
+			}
+		});
+
+		itSerializes('nested in another function', {
+			in() {
+				return function() {
+					return {
+						[(() => 'x')()]() { return this; }
+					};
+				};
+			},
+			out: 'function(){return{[(()=>"x")()](){return this}}}',
+			validate(fn) {
+				expect(fn).toBeFunction();
+				const obj = fn();
+				expect(obj).toBeObject();
+				expect(obj).toContainAllKeys(['x']);
+				const {x} = obj;
+				expect(x).toBeFunction();
+				expect(x.prototype).toBeUndefined();
+				expect(obj.x()).toBe(obj);
+			}
+		});
+	});
 });
