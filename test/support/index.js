@@ -11,6 +11,9 @@ const {serialize} = require('livepack'),
 	{isString, isFullString, isObject, isFunction, isBoolean} = require('is-it-type'),
 	assert = require('simple-invariant');
 
+// Imports
+const createFixturesFunctions = require('./fixtures.js');
+
 // Exports
 
 module.exports = { // eslint-disable-line jest/no-export
@@ -19,7 +22,8 @@ module.exports = { // eslint-disable-line jest/no-export
 	stripLineBreaks,
 	stripSourceMapComment,
 	tryCatch,
-	spy: jest.fn
+	spy: jest.fn,
+	createFixturesFunctions
 };
 
 // Disable source maps on Node 10 on CI as causes out of memory errors

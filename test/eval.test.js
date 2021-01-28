@@ -3,17 +3,20 @@
  * Tests for `eval`
  * ------------------*/
 
-/* eslint-disable no-eval, global-require */
+/* eslint-disable no-eval, global-require, import/no-dynamic-require */
 
 'use strict';
 
 // Modules
-const pathJoin = require('path').join,
-	escapeRegex = require('escape-string-regexp');
+const escapeRegex = require('escape-string-regexp');
 
 // Imports
-const {itSerializes, itSerializesEqual, tryCatch} = require('./support/index.js'),
+const {
+		itSerializes, itSerializesEqual, createFixturesFunctions, tryCatch
+	} = require('./support/index.js'),
 	{transpiledFiles} = require('../lib/internal.js');
+
+const {createFixture, requireFixture} = createFixturesFunctions(__filename);
 
 // Tests
 
@@ -345,51 +348,70 @@ describe('eval', () => {
 
 			describe('handles internal var name prefixes', () => {
 				itSerializes('altered external to eval', {
-					in: () => require('./fixtures/eval/prefix/external.js'),
-					out: '(a=>()=>a)(1)',
-					validate(fn) {
-						// Sanity check: Ensure var used has changed prefix outside eval
-						expect(getTranspiledCode('fixtures/eval/prefix/external.js'))
-							.toInclude('const livepack1_tracker = require("');
+					in() {
+						const srcPath = createFixture(
+							'const livepack_tracker = 1;\n'
+							+ "module.exports = eval('() => livepack_tracker');"
+						);
+						const fn = require(srcPath);
 
-						expect(fn()).toBe(1);
-					}
+						// Sanity check: Ensure var used has changed prefix outside eval
+						expect(transpiledFiles[srcPath].code).toInclude('const livepack1_tracker = require("');
+
+						return fn;
+					},
+					out: '(a=>()=>a)(1)',
+					validate: fn => expect(fn()).toBe(1)
 				});
 
 				itSerializes('altered internal to eval', {
-					in: () => require('./fixtures/eval/prefix/internal.js'),
-					out: '(a=>()=>a)(1)',
-					validate(fn) {
-						// Sanity check: Ensure var used has not changed prefix outside eval
-						expect(getTranspiledCode('fixtures/eval/prefix/internal.js'))
-							.toInclude('const livepack_tracker = require("');
+					in() {
+						const srcPath = createFixture(
+							"module.exports = eval('const livepack_tracker = 1; () => livepack_tracker');"
+						);
+						const fn = require(srcPath);
 
-						expect(fn()).toBe(1);
-					}
+						// Sanity check: Ensure var used has not changed prefix outside eval
+						expect(transpiledFiles[srcPath].code).toInclude('const livepack_tracker = require("');
+
+						return fn;
+					},
+					out: '(a=>()=>a)(1)',
+					validate: fn => expect(fn()).toBe(1)
 				});
 
 				itSerializes('altered internal and external to eval, matched prefixes', {
-					in: () => require('./fixtures/eval/prefix/internalAndExternalMatched.js'),
-					out: '(a=>()=>a)(2)',
-					validate(fn) {
-						// Sanity check: Ensure var used has changed prefix outside eval
-						expect(getTranspiledCode('fixtures/eval/prefix/internalAndExternalMatched.js'))
-							.toInclude('const livepack1_tracker = require("');
+					in() {
+						const srcPath = createFixture(
+							'const livepack_tracker = 1;\n'
+							+ "module.exports = eval('const livepack_tracker = 2; () => livepack_tracker');"
+						);
+						const fn = require(srcPath);
 
-						expect(fn()).toBe(2);
-					}
+						// Sanity check: Ensure var used has changed prefix outside eval
+						expect(transpiledFiles[srcPath].code).toInclude('const livepack1_tracker = require("');
+
+						return fn;
+					},
+					out: '(a=>()=>a)(2)',
+					validate: fn => expect(fn()).toBe(2)
 				});
 
 				itSerializes('altered internal and external to eval, unmatched prefixes', {
-					in: () => require('./fixtures/eval/prefix/internalAndExternalUnmatched.js'),
-					out: '(b=>a=>()=>[b,a])(1)(2)',
-					validate(fn) {
-						// Sanity check: Ensure var used has changed prefix outside eval
-						expect(getTranspiledCode('fixtures/eval/prefix/internalAndExternalUnmatched.js'))
-							.toInclude('const livepack1_tracker = require("');
+					in() {
+						const srcPath = createFixture(
+							'const livepack_tracker = 1;\n'
+							+ "module.exports = eval('const livepack1_tracker = 2; () => [livepack_tracker, livepack1_tracker]');"
+						);
+						const fn = require(srcPath);
 
-						expect(fn()).toEqual([1, 2]);
-					}
+						// Sanity check: Ensure var used has changed prefix outside eval
+						expect(transpiledFiles[srcPath].code).toInclude('const livepack1_tracker = require("');
+
+						return fn;
+					},
+					out: '(b=>a=>()=>[b,a])(1)(2)',
+					validate: fn => expect(fn()).toEqual([1, 2])
 				});
 			});
 		});
@@ -525,7 +547,31 @@ describe('eval', () => {
 	describe('in functions which are serialized', () => {
 		describe('`eval()`', () => {
 			describe('values', () => {
-				const input = require('./fixtures/eval/runtime/values.js');
+				// `Object.setPrototypeOf` necessary because Jest creates `module.exports` in another
+				// execution context, so prototype of `export` object is a *different* `Object.prototype`.
+				// This is just an artefact of the testing environment - does not affect real code.
+				const input = requireFixture(`
+					Object.setPrototypeOf(exports, Object.prototype);
+
+					const extA = 1;
+					const outer = (0, function() {
+						const extB = 2;
+						return () => {
+							const extC = 3;
+							return eval('({extA, extB, extC, extD, extE, typeofExtF: typeof extF, outer, module, exports, this: this, arguments: arguments})');
+						};
+					});
+					outer.isOuter = true;
+
+					const extD = 4;
+
+					module.exports = outer.call({x: 7}, 8, 9, 10);
+
+					if (true) {
+						var extE = 5;
+						const extF = 6;
+					}
+				`);
 
 				itSerializes('serializes correctly', {
 					in: () => input,
@@ -625,7 +671,31 @@ describe('eval', () => {
 			});
 
 			describe('values without context', () => {
-				const input = require('./fixtures/eval/runtime/valuesWithoutCtx.js');
+				// `Object.setPrototypeOf` necessary because Jest creates `module.exports` in another
+				// execution context, so prototype of `export` object is a *different* `Object.prototype`.
+				// This is just an artefact of the testing environment - does not affect real code.
+				const input = requireFixture(`
+					Object.setPrototypeOf(exports, Object.prototype);
+
+					const extA = 1;
+					const outer = (0, function() {
+						const extB = 2;
+						return function() {
+							const extC = 3;
+							return eval('({extA, extB, extC, extD, extE, typeofExtF: typeof extF, outer, module, exports, this: this, arguments: arguments})');
+						};
+					});
+					outer.isOuter = true;
+
+					const extD = 4;
+
+					module.exports = outer.call({x: 7}, 8, 9, 10);
+
+					if (true) {
+						var extE = 5;
+						const extF = 6;
+					}
+				`);
 
 				itSerializes('serializes correctly', {
 					in: () => input,
@@ -717,7 +787,31 @@ describe('eval', () => {
 			});
 
 			describe('functions', () => {
-				const input = require('./fixtures/eval/runtime/functions.js');
+				// `Object.setPrototypeOf` necessary because Jest creates `module.exports` in another
+				// execution context, so prototype of `export` object is a *different* `Object.prototype`.
+				// This is just an artefact of the testing environment - does not affect real code.
+				const input = requireFixture(`
+					Object.setPrototypeOf(exports, Object.prototype);
+
+					const extA = 1;
+					const outer = (0, function() {
+						const extB = 2;
+						return () => {
+							const extC = 3;
+							return eval('() => ({extA, extB, extC, extD, extE, typeofExtF: typeof extF, outer, module, exports, this: this, arguments: arguments})');
+						};
+					});
+					outer.isOuter = true;
+
+					const extD = 4;
+
+					module.exports = outer.call({x: 7}, 8, 9, 10);
+
+					if (true) {
+						var extE = 5;
+						const extF = 6;
+					}
+				`);
 
 				itSerializes('serializes correctly', {
 					in: () => input,
@@ -994,68 +1088,109 @@ describe('eval', () => {
 
 		describe('with prefix changes', () => {
 			itSerializes('altered external to eval', {
-				in: () => require('./fixtures/eval/evalInEval/prefix/external.js'),
-				out: '(a=>()=>a)(1)',
-				validate(fn) {
-					// Sanity check: Ensure var used has changed prefix outside eval
-					expect(getTranspiledCode('fixtures/eval/evalInEval/prefix/external.js'))
-						.toInclude('const livepack1_tracker = require("');
+				in() {
+					const srcPath = createFixture(
+						'const livepack_tracker = 1;'
+						+ `module.exports = eval('eval("() => livepack_tracker")');` // eslint-disable-line quotes
+					);
+					const fn = require(srcPath);
 
-					expect(fn()).toBe(1);
-				}
+					// Sanity check: Ensure var used has changed prefix outside eval
+					expect(transpiledFiles[srcPath].code).toInclude('const livepack1_tracker = require("');
+
+					return fn;
+				},
+				out: '(a=>()=>a)(1)',
+				validate: fn => expect(fn()).toBe(1)
 			});
 
 			itSerializes('altered internal to outer eval', {
-				in: () => require('./fixtures/eval/evalInEval/prefix/internal.js'),
-				out: '(a=>()=>a)(1)',
-				validate(fn) {
-					// Sanity check: Ensure var used has not changed prefix outside eval
-					expect(getTranspiledCode('fixtures/eval/evalInEval/prefix/internal.js'))
-						.toInclude('const livepack_tracker = require("');
+				in() {
+					const srcPath = createFixture(
+						// eslint-disable-next-line quotes
+						`module.exports = eval('const livepack_tracker = 1; eval("() => livepack_tracker")');`
+					);
+					const fn = require(srcPath);
 
-					expect(fn()).toBe(1);
-				}
+					// Sanity check: Ensure var used has not changed prefix outside eval
+					expect(transpiledFiles[srcPath].code).toInclude('const livepack_tracker = require("');
+
+					return fn;
+				},
+				out: '(a=>()=>a)(1)',
+				validate: fn => expect(fn()).toBe(1)
 			});
 
 			itSerializes('altered internal to inner eval', {
-				in: () => require('./fixtures/eval/evalInEval/prefix/internalInner.js'),
-				out: '(a=>()=>a)(1)',
-				validate(fn) {
-					// Sanity check: Ensure var used has not changed prefix outside eval
-					expect(getTranspiledCode('fixtures/eval/evalInEval/prefix/internalInner.js'))
-						.toInclude('const livepack_tracker = require("');
+				in() {
+					const srcPath = createFixture(
+						// eslint-disable-next-line quotes
+						`module.exports = eval('eval("const livepack_tracker = 1; () => livepack_tracker")');`
+					);
+					const fn = require(srcPath);
 
-					expect(fn()).toBe(1);
-				}
+					// Sanity check: Ensure var used has not changed prefix outside eval
+					expect(transpiledFiles[srcPath].code).toInclude('const livepack_tracker = require("');
+
+					return fn;
+				},
+				out: '(a=>()=>a)(1)',
+				validate: fn => expect(fn()).toBe(1)
 			});
 
 			itSerializes('altered internal and external to eval, matched prefixes', {
-				in: () => require('./fixtures/eval/evalInEval/prefix/internalAndExternalMatched.js'),
-				out: '(a=>()=>a)(3)',
-				validate(fn) {
-					// Sanity check: Ensure var used has changed prefix outside eval
-					expect(getTranspiledCode('fixtures/eval/evalInEval/prefix/internalAndExternalMatched.js'))
-						.toInclude('const livepack1_tracker = require("');
+				in() {
+					const srcPath = createFixture(
+						'const livepack_tracker = 1;\n'
+						// eslint-disable-next-line quotes
+						+ `module.exports = eval('const livepack_tracker = 2; eval("const livepack_tracker = 3; () => livepack_tracker")');`
+					);
+					const fn = require(srcPath);
 
-					expect(fn()).toBe(3);
-				}
+					// Sanity check: Ensure var used has changed prefix outside eval
+					expect(transpiledFiles[srcPath].code).toInclude('const livepack1_tracker = require("');
+
+					return fn;
+				},
+				out: '(a=>()=>a)(3)',
+				validate: fn => expect(fn()).toBe(3)
 			});
 
 			itSerializes('altered internal and external to eval, unmatched prefixes', {
-				in: () => require('./fixtures/eval/evalInEval/prefix/internalAndExternalUnmatched.js'),
-				out: '(c=>b=>a=>()=>[c,b,a])(1)(2)(3)',
-				validate(fn) {
-					// Sanity check: Ensure var used has changed prefix outside eval
-					expect(getTranspiledCode('fixtures/eval/evalInEval/prefix/internalAndExternalUnmatched.js'))
-						.toInclude('const livepack1_tracker = require("');
+				in() {
+					const srcPath = createFixture(
+						'const livepack_tracker = 1;\n'
+						// eslint-disable-next-line quotes
+						+ `module.exports = eval('const livepack1_tracker = 2; eval("const livepack2_tracker = 3; () => [livepack_tracker, livepack1_tracker, livepack2_tracker]")');`
+					);
+					const fn = require(srcPath);
 
-					expect(fn()).toEqual([1, 2, 3]);
-				}
+					// Sanity check: Ensure var used has changed prefix outside eval
+					expect(transpiledFiles[srcPath].code).toInclude('const livepack1_tracker = require("');
+
+					return fn;
+				},
+				out: '(c=>b=>a=>()=>[c,b,a])(1)(2)(3)',
+				validate: fn => expect(fn()).toEqual([1, 2, 3])
 			});
 		});
 
 		describe('inner eval in function', () => {
-			const input = require('./fixtures/eval/evalInEval/runtime.js');
+			// `Object.setPrototypeOf` necessary because Jest creates `module.exports` in another
+			// execution context, so prototype of `export` object is a *different* `Object.prototype`.
+			// This is just an artefact of the testing environment - does not affect real code.
+			const input = requireFixture(`
+				Object.setPrototypeOf(exports, Object.prototype);
+
+				const extA = 1;
+				const outer = (0, function() {
+					const extB = 2;
+					return eval('() => {const extC = 3; return eval("const extD = 4; () => ({extA, extB, extC, extD, outer, module, exports, this: this, arguments: arguments})")}');
+				});
+				outer.isOuter = true;
+
+				module.exports = outer.call({x: 5}, 6, 7, 8);
+			`);
 
 			itSerializes('serializes correctly', {
 				in: () => input,
@@ -1135,8 +1270,3 @@ describe('eval', () => {
 		});
 	});
 });
-
-function getTranspiledCode(relativePath) {
-	const path = pathJoin(__dirname, relativePath);
-	return transpiledFiles[path].code;
-}

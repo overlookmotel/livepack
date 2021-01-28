@@ -46,6 +46,7 @@
     "yargs": "^16.2.0"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.12.11",
     "@overlookmotel/eslint-config": "^7.2.1",
     "@overlookmotel/eslint-config-jest": "^4.1.1",
     "@overlookmotel/eslint-config-node": "^2.1.2",
@@ -75,7 +76,7 @@
     "test": "npm run lint && npm run test-main",
     "lint": "eslint .",
     "lint-fix": "eslint . --fix",
-    "test-main": "jest",
+    "test-main": "jest; rm -rf test/_temp",
     "cover": "npm run cover-main && rm -rf coverage",
     "cover-main": "jest --coverage"
   },

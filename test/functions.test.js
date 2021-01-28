@@ -6,7 +6,9 @@
 'use strict';
 
 // Imports
-const {itSerializes, stripSourceMapComment} = require('./support/index.js');
+const {itSerializes, createFixturesFunctions, stripSourceMapComment} = require('./support/index.js');
+
+const {requireFixtures} = createFixturesFunctions(__filename);
 
 // Tests
 
@@ -4447,7 +4449,38 @@ describe('Functions', () => {
 	});
 
 	itSerializes('distinguish scopes and functions with same block IDs from different files', {
-		in: () => require('./fixtures/function blocks/index.js'), // eslint-disable-line global-require
+		in() {
+			return requireFixtures({
+				'index.js': `
+					const inner1 = require('./1.js'),
+						{inner2, inner3} = require('./2.js');
+					module.exports = {inner1, inner2, inner3};
+				`,
+				'1.js': `
+					const extA = {extA1: 1};
+					function outer(extB) {
+						return () => [extA, extB];
+					}
+					module.exports = outer({extB1: 2});
+				`,
+				'2.js': `
+					const inner3 = require('./3.js');
+					const extA = {extA2: 3};
+					function outer(extB) {
+						return () => [extA, extB];
+					}
+					const inner2 = outer({extB2: 4});
+					module.exports = {inner2, inner3};
+				`,
+				'3.js': `
+					const extA = {extA3: 5};
+					function outer(extB) {
+						return () => [extA, extB];
+					}
+					module.exports = outer({extB3: 6});
+				`
+			});
+		},
 		out: `{
 			inner1:(b=>a=>()=>[b,a])({extA1:1})({extB1:2}),
 			inner2:(b=>a=>()=>[b,a])({extA2:3})({extB2:4}),

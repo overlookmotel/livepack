@@ -3,18 +3,20 @@
  * Tests for CommonJS vars (`module` + `exports`)
  * ------------------*/
 
-/* eslint-disable global-require */
-
 'use strict';
 
 // Imports
-const {itSerializes, itSerializesEqual, stripLineBreaks} = require('./support/index.js');
+const {
+	itSerializes, itSerializesEqual, createFixturesFunctions, stripLineBreaks
+} = require('./support/index.js');
+
+const {requireFixture, requireFixtures} = createFixturesFunctions(__filename);
 
 // Tests
 
 describe('`module`', () => {
 	itSerializes('exported directly', {
-		in: () => require('./fixtures/commonjs/module/exported directly/index.js'),
+		in: () => requireFixture('module.exports = module;'),
 		out: '(()=>{const a={};a.exports=a;return a})()',
 		validate(mod, {isOutput}) {
 			expect(mod).toBeObject();
@@ -24,7 +26,11 @@ describe('`module`', () => {
 	});
 
 	itSerializes('from another module', {
-		in: () => require('./fixtures/commonjs/module/from another module/index.js'),
+		in: () => requireFixtures({
+			'index.js': "const otherModule = require('./other.js');\n"
+				+ 'module.exports = () => otherModule;',
+			'other.js': 'module.exports = module;'
+		}),
 		out: '(()=>{const a={};a.exports=a;return(a=>()=>a)(a)})()',
 		validate(fn, {isOutput}) {
 			expect(fn).toBeFunction();
@@ -37,7 +43,7 @@ describe('`module`', () => {
 	});
 
 	itSerializes('in scope of function', {
-		in: () => require('./fixtures/commonjs/module/in scope of function/index.js'),
+		in: () => requireFixture('module.exports = () => module;'),
 		out: '(()=>{const a={},b=(a=>()=>a)(a);a.exports=b;return b})()',
 		validate(fn, {isOutput}) {
 			expect(fn).toBeFunction();
@@ -49,7 +55,10 @@ describe('`module`', () => {
 	});
 
 	itSerializes('var reassigned', {
-		in: () => require('./fixtures/commonjs/module/var reassigned/index.js'),
+		in: () => requireFixture(
+			'module.exports = () => module;\n'
+			+ 'module = 123;'
+		),
 		out: '(a=>()=>a)(123)',
 		validate(fn) {
 			expect(fn).toBeFunction();
@@ -60,7 +69,15 @@ describe('`module`', () => {
 
 describe('`exports`', () => {
 	itSerializes('is resolved correctly in scope of function', {
-		in: () => require('./fixtures/commonjs/exports/index.js'),
+		in: () => requireFixture(
+			// `Object.setPrototypeOf` necessary because Jest creates `module.exports` in another
+			// execution context, so prototype of `export` object is a *different* `Object.prototype`.
+			// This is just an artefact of the testing environment - does not affect real code.
+			'Object.setPrototypeOf(exports, Object.prototype);\n'
+			+ 'exports.x = () => {\n'
+			+ '  exports.y = 123;\n'
+			+ '};'
+		),
 		out: '(()=>{const a=(a=>[b=>a=b,()=>{a.y=123}])(),b={x:a[1]};a[0](b);return b})()',
 		validate(exp, {isInput}) {
 			expect(exp).toBeObject();
