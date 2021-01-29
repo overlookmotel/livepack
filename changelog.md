@@ -1,5 +1,53 @@
 # Changelog
 
+## 0.1.8
+
+Bug fixes:
+
+* Place tracker comment before key for methods with computed key
+
+Dependencies:
+
+* Update dependencies
+
+Improvements:
+
+* Do not serialize scope var values if not read from
+
+Performance:
+
+* Register: Do not transpile modules used internally
+* Shorten code path for multiple instances of same function
+
+Refactor:
+
+* Move runtime functions into separate dir
+* Babel plugin: Shorten code
+* Babel plugin: Inline var
+* Remove old workaround for Babel bug
+
+No code:
+
+* Babel plugin: Code comment
+* Code comments
+* Fix indentation
+
+Tests:
+
+* Tests for `register`
+* Inline fixtures [refactor]
+* Refactor [refactor]
+
+Dev:
+
+* CI run tests on Node v15
+* Update Dependabot config
+* Update dev dependencies
+
+Docs:
+
+* Corrections + clarifications
+
 ## 0.1.7
 
 Features:
