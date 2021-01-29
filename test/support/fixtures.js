@@ -7,11 +7,15 @@
 
 // Modules
 const {join: pathJoin, dirname} = require('path'),
-	{writeFileSync, mkdirsSync} = require('fs-extra');
+	{writeFileSync, mkdirsSync} = require('fs-extra'),
+	{spawn} = require('child_process'),
+	{isString} = require('is-it-type');
 
 // Constants
 const TESTS_DIR_PATH = pathJoin(__dirname, '../'),
 	TEMP_DIR_PATH = pathJoin(TESTS_DIR_PATH, '_temp'),
+	REGISTER_PATH = pathJoin(__dirname, '../../register.js'),
+	MAIN_PATH = pathJoin(__dirname, '../../index.js'),
 	DEFAULT_FILENAME = 'index.js';
 
 // Exports
@@ -34,7 +38,8 @@ module.exports = function createFixturesFunctions(testPath) {
 		createFixtures: files => createFixtures(tempPath, files),
 		createFixture: code => createFixture(tempPath, code),
 		requireFixtures: files => requireFixtures(tempPath, files),
-		requireFixture: code => requireFixture(tempPath, code)
+		requireFixture: code => requireFixture(tempPath, code),
+		serializeInNewProcess: files => serializeInNewProcess(tempPath, files)
 	};
 };
 
@@ -97,4 +102,47 @@ function requireFixtures(tempPath, files) {
  */
 function requireFixture(tempPath, code) {
 	return requireFixtures(tempPath, {[DEFAULT_FILENAME]: code});
+}
+
+/**
+ * Serialize fixture files in child process.
+ * @param {string} tempPath - Temp dir path
+ * @param {Object|string} files - Files (if string, will be used as `index.js` file)
+ * @returns {string} - Serialized output
+ */
+async function serializeInNewProcess(tempPath, files) {
+	if (isString(files)) files = {[DEFAULT_FILENAME]: files};
+
+	files = {
+		'entry.js': [
+			`require(${JSON.stringify(REGISTER_PATH)})({cache: false});`,
+			`const {serialize} = require(${JSON.stringify(MAIN_PATH)});`,
+			`const input = require(${JSON.stringify(`./${Object.keys(files)[0]}`)});`,
+			'console.log(serialize(input));'
+		].join('\n'),
+		...files
+	};
+
+	const path = createFixtures(tempPath, files)['entry.js'];
+	const js = await spawnNode(path);
+	return js.trim();
+}
+
+function spawnNode(path) {
+	return new Promise((resolve, reject) => {
+		const child = spawn(process.execPath, [path]);
+
+		let stdout = '',
+			stderr = '';
+		child.stdout.on('data', (chunk) => { stdout += chunk; });
+		child.stderr.on('data', (chunk) => { stderr += chunk; });
+
+		child.on('close', () => {
+			if (stderr !== '') {
+				reject(new Error(`Unexpected stderr output: ${stderr}`));
+			} else {
+				resolve(stdout);
+			}
+		});
+	});
 }
