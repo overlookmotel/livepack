@@ -2668,6 +2668,91 @@ describe('Classes', () => {
 			});
 		});
 
+		describe('another class defined inline', () => {
+			itSerializes('without constructor', {
+				in() {
+					return class Y extends class X {} {};
+				},
+				out: `(()=>{
+					const a=Object.setPrototypeOf,
+						b=class X{},
+						c=a(
+							class Y{
+								constructor(...a){
+									return Reflect.construct(Object.getPrototypeOf(Y),a,Y)
+								}
+							},
+							b
+						);
+					a(c.prototype,b.prototype);
+					return c
+				})()`,
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					expect(Klass.name).toBe('Y');
+					const {prototype} = Klass;
+					expect(prototype).toBeObject();
+					expect(prototype.constructor).toBe(Klass);
+					const proto = Object.getPrototypeOf(prototype);
+					expect(proto).toBeObject();
+					expect(proto).not.toBe(Object.prototype);
+					expect(proto).toHavePrototype(Object.prototype);
+					const SuperClass = proto.constructor;
+					expect(SuperClass).toBeFunction();
+					expect(SuperClass.name).toBe('X');
+					const instance = new Klass();
+					expect(instance).toBeInstanceOf(Klass);
+					expect(instance).toBeInstanceOf(SuperClass);
+				}
+			});
+
+			itSerializes('with constructor', {
+				in() {
+					return class Y extends class X {} {
+						constructor() {
+							super();
+							this.x = 1;
+						}
+					};
+				},
+				out: `(()=>{
+					const a=Object.setPrototypeOf,
+						b=class X{},
+						c=a(
+							class Y{
+								constructor(){
+									const a=Reflect.construct(Object.getPrototypeOf(Y),[],Y);
+									a.x=1;
+									return a
+								}
+							},
+							b
+						);
+					a(c.prototype,b.prototype);
+					return c
+				})()`,
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					expect(Klass.name).toBe('Y');
+					const {prototype} = Klass;
+					expect(prototype).toBeObject();
+					expect(prototype.constructor).toBe(Klass);
+					const proto = Object.getPrototypeOf(prototype);
+					expect(proto).toBeObject();
+					expect(proto).not.toBe(Object.prototype);
+					expect(proto).toHavePrototype(Object.prototype);
+					const SuperClass = proto.constructor;
+					expect(SuperClass).toBeFunction();
+					expect(SuperClass.name).toBe('X');
+					const instance = new Klass();
+					expect(instance).toBeInstanceOf(Klass);
+					expect(instance).toBeInstanceOf(SuperClass);
+					expect(instance).toHaveOwnPropertyNames(['x']);
+					expect(instance.x).toBe(1);
+				}
+			});
+		});
+
 		itSerializes('globals used in transpiled super do not clash with upper scope vars', {
 			in() {
 				class X {
