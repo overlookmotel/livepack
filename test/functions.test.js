@@ -3663,6 +3663,44 @@ describe('Functions', () => {
 				}
 			});
 		});
+
+		describe('with inline functions', () => {
+			itSerializes('arrow function', {
+				in() {
+					return (x = () => 1, y = () => 2) => [x, y];
+				},
+				out: '(a=()=>1,b=()=>2)=>[a,b]',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					const param1 = {};
+					const res = fn(param1);
+					expect(res).toBeArrayOfSize(2);
+					expect(res[0]).toBe(param1);
+					const res2 = res[1];
+					expect(res2).toBeFunction();
+					expect(res2()).toBe(2);
+				}
+			});
+
+			itSerializes('function expression', {
+				in() {
+					return function(x = () => 1, y = () => 2) {
+						return [x, y];
+					};
+				},
+				out: 'function(a=()=>1,b=()=>2){return[a,b]}',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					const param1 = {};
+					const res = fn(param1);
+					expect(res).toBeArrayOfSize(2);
+					expect(res[0]).toBe(param1);
+					const res2 = res[1];
+					expect(res2).toBeFunction();
+					expect(res2()).toBe(2);
+				}
+			});
+		});
 	});
 
 	describe('referencing error argument of `catch ()`', () => {
