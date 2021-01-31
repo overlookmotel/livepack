@@ -516,7 +516,7 @@ describe('Functions', () => {
 					}
 				});
 
-				itSerializes('assignment with operator which reads', {
+				itSerializes('assignment and read in separate functions', {
 					in() {
 						let extA = 100;
 						return [
