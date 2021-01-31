@@ -1,3 +1,4 @@
 .DS_Store
 coverage
+test/_temp
 node_modules
