@@ -3595,6 +3595,76 @@ describe('Functions', () => {
 		});
 	});
 
+	describe('with param defaults', () => {
+		describe('not referencing external vars', () => {
+			itSerializes('arrow function', {
+				in() {
+					return (x = 1, y = 2) => [x, y];
+				},
+				out: '(a=1,b=2)=>[a,b]',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					const param1 = {};
+					const res = fn(param1);
+					expect(res).toEqual([param1, 2]);
+					expect(res[0]).toBe(param1);
+				}
+			});
+
+			itSerializes('function expression', {
+				in() {
+					return function(x = 1, y = 2) {
+						return [x, y];
+					};
+				},
+				out: 'function(a=1,b=2){return[a,b]}',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					const param1 = {};
+					const res = fn(param1);
+					expect(res).toEqual([param1, 2]);
+					expect(res[0]).toBe(param1);
+				}
+			});
+		});
+
+		describe('referencing external vars', () => {
+			itSerializes('arrow function', {
+				in() {
+					const extA = {extA: 1},
+						extB = {extB: 2};
+					return (x = extA, y = extB) => [x, y];
+				},
+				out: '((c,d)=>(a=c,b=d)=>[a,b])({extA:1},{extB:2})',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					const param1 = {};
+					const res = fn(param1);
+					expect(res).toEqual([param1, {extB: 2}]);
+					expect(res[0]).toBe(param1);
+				}
+			});
+
+			itSerializes('function expression', {
+				in() {
+					const extA = {extA: 1},
+						extB = {extB: 2};
+					return function(x = extA, y = extB) {
+						return [x, y];
+					};
+				},
+				out: '((c,d)=>function(a=c,b=d){return[a,b]})({extA:1},{extB:2})',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					const param1 = {};
+					const res = fn(param1);
+					expect(res).toEqual([param1, {extB: 2}]);
+					expect(res[0]).toBe(param1);
+				}
+			});
+		});
+	});
+
 	describe('referencing error argument of `catch ()`', () => {
 		itSerializes('1 level up', {
 			in() {
