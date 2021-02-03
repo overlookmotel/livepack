@@ -4119,6 +4119,69 @@ describe('Functions', () => {
 		});
 	});
 
+	describe('containing other functions', () => {
+		itSerializes('with no scope access', {
+			in() {
+				return () => () => 1;
+			},
+			out: '()=>()=>1',
+			validate(fn) {
+				expect(fn).toBeFunction();
+				const innerFn = fn();
+				expect(innerFn).toBeFunction();
+				expect(innerFn()).toBe(1);
+			}
+		});
+
+		itSerializes('with scope external to outer function', {
+			in() {
+				const ext = 1;
+				return () => () => ext;
+			},
+			out: '(a=>()=>()=>a)(1)',
+			validate(fn) {
+				expect(fn).toBeFunction();
+				const innerFn = fn();
+				expect(innerFn).toBeFunction();
+				expect(innerFn()).toBe(1);
+			}
+		});
+
+		itSerializes('with scope internal to outer function', {
+			in() {
+				return () => {
+					const int = 1;
+					return () => int;
+				};
+			},
+			out: '()=>{const a=1;return()=>a}',
+			validate(fn) {
+				expect(fn).toBeFunction();
+				const innerFn = fn();
+				expect(innerFn).toBeFunction();
+				expect(innerFn()).toBe(1);
+			}
+		});
+
+		itSerializes('with scope nested inside outer function', {
+			in() {
+				return () => { // eslint-disable-line consistent-return
+					if (true) { // eslint-disable-line no-constant-condition
+						const int = 1;
+						return () => int;
+					}
+				};
+			},
+			out: '()=>{if(true){const a=1;return()=>a}}',
+			validate(fn) {
+				expect(fn).toBeFunction();
+				const innerFn = fn();
+				expect(innerFn).toBeFunction();
+				expect(innerFn()).toBe(1);
+			}
+		});
+	});
+
 	describe('bound functions', () => {
 		describe('no circular references (no injection)', () => {
 			itSerializes('single instantiation', {
