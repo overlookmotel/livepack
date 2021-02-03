@@ -3,6 +3,8 @@
  * Tests for prototypes
  * ------------------*/
 
+/* eslint-disable jest/no-standalone-expect */
+
 'use strict';
 
 // Imports
@@ -2323,66 +2325,58 @@ describe('Prototypes', () => {
 
 				describe('with descriptors', () => {
 					describe('function accessed', () => {
-						describe.each( // eslint-disable-next-line no-bitwise
-							[0, 1, 2, 3, 4, 5, 6, 7].map(n => [!(n & 4), !(n & 2), !(n & 1)])
-						)(
+						itSerializes.each( // eslint-disable-next-line no-bitwise
+							[0, 1, 2, 3, 4, 5, 6, 7].map(n => [!(n & 4), !(n & 2), !(n & 1)]),
 							'{writable: %p, enumerable: %p, configurable: %p}',
-							(writable, enumerable, configurable) => {
-								// TODO Implement `itSerializes.each()`
-								itSerializes('has correct descriptor props', {
-									in() {
-										function fn() {}
-										Object.defineProperty( // eslint-disable-next-line object-shorthand
-											fn.prototype, 'x', {value: () => {}, writable, enumerable, configurable}
-										);
-										return fn;
-									},
-									validate(fn) {
-										expect(fn).toBeFunction();
-										expect(fn).toContainAllKeys([]);
-										const proto = fn.prototype;
-										expect(proto).toBeObject();
-										expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
-										expect(proto).toHaveOwnPropertyNames(['constructor', 'x']);
-										expect(proto.constructor).toBe(fn);
-										expect(proto).toHaveDescriptorModifiersFor('constructor', true, false, true);
-										expect(proto.x).toBeFunction();
-										expect(proto).toHaveDescriptorModifiersFor('x', writable, enumerable, configurable);
-									}
-								});
-							}
+							(writable, enumerable, configurable) => ({
+								in() {
+									function fn() {}
+									Object.defineProperty( // eslint-disable-next-line object-shorthand
+										fn.prototype, 'x', {value: () => {}, writable, enumerable, configurable}
+									);
+									return fn;
+								},
+								validate(fn) {
+									expect(fn).toBeFunction();
+									expect(fn).toContainAllKeys([]);
+									const proto = fn.prototype;
+									expect(proto).toBeObject();
+									expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
+									expect(proto).toHaveOwnPropertyNames(['constructor', 'x']);
+									expect(proto.constructor).toBe(fn);
+									expect(proto).toHaveDescriptorModifiersFor('constructor', true, false, true);
+									expect(proto.x).toBeFunction();
+									expect(proto).toHaveDescriptorModifiersFor('x', writable, enumerable, configurable);
+								}
+							})
 						);
 					});
 
 					describe('prototype accessed', () => {
-						describe.each( // eslint-disable-next-line no-bitwise
-							[0, 1, 2, 3, 4, 5, 6, 7].map(n => [!(n & 4), !(n & 2), !(n & 1)])
-						)(
+						itSerializes.each( // eslint-disable-next-line no-bitwise
+							[0, 1, 2, 3, 4, 5, 6, 7].map(n => [!(n & 4), !(n & 2), !(n & 1)]),
 							'{writable: %p, enumerable: %p, configurable: %p}',
-							(writable, enumerable, configurable) => {
-								// TODO Implement `itSerializes.each()`
-								itSerializes('has correct descriptor props', {
-									in() {
-										function fn() {}
-										Object.defineProperty( // eslint-disable-next-line object-shorthand
-											fn.prototype, 'x', {value: () => {}, writable, enumerable, configurable}
-										);
-										return fn.prototype;
-									},
-									validate(proto) {
-										expect(proto).toBeObject();
-										expect(proto).toHaveOwnPropertyNames(['constructor', 'x']);
-										expect(proto).toHaveDescriptorModifiersFor('constructor', true, false, true);
-										expect(proto.x).toBeFunction();
-										expect(proto).toHaveDescriptorModifiersFor('x', writable, enumerable, configurable);
-										const fn = proto.constructor;
-										expect(fn).toBeFunction();
-										expect(fn).toContainAllKeys([]);
-										expect(fn.prototype).toBe(proto);
-										expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
-									}
-								});
-							}
+							(writable, enumerable, configurable) => ({
+								in() {
+									function fn() {}
+									Object.defineProperty( // eslint-disable-next-line object-shorthand
+										fn.prototype, 'x', {value: () => {}, writable, enumerable, configurable}
+									);
+									return fn.prototype;
+								},
+								validate(proto) {
+									expect(proto).toBeObject();
+									expect(proto).toHaveOwnPropertyNames(['constructor', 'x']);
+									expect(proto).toHaveDescriptorModifiersFor('constructor', true, false, true);
+									expect(proto.x).toBeFunction();
+									expect(proto).toHaveDescriptorModifiersFor('x', writable, enumerable, configurable);
+									const fn = proto.constructor;
+									expect(fn).toBeFunction();
+									expect(fn).toContainAllKeys([]);
+									expect(fn.prototype).toBe(proto);
+									expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
+								}
+							})
 						);
 					});
 				});
@@ -2469,82 +2463,74 @@ describe('Prototypes', () => {
 
 				describe('with descriptors', () => {
 					describe('function accessed', () => {
-						describe.each( // eslint-disable-next-line no-bitwise
-							[0, 1, 2, 3, 4, 5, 6, 7].map(n => [!(n & 4), !(n & 2), !(n & 1)])
-						)(
+						itSerializes.each( // eslint-disable-next-line no-bitwise
+							[0, 1, 2, 3, 4, 5, 6, 7].map(n => [!(n & 4), !(n & 2), !(n & 1)]),
 							'{writable: %p, enumerable: %p, configurable: %p}',
-							(writable, enumerable, configurable) => {
-								// TODO Implement `itSerializes.each()`
-								itSerializes('has correct descriptor props', {
-									in() {
-										const fn = (0, function() {});
-										const p = fn.prototype;
-										Object.defineProperty(p, 'w', {value: fn, writable, enumerable, configurable});
-										Object.defineProperty(p, 'x', {value: {xx: 1}, writable, enumerable, configurable});
-										Object.defineProperty(p, 'y', {value: fn, writable, enumerable, configurable});
-										Object.defineProperty(p, 'z', {value: p, writable, enumerable, configurable});
-										return fn;
-									},
-									validate(fn) {
-										expect(fn).toBeFunction();
-										expect(fn).toContainAllKeys([]);
-										const proto = fn.prototype;
-										expect(proto).toBeObject();
-										expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
-										expect(proto).toHaveOwnPropertyNames(['constructor', 'w', 'x', 'y', 'z']);
-										expect(proto.constructor).toBe(fn);
-										expect(proto).toHaveDescriptorModifiersFor('constructor', true, false, true);
-										expect(proto.w).toBe(fn);
-										expect(proto).toHaveDescriptorModifiersFor('w', writable, enumerable, configurable);
-										expect(proto.x).toEqual({xx: 1});
-										expect(proto).toHaveDescriptorModifiersFor('x', writable, enumerable, configurable);
-										expect(proto.y).toBeFunction();
-										expect(proto).toHaveDescriptorModifiersFor('y', writable, enumerable, configurable);
-										expect(proto.z).toBe(proto);
-										expect(proto).toHaveDescriptorModifiersFor('z', writable, enumerable, configurable);
-									}
-								});
-							}
+							(writable, enumerable, configurable) => ({
+								in() {
+									const fn = (0, function() {});
+									const p = fn.prototype;
+									Object.defineProperty(p, 'w', {value: fn, writable, enumerable, configurable});
+									Object.defineProperty(p, 'x', {value: {xx: 1}, writable, enumerable, configurable});
+									Object.defineProperty(p, 'y', {value: fn, writable, enumerable, configurable});
+									Object.defineProperty(p, 'z', {value: p, writable, enumerable, configurable});
+									return fn;
+								},
+								validate(fn) {
+									expect(fn).toBeFunction();
+									expect(fn).toContainAllKeys([]);
+									const proto = fn.prototype;
+									expect(proto).toBeObject();
+									expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
+									expect(proto).toHaveOwnPropertyNames(['constructor', 'w', 'x', 'y', 'z']);
+									expect(proto.constructor).toBe(fn);
+									expect(proto).toHaveDescriptorModifiersFor('constructor', true, false, true);
+									expect(proto.w).toBe(fn);
+									expect(proto).toHaveDescriptorModifiersFor('w', writable, enumerable, configurable);
+									expect(proto.x).toEqual({xx: 1});
+									expect(proto).toHaveDescriptorModifiersFor('x', writable, enumerable, configurable);
+									expect(proto.y).toBeFunction();
+									expect(proto).toHaveDescriptorModifiersFor('y', writable, enumerable, configurable);
+									expect(proto.z).toBe(proto);
+									expect(proto).toHaveDescriptorModifiersFor('z', writable, enumerable, configurable);
+								}
+							})
 						);
 					});
 
 					describe('prototype accessed', () => {
-						describe.each( // eslint-disable-next-line no-bitwise
-							[0, 1, 2, 3, 4, 5, 6, 7].map(n => [!(n & 4), !(n & 2), !(n & 1)])
-						)(
+						itSerializes.each( // eslint-disable-next-line no-bitwise
+							[0, 1, 2, 3, 4, 5, 6, 7].map(n => [!(n & 4), !(n & 2), !(n & 1)]),
 							'{writable: %p, enumerable: %p, configurable: %p}',
-							(writable, enumerable, configurable) => {
-								// TODO Implement `itSerializes.each()`
-								itSerializes('has correct descriptor props', {
-									in() {
-										const fn = (0, function() {});
-										const p = fn.prototype;
-										Object.defineProperty(p, 'w', {value: fn, writable, enumerable, configurable});
-										Object.defineProperty(p, 'x', {value: {xx: 1}, writable, enumerable, configurable});
-										Object.defineProperty(p, 'y', {value: fn, writable, enumerable, configurable});
-										Object.defineProperty(p, 'z', {value: p, writable, enumerable, configurable});
-										return fn.prototype;
-									},
-									validate(proto) {
-										expect(proto).toBeObject();
-										expect(proto).toHaveOwnPropertyNames(['constructor', 'w', 'x', 'y', 'z']);
-										expect(proto).toHaveDescriptorModifiersFor('constructor', true, false, true);
-										const fn = proto.constructor;
-										expect(fn).toBeFunction();
-										expect(fn).toContainAllKeys([]);
-										expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
-										expect(fn.prototype).toBe(proto);
-										expect(proto.w).toBe(fn);
-										expect(proto).toHaveDescriptorModifiersFor('w', writable, enumerable, configurable);
-										expect(proto.x).toEqual({xx: 1});
-										expect(proto).toHaveDescriptorModifiersFor('x', writable, enumerable, configurable);
-										expect(proto.y).toBeFunction();
-										expect(proto).toHaveDescriptorModifiersFor('y', writable, enumerable, configurable);
-										expect(proto.z).toBe(proto);
-										expect(proto).toHaveDescriptorModifiersFor('z', writable, enumerable, configurable);
-									}
-								});
-							}
+							(writable, enumerable, configurable) => ({
+								in() {
+									const fn = (0, function() {});
+									const p = fn.prototype;
+									Object.defineProperty(p, 'w', {value: fn, writable, enumerable, configurable});
+									Object.defineProperty(p, 'x', {value: {xx: 1}, writable, enumerable, configurable});
+									Object.defineProperty(p, 'y', {value: fn, writable, enumerable, configurable});
+									Object.defineProperty(p, 'z', {value: p, writable, enumerable, configurable});
+									return fn.prototype;
+								},
+								validate(proto) {
+									expect(proto).toBeObject();
+									expect(proto).toHaveOwnPropertyNames(['constructor', 'w', 'x', 'y', 'z']);
+									expect(proto).toHaveDescriptorModifiersFor('constructor', true, false, true);
+									const fn = proto.constructor;
+									expect(fn).toBeFunction();
+									expect(fn).toContainAllKeys([]);
+									expect(fn).toHaveDescriptorModifiersFor('prototype', true, false, false);
+									expect(fn.prototype).toBe(proto);
+									expect(proto.w).toBe(fn);
+									expect(proto).toHaveDescriptorModifiersFor('w', writable, enumerable, configurable);
+									expect(proto.x).toEqual({xx: 1});
+									expect(proto).toHaveDescriptorModifiersFor('x', writable, enumerable, configurable);
+									expect(proto.y).toBeFunction();
+									expect(proto).toHaveDescriptorModifiersFor('y', writable, enumerable, configurable);
+									expect(proto.z).toBe(proto);
+									expect(proto).toHaveDescriptorModifiersFor('z', writable, enumerable, configurable);
+								}
+							})
 						);
 					});
 				});

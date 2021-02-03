@@ -3,6 +3,8 @@
  * Tests for functions
  * ------------------*/
 
+/* eslint-disable jest/no-standalone-expect */
+
 'use strict';
 
 // Imports
@@ -4663,25 +4665,21 @@ describe('Functions', () => {
 			});
 
 			describe('properties altered', () => {
-				describe.each( // eslint-disable-next-line no-bitwise
-					[0, 1, 2, 3, 4, 5, 6, 7].map(n => [!(n & 4), !(n & 2), !(n & 1)])
-				)(
+				itSerializes.each( // eslint-disable-next-line no-bitwise
+					[0, 1, 2, 3, 4, 5, 6, 7].map(n => [!(n & 4), !(n & 2), !(n & 1)]),
 					'{writable: %p, enumerable: %p, configurable: %p}',
-					(writable, enumerable, configurable) => {
-						// TODO Implement `itSerializesEqual.each()`
-						itSerializes('has correct descriptor props', {
-							in() {
-								function fn() {}
-								Object.defineProperty(fn, 'name', {value: 'fn', writable, enumerable, configurable});
-								return fn;
-							},
-							validate(fn) {
-								expect(fn).toBeFunction();
-								expect(fn.name).toBe('fn');
-								expect(fn).toHaveDescriptorModifiersFor('name', writable, enumerable, configurable);
-							}
-						});
-					}
+					(writable, enumerable, configurable) => ({
+						in() {
+							function fn() {}
+							Object.defineProperty(fn, 'name', {value: 'fn', writable, enumerable, configurable});
+							return fn;
+						},
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn.name).toBe('fn');
+							expect(fn).toHaveDescriptorModifiersFor('name', writable, enumerable, configurable);
+						}
+					})
 				);
 			});
 		});
@@ -4757,25 +4755,21 @@ describe('Functions', () => {
 			});
 
 			describe('properties altered', () => {
-				describe.each( // eslint-disable-next-line no-bitwise
-					[0, 1, 2, 3, 4, 5, 6, 7].map(n => [!(n & 4), !(n & 2), !(n & 1)])
-				)(
+				itSerializes.each( // eslint-disable-next-line no-bitwise
+					[0, 1, 2, 3, 4, 5, 6, 7].map(n => [!(n & 4), !(n & 2), !(n & 1)]),
 					'{writable: %p, enumerable: %p, configurable: %p}',
-					(writable, enumerable, configurable) => {
-						// TODO Implement `itSerializesEqual.each()`
-						itSerializes('has correct descriptor props', {
-							in() {
-								function fn() {}
-								Object.defineProperty(fn, 'length', {value: 0, writable, enumerable, configurable});
-								return fn;
-							},
-							validate(fn) {
-								expect(fn).toBeFunction();
-								expect(fn.length).toBe(0); // eslint-disable-line jest/prefer-to-have-length
-								expect(fn).toHaveDescriptorModifiersFor('length', writable, enumerable, configurable);
-							}
-						});
-					}
+					(writable, enumerable, configurable) => ({
+						in() {
+							function fn() {}
+							Object.defineProperty(fn, 'length', {value: 0, writable, enumerable, configurable});
+							return fn;
+						},
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn.length).toBe(0); // eslint-disable-line jest/prefer-to-have-length
+							expect(fn).toHaveDescriptorModifiersFor('length', writable, enumerable, configurable);
+						}
+					})
 				);
 			});
 		});

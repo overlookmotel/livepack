@@ -3,6 +3,8 @@
  * Tests for objects
  * ------------------*/
 
+/* eslint-disable jest/no-standalone-expect */
+
 'use strict';
 
 // Imports
@@ -477,27 +479,23 @@ describe('Objects', () => {
 			});
 
 			describe('with descriptor props', () => {
-				describe.each( // eslint-disable-next-line no-bitwise
-					[0, 1, 2, 3, 4, 5, 6, 7].map(n => [!(n & 4), !(n & 2), !(n & 1)])
-				)(
+				itSerializesEqual.each( // eslint-disable-next-line no-bitwise
+					[0, 1, 2, 3, 4, 5, 6, 7].map(n => [!(n & 4), !(n & 2), !(n & 1)]),
 					'{writable: %p, enumerable: %p, configurable: %p}',
-					(writable, enumerable, configurable) => {
-						// TODO Implement `itSerializesEqual.each()`
-						itSerializesEqual('has correct descriptor props', {
-							in() {
-								const obj = {x: 1};
-								Object.defineProperty(obj, 'y', {value: 2, writable, enumerable, configurable});
-								return obj;
-							},
-							validate(obj) {
-								expect(obj).toHaveOwnPropertyNames(['x', 'y']);
-								expect(obj.x).toBe(1);
-								expect(obj.y).toBe(2);
-								expect(obj).toHaveDescriptorModifiersFor('x', true, true, true);
-								expect(obj).toHaveDescriptorModifiersFor('y', writable, enumerable, configurable);
-							}
-						});
-					}
+					(writable, enumerable, configurable) => ({
+						in() {
+							const obj = {x: 1};
+							Object.defineProperty(obj, 'y', {value: 2, writable, enumerable, configurable});
+							return obj;
+						},
+						validate(obj) {
+							expect(obj).toHaveOwnPropertyNames(['x', 'y']);
+							expect(obj.x).toBe(1);
+							expect(obj.y).toBe(2);
+							expect(obj).toHaveDescriptorModifiersFor('x', true, true, true);
+							expect(obj).toHaveDescriptorModifiersFor('y', writable, enumerable, configurable);
+						}
+					})
 				);
 			});
 
@@ -620,33 +618,29 @@ describe('Objects', () => {
 			});
 
 			describe('with descriptor props', () => {
-				describe.each( // eslint-disable-next-line no-bitwise
-					[0, 1, 2, 3, 4, 5, 6, 7].map(n => [!(n & 4), !(n & 2), !(n & 1)])
-				)(
+				itSerializesEqual.each( // eslint-disable-next-line no-bitwise
+					[0, 1, 2, 3, 4, 5, 6, 7].map(n => [!(n & 4), !(n & 2), !(n & 1)]),
 					'{writable: %p, enumerable: %p, configurable: %p}',
-					(writable, enumerable, configurable) => {
-						// TODO Implement `itSerializesEqual.each()`
-						itSerializesEqual('has correct descriptor props', {
-							in() {
-								const obj = {w: 1};
-								Object.defineProperty(obj, 'x', {value: obj, writable, enumerable, configurable});
-								obj.y = 2;
-								Object.defineProperty(obj, 'z', {value: obj, writable, enumerable, configurable});
-								return obj;
-							},
-							validate(obj) {
-								expect(obj).toHaveOwnPropertyNames(['w', 'x', 'y', 'z']);
-								expect(obj.w).toBe(1);
-								expect(obj.x).toBe(obj);
-								expect(obj.y).toBe(2);
-								expect(obj.z).toBe(obj);
-								expect(obj).toHaveDescriptorModifiersFor('w', true, true, true);
-								expect(obj).toHaveDescriptorModifiersFor('x', writable, enumerable, configurable);
-								expect(obj).toHaveDescriptorModifiersFor('y', true, true, true);
-								expect(obj).toHaveDescriptorModifiersFor('z', writable, enumerable, configurable);
-							}
-						});
-					}
+					(writable, enumerable, configurable) => ({
+						in() {
+							const obj = {w: 1};
+							Object.defineProperty(obj, 'x', {value: obj, writable, enumerable, configurable});
+							obj.y = 2;
+							Object.defineProperty(obj, 'z', {value: obj, writable, enumerable, configurable});
+							return obj;
+						},
+						validate(obj) {
+							expect(obj).toHaveOwnPropertyNames(['w', 'x', 'y', 'z']);
+							expect(obj.w).toBe(1);
+							expect(obj.x).toBe(obj);
+							expect(obj.y).toBe(2);
+							expect(obj.z).toBe(obj);
+							expect(obj).toHaveDescriptorModifiersFor('w', true, true, true);
+							expect(obj).toHaveDescriptorModifiersFor('x', writable, enumerable, configurable);
+							expect(obj).toHaveDescriptorModifiersFor('y', true, true, true);
+							expect(obj).toHaveDescriptorModifiersFor('z', writable, enumerable, configurable);
+						}
+					})
 				);
 			});
 

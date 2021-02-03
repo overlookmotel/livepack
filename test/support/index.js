@@ -48,6 +48,12 @@ function wrapTestFunction(fn) {
 	wrapped.only = function only(...args) {
 		fn(describe.only, getCustomExpect(only), ...args);
 	};
+	wrapped.each = function each(cases, name, getOptions) {
+		const customExpect = getCustomExpect(each);
+		describe.each(cases)(name, (...caseProps) => {
+			fn(null, customExpect, name, getOptions(...caseProps));
+		});
+	};
 	return wrapped;
 }
 
@@ -169,7 +175,13 @@ function itSerializes(describe, customExpect, name, options) {
 	assert(!unknownKey, `Unexpected option '${unknownKey}'`);
 
 	// Run test function with all options
-	describe(name, () => {
+	if (describe) {
+		describe(name, defineTests); // eslint-disable-line jest/valid-describe
+	} else {
+		defineTests();
+	}
+
+	function defineTests() {
 		itAllOptions(options, async (opts) => {
 			// Add other options
 			opts.format = format;
@@ -190,7 +202,6 @@ function itSerializes(describe, customExpect, name, options) {
 
 				customExpect(
 					'Output does not match expected',
-					// eslint-disable-next-line jest/no-standalone-expect
 					() => expect(testOutputJs).toBe(expectedOutput)
 				);
 			}
@@ -202,7 +213,6 @@ function itSerializes(describe, customExpect, name, options) {
 			if (equal) {
 				customExpect(
 					'Eval-ed output does not equal input',
-					// eslint-disable-next-line jest/no-standalone-expect
 					() => expect(output).toEqual(input)
 				);
 			}
@@ -226,7 +236,7 @@ function itSerializes(describe, customExpect, name, options) {
 				}
 			}
 		});
-	});
+	}
 }
 
 /**
