@@ -24,7 +24,7 @@
     "@babel/core": "^7.12.10",
     "@babel/generator": "^7.12.11",
     "@babel/helper-module-transforms": "^7.12.1",
-    "@babel/parser": "^7.12.11",
+    "@babel/parser": "^7.12.13",
     "@babel/plugin-transform-modules-commonjs": "^7.12.1",
     "@babel/plugin-transform-react-jsx": "^7.12.12",
     "@babel/register": "^7.12.10",
