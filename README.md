@@ -133,7 +133,7 @@ module.exports = (async () => {
 | `--mangle` / `--no-mangle` | Mangle (shorten) var names | Follows `minify` |
 | `--comments` / `--no-comments` | Remove comments from source | Follows `minify` |
 | `--no-inline` | More verbose output. Only useful for debugging. | Inlining enabled |
-| `--source-maps` / `-s` | Output source maps | Disabled |
+| `--source-maps` / `-s` | Output source maps. `--source-maps inline` for inline source maps. | Disabled |
 | `--no-exec` | Output a file which exports the input rather than executes it. | Exec enabled |
 | `--babel-config` | By default, Livepack ignores any `babel.config.js` files. Set this option to `pre` to transform code with Babel before running and serializing it. | Disabled |
 | `--babelrc` | By default, Livepack ignores any `.babelrc` files. Set this option to `pre` to transform code with Babel before running and serializing it. Follows `babel-config` option by default. | Disabled |
@@ -251,7 +251,7 @@ serialize( {x: 1}, {
 | `comments` | `boolean` | Include comments in output | `!options.minify` |
 | `inline` | `boolean` | Less verbose output | `true` |
 | `files` | `boolean` | `true` to output source maps in separate file not inline (see [below](#files)) | `false` |
-| `sourceMaps` | `boolean` | Create source maps | `false` |
+| `sourceMaps` | `boolean` or `'inline'` | Create source maps. `'inline'` adds source maps inline, `true` in separate `.map` files. | `false` |
 | `outputDir` | `string` | Path to dir code would be output to. If provided, source maps will use relative paths (relative to `outputDir`). | `undefined` |
 
 All these options (except `files` and `outputDir`) correspond to CLI options of the same names. Unlike the programmatic API, in the CLI `exec` and `files` options default to `true` and `minify` to `false`.

@@ -190,7 +190,7 @@ function itSerializes(describe, customExpect, name, options) {
 			// Add other options
 			opts.format = format;
 			opts.comments = true;
-			opts.sourceMaps = !NO_SOURCE_MAPS;
+			opts.sourceMaps = NO_SOURCE_MAPS ? false : 'inline';
 
 			// Get value
 			const ctx = Object.create(null);

@@ -22,8 +22,8 @@ const {createFixture, createFixtures} = createFixturesFunctions(__filename);
 // Tests
 
 describe('Source maps', () => {
-	it('added inline if `files` option false', () => {
-		const out = serialize(1, {sourceMaps: true, files: false});
+	it("output inline if `sourceMaps` option 'inline'", () => {
+		const out = serialize(1, {sourceMaps: 'inline'});
 		expect(out).toMatch(/^1\n\/\/# sourceMappingURL=data:application\/json;charset=utf-8;base64,.+$/);
 		expect(sourceMapFromComment(out).toObject()).toEqual({
 			version: 3,
@@ -33,7 +33,7 @@ describe('Source maps', () => {
 		});
 	});
 
-	it('output separately if `files` option true', () => {
+	it('output separately if `sourceMaps` option true', () => {
 		const out = serialize(1, {sourceMaps: true, files: true});
 		expect(out).toEqual([
 			{
