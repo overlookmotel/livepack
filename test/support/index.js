@@ -27,7 +27,11 @@ module.exports = { // eslint-disable-line jest/no-export
 };
 
 // Disable source maps on Node 10 on CI as causes out of memory errors
-const NO_SOURCE_MAPS = !!process.env.CI && parseNodeVersion(process.version).major < 12;
+const {env} = process;
+const NO_SOURCE_MAPS = !!env.CI && parseNodeVersion(process.version).major < 12;
+
+// `LIVEPACK_TEST_QUICK` env runs tests in default options only
+const DEFAULT_OPTIONS = env.LIVEPACK_TEST_QUICK ? {minify: true, mangle: true, inline: true} : null;
 
 /**
  * Wrap test function (`itSerializes` / `itSerializesEqual`) to add `.skip` and `.only` methods,
@@ -276,6 +280,8 @@ function itSerializesEqual(describe, customExpect, name, options, expectedOutput
  * @returns {undefined}
  */
 function itAllOptions(options, fn) {
+	if (DEFAULT_OPTIONS) options = {...DEFAULT_OPTIONS, ...options};
+
 	for (const minify of options.minify === undefined ? [true, false] : [options.minify]) {
 		describe(`minify: ${minify}`, () => {
 			for (const inline of options.inline === undefined ? [true, false] : [options.inline]) {
