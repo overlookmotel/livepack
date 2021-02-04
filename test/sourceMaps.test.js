@@ -149,7 +149,7 @@ describe('Source maps', () => {
 			const srcCode = "const message = 'foo';\nmodule.exports = () => { throw new Error(message); };";
 
 			const {code} = transformSync(srcCode, {
-				presets: ['@babel/preset-env'],
+				plugins: ['@babel/plugin-transform-strict-mode', '@babel/plugin-transform-arrow-functions'],
 				sourceMaps: 'inline',
 				filename: 'src.js'
 			});
@@ -157,7 +157,7 @@ describe('Source maps', () => {
 			expect(code).toStartWith([
 				'"use strict";',
 				'',
-				"var message = 'foo';",
+				"const message = 'foo';",
 				'',
 				'module.exports = function () {',
 				'  throw new Error(message);',
@@ -202,7 +202,7 @@ describe('Source maps', () => {
 			const srcCode = "const message = 'foo';\nmodule.exports = () => { throw new Error(message); };";
 
 			const res = transformSync(srcCode, {
-				presets: ['@babel/preset-env'],
+				plugins: ['@babel/plugin-transform-strict-mode', '@babel/plugin-transform-arrow-functions'],
 				sourceMaps: true,
 				filename: 'src.js'
 			});
@@ -214,7 +214,7 @@ describe('Source maps', () => {
 			expect(code).toBe([
 				'"use strict";',
 				'',
-				"var message = 'foo';",
+				"const message = 'foo';",
 				'',
 				'module.exports = function () {',
 				'  throw new Error(message);',
