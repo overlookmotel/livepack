@@ -21,9 +21,11 @@ module.exports = {
 					'itSerializes',
 					'itSerializes.skip',
 					'itSerializes.only',
+					'itSerializes.each',
 					'itSerializesEqual',
 					'itSerializesEqual.skip',
-					'itSerializesEqual.only'
+					'itSerializesEqual.only',
+					'itSerializesEqual.each'
 				]
 			}
 		]

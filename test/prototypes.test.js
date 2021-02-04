@@ -3,8 +3,6 @@
  * Tests for prototypes
  * ------------------*/
 
-/* eslint-disable jest/no-standalone-expect */
-
 'use strict';
 
 // Imports

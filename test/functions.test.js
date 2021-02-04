@@ -3,8 +3,6 @@
  * Tests for functions
  * ------------------*/
 
-/* eslint-disable jest/no-standalone-expect */
-
 'use strict';
 
 // Imports
