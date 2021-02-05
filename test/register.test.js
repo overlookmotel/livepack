@@ -93,6 +93,7 @@ describe('register', () => {
 });
 
 function resolveFrom(specifier, fromPath) {
+	// TODO Remove `createRequireFromPath` fallback once support for Node < v12.2.0 is dropped
 	// eslint-disable-next-line node/no-unsupported-features/node-builtins, node/no-deprecated-api
 	const createRequire = Module.createRequire || Module.createRequireFromPath;
 	return createRequire(fromPath).resolve(specifier);
