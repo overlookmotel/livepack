@@ -314,9 +314,9 @@ function exec(js, format) {
 		// eslint-disable-next-line no-new-func
 		new Function(
 			'$__proxy',
-			js.replace(/(^|;\n?)export default/, (_, before) => `${before}$__proxy.exports=`)
+			js.replace(/(^|;\n*)export default/, (_, before) => `${before}$__proxy.exports=`)
 				.replace(
-					/(^|;\n?)import ([^ ]+) from ?("[^"]+")/g,
+					/(^|;\n*)import ([^ ]+) from ?("[^"]+")/g,
 					(_, before, varName, path) => `${before}const ${varName}=$__proxy.require(${path})`
 				)
 		)(proxy);
