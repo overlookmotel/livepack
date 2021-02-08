@@ -24,6 +24,26 @@ describe('register', () => {
 		expect(js).toBe('(a=>()=>a)(123)');
 	});
 
+	describe('allows serializing modules used internally in Livepack', () => {
+		it('is-it-type', async () => {
+			const js = await serializeInNewProcess(
+				"module.exports = require('is-it-type').isType;"
+			);
+			expect(js).toBe(
+				'(c=>function isType(a,b){return c(b)===a})(function getType(a){return typeof a})'
+			);
+		});
+
+		it('simple-invariant', async () => {
+			const js = await serializeInNewProcess(
+				"module.exports = require('simple-invariant');"
+			);
+			expect(js).toBe(
+				'(c=>function invariant(a,b){if(!a)throw new Error(b||c)})("Invariant failed")'
+			);
+		});
+	});
+
 	describe('allows serializing modules used internally in Babel', () => {
 		const babelRegisterPath = require.resolve('@babel/register'),
 			babelCorePath = resolveFrom('@babel/core', babelRegisterPath),
