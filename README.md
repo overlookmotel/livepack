@@ -81,14 +81,28 @@ npm install -D livepack
 npx livepack <input> -o <output dir>
 ```
 
-Input should be the entry point of the app/value to be packed.
+Input should be the entry point of the app to be packed.
 
-The file must export a function which will be executed when the built app is run.
+```sh
+npx livepack src/index.js -o build
+```
+
+The entry point must export a function which will be executed when the built app is run.
+
+This is unlike bundlers like Webpack and Rollup. You must *export* a function including the code you want to run when the built app is launched. Top-level code will be executed *during build*, not at runtime.
 
 ```js
 module.exports = function() {
   console.log('hello!');
 };
+```
+
+or (see `esm` option below):
+
+```js
+export default function() {
+  console.log('hello!');
+}
 ```
 
 #### Promises
@@ -99,6 +113,8 @@ If your app needs to do some async work before serializing, export a Promise.
 module.exports = (async () => {
   // Do async stuff
   const obj = await Promise.resolve({x: 1, y: 2});
+
+  // Return a function which will be executed at runtime
   return function() {
     console.log(obj.x * obj.y);
   };
