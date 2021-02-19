@@ -23,7 +23,7 @@
   "dependencies": {
     "@babel/core": "^7.12.13",
     "@babel/generator": "^7.12.15",
-    "@babel/helper-module-transforms": "^7.12.13",
+    "@babel/helper-module-transforms": "^7.12.17",
     "@babel/parser": "^7.12.15",
     "@babel/plugin-transform-modules-commonjs": "^7.12.13",
     "@babel/plugin-transform-react-jsx": "^7.12.13",
