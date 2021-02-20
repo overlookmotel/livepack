@@ -11,7 +11,299 @@ const {itSerializes} = require('./support/index.js');
 
 // Tests
 
-describe('Functions including `arguments`', () => {
+describe('Arguments object', () => {
+	itSerializes('empty', {
+		in() {
+			function createArgs() { return arguments; }
+			return createArgs();
+		},
+		out: 'function(){return arguments}()',
+		validate(args) {
+			expect(args).toBeArguments();
+			expect(args).toHaveLength(0);
+		}
+	});
+
+	itSerializes('not empty', {
+		in() {
+			function createArgs() { return arguments; }
+			return createArgs({argA: 1}, {argB: 2});
+		},
+		out: 'function(){return arguments}({argA:1},{argB:2})',
+		validate(args) {
+			expect(args).toBeArguments();
+			expect(args).toHaveLength(2);
+			expect(args[0]).toEqual({argA: 1});
+			expect(args[1]).toEqual({argB: 2});
+		}
+	});
+
+	itSerializes('with elements deleted', {
+		in() {
+			function createArgs() { return arguments; }
+			const args = createArgs(0, 0, {argA: 1}, 0, 0, {argB: 2}, 0, 0);
+			delete args[0];
+			delete args[1];
+			delete args[3];
+			delete args[4];
+			delete args[6];
+			delete args[7];
+			return args;
+		},
+		out: `(()=>{
+			const a=void 0,
+				b=Object.assign(
+					function(){return arguments}(a,a,{argA:1},a,a,{argB:2}),
+					{length:8}
+				);
+			delete b[4];
+			delete b[3];
+			delete b[1];
+			delete b[0];
+			return b
+		})()`,
+		validate(args) {
+			expect(args).toBeArguments();
+			expect(args).toHaveLength(8);
+			expect(args).toHaveOwnPropertyNames(['2', '5', 'length', 'callee']);
+			expect(args[2]).toEqual({argA: 1});
+			expect(args[5]).toEqual({argB: 2});
+		}
+	});
+
+	itSerializes('with length property changed to less', {
+		in() {
+			function createArgs() { return arguments; }
+			const args = createArgs({argA: 1}, {argB: 2});
+			args.length = 1;
+			return args;
+		},
+		out: `
+			Object.assign(
+				function(){return arguments}({argA:1},{argB:2}),
+				{length:1}
+			)
+		`,
+		validate(args) {
+			expect(args).toBeArguments();
+			expect(args).toHaveLength(1);
+			expect(args).toHaveOwnPropertyNames(['0', '1', 'length', 'callee']);
+			expect(args[0]).toEqual({argA: 1});
+			expect(args[1]).toEqual({argB: 2});
+		}
+	});
+
+	itSerializes('with length property changed to more', {
+		in() {
+			function createArgs() { return arguments; }
+			const args = createArgs({argA: 1}, {argB: 2});
+			args.length = 4;
+			return args;
+		},
+		out: `
+			Object.assign(
+				function(){return arguments}({argA:1},{argB:2}),
+				{length:4}
+			)
+		`,
+		validate(args) {
+			expect(args).toBeArguments();
+			expect(args).toHaveLength(4);
+			expect(args).toHaveOwnPropertyNames(['0', '1', 'length', 'callee']);
+			expect(args[0]).toEqual({argA: 1});
+			expect(args[1]).toEqual({argB: 2});
+		}
+	});
+
+	itSerializes('with length property deleted', {
+		in() {
+			function createArgs() { return arguments; }
+			const args = createArgs({argA: 1}, {argB: 2});
+			delete args.length;
+			return args;
+		},
+		out: `(()=>{
+			const a=function(){return arguments}({argA:1},{argB:2});
+			delete a.length;
+			return a
+		})()`,
+		validate(args) {
+			expect(args).toBeArguments();
+			expect(args.length).toBeUndefined();
+			expect(args).toHaveOwnPropertyNames(['0', '1', 'callee']);
+			expect(args[0]).toEqual({argA: 1});
+			expect(args[1]).toEqual({argB: 2});
+		}
+	});
+
+	itSerializes('with elements added', {
+		in() {
+			function createArgs() { return arguments; }
+			const args = createArgs({argA: 1}, {argB: 2});
+			args[2] = {argC: 3};
+			args[5] = {argD: 4};
+			return args;
+		},
+		out: `(()=>{
+			const a=void 0,
+				b=Object.assign(
+					function(){return arguments}({argA:1},{argB:2},{argC:3},a,a,{argD:4}),
+					{length:2}
+				);
+			delete b[4];
+			delete b[3];
+			return b
+		})()`,
+		validate(args) {
+			expect(args).toBeArguments();
+			expect(args).toHaveLength(2);
+			expect(args).toHaveOwnPropertyNames(['0', '1', '2', '5', 'length', 'callee']);
+			expect(args[0]).toEqual({argA: 1});
+			expect(args[1]).toEqual({argB: 2});
+			expect(args[2]).toEqual({argC: 3});
+			expect(args[5]).toEqual({argD: 4});
+		}
+	});
+
+	itSerializes('extra properties', {
+		in() {
+			function outer() {
+				return arguments;
+			}
+			const args = outer({argA: 1}, {argB: 2});
+			args.x = 3;
+			args[3] = 4;
+			args[5] = 5;
+			return args;
+		},
+		out: `(()=>{
+			const a=void 0,
+				b=Object.assign(
+					function(){return arguments}({argA:1},{argB:2},a,4,a,5),
+					{
+						length:2,
+						x:3
+					}
+				);
+			delete b[4];
+			delete b[2];
+			return b
+		})()`,
+		validate(args) {
+			expect(args).toBeArguments();
+			expect(args).toHaveLength(2);
+			expect(args).toHaveOwnPropertyNames(['0', '1', '3', '5', 'length', 'callee', 'x']);
+			expect(args[0]).toEqual({argA: 1});
+			expect(args[1]).toEqual({argB: 2});
+			expect(args.x).toBe(3);
+			expect(args[3]).toBe(4);
+			expect(args[5]).toBe(5);
+		}
+	});
+
+	itSerializes('descriptors altered', {
+		in() {
+			function fn() {
+				return arguments;
+			}
+			const args = fn({argA: 1}, {argB: 2});
+			Object.defineProperty(args, 0, {enumerable: false});
+			Object.defineProperty(args, 1, {writable: false, configurable: false});
+			return args;
+		},
+		out: `
+			Object.defineProperties(
+				function(){return arguments}({argA:1},{argB:2}),
+				{0:{enumerable:false},1:{writable:false,configurable:false}}
+			)
+		`,
+		validate(args) {
+			expect(args).toBeArguments();
+			expect(args).toHaveLength(2);
+			expect(args).toHaveOwnPropertyNames(['0', '1', 'length', 'callee']);
+			expect(args[0]).toEqual({argA: 1});
+			expect(args[1]).toEqual({argB: 2});
+			expect(args).toHaveDescriptorModifiersFor(0, true, false, true);
+			expect(args).toHaveDescriptorModifiersFor(1, false, true, false);
+		}
+	});
+
+	itSerializes('getter + setter', {
+		in() {
+			function fn() {
+				return arguments;
+			}
+			const args = fn({argA: 1}, {argB: 2});
+			Object.defineProperty(args, 0, {
+				get() { return 3; },
+				set(v) { this[1] = v; }
+			});
+			return args;
+		},
+		out: `
+			Object.defineProperties(
+				function(){return arguments}(void 0,{argB:2}),
+				{0:{get(){return 3},set(a){this[1]=a}}}
+			)
+		`,
+		validate(args) {
+			expect(args).toBeArguments();
+			expect(args).toHaveLength(2);
+			expect(args).toHaveOwnPropertyNames(['0', '1', 'length', 'callee']);
+			expect(args[0]).toBe(3);
+			expect(args[1]).toEqual({argB: 2});
+			args[0] = 4;
+			expect(args[1]).toBe(4);
+		}
+	});
+
+	itSerializes('prototype altered', {
+		in() {
+			function fn() {
+				return arguments;
+			}
+			const args = fn({argA: 1}, {argB: 2});
+			Object.setPrototypeOf(args, Date.prototype);
+			return args;
+		},
+		out: 'Object.setPrototypeOf(function(){return arguments}({argA:1},{argB:2}),Date.prototype)',
+		validate(args) {
+			expect(args).toBeArguments();
+			expect(args).toHaveLength(2);
+			expect(args).toHaveOwnPropertyNames(['0', '1', 'length', 'callee']);
+			expect(args[0]).toEqual({argA: 1});
+			expect(args[1]).toEqual({argB: 2});
+			expect(args).toHavePrototype(Date.prototype);
+		}
+	});
+
+	itSerializes('circular elements', {
+		in() {
+			function createArgs() { return arguments; }
+			const args = createArgs(0, {argA: 1}, 0);
+			args[0] = args;
+			args[2] = args;
+			return args;
+		},
+		out: `(()=>{
+			const a=void 0,
+				b=function(){return arguments}(a,{argA:1},a);
+			b[0]=b;
+			b[2]=b;
+			return b
+		})()`,
+		validate(args) {
+			expect(args).toBeArguments();
+			expect(args).toHaveLength(3);
+			expect(args).toHaveOwnPropertyNames(['0', '1', '2', 'length', 'callee']);
+			expect(args[0]).toBe(args);
+			expect(args[1]).toEqual({argA: 1});
+			expect(args[2]).toBe(args);
+		}
+	});
+});
+
+describe('functions including `arguments`', () => {
 	describe('referencing upper function scope', () => {
 		describe('1 level up', () => {
 			itSerializes('single instantiation', {
@@ -629,104 +921,6 @@ describe('Functions including `arguments`', () => {
 				expect(res).toHaveLength(2);
 				expect(res[0]).toEqual({argA: 1});
 				expect(res[1]).toEqual({argB: 2});
-			}
-		});
-	});
-
-	describe('altered', () => {
-		itSerializes('extra properties', {
-			in() {
-				function outer() {
-					return arguments;
-				}
-				const args = outer({argA: 1}, {argB: 2});
-				args.x = 3;
-				args[3] = 4;
-				args[5] = 5;
-				return args;
-			},
-			out: 'Object.assign(function(){return arguments}({argA:1},{argB:2}),{3:4,5:5,x:3})',
-			validate(args) {
-				expect(args).toBeArguments();
-				expect(args).toHaveLength(2);
-				expect(args).toHaveOwnPropertyNames(['0', '1', '3', '5', 'length', 'callee', 'x']);
-				expect(args[0]).toEqual({argA: 1});
-				expect(args[1]).toEqual({argB: 2});
-				expect(args.x).toBe(3);
-				expect(args[3]).toBe(4);
-				expect(args[5]).toBe(5);
-			}
-		});
-
-		itSerializes('descriptors altered', {
-			in() {
-				function fn() {
-					return arguments;
-				}
-				const args = fn({argA: 1}, {argB: 2});
-				Object.defineProperty(args, 0, {enumerable: false});
-				Object.defineProperty(args, 1, {writable: false, configurable: false});
-				return args;
-			},
-			out: `Object.defineProperties(
-				function(){return arguments}({argA:1},{argB:2}),
-				{0:{enumerable:false},1:{writable:false,configurable:false}}
-			)`,
-			validate(args) {
-				expect(args).toBeArguments();
-				expect(args).toHaveLength(2);
-				expect(args).toHaveOwnPropertyNames(['0', '1', 'length', 'callee']);
-				expect(args[0]).toEqual({argA: 1});
-				expect(args[1]).toEqual({argB: 2});
-				expect(args).toHaveDescriptorModifiersFor(0, true, false, true);
-				expect(args).toHaveDescriptorModifiersFor(1, false, true, false);
-			}
-		});
-
-		itSerializes('getter + setter', {
-			in() {
-				function fn() {
-					return arguments;
-				}
-				const args = fn({argA: 1}, {argB: 2});
-				Object.defineProperty(args, 0, {
-					get() { return 3; },
-					set(v) { this[1] = v; }
-				});
-				return args;
-			},
-			out: `Object.defineProperties(
-				function(){return arguments}(3,{argB:2}),
-				{0:{get(){return 3},set(a){this[1]=a}}}
-			)`,
-			validate(args) {
-				expect(args).toBeArguments();
-				expect(args).toHaveLength(2);
-				expect(args).toHaveOwnPropertyNames(['0', '1', 'length', 'callee']);
-				expect(args[0]).toBe(3);
-				expect(args[1]).toEqual({argB: 2});
-				args[0] = 4;
-				expect(args[1]).toBe(4);
-			}
-		});
-
-		itSerializes('prototype altered', {
-			in() {
-				function fn() {
-					return arguments;
-				}
-				const args = fn({argA: 1}, {argB: 2});
-				Object.setPrototypeOf(args, Date.prototype);
-				return args;
-			},
-			out: 'Object.setPrototypeOf(function(){return arguments}({argA:1},{argB:2}),Date.prototype)',
-			validate(args) {
-				expect(args).toBeArguments();
-				expect(args).toHaveLength(2);
-				expect(args).toHaveOwnPropertyNames(['0', '1', 'length', 'callee']);
-				expect(args[0]).toEqual({argA: 1});
-				expect(args[1]).toEqual({argB: 2});
-				expect(args).toHavePrototype(Date.prototype);
 			}
 		});
 	});
