@@ -73,7 +73,6 @@ describe('numbers', () => {
 	});
 });
 
-/* eslint-disable node/no-unsupported-features/es-builtins */
 describe('BigInts', () => {
 	itSerializesEqual('zero', {
 		in: () => BigInt(0),
@@ -99,7 +98,6 @@ describe('BigInts', () => {
 		validate: bigInt => expect(bigInt).toBe(BigInt('100000000000000000000'))
 	});
 });
-/* eslint-enable node/no-unsupported-features/es-builtins */
 
 itSerializesEqual('null', () => null, 'null');
 

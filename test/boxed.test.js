@@ -246,7 +246,6 @@ describe('Boxed Numbers', () => {
 	});
 });
 
-/* eslint-disable node/no-unsupported-features/es-builtins */
 describe('Boxed BigInts', () => {
 	itSerializesEqual('zero', {
 		in: () => Object(BigInt(0)),
@@ -322,4 +321,3 @@ describe('Boxed BigInts', () => {
 		}
 	});
 });
-/* eslint-enable node/no-unsupported-features/es-builtins */
