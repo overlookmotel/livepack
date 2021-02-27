@@ -74,7 +74,7 @@ describe('numbers', () => {
 });
 
 /* eslint-disable node/no-unsupported-features/es-builtins */
-describe('bigInts', () => {
+describe('BigInts', () => {
 	itSerializesEqual('zero', {
 		in: () => BigInt(0),
 		out: '0n',
