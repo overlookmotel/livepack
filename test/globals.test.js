@@ -14,7 +14,7 @@ const {itSerializesEqual, stripSourceMapComment} = require('./support/index.js')
 
 // Tests
 
-const itSerializesEqualIfNode12Plus = parseNodeVersion(process.version).major > 10
+const itSerializesEqualIfNode12 = parseNodeVersion(process.version).major >= 12
 	? itSerializesEqual
 	: itSerializesEqual.skip;
 
@@ -130,7 +130,7 @@ describe('Globals', () => {
 		});
 
 		// Node v10 does not use setters for `fs.ReadStream` etc
-		itSerializesEqualIfNode12Plus('setter', {
+		itSerializesEqualIfNode12('setter', {
 			in: () => Object.getOwnPropertyDescriptor(fs, 'ReadStream').set,
 			out: 'Object.getOwnPropertyDescriptor(require("fs"),"ReadStream").set',
 			validate(fn, {isOutput, input}) {
