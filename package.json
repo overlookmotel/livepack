@@ -46,7 +46,7 @@
     "yargs": "^16.2.0"
   },
   "devDependencies": {
-    "@babel/plugin-transform-arrow-functions": "^7.12.13",
+    "@babel/plugin-transform-arrow-functions": "^7.13.0",
     "@babel/plugin-transform-strict-mode": "^7.12.13",
     "@overlookmotel/eslint-config": "^7.2.1",
     "@overlookmotel/eslint-config-jest": "^4.1.1",
@@ -54,7 +54,7 @@
     "coveralls": "^3.1.0",
     "cross-env": "^7.0.3",
     "escape-string-regexp": "^4.0.0",
-    "eslint": "^7.19.0",
+    "eslint": "^7.21.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-eslint-comments": "^3.2.0",
     "eslint-plugin-import": "^2.22.1",
