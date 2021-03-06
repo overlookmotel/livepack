@@ -25,6 +25,45 @@ const {createFixture, requireFixture} = createFixturesFunctions(__filename);
 if (typeof globalThis === 'undefined') global.globalThis = global;
 
 describe('eval', () => {
+	describe('serialized', () => {
+		itSerializes('directly', {
+			in: () => eval,
+			out: 'eval',
+			validateOutput: e => expect(e).toBe(global.eval)
+		});
+
+		itSerializes('in object', {
+			in: () => ({e: eval}),
+			out: '{e:eval}',
+			validateOutput(obj) {
+				expect(obj).toEqual({e: global.eval});
+				expect(obj.e).toBe(global.eval);
+			}
+		});
+
+		itSerializes('multiple references are de-duplicated', {
+			in: () => ({e: eval, e2: eval}),
+			out: '(()=>{const a=eval;return{e:a,e2:a}})()',
+			validateOutput(obj) {
+				expect(obj).toEqual({e: global.eval, e2: global.eval});
+				expect(obj.e).toBe(global.eval);
+				expect(obj.e2).toBe(global.eval);
+			}
+		});
+
+		itSerializes('in function scope', {
+			in() {
+				const e = eval;
+				return () => e;
+			},
+			out: '(a=>()=>a)(eval)',
+			validateOutput(fn) {
+				expect(fn).toBeFunction();
+				expect(fn()).toBe(global.eval);
+			}
+		});
+	});
+
 	describe('evaluated before serialization', () => {
 		describe('`eval()`', () => {
 			describe('values', () => {
