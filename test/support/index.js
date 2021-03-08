@@ -37,26 +37,38 @@ const DEFAULT_OPTIONS = env.LIVEPACK_TEST_QUICK ? {minify: true, mangle: true, i
  * Wrap test function (`itSerializes` / `itSerializesEqual`) to add `.skip` and `.only` methods,
  * as with Jest's `it()`.
  * Wrapped functions capture stack trace for call of the test function.
- * Test function is called with `describe` / `describe.skip` / `describe.only` as first arg,
- * and `customExpect` function as 2nd arg.
- * @param {Function} fn - Test function
+ * Default options object can also be provided, which will be merged into options.
+ * `.withOptions()` method allows tests to create their own custom `itSerializes()` with default options.
+ *
+ * Test function is called with args:
+ *   1. `describe` / `describe.skip` / `describe.only`
+ *   2. Custom `expect` wrapper
+ *   3. Default options object
+ *   4. Test name
+ *   5. Options object
+ *
+ * @param {Object} [defaultOptions] - Default options object
  * @returns {Function} - Wrapped test function
  */
-function wrapTestFunction(fn) {
+function wrapTestFunction(fn, defaultOptions) {
 	function wrapped(...args) {
-		fn(describe, getCustomExpect(wrapped), ...args);
+		fn(describe, getCustomExpect(wrapped), defaultOptions, ...args);
 	}
 	wrapped.skip = function skip(...args) {
-		fn(describe.skip, getCustomExpect(skip), ...args);
+		fn(describe.skip, getCustomExpect(skip), defaultOptions, ...args);
 	};
 	wrapped.only = function only(...args) {
-		fn(describe.only, getCustomExpect(only), ...args);
+		fn(describe.only, getCustomExpect(only), defaultOptions, ...args);
 	};
 	wrapped.each = function each(cases, name, getOptions) {
 		const customExpect = getCustomExpect(each);
 		describe.each(cases)(name, (...caseProps) => {
-			fn(null, customExpect, name, getOptions(...caseProps));
+			fn(null, customExpect, defaultOptions, name, getOptions(...caseProps));
 		});
+	};
+	wrapped.withOptions = function(options) {
+		assert(isObject(options), '`options` must be an object');
+		return wrapTestFunction(fn, {...defaultOptions, ...options});
 	};
 	return wrapped;
 }
@@ -84,6 +96,7 @@ function getCustomExpect(callFn) {
  * @param {Function} describe - Describe function (injected by `wrapTestFunction()`)
  * @param {Function} customExpect - Function to run expectation
  *   and augument error with message and call stack (injected by `wrapTestFunction()`)
+ * @param {Object} [defaultOptions] - Default options object (injected by `wrapTestFunction()`)
  * @param {string} name - Test name
  * @param {Object} options - Options object
  * @param {Function} options.in - Function returning value to serialize
@@ -101,11 +114,15 @@ function getCustomExpect(callFn) {
  * @param {boolean} [options.mangle] - If defined, only runs with that option
  * @returns {undefined}
  */
-function itSerializes(describe, customExpect, name, options) {
+function itSerializes(describe, customExpect, defaultOptions, name, options) {
 	// Validate args
 	assert(isFullString(name), '`name` must be a string');
 	assert(isObject(options), '`options` must be an object');
 
+	// Merge in default options
+	if (defaultOptions) options = {...defaultOptions, ...options};
+
+	// Validate options
 	const inputFn = options.in;
 	assert(isFunction(inputFn), '`options.in` must be a function');
 
@@ -254,20 +271,18 @@ function itSerializes(describe, customExpect, name, options) {
  * @param {Function} describe - Describe function (injected by `wrapTestFunction()`)
  * @param {Function} customExpect - Function to run expectation
  *   and augument error with message and call stack (injected by `wrapTestFunction()`)
+ * @param {Object} [defaultOptions] - Default options object (injected by `wrapTestFunction()`)
  * @param {string} name - Test name
  * @param {Object|Function} options - Options object, same as for `itSerializes()`
  * @param {string} [expectedOutput] - Expected output
  * @param {Function} [validate] - Function to validate eval-ed output
  * @returns {undefined}
  */
-function itSerializesEqual(describe, customExpect, name, options, expectedOutput, validate) {
-	if (isFunction(options)) {
-		options = {in: options, out: expectedOutput, validate};
-	} else {
-		assert(isObject(options), '`options` must be an object');
-	}
-
-	itSerializes(describe, customExpect, name, {...options, equal: true});
+function itSerializesEqual(
+	describe, customExpect, defaultOptions, name, options, expectedOutput, validate
+) {
+	if (isFunction(options)) options = {in: options, out: expectedOutput, validate};
+	itSerializes(describe, customExpect, {...defaultOptions, equal: true}, name, options);
 }
 
 /**
