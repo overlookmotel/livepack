@@ -11,12 +11,21 @@ const {itSerializesEqual} = require('./support/index.js');
 // Tests
 
 describe('Arrays', () => {
-	itSerializesEqual('empty array', () => [], '[]');
+	itSerializesEqual('empty array', {
+		in: () => [],
+		out: '[]'
+	});
 
 	describe('entries', () => {
-		itSerializesEqual('one entry', () => [1], '[1]');
+		itSerializesEqual('one entry', {
+			in: () => [1],
+			out: '[1]'
+		});
 
-		itSerializesEqual('multiple entries', () => [1, 2, 3], '[1,2,3]');
+		itSerializesEqual('multiple entries', {
+			in: () => [1, 2, 3],
+			out: '[1,2,3]'
+		});
 
 		itSerializesEqual('sparse entries', {
 			in({ctx}) {

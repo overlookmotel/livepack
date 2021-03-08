@@ -155,9 +155,15 @@ describe('Globals', () => {
 	});
 
 	describe('shimmed globals', () => {
-		itSerializesEqual('Symbol', () => Symbol, 'Symbol');
+		itSerializesEqual('Symbol', {
+			in: () => Symbol,
+			out: 'Symbol'
+		});
 
-		itSerializesEqual('Symbol.for', () => Symbol.for, 'Symbol.for');
+		itSerializesEqual('Symbol.for', {
+			in: () => Symbol.for,
+			out: 'Symbol.for'
+		});
 
 		itSerializesEqual('Function.prototype.bind', {
 			in: () => Function.prototype.bind,

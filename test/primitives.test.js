@@ -11,42 +11,42 @@ const {itSerializesEqual} = require('./support/index.js');
 // Tests
 
 describe('Strings', () => {
-	itSerializesEqual('non-empty string', () => 'abc', '"abc"');
-	itSerializesEqual('empty string', () => '', '""');
+	itSerializesEqual('non-empty string', {in: () => 'abc', out: '"abc"'});
+	itSerializesEqual('empty string', {in: () => '', out: '""'});
 });
 
 describe('booleans', () => {
-	itSerializesEqual('true', () => true, 'true');
-	itSerializesEqual('false', () => false, 'false');
+	itSerializesEqual('true', {in: () => true, out: 'true'});
+	itSerializesEqual('false', {in: () => false, out: 'false'});
 });
 
 describe('numbers', () => {
 	describe('positive integers', () => {
-		itSerializesEqual('1', () => 1, '1');
-		itSerializesEqual('123', () => 123, '123');
+		itSerializesEqual('1', {in: () => 1, out: '1'});
+		itSerializesEqual('123', {in: () => 123, out: '123'});
 	});
 
 	describe('negative integers', () => {
-		itSerializesEqual('-1', () => -1, '-1');
-		itSerializesEqual('-123', () => -123, '-123');
+		itSerializesEqual('-1', {in: () => -1, out: '-1'});
+		itSerializesEqual('-123', {in: () => -123, out: '-123'});
 	});
 
-	itSerializesEqual('zero', () => 0, '0');
+	itSerializesEqual('zero', {in: () => 0, out: '0'});
 
-	itSerializesEqual('minus zero', () => -0, '-0');
+	itSerializesEqual('minus zero', {in: () => -0, out: '-0'});
 
 	describe('positive floats', () => {
-		itSerializesEqual('0.1', () => 0.1, '0.1');
-		itSerializesEqual('123.0001', () => 123.0001, '123.0001');
+		itSerializesEqual('0.1', {in: () => 0.1, out: '0.1'});
+		itSerializesEqual('123.0001', {in: () => 123.0001, out: '123.0001'});
 	});
 
 	describe('negative floats', () => {
-		itSerializesEqual('0.1', () => -0.1, '-0.1');
-		itSerializesEqual('-123.0001', () => -123.0001, '-123.0001');
+		itSerializesEqual('0.1', {in: () => -0.1, out: '-0.1'});
+		itSerializesEqual('-123.0001', {in: () => -123.0001, out: '-123.0001'});
 	});
 
 	describe('infinity', () => {
-		itSerializesEqual('serializes correctly', () => 1 / 0, 'Infinity');
+		itSerializesEqual('serializes correctly', {in: () => 1 / 0, out: 'Infinity'});
 
 		itSerializesEqual('treated as a global var', {
 			in: () => ({x: 1 / 0, y: 1 / 0}),
@@ -55,7 +55,7 @@ describe('numbers', () => {
 	});
 
 	describe('negative Infinity', () => {
-		itSerializesEqual('serializes correctly', () => -1 / 0, '-Infinity');
+		itSerializesEqual('serializes correctly', {in: () => -1 / 0, out: '-Infinity'});
 
 		itSerializesEqual('treated as a global var', {
 			in: () => ({x: -1 / 0, y: -1 / 0}),
@@ -64,7 +64,7 @@ describe('numbers', () => {
 	});
 
 	describe('NaN', () => { // eslint-disable-line jest/lowercase-name
-		itSerializesEqual('serializes correctly', () => undefined * 1, 'NaN');
+		itSerializesEqual('serializes correctly', {in: () => undefined * 1, out: 'NaN'});
 
 		itSerializesEqual('treated as a global var', {
 			in: () => ({x: undefined * 1, y: undefined * 1}),
@@ -99,7 +99,7 @@ describe('BigInts', () => {
 	});
 });
 
-itSerializesEqual('null', () => null, 'null');
+itSerializesEqual('null', {in: () => null, out: 'null'});
 
 describe('undefined', () => {
 	itSerializesEqual('serializes as `void 0`', {

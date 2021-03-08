@@ -11,12 +11,21 @@ const {itSerializes, itSerializesEqual} = require('./support/index.js');
 // Tests
 
 describe('Objects', () => {
-	itSerializesEqual('empty object', () => ({}), '{}');
+	itSerializesEqual('empty object', {
+		in: () => ({}),
+		out: '{}'
+	});
 
 	describe('properties', () => {
-		itSerializesEqual('one property', () => ({a: 1}), '{a:1}');
+		itSerializesEqual('one property', {
+			in: () => ({a: 1}),
+			out: '{a:1}'
+		});
 
-		itSerializesEqual('multiple properties', () => ({a: 1, b: 2, c: 3}), '{a:1,b:2,c:3}');
+		itSerializesEqual('multiple properties', {
+			in: () => ({a: 1, b: 2, c: 3}),
+			out: '{a:1,b:2,c:3}'
+		});
 
 		itSerializesEqual('properties with names which are not valid identifiers', {
 			in: () => ({'b-c': {'0a': 1, 'd.e': 2}}),
