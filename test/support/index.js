@@ -8,11 +8,14 @@
 // Modules
 const {serialize} = require('livepack'),
 	parseNodeVersion = require('parse-node-version'),
-	{isString, isFullString, isObject, isFunction, isBoolean} = require('is-it-type'),
+	{isString, isFullString, isObject, isFunction, isArray, isBoolean} = require('is-it-type'),
 	assert = require('simple-invariant');
 
 // Imports
 const createFixturesFunctions = require('./fixtures.js');
+
+// Constants
+const FORMAT_NAMES = {js: 'JS', esm: 'ESM', cjs: 'CommonJS'};
 
 // Exports
 
@@ -97,8 +100,12 @@ function createRunExpectationFn(callFn) {
  * @param {Object} options - Options object
  * @param {Function} options.in - Function returning value to serialize
  * @param {string} [options.out] - Expected output JS
+ * @param {string} [options.outJs] - Expected output JS for `js` format
+ * @param {string} [options.outEsm] - Expected output JS for `esm` format
+ * @param {string} [options.outCjs] - Expected output JS for `cjs` format
  * @param {Function} [options.validate] - Function to validate eval-ed output
- * @param {string} [options.format='js'] - Format option to pass to `serialize()`
+ * @param {string|Array<string>} [options.format='js'] - Format option to pass to `serialize()`.
+ *   Can also provide an array of formats.
  * @param {boolean} [options.equal=false] - If set, checks equality between input and eval-ed output
  *   using `expect(output).toEqual(input)`
  * @param {boolean} [options.preserveLineBreaks=false] - If set, does not remove line breaks
@@ -126,11 +133,18 @@ function itSerializes(name, options, defaultOptions, describe, runExpectation) {
 	const inputFn = options.in;
 	assert(isFunction(inputFn), '`options.in` must be a function');
 
-	let {format} = options;
-	if (format === undefined) {
-		format = 'js';
+	let formats;
+	const formatOpt = options.format;
+	if (formatOpt === undefined) {
+		formats = ['js'];
+	} else if (isString(formatOpt)) {
+		formats = [formatOpt];
 	} else {
-		assert(isString(format), '`options.format` must be a string if provided');
+		assert(
+			isArray(formatOpt) && !formatOpt.find(format => !isString(format)),
+			'`options.format` must be a string or array of strings if provided'
+		);
+		formats = formatOpt;
 	}
 
 	let {preserveLineBreaks} = options;
@@ -147,11 +161,31 @@ function itSerializes(name, options, defaultOptions, describe, runExpectation) {
 		assert(isBoolean(preserveComments), '`options.preserveComments` must be a boolean if provided');
 	}
 
-	let expectedOutput = options.out;
-	if (expectedOutput !== undefined) {
-		assert(isString(expectedOutput), '`options.out` must be a string if provided');
-		// Remove line breaks
-		if (!preserveLineBreaks) expectedOutput = stripLineBreaks(expectedOutput);
+	assert(
+		options.out === undefined || formats.length === 1,
+		'Cannot use `options.out` if testing multiple formats'
+	);
+	const expectedOutputs = {};
+	for (const [optName, format] of [
+		['out', formats[0]],
+		['outJs', 'js'],
+		['outEsm', 'esm'],
+		['outCjs', 'cjs']
+	]) {
+		let expectedOutput = options[optName];
+		if (expectedOutput !== undefined) {
+			assert(
+				formats.includes(format),
+				`\`options.${optName}\` cannot be used unless '${format}' is included in \`options.format\``
+			);
+
+			assert(isString(expectedOutput), `\`options.${optName}\` must be a string if provided`);
+
+			// Remove line breaks
+			if (!preserveLineBreaks) expectedOutput = stripLineBreaks(expectedOutput);
+
+			expectedOutputs[format] = expectedOutput;
+		}
 	}
 
 	const {validate} = options;
@@ -182,13 +216,14 @@ function itSerializes(name, options, defaultOptions, describe, runExpectation) {
 	}
 
 	assert(
-		expectedOutput !== undefined || validateOutput || equal,
-		'`out`, `validate`, `validateOutput` or `equal` option must be provided'
+		validateOutput || equal || !formats.find(format => !expectedOutputs[format]),
+		'`out` / `outJs` / `outEsm` / `outCjs`, `validate`, `validateOutput` or `equal` option must be provided'
 	);
 
 	const unknownKey = Object.keys(options).find(
 		key => ![
-			'in', 'out', 'validate', 'validateInput', 'validateOutput',
+			'in', 'out', 'outJs', 'outEsm', 'outCjs',
+			'validate', 'validateInput', 'validateOutput',
 			'format', 'equal', 'preserveLineBreaks', 'preserveComments',
 			'minify', 'inline', 'mangle'
 		].includes(key)
@@ -203,6 +238,18 @@ function itSerializes(name, options, defaultOptions, describe, runExpectation) {
 	}
 
 	function defineTests() {
+		if (formats.length === 1) {
+			defineFormatTests(formats[0]);
+		} else {
+			for (const format of formats) {
+				describe(`${FORMAT_NAMES[format]} format`, () => {
+					defineFormatTests(format);
+				});
+			}
+		}
+	}
+
+	function defineFormatTests(format) {
 		itAllOptions(options, async (opts) => {
 			// Add other options
 			opts.format = format;
@@ -217,6 +264,7 @@ function itSerializes(name, options, defaultOptions, describe, runExpectation) {
 			const outputJs = serialize(input, opts);
 
 			// Check output matches expected
+			const expectedOutput = expectedOutputs[format];
 			if (opts.minify && opts.inline && opts.mangle && expectedOutput !== undefined) {
 				let testOutputJs = outputJs;
 				if (!preserveComments) testOutputJs = stripComments(testOutputJs);
