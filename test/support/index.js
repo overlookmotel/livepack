@@ -52,16 +52,16 @@ const DEFAULT_OPTIONS = env.LIVEPACK_TEST_QUICK ? {minify: true, mangle: true, i
  */
 function wrapItSerializes(defaultOptions) {
 	function wrapped(name, options) {
-		itSerializes(name, options, defaultOptions, describe, getCustomExpect(wrapped));
+		itSerializes(name, options, defaultOptions, describe, createRunExpectationFn(wrapped));
 	}
 	wrapped.skip = function skip(name, options) {
-		itSerializes(name, options, defaultOptions, describe.skip, getCustomExpect(skip));
+		itSerializes(name, options, defaultOptions, describe.skip, createRunExpectationFn(skip));
 	};
 	wrapped.only = function only(name, options) {
-		itSerializes(name, options, defaultOptions, describe.only, getCustomExpect(only));
+		itSerializes(name, options, defaultOptions, describe.only, createRunExpectationFn(only));
 	};
 	wrapped.each = function each(cases, name, getOptions) {
-		const customExpect = getCustomExpect(each);
+		const customExpect = createRunExpectationFn(each);
 		describe.each(cases)(name, (...caseProps) => {
 			itSerializes(name, getOptions(...caseProps), defaultOptions, null, customExpect);
 		});
@@ -73,7 +73,7 @@ function wrapItSerializes(defaultOptions) {
 	return wrapped;
 }
 
-function getCustomExpect(callFn) {
+function createRunExpectationFn(callFn) {
 	// Capture stack trace at point of calling `itSerializes`
 	const callErr = new Error();
 	Error.captureStackTrace(callErr, callFn);
@@ -110,11 +110,11 @@ function getCustomExpect(callFn) {
  * @param {boolean} [options.mangle] - If defined, only runs with that option
  * @param {Object} [defaultOptions] - Default options object (injected by `wrapTestFunction()`)
  * @param {Function} describe - Describe function (injected by `wrapTestFunction()`)
- * @param {Function} customExpect - Function to run expectation
+ * @param {Function} runExpectation - Function to run expectation
  *   and augument error with message and call stack (injected by `wrapTestFunction()`)
  * @returns {undefined}
  */
-function itSerializes(name, options, defaultOptions, describe, customExpect) {
+function itSerializes(name, options, defaultOptions, describe, runExpectation) {
 	// Validate args
 	assert(isFullString(name), '`name` must be a string');
 	assert(isObject(options), '`options` must be an object');
@@ -221,7 +221,7 @@ function itSerializes(name, options, defaultOptions, describe, customExpect) {
 				let testOutputJs = outputJs;
 				if (!preserveComments) testOutputJs = stripComments(testOutputJs);
 
-				customExpect(
+				runExpectation(
 					'Output does not match expected',
 					() => expect(testOutputJs).toBe(expectedOutput)
 				);
@@ -232,7 +232,7 @@ function itSerializes(name, options, defaultOptions, describe, customExpect) {
 
 			// Check output equals input
 			if (equal) {
-				customExpect(
+				runExpectation(
 					'Eval-ed output does not equal input',
 					() => expect(output).toEqual(input)
 				);
