@@ -47,6 +47,10 @@ Livepack doesn't perform tree-shaking exactly, but works more like a garbage col
 
 This is more effective than tree-shaking as it doesn't rely on static analysis of the code, which can miss opportunities to discard unreferenced values.
 
+#### Value-level code splitting
+
+Most bundlers code split at the level of files. Livepack splits code at a far more granular level - individual Objects or Functions. This makes for smaller bundles. [More details](#code-splitting)
+
 #### Mix build-time and run-time code
 
 Any values which are calculated before serialization are included in the build pre-calculated. `ONE_GB = 1024 * 1024 * 1024;` is serialized as the result, `1073741824`. This is a trivial example, but any calculation of arbitrary complexity can be performed at build time.
@@ -67,6 +71,14 @@ Livepack *runs* the code you give it and outputs the *result*. So your app can b
 
 Livepack has an emphasis on correctness. It will not always output the most compact code, but the output should perfectly reproduce the input (including function names, property descriptors etc, which tools like Babel often do not faithfully translate).
 
+### Beware ye!
+
+Livepack is a new and experimental project. It works for NodeJS server-side code, but there are some major gaps for bundling client-side code.
+
+Please see [what's missing](#whats-missing) for more information.
+
+The intention is to overcome the current limitations in future, and make Livepack work fully for client-side code. For now it's a proof of concept of a different approach - dynamic bundling - and what patterns it makes possible. Please [see section on code spitting](#code-splitting) for examples.
+
 ## Usage
 
 ### Installation
@@ -78,16 +90,20 @@ npm install -D livepack
 ### CLI
 
 ```sh
-npx livepack <input> -o <output dir>
+npx livepack <input path(s)..> -o <output dir>
 ```
 
-Input should be the entry point of the app to be packed.
+Inputs should be the entry point(s) of the app to be packed.
 
 ```sh
 npx livepack src/index.js -o build
 ```
 
-The entry point must export a function which will be executed when the built app is run.
+```sh
+npx livepack src/index.js src/another_entry.js -o build
+```
+
+Entry points must export a function which will be executed when the built app is run.
 
 This is unlike bundlers like Webpack and Rollup. You must *export* a function including the code you want to run when the built app is launched. Top-level code will be executed *during build*, not at runtime.
 
@@ -103,6 +119,12 @@ or (see `esm` option below):
 export default function() {
   console.log('hello!');
 }
+```
+
+Resulting output:
+
+```js
+console.log('hello!');
 ```
 
 #### Promises
@@ -147,7 +169,7 @@ You can set options in a `livepack.config.json` file rather than on command line
 ```json
 // livepack.config.json
 {
-  "input": "./src/index.js",
+  "input": "src/index.js",
   "output": "build",
   "format": "esm",
   "esm": true,
@@ -165,6 +187,18 @@ You can set options in a `livepack.config.json` file rather than on command line
 }
 ```
 
+`inputs` can be:
+
+* File path - absolute or relative to current directory
+* Array of file paths - outputs will be named same as the inputs
+* Object mapping output names to input paths
+
+```json
+input: "src/index.js"
+input: ["src/index.js", "src/other.js"]
+input: {"index": "src/index.js", "another": "src/other.js"}
+```
+
 Then run Livepack with:
 
 ```js
@@ -178,7 +212,7 @@ All of the above options are optional except `input` and `output`.
 There are two parts to the programmatic API.
 
 1. Require hook
-2. `serialize()` method
+2. `serialize()` / `serializeEntries()` functions
 
 #### Require hook
 
@@ -225,16 +259,29 @@ These options correspond to CLI options, but sometimes named slightly differentl
 
 ### Serialization
 
-Use the `serialize` function to serialize.
+Use the `serialize()` or `serializeEntries()` functions to serialize. `serializeEntries()` is used if you have multiple entry points.
 
 ```js
 const { serialize } = require('livepack');
-serialize( { x: 1 } ) // => '{x:1}'
+const js = serialize( { x: 1 } );
+// js = '{x:1}'
+```
+
+```js
+const { serializeEntries } = require('livepack');
+const files = serializeEntries( {
+  index: { x: 1 },
+  other: { y: 2 }
+} );
+// files = [
+//   { filename: 'index.js', content: '{x:1}' },
+//   { filename: 'other.js', content: '{y:1}' }
+// ]
 ```
 
 #### Options
 
-`serialize` can be passed options as 2nd argument.
+`serialize()` and `serializeEntries()` can be passed options as 2nd argument.
 
 ```js
 serialize( {x: 1}, {
@@ -245,16 +292,16 @@ serialize( {x: 1}, {
 | Option | Type | Usage | Default |
 |-|-|-|-|
 | `format` | `string` | Output format. Valid options are `js`, `cjs` or `esm` (see [below](#output-formats)). | `js` |
-| `exec` | `boolean` | Set to `true` to treat input as a function which should be executed when the code runs | `false` |
+| `exec` | `boolean` | Set to `true` to treat input as a function which should be executed when the code runs (as with CLI) | `false` |
 | `minify` | `boolean` | Minify output | `true` |
 | `mangle` | `boolean` | Mangle (shorten) variable names | `options.minify` |
 | `comments` | `boolean` | Include comments in output | `!options.minify` |
 | `inline` | `boolean` | Less verbose output | `true` |
-| `files` | `boolean` | `true` to output source maps in separate file not inline (see [below](#files)) | `false` |
-| `sourceMaps` | `boolean` or `'inline'` | Create source maps. `'inline'` adds source maps inline, `true` in separate `.map` files. | `false` |
+| `files` | `boolean` | `true` to output array of files (see [below](#files)) | `false` for `serialize()`,<br />`true` for `serializeEntries()` |
+| `sourceMaps` | `boolean` or `'inline'` | Create source maps. `'inline'` adds source maps inline, `true` in separate `.map` files.<br />If `true`, `files` option must also be `true`. | `false` |
 | `outputDir` | `string` | Path to dir code would be output to. If provided, source maps will use relative paths (relative to `outputDir`). | `undefined` |
 
-All these options (except `files` and `outputDir`) correspond to CLI options of the same names. Unlike the programmatic API, in the CLI `exec` and `files` options default to `true` and `minify` to `false`.
+All these options (except `files` and `outputDir`) correspond to CLI options of the same names. Unlike the CLI, in the programmatic API `exec` and `files` options default to `false` and `minify` to `true`.
 
 #### Output formats
 
@@ -290,6 +337,177 @@ outputs:
 ]
 ```
 
+## Code splitting
+
+Code splitting works differently in Livepack from other bundlers.
+
+Livepack pays no attention to what files code originates in, and *splits the output at the level of values, rather than at the level of files*.
+
+This produces an optimal split of the app, where each entry point only includes exactly the code it needs, and nothing more. It's more efficient than Livepack or Rollup's file-level code splitting.
+
+Any values shared between entry points are placed in shared chunks. These are named `chunk-XXXXXXXX.js`, where `XXXXXXXX` is a hash of the file's content.
+
+For example, if your input is:
+
+```js
+// src/entry1.js
+const { double, timesTen } = require('./shared.js');
+module.exports = () => double( timesTen(10) );
+
+// src/entry2.js
+const { triple, timesTen } = require('./shared.js');
+module.exports = () => triple( timesTen(20) );
+
+// src/shared.js
+module.exports = {
+  double: function double(n) { return n * 2; },
+  triple: function triple(n) { return n * 3; },
+  timesTen: function timesTen(n) { return n * 10; }
+};
+```
+
+Livepack will bundle this as:
+
+```js
+// build/entry1.js
+import timesTen from "./chunk-6N2RIGAZ.js";
+export default ((double,timesTen)=>()=>double(timesTen(10)))(function double(n){return n*2},timesTen)
+
+// build/entry2.js
+import timesTen from "./chunk-6N2RIGAZ.js";
+export default ((triple,timesTen)=>()=>triple(timesTen(20)))(function triple(n){return n*3},timesTen)
+
+// build/chunk-6N2RIGAZ.js
+export default function timesTen(n){return n*10}
+```
+
+`src/shared.js` has been split up. `timesTen` is used by both entry points, so has been placed in a shared chunk. But `double` and `triple` are inlined into the entry points that use them, since they're not shared. So each entry point doesn't need to import any code it doesn't use.
+
+You can customize how code is split to optimize caching (see [below](#split)).
+
+You may notice this output could be shorter - values are injected into a closure, when they could be accessed directly from outer scope. This is a current shortcoming of Livepack. It will be improved in a future release.
+
+#### No `import()`
+
+The other big difference from other bundlers is that Livepack doesn't at present support `import()`. It does, however, provide [another mechanism](#splitAsync) to achieve the same goal.
+
+### Multiple entry points
+
+If you have multiple entry points, use `serializeEntries()` or provide multiple input files to the [CLI](#CLI).
+
+### `split()`
+
+You can customize how code is split with `split()`. Split will cause the value provided to be placed in a separate file and other files will import it.
+
+This can be advantageous for caching - you may want to split off parts of your app which change infrequently.
+
+```js
+const { split } = require('livepack');
+
+const obj = { iAmABigObjectWhichChangesInfrequently: true, x: 123 };
+split( obj );
+
+module.exports = function getX() { return obj.x; };
+```
+
+Bundled output:
+
+```js
+// index.js
+import obj from "./chunk-V4ULTFDU.js";
+export default(obj=>function getX(){return obj.x;})(obj)
+
+// chunk-V4ULTFDU.js
+export default {iAmABigObjectWhichChangesInfrequently:true,x:123}
+```
+
+If you want to specify the name of split point files, pass name as 2nd argument to `split()`.
+
+```js
+// Split off in a file called `my-big-object.js`
+split( obj, 'my-big-object' );
+```
+
+### `splitAsync()`
+
+`splitAsync()` is Livepack's version of `import()`.
+
+`splitAsync()` takes a value and returns an import function. Just like `import()`, this import function returns a Promise of a module object. The `.default` property of the module object is the value `splitAsync()` was called with.
+
+When Livepack serializes an import function, it puts the value into a separate file and outputs `() => import('./chunk-XXXX.js')`.
+
+Example input:
+
+```js
+const { splitAsync } = require('livepack');
+
+const importDouble = splitAsync(
+  function double(n) { return n * 2; }
+);
+
+module.exports = async function quadruple(n) {
+  const double = (await importDouble()).default;
+  return double( double(n) );
+};
+```
+
+Output:
+
+```js
+// index.js
+export default(importDouble=>(
+  async function quadruple(n){
+    const double=(await importDouble()).default;
+    return double(double(n))
+  }
+)(
+  ()=>import("./chunk-LKCG7RVO.js")
+)
+
+// chunk-LKCG7RVO.js
+export default function double(n){return n*2}
+```
+
+There's a few things to notice here:
+
+1. `double` has been split into a separate file
+2. `importDouble` is output as a dynamic import `()=>import("./chunk-LKCG7RVO.js")`
+3. `double` didn't need to be defined in a separate file to be split off
+
+All looks very weird? Maybe. But it does open up some patterns which usually aren't possible.
+
+For example, you can dynamically create functions to be async imported.
+
+#### Example with React
+
+`splitAsync()` works well with `React.lazy()`:
+
+```js
+const people = [
+  {firstName: 'Harrison', lastName: 'Ford', loadsMoreData: { /* ... */} },
+	{firstName: 'Marlon', lastName: 'Brando', loadsMoreData: { /* ... */} },
+	{firstName: 'Peewee', lastName: 'Herman', loadsMoreData: { /* ... */} }
+];
+
+const lazyComponents = people.map( person => (
+  React.lazy(
+    splitAsync(
+      () => <PersonPage person={person} />
+    )
+  )
+) );
+```
+
+NB See [here](./example/react-splitAsync) for a full runnable example expanding on this.
+
+`lazyComponents` is an array of lazy-loaded components. Each will be output in a separate file, with the data for each individual bundled in. `people` isn't accessed from inside the function being split off, so it won't be included in the bundles, only each individual `person` object will be included in the file for that person.
+
+Where it gets really interesting is that data passed in to each lazy component isn't limited to just data - it can also include functions.
+
+So you could, for example, provide customized components for each person. e.g. include a Google Maps component only for the pages where you know the person's address, by adding a `.MapComponent` property to some of the `person` objects. Only pages where a map is needed would include the code for displaying a map.
+
+More broadly, components can be created at build time however you like - create code according to data. It's far more flexible than the usual model.
+
 ## What's missing
 
 This is a new and experimental project. There are some major gaps at present.
@@ -315,10 +533,6 @@ NB Applications can *use* any of these within functions, just that instances of 
 
 `with (...) {...}` is also not supported where it alters the scope of a function being serialized.
 
-### Code splitting
-
-Code is always output as a single file. There is no facility for code splitting yet.
-
 ### Browser code
 
 This works in part. You can, for example, build a simple React app with Livepack.
@@ -326,7 +540,6 @@ This works in part. You can, for example, build a simple React app with Livepack
 However, there are outstanding problems, which mean that Livepack is presently really only suitable for NodeJS server-side code.
 
 * Code size is not typically great (optimizations are possible which will tackle this in future)
-* No code splitting
 * Tree-shaking doesn't work yet for ESM named exports (tree-shaking CommonJS works fine)
 * Difficulties with use of browser globals e.g. `window`
 * No understanding of the `browser` field in `package.json`, which some packages like Axios use to provide different code on client and server

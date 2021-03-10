@@ -1,0 +1,14 @@
+{
+  "name": "react-splitasync",
+  "version": "0.0.0",
+  "scripts": {
+    "build": "livepack src/index.js -o build --jsx",
+    "start": "serve build"
+  },
+  "dependencies": {
+    "livepack": "*",
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1",
+    "serve": "^11.3.2"
+  }
+}

@@ -18,35 +18,21 @@ describe('CJS output format', () => {
 		validateOutput(obj, {outputJs, minify, inline, mangle}) {
 			if (minify && !inline && !mangle) {
 				expect(stripSourceMapComment(outputJs))
-					.toBe('const module$0={a:1},exports$0={module:module$0};module.exports=exports$0');
+					.toBe('const module$0={a:1},index={module:module$0};module.exports=index');
 			}
 		}
 	});
 
-	describe('protects `exports` var', () => {
-		itSerializesEqual('in common case', {
-			in: () => ({a: 1}),
-			format: 'cjs',
-			out: 'module.exports={a:1}',
-			validateOutput(obj, {outputJs, minify, inline, mangle}) {
-				if (minify && !inline && !mangle) {
-					expect(stripSourceMapComment(outputJs))
-						.toBe('const exports$0={a:1};module.exports=exports$0');
-				}
+	itSerializesEqual('protects `exports` var', {
+		in: () => ({exports: {a: 1}}),
+		format: 'cjs',
+		out: 'module.exports={exports:{a:1}}',
+		validateOutput(obj, {outputJs, minify, inline, mangle}) {
+			if (minify && !inline && !mangle) {
+				expect(stripSourceMapComment(outputJs))
+					.toBe('const exports$0={a:1},index={exports:exports$0};module.exports=index');
 			}
-		});
-
-		itSerializesEqual('when used as intermediate var', {
-			in: () => ({exports: {a: 1}}),
-			format: 'cjs',
-			out: 'module.exports={exports:{a:1}}',
-			validateOutput(obj, {outputJs, minify, inline, mangle}) {
-				if (minify && !inline && !mangle) {
-					expect(stripSourceMapComment(outputJs))
-						.toBe('const exports$0={a:1},exports$1={exports:exports$0};module.exports=exports$1');
-				}
-			}
-		});
+		}
 	});
 
 	itSerializesEqual('protects `require` var', {
@@ -56,7 +42,7 @@ describe('CJS output format', () => {
 		validateOutput(obj, {outputJs, minify, inline, mangle}) {
 			if (minify && !inline && !mangle) {
 				expect(stripSourceMapComment(outputJs))
-					.toBe('const require$0={a:1},exports$0={require:require$0};module.exports=exports$0');
+					.toBe('const require$0={a:1},index={require:require$0};module.exports=index');
 			}
 		}
 	});
@@ -68,7 +54,7 @@ describe('CJS output format', () => {
 		validateOutput(obj, {outputJs, minify, inline, mangle}) {
 			if (minify && !inline && !mangle) {
 				expect(stripSourceMapComment(outputJs))
-					.toBe('const __dirname$0={a:1},exports$0={__dirname:__dirname$0};module.exports=exports$0');
+					.toBe('const __dirname$0={a:1},index={__dirname:__dirname$0};module.exports=index');
 			}
 		}
 	});
@@ -80,7 +66,7 @@ describe('CJS output format', () => {
 		validateOutput(obj, {outputJs, minify, inline, mangle}) {
 			if (minify && !inline && !mangle) {
 				expect(stripSourceMapComment(outputJs))
-					.toBe('const __filename$0={a:1},exports$0={__filename:__filename$0};module.exports=exports$0');
+					.toBe('const __filename$0={a:1},index={__filename:__filename$0};module.exports=index');
 			}
 		}
 	});

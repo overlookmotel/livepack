@@ -80,7 +80,7 @@ describe('Built-in modules', () => {
 								: 'import a from"path";const b={path:a,path2:a,path3:a};export default b'
 							: inline
 								? 'import path from"path";export default{path,path2:path,path3:path}'
-								: 'import path from"path";const exports={path,path2:path,path3:path};export default exports'
+								: 'import path from"path";const index={path,path2:path,path3:path};export default index'
 					);
 				}
 			});
@@ -160,7 +160,7 @@ describe('Built-in modules', () => {
 								: 'import a from"path";const b=a.join,c={pathJoin:b,pathJoin2:b,pathJoin3:b};export default c'
 							: inline
 								? 'import path from"path";const pathJoin=path.join;export default{pathJoin,pathJoin2:pathJoin,pathJoin3:pathJoin}'
-								: 'import path from"path";const pathJoin=path.join,exports={pathJoin,pathJoin2:pathJoin,pathJoin3:pathJoin};export default exports'
+								: 'import path from"path";const pathJoin=path.join,index={pathJoin,pathJoin2:pathJoin,pathJoin3:pathJoin};export default index'
 					);
 				}
 			});

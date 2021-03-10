@@ -25,7 +25,15 @@ module.exports = {
 					'itSerializesEqual',
 					'itSerializesEqual.skip',
 					'itSerializesEqual.only',
-					'itSerializesEqual.each'
+					'itSerializesEqual.each',
+					'itSerializesEntries',
+					'itSerializesEntries.skip',
+					'itSerializesEntries.only',
+					'itSerializesEntries.each',
+					'itSerializesEntriesEqual',
+					'itSerializesEntriesEqual.skip',
+					'itSerializesEntriesEqual.only',
+					'itSerializesEntriesEqual.each'
 				]
 			}
 		]

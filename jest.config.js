@@ -19,5 +19,6 @@ module.exports = {
 	],
 	transform: {
 		'\\.js$': '<rootDir>/jest-transform.js'
-	}
+	},
+	testPathIgnorePatterns: ['/node_modules/', '.mocha.test.js']
 };

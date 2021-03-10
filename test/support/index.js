@@ -6,8 +6,10 @@
 'use strict';
 
 // Modules
-const {serialize} = require('livepack'),
+const {join: pathJoin, dirname} = require('path').posix,
+	{serialize, serializeEntries} = require('livepack'),
 	parseNodeVersion = require('parse-node-version'),
+	mapValues = require('lodash/mapValues'),
 	{isString, isFullString, isObject, isFunction, isArray, isBoolean} = require('is-it-type'),
 	assert = require('simple-invariant');
 
@@ -99,15 +101,16 @@ function createRunExpectationFn(callFn) {
  * @param {string} name - Test name
  * @param {Object} options - Options object
  * @param {Function} options.in - Function returning value to serialize
- * @param {string} [options.out] - Expected output JS
- * @param {string} [options.outJs] - Expected output JS for `js` format
- * @param {string} [options.outEsm] - Expected output JS for `esm` format
- * @param {string} [options.outCjs] - Expected output JS for `cjs` format
+ * @param {string|Object} [options.out] - Expected output JS
+ * @param {string|Object} [options.outJs] - Expected output JS for `js` format
+ * @param {string|Object} [options.outEsm] - Expected output JS for `esm` format
+ * @param {string|Object} [options.outCjs] - Expected output JS for `cjs` format
  * @param {Function} [options.validate] - Function to validate eval-ed output
  * @param {string|Array<string>} [options.format='js'] - Format option to pass to `serialize()`.
  *   Can also provide an array of formats.
  * @param {boolean} [options.equal=false] - If set, checks equality between input and eval-ed output
  *   using `expect(output).toEqual(input)`
+ * @param {boolean} [options.entries=false] - If set, serializes with `serializeEntries()`
  * @param {boolean} [options.preserveLineBreaks=false] - If set, does not remove line breaks
  *   from `options.out` before comparing against output
  * @param {boolean} [options.preserveComments=false] - If set, does not remove comments from output
@@ -133,10 +136,17 @@ function itSerializes(name, options, defaultOptions, describe, runExpectation) {
 	const inputFn = options.in;
 	assert(isFunction(inputFn), '`options.in` must be a function');
 
+	let {entries} = options;
+	if (entries === undefined) {
+		entries = false;
+	} else {
+		assert(isBoolean(entries), '`options.entries` must be a boolean if provided');
+	}
+
 	let formats;
 	const formatOpt = options.format;
 	if (formatOpt === undefined) {
-		formats = ['js'];
+		formats = [entries ? 'cjs' : 'js'];
 	} else if (isString(formatOpt)) {
 		formats = [formatOpt];
 	} else {
@@ -179,10 +189,19 @@ function itSerializes(name, options, defaultOptions, describe, runExpectation) {
 				`\`options.${optName}\` cannot be used unless '${format}' is included in \`options.format\``
 			);
 
-			assert(isString(expectedOutput), `\`options.${optName}\` must be a string if provided`);
+			if (isString(expectedOutput)) {
+				assert(!entries, `\`options.${optName}\` must be an object if \`options.entries\` is set`);
+				expectedOutput = {'index.js': expectedOutput};
+			} else {
+				assert(
+					isObject(expectedOutput),
+					`\`options.${optName}\` must be a string or object if provided`
+				);
+				assert(entries, `\`options.${optName}\` must be a string if \`options.entries\` is not set`);
+			}
 
 			// Remove line breaks
-			if (!preserveLineBreaks) expectedOutput = stripLineBreaks(expectedOutput);
+			if (!preserveLineBreaks) expectedOutput = mapValues(expectedOutput, stripLineBreaks);
 
 			expectedOutputs[format] = expectedOutput;
 		}
@@ -224,7 +243,7 @@ function itSerializes(name, options, defaultOptions, describe, runExpectation) {
 		key => ![
 			'in', 'out', 'outJs', 'outEsm', 'outCjs',
 			'validate', 'validateInput', 'validateOutput',
-			'format', 'equal', 'preserveLineBreaks', 'preserveComments',
+			'format', 'equal', 'entries', 'preserveLineBreaks', 'preserveComments',
 			'minify', 'inline', 'mangle'
 		].includes(key)
 	);
@@ -254,29 +273,48 @@ function itSerializes(name, options, defaultOptions, describe, runExpectation) {
 			// Add other options
 			opts.format = format;
 			opts.comments = true;
-			opts.sourceMaps = NO_SOURCE_MAPS ? false : 'inline';
+			opts.sourceMaps = !NO_SOURCE_MAPS;
+			opts.files = true;
 
 			// Get value
 			const ctx = Object.create(null);
 			const input = inputFn({...opts, ctx});
 
 			// Serialize value
-			const outputJs = serialize(input, opts);
+			const outputFiles = entries ? serializeEntries(input, opts) : serialize(input, opts);
+
+			// Convert files to object and discard source map files
+			const outputFilesObj = {};
+			for (const {filename, content} of outputFiles) {
+				if (filename.endsWith('.map')) continue;
+				assert(!outputFilesObj[filename], `Multiple outputs with same filename '${filename}'`);
+				outputFilesObj[filename] = content;
+			}
 
 			// Check output matches expected
 			const expectedOutput = expectedOutputs[format];
 			if (opts.minify && opts.inline && opts.mangle && expectedOutput !== undefined) {
-				let testOutputJs = outputJs;
-				if (!preserveComments) testOutputJs = stripComments(testOutputJs);
+				const testFilesObj = preserveComments
+					? outputFilesObj
+					: mapValues(outputFilesObj, stripComments);
 
 				runExpectation(
 					'Output does not match expected',
-					() => expect(testOutputJs).toBe(expectedOutput)
+					() => expect(testFilesObj).toEqual(expectedOutput)
+				);
+				runExpectation(
+					'Output files order does not match expected',
+					() => expect(Object.keys(testFilesObj)).toEqual(Object.keys(expectedOutput))
 				);
 			}
 
 			// Evaluate output
-			const output = exec(outputJs, format);
+			const fileMappings = entries
+				? Object.keys(input).map(inputName => ({name: inputName, filename: `${inputName}.js`}))
+				: [{name: 'index', filename: 'index.js'}];
+
+			let output = execFiles(outputFilesObj, fileMappings, format);
+			if (!entries) output = output.index;
 
 			// Check output equals input
 			if (equal) {
@@ -297,6 +335,7 @@ function itSerializes(name, options, defaultOptions, describe, runExpectation) {
 			}
 
 			if (validateOutput) {
+				const outputJs = entries ? outputFilesObj : outputFilesObj['index.js'];
 				try {
 					await validateOutput(output, {...opts, ctx, isInput: false, isOutput: true, input, outputJs});
 				} catch (err) {
@@ -338,17 +377,77 @@ function itAllOptions(options, fn) {
 
 /**
  * Execute JS code and return value.
- * @param {string} js - Javascript code
+ * @param {Object} filesObj - Javascript code files
+ * @param {Array<Object>} fileMappings - Mappings of name to filename for files to execute
  * @param {string} format - 'js' / 'cjs' / 'esm'
- * @returns {*} - Result of evaluation
+ * @returns {Object} - Result of evaluation
  */
-function exec(js, format) {
-	if (format === 'js') {
-		return new Function('require', `return ${js}`)(require); // eslint-disable-line no-new-func
+function execFiles(filesObj, fileMappings, format) {
+	const moduleCache = Object.create(null),
+		entryFilenames = new Set(fileMappings.map(fileMapping => fileMapping.filename));
+
+	function loadFile(filename, isEntry) {
+		assert(
+			isEntry || format !== 'js' || !entryFilenames.has(filename),
+			'Cannot require/import a JS format entry point'
+		);
+
+		let moduleObj = moduleCache[filename];
+		if (moduleObj) return moduleObj;
+		moduleObj = Object.seal(
+			Object.create(null, {
+				default: {
+					value: undefined,
+					writable: true,
+					enumerable: true,
+					configurable: false
+				},
+				[Symbol.toStringTag]: {
+					value: 'Module',
+					writable: false,
+					enumerable: false,
+					configurable: false
+				}
+			})
+		);
+		moduleCache[filename] = moduleObj;
+
+		const dirPath = dirname(`/${filename}`);
+		function localLoad(target) {
+			const targetFilename = pathJoin(dirPath, `/${target}`).slice(1);
+			return loadFile(targetFilename, false);
+		}
+
+		function localRequire(target) {
+			// eslint-disable-next-line global-require, import/no-dynamic-require
+			if (!target.startsWith('.')) return require(target);
+			return localLoad(target).default;
+		}
+
+		function localImport(target) {
+			if (!target.startsWith('.')) return import(target);
+			return Promise.resolve(localLoad(target));
+		}
+
+		const js = filesObj[filename];
+		assert(js, `Attempted to require non-existent file '${filename}'`);
+
+		moduleObj.default = execFile(
+			js, localRequire, localImport, (format === 'js' && !isEntry) ? 'cjs' : format
+		);
+		return moduleObj;
 	}
 
+	const resObj = {};
+	for (const {name, filename} of fileMappings) {
+		resObj[name] = loadFile(filename, true).default;
+	}
+	return resObj;
+}
+
+function execFile(js, require, importFn, format) {
 	if (format === 'esm') {
-		const proxy = {exports: undefined, require};
+		const proxy = {exports: undefined, require, import: importFn};
 		// eslint-disable-next-line no-new-func
 		new Function(
 			'$__proxy',
@@ -357,8 +456,18 @@ function exec(js, format) {
 					/(^|;\n*)import ([^ ]+) from ?("[^"]+")/g,
 					(_, before, varName, path) => `${before}const ${varName}=$__proxy.require(${path})`
 				)
+				.replace(/(^|[^A-Za-z0_$])import\(/g, (_, before) => `${before}$__proxy.import(`)
 		)(proxy);
 		return proxy.exports;
+	}
+
+	// Convert `import(...)` to `require.$__import(...)`
+	require.$__import = importFn;
+	js = js.replace(/(^|[^A-Za-z0_$])import\(/g, (_, before) => `${before}require.$__import(`);
+
+	// JS
+	if (format === 'js') {
+		return new Function('require', `return ${js}`)(require); // eslint-disable-line no-new-func
 	}
 
 	// CJS

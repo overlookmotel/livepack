@@ -113,12 +113,12 @@ describe('`__dirname`', () => {
 						? '()=>__dirname'
 						: mangle
 							? '(()=>{const a=(0,()=>__dirname);return a})()'
-							: '(()=>{const exports$0=(0,()=>__dirname);return exports$0})()'
+							: '(()=>{const index=(0,()=>__dirname);return index})()'
 					: inline // eslint-disable-line no-nested-ternary
 						? '() => __dirname'
 						: mangle
 							? '(() => {const a = (0, () => __dirname);return a;})()'
-							: '(() => {const exports$0 = (0, () => __dirname);return exports$0;})()'
+							: '(() => {const index = (0, () => __dirname);return index;})()'
 			);
 		}
 	});
@@ -143,12 +143,12 @@ describe('`__filename`', () => {
 						? '()=>__filename'
 						: mangle
 							? '(()=>{const a=(0,()=>__filename);return a})()'
-							: '(()=>{const exports$0=(0,()=>__filename);return exports$0})()'
+							: '(()=>{const index=(0,()=>__filename);return index})()'
 					: inline // eslint-disable-line no-nested-ternary
 						? '() => __filename'
 						: mangle
 							? '(() => {const a = (0, () => __filename);return a;})()'
-							: '(() => {const exports$0 = (0, () => __filename);return exports$0;})()'
+							: '(() => {const index = (0, () => __filename);return index;})()'
 			);
 		}
 	});
