@@ -1,6 +1,6 @@
 {
   "name": "livepack",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Serialize live running code to Javascript",
   "main": "index.js",
   "bin": "lib/cli.js",

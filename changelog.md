@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1
+
+Docs:
+
+* Fix formatting in README
+
 ## 0.2.0
 
 Breaking changes:
