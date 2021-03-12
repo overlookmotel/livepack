@@ -1,5 +1,92 @@
 # Changelog
 
+## 0.2.0
+
+Breaking changes:
+
+* Source maps 'inline' option
+* Drop support for Node < v10.4
+
+Features:
+
+* Code splitting
+
+Bug fixes:
+
+* Babel plugin: Handle class extending another class defined inline
+* Place tracker comment before function params
+* `exec` option only unwrap function body if safe to
+* Serialize: Fix removal of tracker comments for functions with directives
+* Handle deleted elements in arguments object
+* Handle serializing `eval`
+
+Improvements:
+
+* CLI: More helpful error if source file cannot be loaded
+* Bugs print message asking user to file issue
+
+Performance:
+
+* Register: Do not transpile modules used internally for handing `eval`
+* Store CommonJS vars on `globals`
+* Speed up checking if record is a primitive
+* Init all props of `internal` object
+* Import lodash functions directly
+
+Refactor:
+
+* `Serializer` class `serialize` method always return array of files
+* Convert source map sources to relative paths at output
+* Move initialization of trace to `Serializer` class ctor
+* Re-order initialization in `Serializer` class ctor
+* Place tracker comment before function body
+* Babel plugin: Avoid use of Babel paths in inserting tracker comments
+* Simplify initialization of global var names
+* Clarify vars in parsing functions
+* Simplify options conform
+* Move all `Serializer` class methods to separate files
+* Move blocks logic into separate file
+* Move blocks initialization to separate method
+* Move output file names + exts to constants file
+* `serialize` move conforming options to separate function
+
+Dependencies:
+
+* Update `@babel/register` dependency
+* Update dependencies
+
+Tests:
+
+* Tests for function param defaults
+* Tests for nested functions
+* Tests for serializing functions used within Livepack
+* Fix ESM to CJS transform [fix]
+* Correct test name [fix]
+* `LIVEPACK_TEST_QUICK` env option
+* Reduce dependencies for source map tests
+* `itSerializes.each` helper [refactor]
+* `.withOptions()` helper
+* Re-implement `itSerializesEqual` using default options [refactor]
+* Rename `runExpectation` function [refactor]
+* `itSerializes` accept array of formats
+* Tweak Node version support check
+
+No code:
+
+* Code comments
+* Correct typo in code comment
+
+Dev:
+
+* Add tests temp dir to `.gitignore`
+* ESLint rules for `itSerializes.each` tests
+* Remove defunct ESLint config
+* Update dev dependencies
+
+Docs:
+
+* README update
+
 ## 0.1.8
 
 Bug fixes:
