@@ -345,7 +345,7 @@ Livepack pays no attention to what files code originates in, and *splits the out
 
 This produces an optimal split of the app, where each entry point only includes exactly the code it needs, and nothing more. It's more efficient than Livepack or Rollup's file-level code splitting.
 
-Any values shared between entry points are placed in shared chunks. These are named `chunk-XXXXXXXX.js`, where `XXXXXXXX` is a hash of the file's content.
+Any values shared between entry points are placed in shared chunks. These are named `chunk.XXXXXXXX.js`, where `XXXXXXXX` is a hash of the file's content.
 
 For example, if your input is:
 
@@ -370,14 +370,14 @@ Livepack will bundle this as:
 
 ```js
 // build/entry1.js
-import timesTen from "./chunk-6N2RIGAZ.js";
+import timesTen from "./chunk.6N2RIGAZ.js";
 export default ((double,timesTen)=>()=>double(timesTen(10)))(function double(n){return n*2},timesTen)
 
 // build/entry2.js
-import timesTen from "./chunk-6N2RIGAZ.js";
+import timesTen from "./chunk.6N2RIGAZ.js";
 export default ((triple,timesTen)=>()=>triple(timesTen(20)))(function triple(n){return n*3},timesTen)
 
-// build/chunk-6N2RIGAZ.js
+// build/chunk.6N2RIGAZ.js
 export default function timesTen(n){return n*10}
 ```
 
@@ -414,10 +414,10 @@ Bundled output:
 
 ```js
 // index.js
-import obj from "./chunk-V4ULTFDU.js";
+import obj from "./chunk.V4ULTFDU.js";
 export default(obj=>function getX(){return obj.x;})(obj)
 
-// chunk-V4ULTFDU.js
+// chunk.V4ULTFDU.js
 export default {iAmABigObjectWhichChangesInfrequently:true,x:123}
 ```
 
@@ -434,7 +434,7 @@ split( obj, 'my-big-object' );
 
 `splitAsync()` takes a value and returns an import function. Just like `import()`, this import function returns a Promise of a module object. The `.default` property of the module object is the value `splitAsync()` was called with.
 
-When Livepack serializes an import function, it puts the value into a separate file and outputs `() => import('./chunk-XXXX.js')`.
+When Livepack serializes an import function, it puts the value into a separate file and outputs `() => import('./chunk.XXXXXXXX.js')`.
 
 Example input:
 
@@ -461,17 +461,17 @@ export default(importDouble=>(
     return double(double(n))
   }
 )(
-  ()=>import("./chunk-LKCG7RVO.js")
+  ()=>import("./chunk.LKCG7RVO.js")
 )
 
-// chunk-LKCG7RVO.js
+// chunk.LKCG7RVO.js
 export default function double(n){return n*2}
 ```
 
 There's a few things to notice here:
 
 1. `double` has been split into a separate file
-2. `importDouble` is output as a dynamic import `()=>import("./chunk-LKCG7RVO.js")`
+2. `importDouble` is output as a dynamic import `()=>import("./chunk.LKCG7RVO.js")`
 3. `double` didn't need to be defined in a separate file to be split off
 
 All looks very weird? Maybe. But it does open up some patterns which usually aren't possible.
