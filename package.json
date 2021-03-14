@@ -3,12 +3,31 @@
   "version": "0.2.1",
   "description": "Serialize live running code to Javascript",
   "main": "index.js",
+  "exports": {
+    ".": {
+      "import": "./es/index.js",
+      "require": "./index.js"
+    },
+    "./register": {
+      "import": "./es/register.js",
+      "require": "./register.js"
+    },
+    "./babel": {
+      "import": "./es/babel.js",
+      "require": "./babel.js"
+    },
+    "./jest-transform": {
+      "import": "./es/jest-transform.js",
+      "require": "./jest-transform.js"
+    }
+  },
   "bin": "lib/cli.js",
   "files": [
     "babel.js",
     "register.js",
     "jest-transform.js",
-    "lib/**/*.js"
+    "lib/**/*.js",
+    "es/**/*.js"
   ],
   "author": {
     "name": "Overlook Motel"

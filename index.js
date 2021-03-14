@@ -1,6 +1,6 @@
 /* --------------------
  * livepack module
- * Entry point
+ * Main CommonJS entry point
  * ------------------*/
 
 'use strict';

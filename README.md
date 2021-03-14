@@ -239,7 +239,7 @@ module.exports = function() {
 
 You **must** register the require hook before **any** other `require()` calls. The input file should be just be an entry point which `require()`s the app and exports it. Code in the entry point file will not be instrumented and so cannot be serialized.
 
-The entry point file must be CommonJS. The rest of the app can be written in ESM (use `esm` option).
+The entry point file *must* `require()` the app, not `import` it. The app can be written in CommonJS or ESM (use `esm` option).
 
 #### Require hook options
 
@@ -281,6 +281,14 @@ const files = serializeEntries( {
 //   { filename: 'index.js', content: '{x:1}' },
 //   { filename: 'other.js', content: '{y:1}' }
 // ]
+```
+
+or ESM:
+
+```js
+import { serialize } from 'livepack';
+const js = serialize( { x: 1 } );
+// js = '{x:1}'
 ```
 
 #### Options

@@ -1,6 +1,6 @@
 /* --------------------
  * livepack module
- * Babel plugin entry point
+ * Babel plugin CommonJS entry point
  * ------------------*/
 
 'use strict';

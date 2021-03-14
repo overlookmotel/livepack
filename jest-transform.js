@@ -1,6 +1,6 @@
 /* --------------------
  * livepack module
- * Jest transform entry point
+ * Jest transform CommonJS entry point
  * ------------------*/
 
 'use strict';
