@@ -1,6 +1,6 @@
 /* --------------------
  * livepack module
- * Babel register entry point
+ * Register entry point
  * ------------------*/
 
 'use strict';
