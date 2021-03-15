@@ -359,7 +359,7 @@ Livepack pays no attention to what files code originates in, and *splits the out
 
 This produces an optimal split of the app, where each entry point only includes exactly the code it needs, and nothing more. It's more efficient than Livepack or Rollup's file-level code splitting.
 
-Any values shared between entry points are placed in shared chunks. These are named `chunk.XXXXXXXX.js`, where `XXXXXXXX` is a hash of the file's content.
+Any values shared between entry points are placed in common chunks. These are named `chunk.XXXXXXXX.js`, where `XXXXXXXX` is a hash of the file's content.
 
 For example, if your input is:
 
@@ -395,7 +395,7 @@ export default ((triple,timesTen)=>()=>triple(timesTen(20)))(function triple(n){
 export default function timesTen(n){return n*10}
 ```
 
-`src/shared.js` has been split up. `timesTen` is used by both entry points, so has been placed in a shared chunk. But `double` and `triple` are inlined into the entry points that use them, since they're not shared. So each entry point doesn't need to import any code it doesn't use.
+`src/shared.js` has been split up. `timesTen` is used by both entry points, so has been placed in a common chunk. But `double` and `triple` are inlined into the entry points that use them, since they're not shared. So each entry point doesn't need to import any code it doesn't use.
 
 You can customize how code is split to optimize caching (see [below](#split)).
 

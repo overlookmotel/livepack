@@ -1653,7 +1653,7 @@ describe('Code splitting', () => {
 		});
 
 		describe('names import vars same as original var', () => {
-			itSerializesEntries('imports from shared file with single export', {
+			itSerializesEntries('imports from common file with single export', {
 				in() {
 					function shared() {}
 					return {
@@ -1685,7 +1685,7 @@ describe('Code splitting', () => {
 				}
 			});
 
-			itSerializesEntries('imports from shared file with multiple exports', {
+			itSerializesEntries('imports from common file with multiple exports', {
 				in() {
 					function shared1() {}
 					function shared2() {}
