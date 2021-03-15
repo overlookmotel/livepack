@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.3.1
+
+Bug fixes:
+
+* Serializing function containing `import` throws error
+
+Dependencies:
+
+* Update dependencies
+
+No code:
+
+* Correct JSDoc comment
+
+Dev:
+
+* Update dev dependencies
+
 ## 0.3.0
 
 Breaking changes:
