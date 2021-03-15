@@ -106,9 +106,9 @@ describe('Code splitting', () => {
 					'two.js': 'import a from"./one.js";export default a'
 				},
 				outJs: {
-					'one.js': 'require("./chunk.OE3HUVJ2.js")',
-					'two.js': 'require("./chunk.OE3HUVJ2.js")',
-					'chunk.OE3HUVJ2.js': 'module.exports={isShared:true}'
+					'one.js': 'require("./chunk.7ANF66YZ.js")',
+					'two.js': 'require("./chunk.7ANF66YZ.js")',
+					'chunk.7ANF66YZ.js': 'module.exports={isShared:true}'
 				},
 				validate(entries) {
 					expect(entries.one).toBe(entries.two);
@@ -133,9 +133,9 @@ describe('Code splitting', () => {
 						'two.js': 'import a from"./one.js";export default{x:a}'
 					},
 					outJs: {
-						'one.js': 'require("./chunk.OE3HUVJ2.js")',
-						'two.js': '{x:require("./chunk.OE3HUVJ2.js")}',
-						'chunk.OE3HUVJ2.js': 'module.exports={isShared:true}'
+						'one.js': 'require("./chunk.7ANF66YZ.js")',
+						'two.js': '{x:require("./chunk.7ANF66YZ.js")}',
+						'chunk.7ANF66YZ.js': 'module.exports={isShared:true}'
 					},
 					validate(entries) {
 						expect(entries.two.x).toBe(entries.one);
@@ -159,9 +159,9 @@ describe('Code splitting', () => {
 						'two.js': 'export default{isShared:true}'
 					},
 					outJs: {
-						'one.js': '{x:require("./chunk.OE3HUVJ2.js")}',
-						'two.js': 'require("./chunk.OE3HUVJ2.js")',
-						'chunk.OE3HUVJ2.js': 'module.exports={isShared:true}'
+						'one.js': '{x:require("./chunk.7ANF66YZ.js")}',
+						'two.js': 'require("./chunk.7ANF66YZ.js")',
+						'chunk.7ANF66YZ.js': 'module.exports={isShared:true}'
 					},
 					validate(entries) {
 						expect(entries.one.x).toBe(entries.two);
@@ -178,19 +178,19 @@ describe('Code splitting', () => {
 					};
 				},
 				outCjs: {
-					'one.js': 'module.exports={x:require("./chunk.OE3HUVJ2.js")}',
-					'two.js': 'module.exports={y:require("./chunk.OE3HUVJ2.js")}',
-					'chunk.OE3HUVJ2.js': 'module.exports={isShared:true}'
+					'one.js': 'module.exports={x:require("./chunk.7ANF66YZ.js")}',
+					'two.js': 'module.exports={y:require("./chunk.7ANF66YZ.js")}',
+					'chunk.7ANF66YZ.js': 'module.exports={isShared:true}'
 				},
 				outEsm: {
-					'one.js': 'import a from"./chunk.HW2BJAJH.js";export default{x:a}',
-					'two.js': 'import a from"./chunk.HW2BJAJH.js";export default{y:a}',
-					'chunk.HW2BJAJH.js': 'export default{isShared:true}'
+					'one.js': 'import a from"./chunk.KOPFAARQ.js";export default{x:a}',
+					'two.js': 'import a from"./chunk.KOPFAARQ.js";export default{y:a}',
+					'chunk.KOPFAARQ.js': 'export default{isShared:true}'
 				},
 				outJs: {
-					'one.js': '{x:require("./chunk.OE3HUVJ2.js")}',
-					'two.js': '{y:require("./chunk.OE3HUVJ2.js")}',
-					'chunk.OE3HUVJ2.js': 'module.exports={isShared:true}'
+					'one.js': '{x:require("./chunk.7ANF66YZ.js")}',
+					'two.js': '{y:require("./chunk.7ANF66YZ.js")}',
+					'chunk.7ANF66YZ.js': 'module.exports={isShared:true}'
 				},
 				validate(entries) {
 					expect(entries.one.x).toBe(entries.two.y);
@@ -208,19 +208,19 @@ describe('Code splitting', () => {
 					};
 				},
 				outCjs: {
-					'one.js': 'const a=require("./chunk.PJAVZHHR.js");module.exports={x:a[0],y:a[1],z:a[2]}',
-					'two.js': 'const a=require("./chunk.PJAVZHHR.js");module.exports={e:a[0],f:a[1],g:a[2]}',
-					'chunk.PJAVZHHR.js': 'module.exports=[{isShared1:true},{isShared2:true},{isShared3:true}]'
+					'one.js': 'const a=require("./chunk.2KBRAFUH.js");module.exports={x:a[0],y:a[1],z:a[2]}',
+					'two.js': 'const a=require("./chunk.2KBRAFUH.js");module.exports={e:a[0],f:a[1],g:a[2]}',
+					'chunk.2KBRAFUH.js': 'module.exports=[{isShared1:true},{isShared2:true},{isShared3:true}]'
 				},
 				outEsm: {
-					'one.js': 'import a from"./chunk.YXIJVXVV.js";export default{x:a[0],y:a[1],z:a[2]}',
-					'two.js': 'import a from"./chunk.YXIJVXVV.js";export default{e:a[0],f:a[1],g:a[2]}',
-					'chunk.YXIJVXVV.js': 'export default[{isShared1:true},{isShared2:true},{isShared3:true}]'
+					'one.js': 'import a from"./chunk.CUEPQVIZ.js";export default{x:a[0],y:a[1],z:a[2]}',
+					'two.js': 'import a from"./chunk.CUEPQVIZ.js";export default{e:a[0],f:a[1],g:a[2]}',
+					'chunk.CUEPQVIZ.js': 'export default[{isShared1:true},{isShared2:true},{isShared3:true}]'
 				},
 				outJs: {
-					'one.js': '(()=>{const a=require("./chunk.PJAVZHHR.js");return{x:a[0],y:a[1],z:a[2]}})()',
-					'two.js': '(()=>{const a=require("./chunk.PJAVZHHR.js");return{e:a[0],f:a[1],g:a[2]}})()',
-					'chunk.PJAVZHHR.js': 'module.exports=[{isShared1:true},{isShared2:true},{isShared3:true}]'
+					'one.js': '(()=>{const a=require("./chunk.2KBRAFUH.js");return{x:a[0],y:a[1],z:a[2]}})()',
+					'two.js': '(()=>{const a=require("./chunk.2KBRAFUH.js");return{e:a[0],f:a[1],g:a[2]}})()',
+					'chunk.2KBRAFUH.js': 'module.exports=[{isShared1:true},{isShared2:true},{isShared3:true}]'
 				},
 				validate({one, two}) {
 					expect(one.x).toBe(two.e);
@@ -239,21 +239,21 @@ describe('Code splitting', () => {
 					};
 				},
 				outCjs: {
-					'one.js': 'module.exports={x:require("./chunk.VERTVG3T.js")[0]}',
-					'two.js': 'const a=require("./chunk.VERTVG3T.js");module.exports={y:a[0],z:a[1]}',
-					'chunk.VERTVG3T.js': `const a={isSharedInner:true};
+					'one.js': 'module.exports={x:require("./chunk.UDJMERLJ.js")[0]}',
+					'two.js': 'const a=require("./chunk.UDJMERLJ.js");module.exports={y:a[0],z:a[1]}',
+					'chunk.UDJMERLJ.js': `const a={isSharedInner:true};
 						module.exports=[{isSharedOuter:true,sharedInner:a},a]`
 				},
 				outEsm: {
-					'one.js': 'import a from"./chunk.XKLDTATC.js";export default{x:a[0]}',
-					'two.js': 'import a from"./chunk.XKLDTATC.js";export default{y:a[0],z:a[1]}',
-					'chunk.XKLDTATC.js': `const a={isSharedInner:true};
+					'one.js': 'import a from"./chunk.WSDEFBGJ.js";export default{x:a[0]}',
+					'two.js': 'import a from"./chunk.WSDEFBGJ.js";export default{y:a[0],z:a[1]}',
+					'chunk.WSDEFBGJ.js': `const a={isSharedInner:true};
 						export default[{isSharedOuter:true,sharedInner:a},a]`
 				},
 				outJs: {
-					'one.js': '{x:require("./chunk.VERTVG3T.js")[0]}',
-					'two.js': '(()=>{const a=require("./chunk.VERTVG3T.js");return{y:a[0],z:a[1]}})()',
-					'chunk.VERTVG3T.js': `const a={isSharedInner:true};
+					'one.js': '{x:require("./chunk.UDJMERLJ.js")[0]}',
+					'two.js': '(()=>{const a=require("./chunk.UDJMERLJ.js");return{y:a[0],z:a[1]}})()',
+					'chunk.UDJMERLJ.js': `const a={isSharedInner:true};
 						module.exports=[{isSharedOuter:true,sharedInner:a},a]`
 				},
 				validate({one, two}) {
@@ -275,25 +275,25 @@ describe('Code splitting', () => {
 					};
 				},
 				outCjs: {
-					'one.js': 'module.exports={sharedOuter:require("./chunk.V72YFWXP.js")}',
-					'two.js': 'module.exports={sharedOuter:require("./chunk.V72YFWXP.js")}',
-					'three.js': 'module.exports={sharedInner:require("./chunk.YMUQICM6.js")}',
-					'chunk.V72YFWXP.js': 'module.exports={isSharedOuter:true,sharedInner:require("./chunk.YMUQICM6.js")}',
-					'chunk.YMUQICM6.js': 'module.exports={isSharedInner:true}'
+					'one.js': 'module.exports={sharedOuter:require("./chunk.2F26RNNB.js")}',
+					'two.js': 'module.exports={sharedOuter:require("./chunk.2F26RNNB.js")}',
+					'three.js': 'module.exports={sharedInner:require("./chunk.BWXH2ONA.js")}',
+					'chunk.2F26RNNB.js': 'module.exports={isSharedOuter:true,sharedInner:require("./chunk.BWXH2ONA.js")}',
+					'chunk.BWXH2ONA.js': 'module.exports={isSharedInner:true}'
 				},
 				outEsm: {
-					'one.js': 'import a from"./chunk.PIVETNIA.js";export default{sharedOuter:a}',
-					'two.js': 'import a from"./chunk.PIVETNIA.js";export default{sharedOuter:a}',
-					'three.js': 'import a from"./chunk.H3SOWVZ3.js";export default{sharedInner:a}',
-					'chunk.PIVETNIA.js': 'import a from"./chunk.H3SOWVZ3.js";export default{isSharedOuter:true,sharedInner:a}',
-					'chunk.H3SOWVZ3.js': 'export default{isSharedInner:true}'
+					'one.js': 'import a from"./chunk.HQTOG46M.js";export default{sharedOuter:a}',
+					'two.js': 'import a from"./chunk.HQTOG46M.js";export default{sharedOuter:a}',
+					'three.js': 'import a from"./chunk.A3RNHI7M.js";export default{sharedInner:a}',
+					'chunk.HQTOG46M.js': 'import a from"./chunk.A3RNHI7M.js";export default{isSharedOuter:true,sharedInner:a}',
+					'chunk.A3RNHI7M.js': 'export default{isSharedInner:true}'
 				},
 				outJs: {
-					'one.js': '{sharedOuter:require("./chunk.V72YFWXP.js")}',
-					'two.js': '{sharedOuter:require("./chunk.V72YFWXP.js")}',
-					'three.js': '{sharedInner:require("./chunk.YMUQICM6.js")}',
-					'chunk.V72YFWXP.js': 'module.exports={isSharedOuter:true,sharedInner:require("./chunk.YMUQICM6.js")}',
-					'chunk.YMUQICM6.js': 'module.exports={isSharedInner:true}'
+					'one.js': '{sharedOuter:require("./chunk.2F26RNNB.js")}',
+					'two.js': '{sharedOuter:require("./chunk.2F26RNNB.js")}',
+					'three.js': '{sharedInner:require("./chunk.BWXH2ONA.js")}',
+					'chunk.2F26RNNB.js': 'module.exports={isSharedOuter:true,sharedInner:require("./chunk.BWXH2ONA.js")}',
+					'chunk.BWXH2ONA.js': 'module.exports={isSharedInner:true}'
 				},
 				validate({one, two, three}) {
 					expect(two.sharedOuter).toBe(one.sharedOuter);
@@ -314,31 +314,31 @@ describe('Code splitting', () => {
 					};
 				},
 				outCjs: {
-					'one.js': 'module.exports={sharedOuter1:require("./chunk.RAUGCPKX.js")}',
-					'two.js': 'module.exports={sharedOuter1:require("./chunk.RAUGCPKX.js")}',
-					'three.js': 'module.exports={sharedOuter2:require("./chunk.WNGJWJEJ.js")}',
-					'four.js': 'module.exports={sharedOuter2:require("./chunk.WNGJWJEJ.js")}',
-					'chunk.RAUGCPKX.js': 'module.exports={isSharedOuter1:true,sharedInner:require("./chunk.YMUQICM6.js")}',
-					'chunk.WNGJWJEJ.js': 'module.exports={isSharedOuter2:true,sharedInner:require("./chunk.YMUQICM6.js")}',
-					'chunk.YMUQICM6.js': 'module.exports={isSharedInner:true}'
+					'one.js': 'module.exports={sharedOuter1:require("./chunk.XUNONUKD.js")}',
+					'two.js': 'module.exports={sharedOuter1:require("./chunk.XUNONUKD.js")}',
+					'three.js': 'module.exports={sharedOuter2:require("./chunk.W6O2SXGV.js")}',
+					'four.js': 'module.exports={sharedOuter2:require("./chunk.W6O2SXGV.js")}',
+					'chunk.XUNONUKD.js': 'module.exports={isSharedOuter1:true,sharedInner:require("./chunk.BWXH2ONA.js")}',
+					'chunk.W6O2SXGV.js': 'module.exports={isSharedOuter2:true,sharedInner:require("./chunk.BWXH2ONA.js")}',
+					'chunk.BWXH2ONA.js': 'module.exports={isSharedInner:true}'
 				},
 				outEsm: {
-					'one.js': 'import a from"./chunk.O2V53KNI.js";export default{sharedOuter1:a}',
-					'two.js': 'import a from"./chunk.O2V53KNI.js";export default{sharedOuter1:a}',
-					'three.js': 'import a from"./chunk.WP52PVCR.js";export default{sharedOuter2:a}',
-					'four.js': 'import a from"./chunk.WP52PVCR.js";export default{sharedOuter2:a}',
-					'chunk.O2V53KNI.js': 'import a from"./chunk.H3SOWVZ3.js";export default{isSharedOuter1:true,sharedInner:a}',
-					'chunk.WP52PVCR.js': 'import a from"./chunk.H3SOWVZ3.js";export default{isSharedOuter2:true,sharedInner:a}',
-					'chunk.H3SOWVZ3.js': 'export default{isSharedInner:true}'
+					'one.js': 'import a from"./chunk.OMSDVWTN.js";export default{sharedOuter1:a}',
+					'two.js': 'import a from"./chunk.OMSDVWTN.js";export default{sharedOuter1:a}',
+					'three.js': 'import a from"./chunk.QGRH6COR.js";export default{sharedOuter2:a}',
+					'four.js': 'import a from"./chunk.QGRH6COR.js";export default{sharedOuter2:a}',
+					'chunk.OMSDVWTN.js': 'import a from"./chunk.A3RNHI7M.js";export default{isSharedOuter1:true,sharedInner:a}',
+					'chunk.QGRH6COR.js': 'import a from"./chunk.A3RNHI7M.js";export default{isSharedOuter2:true,sharedInner:a}',
+					'chunk.A3RNHI7M.js': 'export default{isSharedInner:true}'
 				},
 				outJs: {
-					'one.js': '{sharedOuter1:require("./chunk.RAUGCPKX.js")}',
-					'two.js': '{sharedOuter1:require("./chunk.RAUGCPKX.js")}',
-					'three.js': '{sharedOuter2:require("./chunk.WNGJWJEJ.js")}',
-					'four.js': '{sharedOuter2:require("./chunk.WNGJWJEJ.js")}',
-					'chunk.RAUGCPKX.js': 'module.exports={isSharedOuter1:true,sharedInner:require("./chunk.YMUQICM6.js")}',
-					'chunk.WNGJWJEJ.js': 'module.exports={isSharedOuter2:true,sharedInner:require("./chunk.YMUQICM6.js")}',
-					'chunk.YMUQICM6.js': 'module.exports={isSharedInner:true}'
+					'one.js': '{sharedOuter1:require("./chunk.XUNONUKD.js")}',
+					'two.js': '{sharedOuter1:require("./chunk.XUNONUKD.js")}',
+					'three.js': '{sharedOuter2:require("./chunk.W6O2SXGV.js")}',
+					'four.js': '{sharedOuter2:require("./chunk.W6O2SXGV.js")}',
+					'chunk.XUNONUKD.js': 'module.exports={isSharedOuter1:true,sharedInner:require("./chunk.BWXH2ONA.js")}',
+					'chunk.W6O2SXGV.js': 'module.exports={isSharedOuter2:true,sharedInner:require("./chunk.BWXH2ONA.js")}',
+					'chunk.BWXH2ONA.js': 'module.exports={isSharedInner:true}'
 				},
 				validate({one, two, three, four}) {
 					expect(two.sharedOuter1).toBe(one.sharedOuter1);
@@ -366,9 +366,9 @@ describe('Code splitting', () => {
 					'two.js': 'import a from"./one.js";export default a'
 				},
 				outJs: {
-					'one.js': 'require("./chunk.OMVER4DN.js")',
-					'two.js': 'require("./chunk.OMVER4DN.js")',
-					'chunk.OMVER4DN.js': 'module.exports=()=>1'
+					'one.js': 'require("./chunk.IJDQ3VBR.js")',
+					'two.js': 'require("./chunk.IJDQ3VBR.js")',
+					'chunk.IJDQ3VBR.js': 'module.exports=()=>1'
 				},
 				validate({one, two}) {
 					expect(one).toBeFunction();
@@ -444,19 +444,19 @@ describe('Code splitting', () => {
 					};
 				},
 				outCjs: {
-					'one.js': 'module.exports=require("./chunk.AEC3D7SY.js")[0]',
-					'two.js': 'module.exports=require("./chunk.AEC3D7SY.js")[1]',
-					'chunk.AEC3D7SY.js': 'module.exports=(a=>[()=>a,()=>a])({ext:1})'
+					'one.js': 'module.exports=require("./chunk.2JJDZNGZ.js")[0]',
+					'two.js': 'module.exports=require("./chunk.2JJDZNGZ.js")[1]',
+					'chunk.2JJDZNGZ.js': 'module.exports=(a=>[()=>a,()=>a])({ext:1})'
 				},
 				outEsm: {
-					'one.js': 'import a from"./chunk.OLI4CBFY.js";export default a[0]',
-					'two.js': 'import a from"./chunk.OLI4CBFY.js";export default a[1]',
-					'chunk.OLI4CBFY.js': 'export default(a=>[()=>a,()=>a])({ext:1})'
+					'one.js': 'import a from"./chunk.JQX2KVJO.js";export default a[0]',
+					'two.js': 'import a from"./chunk.JQX2KVJO.js";export default a[1]',
+					'chunk.JQX2KVJO.js': 'export default(a=>[()=>a,()=>a])({ext:1})'
 				},
 				outJs: {
-					'one.js': 'require("./chunk.AEC3D7SY.js")[0]',
-					'two.js': 'require("./chunk.AEC3D7SY.js")[1]',
-					'chunk.AEC3D7SY.js': 'module.exports=(a=>[()=>a,()=>a])({ext:1})'
+					'one.js': 'require("./chunk.2JJDZNGZ.js")[0]',
+					'two.js': 'require("./chunk.2JJDZNGZ.js")[1]',
+					'chunk.2JJDZNGZ.js': 'module.exports=(a=>[()=>a,()=>a])({ext:1})'
 				},
 				validate({one, two}) {
 					expect(one).toBeFunction();
@@ -479,19 +479,19 @@ describe('Code splitting', () => {
 					};
 				},
 				outCjs: {
-					'one.js': 'module.exports=require("./chunk.KT7WTHAV.js")(1)',
-					'two.js': 'module.exports=require("./chunk.KT7WTHAV.js")(2)',
-					'chunk.KT7WTHAV.js': 'module.exports=a=>()=>a'
+					'one.js': 'module.exports=require("./chunk.SR3RUJRV.js")(1)',
+					'two.js': 'module.exports=require("./chunk.SR3RUJRV.js")(2)',
+					'chunk.SR3RUJRV.js': 'module.exports=a=>()=>a'
 				},
 				outEsm: {
-					'one.js': 'import a from"./chunk.O2FCHE4I.js";export default a(1)',
-					'two.js': 'import a from"./chunk.O2FCHE4I.js";export default a(2)',
-					'chunk.O2FCHE4I.js': 'export default(a=>()=>a)'
+					'one.js': 'import a from"./chunk.54QNI3XL.js";export default a(1)',
+					'two.js': 'import a from"./chunk.54QNI3XL.js";export default a(2)',
+					'chunk.54QNI3XL.js': 'export default(a=>()=>a)'
 				},
 				outJs: {
-					'one.js': 'require("./chunk.KT7WTHAV.js")(1)',
-					'two.js': 'require("./chunk.KT7WTHAV.js")(2)',
-					'chunk.KT7WTHAV.js': 'module.exports=a=>()=>a'
+					'one.js': 'require("./chunk.SR3RUJRV.js")(1)',
+					'two.js': 'require("./chunk.SR3RUJRV.js")(2)',
+					'chunk.SR3RUJRV.js': 'module.exports=a=>()=>a'
 				},
 				validate({one, two}) {
 					expect(one).toBeFunction();
@@ -514,19 +514,19 @@ describe('Code splitting', () => {
 					};
 				},
 				outCjs: {
-					'one.js': 'module.exports={fn:require("./chunk.CMEZCUSU.js")}',
-					'two.js': 'module.exports={fn:require("./chunk.CMEZCUSU.js")}',
-					'chunk.CMEZCUSU.js': 'const a=function fn(){};a.prototype.x=()=>{};module.exports=a'
+					'one.js': 'module.exports={fn:require("./chunk.SDHB37W4.js")}',
+					'two.js': 'module.exports={fn:require("./chunk.SDHB37W4.js")}',
+					'chunk.SDHB37W4.js': 'const a=function fn(){};a.prototype.x=()=>{};module.exports=a'
 				},
 				outEsm: {
-					'one.js': 'import a from"./chunk.RZT6G7MN.js";export default{fn:a}',
-					'two.js': 'import a from"./chunk.RZT6G7MN.js";export default{fn:a}',
-					'chunk.RZT6G7MN.js': 'const a=function fn(){};a.prototype.x=()=>{};export default a'
+					'one.js': 'import a from"./chunk.OKCNIS4G.js";export default{fn:a}',
+					'two.js': 'import a from"./chunk.OKCNIS4G.js";export default{fn:a}',
+					'chunk.OKCNIS4G.js': 'const a=function fn(){};a.prototype.x=()=>{};export default a'
 				},
 				outJs: {
-					'one.js': '{fn:require("./chunk.CMEZCUSU.js")}',
-					'two.js': '{fn:require("./chunk.CMEZCUSU.js")}',
-					'chunk.CMEZCUSU.js': 'const a=function fn(){};a.prototype.x=()=>{};module.exports=a'
+					'one.js': '{fn:require("./chunk.SDHB37W4.js")}',
+					'two.js': '{fn:require("./chunk.SDHB37W4.js")}',
+					'chunk.SDHB37W4.js': 'const a=function fn(){};a.prototype.x=()=>{};module.exports=a'
 				},
 				validate({one, two}) {
 					expect(one).toBeObject();
@@ -552,25 +552,25 @@ describe('Code splitting', () => {
 					};
 				},
 				outCjs: {
-					'one.js': 'module.exports={fn:require("./chunk.COWYT45L.js")[1]}',
-					'two.js': 'module.exports={fn:require("./chunk.COWYT45L.js")[1]}',
-					'three.js': 'module.exports={proto:require("./chunk.COWYT45L.js")[0]}',
-					'four.js': 'module.exports={proto:require("./chunk.COWYT45L.js")[0]}',
-					'chunk.COWYT45L.js': 'const a=function fn(){},b=a.prototype;b.x=()=>{};module.exports=[b,a]'
+					'one.js': 'module.exports={fn:require("./chunk.APMYJZX2.js")[1]}',
+					'two.js': 'module.exports={fn:require("./chunk.APMYJZX2.js")[1]}',
+					'three.js': 'module.exports={proto:require("./chunk.APMYJZX2.js")[0]}',
+					'four.js': 'module.exports={proto:require("./chunk.APMYJZX2.js")[0]}',
+					'chunk.APMYJZX2.js': 'const a=function fn(){},b=a.prototype;b.x=()=>{};module.exports=[b,a]'
 				},
 				outEsm: {
-					'one.js': 'import a from"./chunk.WRJWKKAH.js";export default{fn:a[1]}',
-					'two.js': 'import a from"./chunk.WRJWKKAH.js";export default{fn:a[1]}',
-					'three.js': 'import a from"./chunk.WRJWKKAH.js";export default{proto:a[0]}',
-					'four.js': 'import a from"./chunk.WRJWKKAH.js";export default{proto:a[0]}',
-					'chunk.WRJWKKAH.js': 'const a=function fn(){},b=a.prototype;b.x=()=>{};export default[b,a]'
+					'one.js': 'import a from"./chunk.QJ676DZH.js";export default{fn:a[1]}',
+					'two.js': 'import a from"./chunk.QJ676DZH.js";export default{fn:a[1]}',
+					'three.js': 'import a from"./chunk.QJ676DZH.js";export default{proto:a[0]}',
+					'four.js': 'import a from"./chunk.QJ676DZH.js";export default{proto:a[0]}',
+					'chunk.QJ676DZH.js': 'const a=function fn(){},b=a.prototype;b.x=()=>{};export default[b,a]'
 				},
 				outJs: {
-					'one.js': '{fn:require("./chunk.COWYT45L.js")[1]}',
-					'two.js': '{fn:require("./chunk.COWYT45L.js")[1]}',
-					'three.js': '{proto:require("./chunk.COWYT45L.js")[0]}',
-					'four.js': '{proto:require("./chunk.COWYT45L.js")[0]}',
-					'chunk.COWYT45L.js': 'const a=function fn(){},b=a.prototype;b.x=()=>{};module.exports=[b,a]'
+					'one.js': '{fn:require("./chunk.APMYJZX2.js")[1]}',
+					'two.js': '{fn:require("./chunk.APMYJZX2.js")[1]}',
+					'three.js': '{proto:require("./chunk.APMYJZX2.js")[0]}',
+					'four.js': '{proto:require("./chunk.APMYJZX2.js")[0]}',
+					'chunk.APMYJZX2.js': 'const a=function fn(){},b=a.prototype;b.x=()=>{};module.exports=[b,a]'
 				},
 				validate({one, two, three, four}) {
 					expect(one).toBeObject();
@@ -602,19 +602,19 @@ describe('Code splitting', () => {
 					};
 				},
 				outCjs: {
-					'one.js': 'module.exports={fn:require("./chunk.BL6LUBBA.js")}',
-					'two.js': 'module.exports={fn:require("./chunk.BL6LUBBA.js")}',
-					'chunk.BL6LUBBA.js': 'const a=class fn{};Object.defineProperties(a.prototype,{x:{value:{x(){}}.x,writable:true,configurable:true}});module.exports=a'
+					'one.js': 'module.exports={fn:require("./chunk.RBUTKIKF.js")}',
+					'two.js': 'module.exports={fn:require("./chunk.RBUTKIKF.js")}',
+					'chunk.RBUTKIKF.js': 'const a=class fn{};Object.defineProperties(a.prototype,{x:{value:{x(){}}.x,writable:true,configurable:true}});module.exports=a'
 				},
 				outEsm: {
-					'one.js': 'import a from"./chunk.FRUWGQG5.js";export default{fn:a}',
-					'two.js': 'import a from"./chunk.FRUWGQG5.js";export default{fn:a}',
-					'chunk.FRUWGQG5.js': 'const a=class fn{};Object.defineProperties(a.prototype,{x:{value:{x(){}}.x,writable:true,configurable:true}});export default a'
+					'one.js': 'import a from"./chunk.LGMIS4VH.js";export default{fn:a}',
+					'two.js': 'import a from"./chunk.LGMIS4VH.js";export default{fn:a}',
+					'chunk.LGMIS4VH.js': 'const a=class fn{};Object.defineProperties(a.prototype,{x:{value:{x(){}}.x,writable:true,configurable:true}});export default a'
 				},
 				outJs: {
-					'one.js': '{fn:require("./chunk.BL6LUBBA.js")}',
-					'two.js': '{fn:require("./chunk.BL6LUBBA.js")}',
-					'chunk.BL6LUBBA.js': 'const a=class fn{};Object.defineProperties(a.prototype,{x:{value:{x(){}}.x,writable:true,configurable:true}});module.exports=a'
+					'one.js': '{fn:require("./chunk.RBUTKIKF.js")}',
+					'two.js': '{fn:require("./chunk.RBUTKIKF.js")}',
+					'chunk.RBUTKIKF.js': 'const a=class fn{};Object.defineProperties(a.prototype,{x:{value:{x(){}}.x,writable:true,configurable:true}});module.exports=a'
 				},
 				validate({one, two}) {
 					expect(one).toBeObject();
@@ -638,19 +638,19 @@ describe('Code splitting', () => {
 					};
 				},
 				outCjs: {
-					'one.js': 'module.exports={fn:require("./chunk.VW7MPMK2.js")}',
-					'two.js': 'module.exports={fn:require("./chunk.VW7MPMK2.js")}',
-					'chunk.VW7MPMK2.js': 'const a=function fn(){};Object.defineProperties(a.prototype,{constructor:{enumerable:true}});module.exports=a'
+					'one.js': 'module.exports={fn:require("./chunk.NEPYRDEA.js")}',
+					'two.js': 'module.exports={fn:require("./chunk.NEPYRDEA.js")}',
+					'chunk.NEPYRDEA.js': 'const a=function fn(){};Object.defineProperties(a.prototype,{constructor:{enumerable:true}});module.exports=a'
 				},
 				outEsm: {
-					'one.js': 'import a from"./chunk.OQ2P6CDZ.js";export default{fn:a}',
-					'two.js': 'import a from"./chunk.OQ2P6CDZ.js";export default{fn:a}',
-					'chunk.OQ2P6CDZ.js': 'const a=function fn(){};Object.defineProperties(a.prototype,{constructor:{enumerable:true}});export default a'
+					'one.js': 'import a from"./chunk.ZA2H42HN.js";export default{fn:a}',
+					'two.js': 'import a from"./chunk.ZA2H42HN.js";export default{fn:a}',
+					'chunk.ZA2H42HN.js': 'const a=function fn(){};Object.defineProperties(a.prototype,{constructor:{enumerable:true}});export default a'
 				},
 				outJs: {
-					'one.js': '{fn:require("./chunk.VW7MPMK2.js")}',
-					'two.js': '{fn:require("./chunk.VW7MPMK2.js")}',
-					'chunk.VW7MPMK2.js': 'const a=function fn(){};Object.defineProperties(a.prototype,{constructor:{enumerable:true}});module.exports=a'
+					'one.js': '{fn:require("./chunk.NEPYRDEA.js")}',
+					'two.js': '{fn:require("./chunk.NEPYRDEA.js")}',
+					'chunk.NEPYRDEA.js': 'const a=function fn(){};Object.defineProperties(a.prototype,{constructor:{enumerable:true}});module.exports=a'
 				},
 				validate({one, two}) {
 					expect(one).toBeObject();
@@ -677,19 +677,19 @@ describe('Code splitting', () => {
 						};
 					},
 					outCjs: {
-						'one.js': 'module.exports={fn:require("./chunk.RMFAZVNK.js")}',
-						'two.js': 'module.exports={fn:require("./chunk.RMFAZVNK.js")}',
-						'chunk.RMFAZVNK.js': 'const a=function fn(){};Object.setPrototypeOf(a.prototype,function superFn(){}.prototype);module.exports=a'
+						'one.js': 'module.exports={fn:require("./chunk.OPUXPLSJ.js")}',
+						'two.js': 'module.exports={fn:require("./chunk.OPUXPLSJ.js")}',
+						'chunk.OPUXPLSJ.js': 'const a=function fn(){};Object.setPrototypeOf(a.prototype,function superFn(){}.prototype);module.exports=a'
 					},
 					outEsm: {
-						'one.js': 'import a from"./chunk.YUTLBO5Z.js";export default{fn:a}',
-						'two.js': 'import a from"./chunk.YUTLBO5Z.js";export default{fn:a}',
-						'chunk.YUTLBO5Z.js': 'const a=function fn(){};Object.setPrototypeOf(a.prototype,function superFn(){}.prototype);export default a'
+						'one.js': 'import a from"./chunk.E5QCQNJB.js";export default{fn:a}',
+						'two.js': 'import a from"./chunk.E5QCQNJB.js";export default{fn:a}',
+						'chunk.E5QCQNJB.js': 'const a=function fn(){};Object.setPrototypeOf(a.prototype,function superFn(){}.prototype);export default a'
 					},
 					outJs: {
-						'one.js': '{fn:require("./chunk.RMFAZVNK.js")}',
-						'two.js': '{fn:require("./chunk.RMFAZVNK.js")}',
-						'chunk.RMFAZVNK.js': 'const a=function fn(){};Object.setPrototypeOf(a.prototype,function superFn(){}.prototype);module.exports=a'
+						'one.js': '{fn:require("./chunk.OPUXPLSJ.js")}',
+						'two.js': '{fn:require("./chunk.OPUXPLSJ.js")}',
+						'chunk.OPUXPLSJ.js': 'const a=function fn(){};Object.setPrototypeOf(a.prototype,function superFn(){}.prototype);module.exports=a'
 					},
 					validate({one, two}) {
 						expect(one).toBeObject();
@@ -725,19 +725,19 @@ describe('Code splitting', () => {
 						};
 					},
 					outCjs: {
-						'one.js': 'module.exports={fn:require("./chunk.DHTVVK7W.js")}',
-						'two.js': 'module.exports={fn:require("./chunk.DHTVVK7W.js")}',
-						'chunk.DHTVVK7W.js': 'const a=function fn(){},b=Object;b.setPrototypeOf(b.defineProperties(a.prototype,{constructor:{enumerable:true}}),function superFn(){}.prototype);module.exports=a'
+						'one.js': 'module.exports={fn:require("./chunk.KDBOKE4U.js")}',
+						'two.js': 'module.exports={fn:require("./chunk.KDBOKE4U.js")}',
+						'chunk.KDBOKE4U.js': 'const a=function fn(){},b=Object;b.setPrototypeOf(b.defineProperties(a.prototype,{constructor:{enumerable:true}}),function superFn(){}.prototype);module.exports=a'
 					},
 					outEsm: {
-						'one.js': 'import a from"./chunk.ASBMKGT6.js";export default{fn:a}',
-						'two.js': 'import a from"./chunk.ASBMKGT6.js";export default{fn:a}',
-						'chunk.ASBMKGT6.js': 'const a=function fn(){},b=Object;b.setPrototypeOf(b.defineProperties(a.prototype,{constructor:{enumerable:true}}),function superFn(){}.prototype);export default a'
+						'one.js': 'import a from"./chunk.Y333Q7L3.js";export default{fn:a}',
+						'two.js': 'import a from"./chunk.Y333Q7L3.js";export default{fn:a}',
+						'chunk.Y333Q7L3.js': 'const a=function fn(){},b=Object;b.setPrototypeOf(b.defineProperties(a.prototype,{constructor:{enumerable:true}}),function superFn(){}.prototype);export default a'
 					},
 					outJs: {
-						'one.js': '{fn:require("./chunk.DHTVVK7W.js")}',
-						'two.js': '{fn:require("./chunk.DHTVVK7W.js")}',
-						'chunk.DHTVVK7W.js': 'const a=function fn(){},b=Object;b.setPrototypeOf(b.defineProperties(a.prototype,{constructor:{enumerable:true}}),function superFn(){}.prototype);module.exports=a'
+						'one.js': '{fn:require("./chunk.KDBOKE4U.js")}',
+						'two.js': '{fn:require("./chunk.KDBOKE4U.js")}',
+						'chunk.KDBOKE4U.js': 'const a=function fn(){},b=Object;b.setPrototypeOf(b.defineProperties(a.prototype,{constructor:{enumerable:true}}),function superFn(){}.prototype);module.exports=a'
 					},
 					validate({one, two}) {
 						expect(one).toBeObject();
@@ -843,9 +843,9 @@ describe('Code splitting', () => {
 						'two.js': 'import a from"./one.js";export default a'
 					},
 					outJs: {
-						'one.js': 'require("./chunk.Y6J77ALT.js")',
-						'two.js': 'require("./chunk.Y6J77ALT.js")',
-						'chunk.Y6J77ALT.js': 'const a={isShared:true};a.shared=a;module.exports=a'
+						'one.js': 'require("./chunk.VPBRAQOW.js")',
+						'two.js': 'require("./chunk.VPBRAQOW.js")',
+						'chunk.VPBRAQOW.js': 'const a={isShared:true};a.shared=a;module.exports=a'
 					},
 					validate({one, two}) {
 						expect(one.shared).toBe(one);
@@ -863,19 +863,19 @@ describe('Code splitting', () => {
 						};
 					},
 					outCjs: {
-						'one.js': 'module.exports={x:require("./chunk.Y6J77ALT.js")}',
-						'two.js': 'module.exports={y:require("./chunk.Y6J77ALT.js")}',
-						'chunk.Y6J77ALT.js': 'const a={isShared:true};a.shared=a;module.exports=a'
+						'one.js': 'module.exports={x:require("./chunk.VPBRAQOW.js")}',
+						'two.js': 'module.exports={y:require("./chunk.VPBRAQOW.js")}',
+						'chunk.VPBRAQOW.js': 'const a={isShared:true};a.shared=a;module.exports=a'
 					},
 					outEsm: {
-						'one.js': 'import a from"./chunk.ICPKI42I.js";export default{x:a}',
-						'two.js': 'import a from"./chunk.ICPKI42I.js";export default{y:a}',
-						'chunk.ICPKI42I.js': 'const a={isShared:true};a.shared=a;export default a'
+						'one.js': 'import a from"./chunk.TPB6XMAE.js";export default{x:a}',
+						'two.js': 'import a from"./chunk.TPB6XMAE.js";export default{y:a}',
+						'chunk.TPB6XMAE.js': 'const a={isShared:true};a.shared=a;export default a'
 					},
 					outJs: {
-						'one.js': '{x:require("./chunk.Y6J77ALT.js")}',
-						'two.js': '{y:require("./chunk.Y6J77ALT.js")}',
-						'chunk.Y6J77ALT.js': 'const a={isShared:true};a.shared=a;module.exports=a'
+						'one.js': '{x:require("./chunk.VPBRAQOW.js")}',
+						'two.js': '{y:require("./chunk.VPBRAQOW.js")}',
+						'chunk.VPBRAQOW.js': 'const a={isShared:true};a.shared=a;module.exports=a'
 					},
 					validate({one, two}) {
 						expect(one.x.shared).toBe(one.x);
@@ -902,9 +902,9 @@ describe('Code splitting', () => {
 						'two.js': 'import a from"./one.js";export default a'
 					},
 					outJs: {
-						'one.js': 'require("./chunk.C4YD3MVO.js")',
-						'two.js': 'require("./chunk.C4YD3MVO.js")',
-						'chunk.C4YD3MVO.js': 'const a={isCircular:true};a.circular=a;module.exports={x:a}'
+						'one.js': 'require("./chunk.Y7TSXZXM.js")',
+						'two.js': 'require("./chunk.Y7TSXZXM.js")',
+						'chunk.Y7TSXZXM.js': 'const a={isCircular:true};a.circular=a;module.exports={x:a}'
 					},
 					validate({one, two}) {
 						expect(one.x.circular).toBe(one.x);
@@ -923,19 +923,19 @@ describe('Code splitting', () => {
 						};
 					},
 					outCjs: {
-						'one.js': 'module.exports={y:require("./chunk.C4YD3MVO.js")}',
-						'two.js': 'module.exports={z:require("./chunk.C4YD3MVO.js")}',
-						'chunk.C4YD3MVO.js': 'const a={isCircular:true};a.circular=a;module.exports={x:a}'
+						'one.js': 'module.exports={y:require("./chunk.Y7TSXZXM.js")}',
+						'two.js': 'module.exports={z:require("./chunk.Y7TSXZXM.js")}',
+						'chunk.Y7TSXZXM.js': 'const a={isCircular:true};a.circular=a;module.exports={x:a}'
 					},
 					outEsm: {
-						'one.js': 'import a from"./chunk.U5XX3OAE.js";export default{y:a}',
-						'two.js': 'import a from"./chunk.U5XX3OAE.js";export default{z:a}',
-						'chunk.U5XX3OAE.js': 'const a={isCircular:true};a.circular=a;export default{x:a}'
+						'one.js': 'import a from"./chunk.PHIYGN2F.js";export default{y:a}',
+						'two.js': 'import a from"./chunk.PHIYGN2F.js";export default{z:a}',
+						'chunk.PHIYGN2F.js': 'const a={isCircular:true};a.circular=a;export default{x:a}'
 					},
 					outJs: {
-						'one.js': '{y:require("./chunk.C4YD3MVO.js")}',
-						'two.js': '{z:require("./chunk.C4YD3MVO.js")}',
-						'chunk.C4YD3MVO.js': 'const a={isCircular:true};a.circular=a;module.exports={x:a}'
+						'one.js': '{y:require("./chunk.Y7TSXZXM.js")}',
+						'two.js': '{z:require("./chunk.Y7TSXZXM.js")}',
+						'chunk.Y7TSXZXM.js': 'const a={isCircular:true};a.circular=a;module.exports={x:a}'
 					},
 					validate({one, two}) {
 						expect(one.y.x.circular).toBe(one.y.x);
@@ -964,9 +964,9 @@ describe('Code splitting', () => {
 						'two.js': 'import a from"./one.js";export default a'
 					},
 					outJs: {
-						'one.js': 'require("./chunk.VW2V5KZS.js")',
-						'two.js': 'require("./chunk.VW2V5KZS.js")',
-						'chunk.VW2V5KZS.js': 'const a={isBottom:true},b={isTop:true,bottom:a};a.top=b;module.exports=b'
+						'one.js': 'require("./chunk.DKWSO3XU.js")',
+						'two.js': 'require("./chunk.DKWSO3XU.js")',
+						'chunk.DKWSO3XU.js': 'const a={isBottom:true},b={isTop:true,bottom:a};a.top=b;module.exports=b'
 					},
 					validate({one, two}) {
 						expect(one.bottom.top).toBe(one);
@@ -985,19 +985,19 @@ describe('Code splitting', () => {
 						};
 					},
 					outCjs: {
-						'one.js': 'module.exports=require("./chunk.3Y2TMT4H.js")[1]',
-						'two.js': 'module.exports=require("./chunk.3Y2TMT4H.js")[0]',
-						'chunk.3Y2TMT4H.js': 'const a={isBottom:true},b={isTop:true,bottom:a};a.top=b;module.exports=[a,b]'
+						'one.js': 'module.exports=require("./chunk.PQ3Q7OQK.js")[1]',
+						'two.js': 'module.exports=require("./chunk.PQ3Q7OQK.js")[0]',
+						'chunk.PQ3Q7OQK.js': 'const a={isBottom:true},b={isTop:true,bottom:a};a.top=b;module.exports=[a,b]'
 					},
 					outEsm: {
-						'one.js': 'import a from"./chunk.GB7GPOQX.js";export default a[1]',
-						'two.js': 'import a from"./chunk.GB7GPOQX.js";export default a[0]',
-						'chunk.GB7GPOQX.js': 'const a={isBottom:true},b={isTop:true,bottom:a};a.top=b;export default[a,b]'
+						'one.js': 'import a from"./chunk.ZXAZ4H3K.js";export default a[1]',
+						'two.js': 'import a from"./chunk.ZXAZ4H3K.js";export default a[0]',
+						'chunk.ZXAZ4H3K.js': 'const a={isBottom:true},b={isTop:true,bottom:a};a.top=b;export default[a,b]'
 					},
 					outJs: {
-						'one.js': 'require("./chunk.3Y2TMT4H.js")[1]',
-						'two.js': 'require("./chunk.3Y2TMT4H.js")[0]',
-						'chunk.3Y2TMT4H.js': 'const a={isBottom:true},b={isTop:true,bottom:a};a.top=b;module.exports=[a,b]'
+						'one.js': 'require("./chunk.PQ3Q7OQK.js")[1]',
+						'two.js': 'require("./chunk.PQ3Q7OQK.js")[0]',
+						'chunk.PQ3Q7OQK.js': 'const a={isBottom:true},b={isTop:true,bottom:a};a.top=b;module.exports=[a,b]'
 					},
 					validate({one, two}) {
 						expect(one.bottom.top).toBe(one);
@@ -1030,10 +1030,10 @@ describe('Code splitting', () => {
 						'three.js': 'import a from"./one.js";export default a'
 					},
 					outJs: {
-						'one.js': 'require("./chunk.MOO34GGU.js")',
-						'two.js': 'require("./chunk.MOO34GGU.js")',
-						'three.js': 'require("./chunk.MOO34GGU.js")',
-						'chunk.MOO34GGU.js': 'const a={isMiddle:true},b={isTop:true,bottom:{isBottom:true,middle:a}};a.top=b;module.exports=b'
+						'one.js': 'require("./chunk.RPYGU6B7.js")',
+						'two.js': 'require("./chunk.RPYGU6B7.js")',
+						'three.js': 'require("./chunk.RPYGU6B7.js")',
+						'chunk.RPYGU6B7.js': 'const a={isMiddle:true},b={isTop:true,bottom:{isBottom:true,middle:a}};a.top=b;module.exports=b'
 					},
 					validate({one, two, three}) {
 						expect(one.bottom.middle.top).toBe(one);
@@ -1056,22 +1056,22 @@ describe('Code splitting', () => {
 							};
 						},
 						outCjs: {
-							'one.js': 'module.exports=require("./chunk.I3MU6A63.js")[2]',
-							'two.js': 'module.exports=require("./chunk.I3MU6A63.js")[1]',
-							'three.js': 'module.exports=require("./chunk.I3MU6A63.js")[0]',
-							'chunk.I3MU6A63.js': 'const a={isMiddle:true},b={isBottom:true,middle:a},c={isTop:true,bottom:b};a.top=c;module.exports=[b,a,c]'
+							'one.js': 'module.exports=require("./chunk.DWFBXCX3.js")[2]',
+							'two.js': 'module.exports=require("./chunk.DWFBXCX3.js")[1]',
+							'three.js': 'module.exports=require("./chunk.DWFBXCX3.js")[0]',
+							'chunk.DWFBXCX3.js': 'const a={isMiddle:true},b={isBottom:true,middle:a},c={isTop:true,bottom:b};a.top=c;module.exports=[b,a,c]'
 						},
 						outEsm: {
-							'one.js': 'import a from"./chunk.OPG3X2MY.js";export default a[2]',
-							'two.js': 'import a from"./chunk.OPG3X2MY.js";export default a[1]',
-							'three.js': 'import a from"./chunk.OPG3X2MY.js";export default a[0]',
-							'chunk.OPG3X2MY.js': 'const a={isMiddle:true},b={isBottom:true,middle:a},c={isTop:true,bottom:b};a.top=c;export default[b,a,c]'
+							'one.js': 'import a from"./chunk.TYEP4GD4.js";export default a[2]',
+							'two.js': 'import a from"./chunk.TYEP4GD4.js";export default a[1]',
+							'three.js': 'import a from"./chunk.TYEP4GD4.js";export default a[0]',
+							'chunk.TYEP4GD4.js': 'const a={isMiddle:true},b={isBottom:true,middle:a},c={isTop:true,bottom:b};a.top=c;export default[b,a,c]'
 						},
 						outJs: {
-							'one.js': 'require("./chunk.I3MU6A63.js")[2]',
-							'two.js': 'require("./chunk.I3MU6A63.js")[1]',
-							'three.js': 'require("./chunk.I3MU6A63.js")[0]',
-							'chunk.I3MU6A63.js': 'const a={isMiddle:true},b={isBottom:true,middle:a},c={isTop:true,bottom:b};a.top=c;module.exports=[b,a,c]'
+							'one.js': 'require("./chunk.DWFBXCX3.js")[2]',
+							'two.js': 'require("./chunk.DWFBXCX3.js")[1]',
+							'three.js': 'require("./chunk.DWFBXCX3.js")[0]',
+							'chunk.DWFBXCX3.js': 'const a={isMiddle:true},b={isBottom:true,middle:a},c={isTop:true,bottom:b};a.top=c;module.exports=[b,a,c]'
 						},
 						validate({one, two, three}) {
 							expect(one.bottom.middle.top).toBe(one);
@@ -1093,22 +1093,22 @@ describe('Code splitting', () => {
 							};
 						},
 						outCjs: {
-							'one.js': 'module.exports=require("./chunk.LQ4TBBT2.js")[2]',
-							'two.js': 'module.exports=require("./chunk.LQ4TBBT2.js")[0]',
-							'three.js': 'module.exports=require("./chunk.LQ4TBBT2.js")[1]',
-							'chunk.LQ4TBBT2.js': 'const a={isTop:true},b={isMiddle:true,top:a},c={isBottom:true,middle:b};a.bottom=c;module.exports=[b,a,c]'
+							'one.js': 'module.exports=require("./chunk.OMZJSK6C.js")[2]',
+							'two.js': 'module.exports=require("./chunk.OMZJSK6C.js")[0]',
+							'three.js': 'module.exports=require("./chunk.OMZJSK6C.js")[1]',
+							'chunk.OMZJSK6C.js': 'const a={isTop:true},b={isMiddle:true,top:a},c={isBottom:true,middle:b};a.bottom=c;module.exports=[b,a,c]'
 						},
 						outEsm: {
-							'one.js': 'import a from"./chunk.JKOSV6CX.js";export default a[2]',
-							'two.js': 'import a from"./chunk.JKOSV6CX.js";export default a[0]',
-							'three.js': 'import a from"./chunk.JKOSV6CX.js";export default a[1]',
-							'chunk.JKOSV6CX.js': 'const a={isTop:true},b={isMiddle:true,top:a},c={isBottom:true,middle:b};a.bottom=c;export default[b,a,c]'
+							'one.js': 'import a from"./chunk.OEVVLXJM.js";export default a[2]',
+							'two.js': 'import a from"./chunk.OEVVLXJM.js";export default a[0]',
+							'three.js': 'import a from"./chunk.OEVVLXJM.js";export default a[1]',
+							'chunk.OEVVLXJM.js': 'const a={isTop:true},b={isMiddle:true,top:a},c={isBottom:true,middle:b};a.bottom=c;export default[b,a,c]'
 						},
 						outJs: {
-							'one.js': 'require("./chunk.LQ4TBBT2.js")[2]',
-							'two.js': 'require("./chunk.LQ4TBBT2.js")[0]',
-							'three.js': 'require("./chunk.LQ4TBBT2.js")[1]',
-							'chunk.LQ4TBBT2.js': 'const a={isTop:true},b={isMiddle:true,top:a},c={isBottom:true,middle:b};a.bottom=c;module.exports=[b,a,c]'
+							'one.js': 'require("./chunk.OMZJSK6C.js")[2]',
+							'two.js': 'require("./chunk.OMZJSK6C.js")[0]',
+							'three.js': 'require("./chunk.OMZJSK6C.js")[1]',
+							'chunk.OMZJSK6C.js': 'const a={isTop:true},b={isMiddle:true,top:a},c={isBottom:true,middle:b};a.bottom=c;module.exports=[b,a,c]'
 						},
 						validate({one, two, three}) {
 							expect(one.middle.top.bottom).toBe(one);
@@ -1160,9 +1160,9 @@ describe('Code splitting', () => {
 						'two.js': 'import a from"./one.js";export default a'
 					},
 					outJs: {
-						'one.js': 'require("./chunk.GKPZO6XM.js")',
-						'two.js': 'require("./chunk.GKPZO6XM.js")',
-						'chunk.GKPZO6XM.js': `
+						'one.js': 'require("./chunk.EMMY53RD.js")',
+						'two.js': 'require("./chunk.EMMY53RD.js")',
+						'chunk.EMMY53RD.js': `
 							const a={isMiddle:true},
 								b={
 									isTop:true,
@@ -1192,11 +1192,11 @@ describe('Code splitting', () => {
 							return {top, middle, bottom1, bottom2};
 						},
 						outCjs: {
-							'top.js': 'module.exports=require("./chunk.JXX3JRRQ.js")[3]',
-							'middle.js': 'module.exports=require("./chunk.JXX3JRRQ.js")[2]',
-							'bottom1.js': 'module.exports=require("./chunk.JXX3JRRQ.js")[0]',
-							'bottom2.js': 'module.exports=require("./chunk.JXX3JRRQ.js")[1]',
-							'chunk.JXX3JRRQ.js': `
+							'top.js': 'module.exports=require("./chunk.GKKCO5DM.js")[3]',
+							'middle.js': 'module.exports=require("./chunk.GKKCO5DM.js")[2]',
+							'bottom1.js': 'module.exports=require("./chunk.GKKCO5DM.js")[0]',
+							'bottom2.js': 'module.exports=require("./chunk.GKKCO5DM.js")[1]',
+							'chunk.GKKCO5DM.js': `
 								const a={isMiddle:true},
 									b={isBottom1:true,middle:a},
 									c={isBottom2:true,middle:a},
@@ -1206,11 +1206,11 @@ describe('Code splitting', () => {
 							`
 						},
 						outEsm: {
-							'top.js': 'import a from"./chunk.AJ36FYZY.js";export default a[3]',
-							'middle.js': 'import a from"./chunk.AJ36FYZY.js";export default a[2]',
-							'bottom1.js': 'import a from"./chunk.AJ36FYZY.js";export default a[0]',
-							'bottom2.js': 'import a from"./chunk.AJ36FYZY.js";export default a[1]',
-							'chunk.AJ36FYZY.js': `
+							'top.js': 'import a from"./chunk.ONH4ZMKF.js";export default a[3]',
+							'middle.js': 'import a from"./chunk.ONH4ZMKF.js";export default a[2]',
+							'bottom1.js': 'import a from"./chunk.ONH4ZMKF.js";export default a[0]',
+							'bottom2.js': 'import a from"./chunk.ONH4ZMKF.js";export default a[1]',
+							'chunk.ONH4ZMKF.js': `
 								const a={isMiddle:true},
 									b={isBottom1:true,middle:a},
 									c={isBottom2:true,middle:a},
@@ -1220,11 +1220,11 @@ describe('Code splitting', () => {
 							`
 						},
 						outJs: {
-							'top.js': 'require("./chunk.JXX3JRRQ.js")[3]',
-							'middle.js': 'require("./chunk.JXX3JRRQ.js")[2]',
-							'bottom1.js': 'require("./chunk.JXX3JRRQ.js")[0]',
-							'bottom2.js': 'require("./chunk.JXX3JRRQ.js")[1]',
-							'chunk.JXX3JRRQ.js': `
+							'top.js': 'require("./chunk.GKKCO5DM.js")[3]',
+							'middle.js': 'require("./chunk.GKKCO5DM.js")[2]',
+							'bottom1.js': 'require("./chunk.GKKCO5DM.js")[0]',
+							'bottom2.js': 'require("./chunk.GKKCO5DM.js")[1]',
+							'chunk.GKKCO5DM.js': `
 								const a={isMiddle:true},
 									b={isBottom1:true,middle:a},
 									c={isBottom2:true,middle:a},
@@ -1253,11 +1253,11 @@ describe('Code splitting', () => {
 							return {bottom1, bottom2, middle, top};
 						},
 						outCjs: {
-							'bottom1.js': 'module.exports=require("./chunk.2MPQ5DW7.js")[3]',
-							'bottom2.js': 'module.exports=require("./chunk.2MPQ5DW7.js")[0]',
-							'middle.js': 'module.exports=require("./chunk.2MPQ5DW7.js")[1]',
-							'top.js': 'module.exports=require("./chunk.2MPQ5DW7.js")[2]',
-							'chunk.2MPQ5DW7.js': `
+							'bottom1.js': 'module.exports=require("./chunk.6EKGYUCW.js")[3]',
+							'bottom2.js': 'module.exports=require("./chunk.6EKGYUCW.js")[0]',
+							'middle.js': 'module.exports=require("./chunk.6EKGYUCW.js")[1]',
+							'top.js': 'module.exports=require("./chunk.6EKGYUCW.js")[2]',
+							'chunk.6EKGYUCW.js': `
 								const a={isBottom2:true},
 									b={isTop:true,bottom1:void 0,bottom2:a},
 									c={isMiddle:true,top:b},
@@ -1268,11 +1268,11 @@ describe('Code splitting', () => {
 							`
 						},
 						outEsm: {
-							'bottom1.js': 'import a from"./chunk.TCCBJZYA.js";export default a[3]',
-							'bottom2.js': 'import a from"./chunk.TCCBJZYA.js";export default a[0]',
-							'middle.js': 'import a from"./chunk.TCCBJZYA.js";export default a[1]',
-							'top.js': 'import a from"./chunk.TCCBJZYA.js";export default a[2]',
-							'chunk.TCCBJZYA.js': `
+							'bottom1.js': 'import a from"./chunk.YNQRO5KD.js";export default a[3]',
+							'bottom2.js': 'import a from"./chunk.YNQRO5KD.js";export default a[0]',
+							'middle.js': 'import a from"./chunk.YNQRO5KD.js";export default a[1]',
+							'top.js': 'import a from"./chunk.YNQRO5KD.js";export default a[2]',
+							'chunk.YNQRO5KD.js': `
 								const a={isBottom2:true},
 									b={isTop:true,bottom1:void 0,bottom2:a},
 									c={isMiddle:true,top:b},
@@ -1283,11 +1283,11 @@ describe('Code splitting', () => {
 							`
 						},
 						outJs: {
-							'bottom1.js': 'require("./chunk.2MPQ5DW7.js")[3]',
-							'bottom2.js': 'require("./chunk.2MPQ5DW7.js")[0]',
-							'middle.js': 'require("./chunk.2MPQ5DW7.js")[1]',
-							'top.js': 'require("./chunk.2MPQ5DW7.js")[2]',
-							'chunk.2MPQ5DW7.js': `
+							'bottom1.js': 'require("./chunk.6EKGYUCW.js")[3]',
+							'bottom2.js': 'require("./chunk.6EKGYUCW.js")[0]',
+							'middle.js': 'require("./chunk.6EKGYUCW.js")[1]',
+							'top.js': 'require("./chunk.6EKGYUCW.js")[2]',
+							'chunk.6EKGYUCW.js': `
 								const a={isBottom2:true},
 									b={isTop:true,bottom1:void 0,bottom2:a},
 									c={isMiddle:true,top:b},
@@ -1317,11 +1317,11 @@ describe('Code splitting', () => {
 							return {bottom2, bottom1, middle, top};
 						},
 						outCjs: {
-							'bottom2.js': 'module.exports=require("./chunk.JYFVZQBU.js")[3]',
-							'bottom1.js': 'module.exports=require("./chunk.JYFVZQBU.js")[0]',
-							'middle.js': 'module.exports=require("./chunk.JYFVZQBU.js")[1]',
-							'top.js': 'module.exports=require("./chunk.JYFVZQBU.js")[2]',
-							'chunk.JYFVZQBU.js': `
+							'bottom2.js': 'module.exports=require("./chunk.I63HG4N5.js")[3]',
+							'bottom1.js': 'module.exports=require("./chunk.I63HG4N5.js")[0]',
+							'middle.js': 'module.exports=require("./chunk.I63HG4N5.js")[1]',
+							'top.js': 'module.exports=require("./chunk.I63HG4N5.js")[2]',
+							'chunk.I63HG4N5.js': `
 								const a={isBottom1:true},
 									b={isTop:true,bottom1:a},
 									c={isMiddle:true,top:b},
@@ -1332,11 +1332,11 @@ describe('Code splitting', () => {
 							`
 						},
 						outEsm: {
-							'bottom2.js': 'import a from"./chunk.4GDRXFFI.js";export default a[3]',
-							'bottom1.js': 'import a from"./chunk.4GDRXFFI.js";export default a[0]',
-							'middle.js': 'import a from"./chunk.4GDRXFFI.js";export default a[1]',
-							'top.js': 'import a from"./chunk.4GDRXFFI.js";export default a[2]',
-							'chunk.4GDRXFFI.js': `
+							'bottom2.js': 'import a from"./chunk.PODSWQTK.js";export default a[3]',
+							'bottom1.js': 'import a from"./chunk.PODSWQTK.js";export default a[0]',
+							'middle.js': 'import a from"./chunk.PODSWQTK.js";export default a[1]',
+							'top.js': 'import a from"./chunk.PODSWQTK.js";export default a[2]',
+							'chunk.PODSWQTK.js': `
 								const a={isBottom1:true},
 									b={isTop:true,bottom1:a},
 									c={isMiddle:true,top:b},
@@ -1347,11 +1347,11 @@ describe('Code splitting', () => {
 							`
 						},
 						outJs: {
-							'bottom2.js': 'require("./chunk.JYFVZQBU.js")[3]',
-							'bottom1.js': 'require("./chunk.JYFVZQBU.js")[0]',
-							'middle.js': 'require("./chunk.JYFVZQBU.js")[1]',
-							'top.js': 'require("./chunk.JYFVZQBU.js")[2]',
-							'chunk.JYFVZQBU.js': `
+							'bottom2.js': 'require("./chunk.I63HG4N5.js")[3]',
+							'bottom1.js': 'require("./chunk.I63HG4N5.js")[0]',
+							'middle.js': 'require("./chunk.I63HG4N5.js")[1]',
+							'top.js': 'require("./chunk.I63HG4N5.js")[2]',
+							'chunk.I63HG4N5.js': `
 								const a={isBottom1:true},
 									b={isTop:true,bottom1:a},
 									c={isMiddle:true,top:b},
@@ -1381,11 +1381,11 @@ describe('Code splitting', () => {
 							return {middle, top, bottom1, bottom2};
 						},
 						outCjs: {
-							'middle.js': 'module.exports=require("./chunk.NAHRP6VS.js")[3]',
-							'top.js': 'module.exports=require("./chunk.NAHRP6VS.js")[0]',
-							'bottom1.js': 'module.exports=require("./chunk.NAHRP6VS.js")[1]',
-							'bottom2.js': 'module.exports=require("./chunk.NAHRP6VS.js")[2]',
-							'chunk.NAHRP6VS.js': `
+							'middle.js': 'module.exports=require("./chunk.XXXRM7FO.js")[3]',
+							'top.js': 'module.exports=require("./chunk.XXXRM7FO.js")[0]',
+							'bottom1.js': 'module.exports=require("./chunk.XXXRM7FO.js")[1]',
+							'bottom2.js': 'module.exports=require("./chunk.XXXRM7FO.js")[2]',
+							'chunk.XXXRM7FO.js': `
 								const a={isBottom1:true},
 									b={isBottom2:true},
 									c={isTop:true,bottom1:a,bottom2:b},
@@ -1396,11 +1396,11 @@ describe('Code splitting', () => {
 							`
 						},
 						outEsm: {
-							'middle.js': 'import a from"./chunk.QZ4HF2XG.js";export default a[3]',
-							'top.js': 'import a from"./chunk.QZ4HF2XG.js";export default a[0]',
-							'bottom1.js': 'import a from"./chunk.QZ4HF2XG.js";export default a[1]',
-							'bottom2.js': 'import a from"./chunk.QZ4HF2XG.js";export default a[2]',
-							'chunk.QZ4HF2XG.js': `
+							'middle.js': 'import a from"./chunk.H7XWVEG4.js";export default a[3]',
+							'top.js': 'import a from"./chunk.H7XWVEG4.js";export default a[0]',
+							'bottom1.js': 'import a from"./chunk.H7XWVEG4.js";export default a[1]',
+							'bottom2.js': 'import a from"./chunk.H7XWVEG4.js";export default a[2]',
+							'chunk.H7XWVEG4.js': `
 								const a={isBottom1:true},
 									b={isBottom2:true},
 									c={isTop:true,bottom1:a,bottom2:b},
@@ -1411,11 +1411,11 @@ describe('Code splitting', () => {
 							`
 						},
 						outJs: {
-							'middle.js': 'require("./chunk.NAHRP6VS.js")[3]',
-							'top.js': 'require("./chunk.NAHRP6VS.js")[0]',
-							'bottom1.js': 'require("./chunk.NAHRP6VS.js")[1]',
-							'bottom2.js': 'require("./chunk.NAHRP6VS.js")[2]',
-							'chunk.NAHRP6VS.js': `
+							'middle.js': 'require("./chunk.XXXRM7FO.js")[3]',
+							'top.js': 'require("./chunk.XXXRM7FO.js")[0]',
+							'bottom1.js': 'require("./chunk.XXXRM7FO.js")[1]',
+							'bottom2.js': 'require("./chunk.XXXRM7FO.js")[2]',
+							'chunk.XXXRM7FO.js': `
 								const a={isBottom1:true},
 									b={isBottom2:true},
 									c={isTop:true,bottom1:a,bottom2:b},
@@ -1452,19 +1452,19 @@ describe('Code splitting', () => {
 						};
 					},
 					outCjs: {
-						'one.js': 'module.exports={w:require("./chunk.KX3I6NUE.js")}',
-						'two.js': 'module.exports={w:require("./chunk.KX3I6NUE.js")}',
-						'chunk.KX3I6NUE.js': 'const a={isX:true},b={isZ:true},c={isY:true,x:a,z:b},d={isW:true,y:c};a.w=d;a.y=c;b.w=d;module.exports=d'
+						'one.js': 'module.exports={w:require("./chunk.S2EFVP3I.js")}',
+						'two.js': 'module.exports={w:require("./chunk.S2EFVP3I.js")}',
+						'chunk.S2EFVP3I.js': 'const a={isX:true},b={isZ:true},c={isY:true,x:a,z:b},d={isW:true,y:c};a.w=d;a.y=c;b.w=d;module.exports=d'
 					},
 					outEsm: {
-						'one.js': 'import a from"./chunk.DWKITS2B.js";export default{w:a}',
-						'two.js': 'import a from"./chunk.DWKITS2B.js";export default{w:a}',
-						'chunk.DWKITS2B.js': 'const a={isX:true},b={isZ:true},c={isY:true,x:a,z:b},d={isW:true,y:c};a.w=d;a.y=c;b.w=d;export default d'
+						'one.js': 'import a from"./chunk.A5KLO7AA.js";export default{w:a}',
+						'two.js': 'import a from"./chunk.A5KLO7AA.js";export default{w:a}',
+						'chunk.A5KLO7AA.js': 'const a={isX:true},b={isZ:true},c={isY:true,x:a,z:b},d={isW:true,y:c};a.w=d;a.y=c;b.w=d;export default d'
 					},
 					outJs: {
-						'one.js': '{w:require("./chunk.KX3I6NUE.js")}',
-						'two.js': '{w:require("./chunk.KX3I6NUE.js")}',
-						'chunk.KX3I6NUE.js': 'const a={isX:true},b={isZ:true},c={isY:true,x:a,z:b},d={isW:true,y:c};a.w=d;a.y=c;b.w=d;module.exports=d'
+						'one.js': '{w:require("./chunk.S2EFVP3I.js")}',
+						'two.js': '{w:require("./chunk.S2EFVP3I.js")}',
+						'chunk.S2EFVP3I.js': 'const a={isX:true},b={isZ:true},c={isY:true,x:a,z:b},d={isW:true,y:c};a.w=d;a.y=c;b.w=d;module.exports=d'
 					},
 					validate({one, two}) {
 						const {w} = one;
@@ -1487,25 +1487,25 @@ describe('Code splitting', () => {
 						return {w, x, y, z};
 					},
 					outCjs: {
-						'w.js': 'module.exports=require("./chunk.XKD53INF.js")[3]',
-						'x.js': 'module.exports=require("./chunk.XKD53INF.js")[1]',
-						'y.js': 'module.exports=require("./chunk.XKD53INF.js")[0]',
-						'z.js': 'module.exports=require("./chunk.XKD53INF.js")[2]',
-						'chunk.XKD53INF.js': 'const a={isX:true},b={isZ:true},c={isY:true,x:a,z:b},d={isW:true,y:c};a.w=d;a.y=c;b.w=d;module.exports=[c,a,b,d]'
+						'w.js': 'module.exports=require("./chunk.GMNORSPU.js")[3]',
+						'x.js': 'module.exports=require("./chunk.GMNORSPU.js")[1]',
+						'y.js': 'module.exports=require("./chunk.GMNORSPU.js")[0]',
+						'z.js': 'module.exports=require("./chunk.GMNORSPU.js")[2]',
+						'chunk.GMNORSPU.js': 'const a={isX:true},b={isZ:true},c={isY:true,x:a,z:b},d={isW:true,y:c};a.w=d;a.y=c;b.w=d;module.exports=[c,a,b,d]'
 					},
 					outEsm: {
-						'w.js': 'import a from"./chunk.TWOAEMAJ.js";export default a[3]',
-						'x.js': 'import a from"./chunk.TWOAEMAJ.js";export default a[1]',
-						'y.js': 'import a from"./chunk.TWOAEMAJ.js";export default a[0]',
-						'z.js': 'import a from"./chunk.TWOAEMAJ.js";export default a[2]',
-						'chunk.TWOAEMAJ.js': 'const a={isX:true},b={isZ:true},c={isY:true,x:a,z:b},d={isW:true,y:c};a.w=d;a.y=c;b.w=d;export default[c,a,b,d]'
+						'w.js': 'import a from"./chunk.4MJPDDS3.js";export default a[3]',
+						'x.js': 'import a from"./chunk.4MJPDDS3.js";export default a[1]',
+						'y.js': 'import a from"./chunk.4MJPDDS3.js";export default a[0]',
+						'z.js': 'import a from"./chunk.4MJPDDS3.js";export default a[2]',
+						'chunk.4MJPDDS3.js': 'const a={isX:true},b={isZ:true},c={isY:true,x:a,z:b},d={isW:true,y:c};a.w=d;a.y=c;b.w=d;export default[c,a,b,d]'
 					},
 					outJs: {
-						'w.js': 'require("./chunk.XKD53INF.js")[3]',
-						'x.js': 'require("./chunk.XKD53INF.js")[1]',
-						'y.js': 'require("./chunk.XKD53INF.js")[0]',
-						'z.js': 'require("./chunk.XKD53INF.js")[2]',
-						'chunk.XKD53INF.js': 'const a={isX:true},b={isZ:true},c={isY:true,x:a,z:b},d={isW:true,y:c};a.w=d;a.y=c;b.w=d;module.exports=[c,a,b,d]'
+						'w.js': 'require("./chunk.GMNORSPU.js")[3]',
+						'x.js': 'require("./chunk.GMNORSPU.js")[1]',
+						'y.js': 'require("./chunk.GMNORSPU.js")[0]',
+						'z.js': 'require("./chunk.GMNORSPU.js")[2]',
+						'chunk.GMNORSPU.js': 'const a={isX:true},b={isZ:true},c={isY:true,x:a,z:b},d={isW:true,y:c};a.w=d;a.y=c;b.w=d;module.exports=[c,a,b,d]'
 					},
 					validate({w, x, y, z}) {
 						expect(w.y.x.w).toBe(w);
@@ -1530,19 +1530,19 @@ describe('Code splitting', () => {
 					};
 				},
 				outCjs: {
-					'one.js': 'const a=require("./chunk.OE3HUVJ2.js");module.exports={x:a,y:a,z:a}',
-					'two.js': 'const a=require("./chunk.OE3HUVJ2.js");module.exports={e:a,f:a,g:a}',
-					'chunk.OE3HUVJ2.js': 'module.exports={isShared:true}'
+					'one.js': 'const a=require("./chunk.7ANF66YZ.js");module.exports={x:a,y:a,z:a}',
+					'two.js': 'const a=require("./chunk.7ANF66YZ.js");module.exports={e:a,f:a,g:a}',
+					'chunk.7ANF66YZ.js': 'module.exports={isShared:true}'
 				},
 				outEsm: {
-					'one.js': 'import a from"./chunk.HW2BJAJH.js";export default{x:a,y:a,z:a}',
-					'two.js': 'import a from"./chunk.HW2BJAJH.js";export default{e:a,f:a,g:a}',
-					'chunk.HW2BJAJH.js': 'export default{isShared:true}'
+					'one.js': 'import a from"./chunk.KOPFAARQ.js";export default{x:a,y:a,z:a}',
+					'two.js': 'import a from"./chunk.KOPFAARQ.js";export default{e:a,f:a,g:a}',
+					'chunk.KOPFAARQ.js': 'export default{isShared:true}'
 				},
 				outJs: {
-					'one.js': '(()=>{const a=require("./chunk.OE3HUVJ2.js");return{x:a,y:a,z:a}})()',
-					'two.js': '(()=>{const a=require("./chunk.OE3HUVJ2.js");return{e:a,f:a,g:a}})()',
-					'chunk.OE3HUVJ2.js': 'module.exports={isShared:true}'
+					'one.js': '(()=>{const a=require("./chunk.7ANF66YZ.js");return{x:a,y:a,z:a}})()',
+					'two.js': '(()=>{const a=require("./chunk.7ANF66YZ.js");return{e:a,f:a,g:a}})()',
+					'chunk.7ANF66YZ.js': 'module.exports={isShared:true}'
 				},
 				validate({one, two}) {
 					const shared = one.x;
@@ -1568,19 +1568,19 @@ describe('Code splitting', () => {
 					};
 				},
 				outCjs: {
-					'one.js': 'const a=require("./chunk.3IJ2UVXS.js"),b=a[0];module.exports={x:b,y:b,z:a[1]}',
-					'two.js': 'const a=require("./chunk.3IJ2UVXS.js"),b=a[1];module.exports={e:a[0],f:b,g:b}',
-					'chunk.3IJ2UVXS.js': 'module.exports=[{isShared1:true},{isShared2:true}]'
+					'one.js': 'const a=require("./chunk.TTKTTCEW.js"),b=a[0];module.exports={x:b,y:b,z:a[1]}',
+					'two.js': 'const a=require("./chunk.TTKTTCEW.js"),b=a[1];module.exports={e:a[0],f:b,g:b}',
+					'chunk.TTKTTCEW.js': 'module.exports=[{isShared1:true},{isShared2:true}]'
 				},
 				outEsm: {
-					'one.js': 'import a from"./chunk.ND6HMM5Y.js";const b=a[0];export default{x:b,y:b,z:a[1]}',
-					'two.js': 'import a from"./chunk.ND6HMM5Y.js";const b=a[1];export default{e:a[0],f:b,g:b}',
-					'chunk.ND6HMM5Y.js': 'export default[{isShared1:true},{isShared2:true}]'
+					'one.js': 'import a from"./chunk.MWEAKQFD.js";const b=a[0];export default{x:b,y:b,z:a[1]}',
+					'two.js': 'import a from"./chunk.MWEAKQFD.js";const b=a[1];export default{e:a[0],f:b,g:b}',
+					'chunk.MWEAKQFD.js': 'export default[{isShared1:true},{isShared2:true}]'
 				},
 				outJs: {
-					'one.js': '(()=>{const a=require("./chunk.3IJ2UVXS.js"),b=a[0];return{x:b,y:b,z:a[1]}})()',
-					'two.js': '(()=>{const a=require("./chunk.3IJ2UVXS.js"),b=a[1];return{e:a[0],f:b,g:b}})()',
-					'chunk.3IJ2UVXS.js': 'module.exports=[{isShared1:true},{isShared2:true}]'
+					'one.js': '(()=>{const a=require("./chunk.TTKTTCEW.js"),b=a[0];return{x:b,y:b,z:a[1]}})()',
+					'two.js': '(()=>{const a=require("./chunk.TTKTTCEW.js"),b=a[1];return{e:a[0],f:b,g:b}})()',
+					'chunk.TTKTTCEW.js': 'module.exports=[{isShared1:true},{isShared2:true}]'
 				},
 				validate({one, two}) {
 					const shared1 = one.x;
@@ -1610,37 +1610,37 @@ describe('Code splitting', () => {
 				};
 			},
 			outCjs: {
-				'one.js': 'module.exports={x:require("./chunk.EZ57XGN3.js")}',
-				'two.js': 'module.exports={x:require("./chunk.EZ57XGN3.js")}',
-				'three.js': 'module.exports={x:require("./chunk.DQPC3RE7.js")}',
-				'four.js': 'module.exports={x:require("./chunk.DQPC3RE7.js")}',
-				'five.js': 'module.exports={x:require("./chunk.OE3HUVJ2.js")}',
-				'six.js': 'module.exports={x:require("./chunk.OE3HUVJ2.js")}',
-				'chunk.EZ57XGN3.js': 'module.exports={isShared:true}',
-				'chunk.DQPC3RE7.js': 'module.exports={isShared:true}',
-				'chunk.OE3HUVJ2.js': 'module.exports={isShared:true}'
+				'one.js': 'module.exports={x:require("./chunk.BVVQNWXW.js")}',
+				'two.js': 'module.exports={x:require("./chunk.BVVQNWXW.js")}',
+				'three.js': 'module.exports={x:require("./chunk.VSF42ZCA.js")}',
+				'four.js': 'module.exports={x:require("./chunk.VSF42ZCA.js")}',
+				'five.js': 'module.exports={x:require("./chunk.7ANF66YZ.js")}',
+				'six.js': 'module.exports={x:require("./chunk.7ANF66YZ.js")}',
+				'chunk.BVVQNWXW.js': 'module.exports={isShared:true}',
+				'chunk.VSF42ZCA.js': 'module.exports={isShared:true}',
+				'chunk.7ANF66YZ.js': 'module.exports={isShared:true}'
 			},
 			outEsm: {
-				'one.js': 'import a from"./chunk.HNC2QIUJ.js";export default{x:a}',
-				'two.js': 'import a from"./chunk.HNC2QIUJ.js";export default{x:a}',
-				'three.js': 'import a from"./chunk.CQCME2VM.js";export default{x:a}',
-				'four.js': 'import a from"./chunk.CQCME2VM.js";export default{x:a}',
-				'five.js': 'import a from"./chunk.HW2BJAJH.js";export default{x:a}',
-				'six.js': 'import a from"./chunk.HW2BJAJH.js";export default{x:a}',
-				'chunk.HNC2QIUJ.js': 'export default{isShared:true}',
-				'chunk.CQCME2VM.js': 'export default{isShared:true}',
-				'chunk.HW2BJAJH.js': 'export default{isShared:true}'
+				'one.js': 'import a from"./chunk.QGMT774W.js";export default{x:a}',
+				'two.js': 'import a from"./chunk.QGMT774W.js";export default{x:a}',
+				'three.js': 'import a from"./chunk.LG3B3BIH.js";export default{x:a}',
+				'four.js': 'import a from"./chunk.LG3B3BIH.js";export default{x:a}',
+				'five.js': 'import a from"./chunk.KOPFAARQ.js";export default{x:a}',
+				'six.js': 'import a from"./chunk.KOPFAARQ.js";export default{x:a}',
+				'chunk.QGMT774W.js': 'export default{isShared:true}',
+				'chunk.LG3B3BIH.js': 'export default{isShared:true}',
+				'chunk.KOPFAARQ.js': 'export default{isShared:true}'
 			},
 			outJs: {
-				'one.js': '{x:require("./chunk.EZ57XGN3.js")}',
-				'two.js': '{x:require("./chunk.EZ57XGN3.js")}',
-				'three.js': '{x:require("./chunk.DQPC3RE7.js")}',
-				'four.js': '{x:require("./chunk.DQPC3RE7.js")}',
-				'five.js': '{x:require("./chunk.OE3HUVJ2.js")}',
-				'six.js': '{x:require("./chunk.OE3HUVJ2.js")}',
-				'chunk.EZ57XGN3.js': 'module.exports={isShared:true}',
-				'chunk.DQPC3RE7.js': 'module.exports={isShared:true}',
-				'chunk.OE3HUVJ2.js': 'module.exports={isShared:true}'
+				'one.js': '{x:require("./chunk.BVVQNWXW.js")}',
+				'two.js': '{x:require("./chunk.BVVQNWXW.js")}',
+				'three.js': '{x:require("./chunk.VSF42ZCA.js")}',
+				'four.js': '{x:require("./chunk.VSF42ZCA.js")}',
+				'five.js': '{x:require("./chunk.7ANF66YZ.js")}',
+				'six.js': '{x:require("./chunk.7ANF66YZ.js")}',
+				'chunk.BVVQNWXW.js': 'module.exports={isShared:true}',
+				'chunk.VSF42ZCA.js': 'module.exports={isShared:true}',
+				'chunk.7ANF66YZ.js': 'module.exports={isShared:true}'
 			},
 			validate({one, two, three, four, five, six}) {
 				expect(two.x).toBe(one.x);
@@ -1667,19 +1667,19 @@ describe('Code splitting', () => {
 				validateOutput(entries, {format, outputJs}) {
 					expect(mapValues(outputJs, stripSourceMapComment)).toEqual({
 						cjs: {
-							'one.js': 'const shared=require("./chunk.3K6GDUKV.js"),one={shared};module.exports=one',
-							'two.js': 'const shared=require("./chunk.3K6GDUKV.js"),two={shared};module.exports=two',
-							'chunk.3K6GDUKV.js': 'const shared=function shared(){};module.exports=shared'
+							'one.js': 'const shared=require("./chunk.AFEP3AX6.js"),one={shared};module.exports=one',
+							'two.js': 'const shared=require("./chunk.AFEP3AX6.js"),two={shared};module.exports=two',
+							'chunk.AFEP3AX6.js': 'const shared=function shared(){};module.exports=shared'
 						},
 						esm: {
-							'one.js': 'import shared from"./chunk.43BDV6RC.js";const one={shared};export default one',
-							'two.js': 'import shared from"./chunk.43BDV6RC.js";const two={shared};export default two',
-							'chunk.43BDV6RC.js': 'const shared=function shared(){};export default shared'
+							'one.js': 'import shared from"./chunk.KST74VJL.js";const one={shared};export default one',
+							'two.js': 'import shared from"./chunk.KST74VJL.js";const two={shared};export default two',
+							'chunk.KST74VJL.js': 'const shared=function shared(){};export default shared'
 						},
 						js: {
-							'one.js': '(()=>{const shared=require("./chunk.3K6GDUKV.js"),one={shared};return one})()',
-							'two.js': '(()=>{const shared=require("./chunk.3K6GDUKV.js"),two={shared};return two})()',
-							'chunk.3K6GDUKV.js': 'const shared=function shared(){};module.exports=shared'
+							'one.js': '(()=>{const shared=require("./chunk.AFEP3AX6.js"),one={shared};return one})()',
+							'two.js': '(()=>{const shared=require("./chunk.AFEP3AX6.js"),two={shared};return two})()',
+							'chunk.AFEP3AX6.js': 'const shared=function shared(){};module.exports=shared'
 						}
 					}[format]);
 				}
@@ -1700,19 +1700,19 @@ describe('Code splitting', () => {
 				validateOutput(entries, {format, outputJs}) {
 					expect(mapValues(outputJs, stripSourceMapComment)).toEqual({
 						cjs: {
-							'one.js': 'const shared1_shared2=require("./chunk.HSBEMAG7.js"),shared1=shared1_shared2[0],shared2=shared1_shared2[1],one={shared1,shared2};module.exports=one',
-							'two.js': 'const shared1_shared2=require("./chunk.HSBEMAG7.js"),shared1=shared1_shared2[0],shared2=shared1_shared2[1],two={shared1,shared2};module.exports=two',
-							'chunk.HSBEMAG7.js': 'const shared1=function shared1(){},shared2=function shared2(){},shared1_shared2=[shared1,shared2];module.exports=shared1_shared2'
+							'one.js': 'const shared1_shared2=require("./chunk.TCG6QM4J.js"),shared1=shared1_shared2[0],shared2=shared1_shared2[1],one={shared1,shared2};module.exports=one',
+							'two.js': 'const shared1_shared2=require("./chunk.TCG6QM4J.js"),shared1=shared1_shared2[0],shared2=shared1_shared2[1],two={shared1,shared2};module.exports=two',
+							'chunk.TCG6QM4J.js': 'const shared1=function shared1(){},shared2=function shared2(){},shared1_shared2=[shared1,shared2];module.exports=shared1_shared2'
 						},
 						esm: {
-							'one.js': 'import shared1_shared2 from"./chunk.AQMYUQAE.js";const shared1=shared1_shared2[0],shared2=shared1_shared2[1],one={shared1,shared2};export default one',
-							'two.js': 'import shared1_shared2 from"./chunk.AQMYUQAE.js";const shared1=shared1_shared2[0],shared2=shared1_shared2[1],two={shared1,shared2};export default two',
-							'chunk.AQMYUQAE.js': 'const shared1=function shared1(){},shared2=function shared2(){},shared1_shared2=[shared1,shared2];export default shared1_shared2'
+							'one.js': 'import shared1_shared2 from"./chunk.VSFPYWJY.js";const shared1=shared1_shared2[0],shared2=shared1_shared2[1],one={shared1,shared2};export default one',
+							'two.js': 'import shared1_shared2 from"./chunk.VSFPYWJY.js";const shared1=shared1_shared2[0],shared2=shared1_shared2[1],two={shared1,shared2};export default two',
+							'chunk.VSFPYWJY.js': 'const shared1=function shared1(){},shared2=function shared2(){},shared1_shared2=[shared1,shared2];export default shared1_shared2'
 						},
 						js: {
-							'one.js': '(()=>{const shared1_shared2=require("./chunk.HSBEMAG7.js"),shared1=shared1_shared2[0],shared2=shared1_shared2[1],one={shared1,shared2};return one})()',
-							'two.js': '(()=>{const shared1_shared2=require("./chunk.HSBEMAG7.js"),shared1=shared1_shared2[0],shared2=shared1_shared2[1],two={shared1,shared2};return two})()',
-							'chunk.HSBEMAG7.js': 'const shared1=function shared1(){},shared2=function shared2(){},shared1_shared2=[shared1,shared2];module.exports=shared1_shared2'
+							'one.js': '(()=>{const shared1_shared2=require("./chunk.TCG6QM4J.js"),shared1=shared1_shared2[0],shared2=shared1_shared2[1],one={shared1,shared2};return one})()',
+							'two.js': '(()=>{const shared1_shared2=require("./chunk.TCG6QM4J.js"),shared1=shared1_shared2[0],shared2=shared1_shared2[1],two={shared1,shared2};return two})()',
+							'chunk.TCG6QM4J.js': 'const shared1=function shared1(){},shared2=function shared2(){},shared1_shared2=[shared1,shared2];module.exports=shared1_shared2'
 						}
 					}[format]);
 				}
@@ -1874,6 +1874,14 @@ describe('Code splitting', () => {
 			]);
 		});
 
+		it('source maps alter hashes in filenames', () => {
+			const shared = {isShared: true},
+				entries = {one: {shared}, two: {shared}};
+			expect(serializeEntries(entries)[2].filename).toBe('chunk.OE3HUVJ2.js');
+			expect(serializeEntries(entries, {sourceMaps: 'inline'})[2].filename).toBe('chunk.ZNSPQDJA.js');
+			expect(serializeEntries(entries, {sourceMaps: true})[4].filename).toBe('chunk.7ANF66YZ.js');
+		});
+
 		describe('source maps use correct relative paths', () => {
 			const testFilename = basename(__filename);
 			describe('with no slashes in names', () => {
@@ -1885,14 +1893,14 @@ describe('Code splitting', () => {
 					expect(files).toEqual([
 						{
 							filename: 'one.js',
-							content: 'module.exports=[()=>1,require("./chunk.KLHDUNTF.js")]\n//# sourceMappingURL=one.js.map'
+							content: 'module.exports=[()=>1,require("./chunk.3OES3VXY.js")]\n//# sourceMappingURL=one.js.map'
 						},
 						{filename: 'one.js.map', content: expect.stringContaining('{"version":3,')},
 						{
-							filename: 'chunk.KLHDUNTF.js',
-							content: 'module.exports=()=>2\n//# sourceMappingURL=chunk.KLHDUNTF.js.map'
+							filename: 'chunk.3OES3VXY.js',
+							content: 'module.exports=()=>2\n//# sourceMappingURL=chunk.3OES3VXY.js.map'
 						},
-						{filename: 'chunk.KLHDUNTF.js.map', content: expect.stringContaining('{"version":3,')}
+						{filename: 'chunk.3OES3VXY.js.map', content: expect.stringContaining('{"version":3,')}
 					]);
 					expect(JSON.parse(files[1].content).sources).toEqual([`./${testFilename}`]);
 					expect(JSON.parse(files[3].content).sources).toEqual([`./${testFilename}`]);
@@ -1906,14 +1914,14 @@ describe('Code splitting', () => {
 					expect(files).toEqual([
 						{
 							filename: 'one.js',
-							content: 'module.exports=[()=>1,require("./chunk.KLHDUNTF.js")]\n//# sourceMappingURL=one.js.map'
+							content: 'module.exports=[()=>1,require("./chunk.3OES3VXY.js")]\n//# sourceMappingURL=one.js.map'
 						},
 						{filename: 'one.js.map', content: expect.stringContaining('{"version":3,')},
 						{
-							filename: 'chunk.KLHDUNTF.js',
-							content: 'module.exports=()=>2\n//# sourceMappingURL=chunk.KLHDUNTF.js.map'
+							filename: 'chunk.3OES3VXY.js',
+							content: 'module.exports=()=>2\n//# sourceMappingURL=chunk.3OES3VXY.js.map'
 						},
-						{filename: 'chunk.KLHDUNTF.js.map', content: expect.stringContaining('{"version":3,')}
+						{filename: 'chunk.3OES3VXY.js.map', content: expect.stringContaining('{"version":3,')}
 					]);
 					expect(JSON.parse(files[1].content).sources).toEqual([`../${testFilename}`]);
 					expect(JSON.parse(files[3].content).sources).toEqual([`../${testFilename}`]);
@@ -1927,14 +1935,14 @@ describe('Code splitting', () => {
 					expect(files).toEqual([
 						{
 							filename: 'one.js',
-							content: 'module.exports=[()=>1,require("./chunk.KLHDUNTF.js")]\n//# sourceMappingURL=one.js.map'
+							content: 'module.exports=[()=>1,require("./chunk.3OES3VXY.js")]\n//# sourceMappingURL=one.js.map'
 						},
 						{filename: 'one.js.map', content: expect.stringContaining('{"version":3,')},
 						{
-							filename: 'chunk.KLHDUNTF.js',
-							content: 'module.exports=()=>2\n//# sourceMappingURL=chunk.KLHDUNTF.js.map'
+							filename: 'chunk.3OES3VXY.js',
+							content: 'module.exports=()=>2\n//# sourceMappingURL=chunk.3OES3VXY.js.map'
 						},
-						{filename: 'chunk.KLHDUNTF.js.map', content: expect.stringContaining('{"version":3,')}
+						{filename: 'chunk.3OES3VXY.js.map', content: expect.stringContaining('{"version":3,')}
 					]);
 					expect(JSON.parse(files[1].content).sources).toEqual([`./test/${testFilename}`]);
 					expect(JSON.parse(files[3].content).sources).toEqual([`./test/${testFilename}`]);
@@ -1948,14 +1956,14 @@ describe('Code splitting', () => {
 					expect(files).toEqual([
 						{
 							filename: 'one.js',
-							content: 'module.exports=[()=>1,require("./chunk.KLHDUNTF.js")]\n//# sourceMappingURL=one.js.map'
+							content: 'module.exports=[()=>1,require("./chunk.3OES3VXY.js")]\n//# sourceMappingURL=one.js.map'
 						},
 						{filename: 'one.js.map', content: expect.stringContaining('{"version":3,')},
 						{
-							filename: 'chunk.KLHDUNTF.js',
-							content: 'module.exports=()=>2\n//# sourceMappingURL=chunk.KLHDUNTF.js.map'
+							filename: 'chunk.3OES3VXY.js',
+							content: 'module.exports=()=>2\n//# sourceMappingURL=chunk.3OES3VXY.js.map'
 						},
-						{filename: 'chunk.KLHDUNTF.js.map', content: expect.stringContaining('{"version":3,')}
+						{filename: 'chunk.3OES3VXY.js.map', content: expect.stringContaining('{"version":3,')}
 					]);
 					expect(JSON.parse(files[1].content).sources).toEqual([`../test/${testFilename}`]);
 					expect(JSON.parse(files[3].content).sources).toEqual([`../test/${testFilename}`]);
@@ -2061,16 +2069,16 @@ describe('Code splitting', () => {
 					};
 				},
 				outCjs: {
-					'one.js': 'module.exports=require("./chunk.VPMQVDCH.js")',
-					'chunk.VPMQVDCH.js': 'module.exports={x:1}'
+					'one.js': 'module.exports=require("./chunk.QEIVLBZW.js")',
+					'chunk.QEIVLBZW.js': 'module.exports={x:1}'
 				},
 				outEsm: {
-					'one.js': 'import a from"./chunk.LXE3LGLW.js";export default a',
-					'chunk.LXE3LGLW.js': 'export default{x:1}'
+					'one.js': 'import a from"./chunk.UQMAZ4OK.js";export default a',
+					'chunk.UQMAZ4OK.js': 'export default{x:1}'
 				},
 				outJs: {
-					'one.js': 'require("./chunk.VPMQVDCH.js")',
-					'chunk.VPMQVDCH.js': 'module.exports={x:1}'
+					'one.js': 'require("./chunk.QEIVLBZW.js")',
+					'chunk.QEIVLBZW.js': 'module.exports={x:1}'
 				}
 			});
 
@@ -2157,22 +2165,22 @@ describe('Code splitting', () => {
 					};
 				},
 				outCjs: {
-					'one.js': 'module.exports=require("./chunk.VPMQVDCH.js")',
-					'two.js': 'module.exports=require("./chunk.XBIF2NMO.js")',
-					'chunk.VPMQVDCH.js': 'module.exports={x:1}',
-					'chunk.XBIF2NMO.js': 'module.exports={y:2}'
+					'one.js': 'module.exports=require("./chunk.QEIVLBZW.js")',
+					'two.js': 'module.exports=require("./chunk.DM4GUZG2.js")',
+					'chunk.QEIVLBZW.js': 'module.exports={x:1}',
+					'chunk.DM4GUZG2.js': 'module.exports={y:2}'
 				},
 				outEsm: {
-					'one.js': 'import a from"./chunk.LXE3LGLW.js";export default a',
-					'two.js': 'import a from"./chunk.B73MGLFK.js";export default a',
-					'chunk.LXE3LGLW.js': 'export default{x:1}',
-					'chunk.B73MGLFK.js': 'export default{y:2}'
+					'one.js': 'import a from"./chunk.UQMAZ4OK.js";export default a',
+					'two.js': 'import a from"./chunk.NYZZMNUQ.js";export default a',
+					'chunk.UQMAZ4OK.js': 'export default{x:1}',
+					'chunk.NYZZMNUQ.js': 'export default{y:2}'
 				},
 				outJs: {
-					'one.js': 'require("./chunk.VPMQVDCH.js")',
-					'two.js': 'require("./chunk.XBIF2NMO.js")',
-					'chunk.VPMQVDCH.js': 'module.exports={x:1}',
-					'chunk.XBIF2NMO.js': 'module.exports={y:2}'
+					'one.js': 'require("./chunk.QEIVLBZW.js")',
+					'two.js': 'require("./chunk.DM4GUZG2.js")',
+					'chunk.QEIVLBZW.js': 'module.exports={x:1}',
+					'chunk.DM4GUZG2.js': 'module.exports={y:2}'
 				}
 			});
 
@@ -2188,22 +2196,22 @@ describe('Code splitting', () => {
 					};
 				},
 				outCjs: {
-					'one.js': 'module.exports={a:require("./chunk.VPMQVDCH.js")}',
-					'two.js': 'module.exports={b:require("./chunk.XBIF2NMO.js")}',
-					'chunk.VPMQVDCH.js': 'module.exports={x:1}',
-					'chunk.XBIF2NMO.js': 'module.exports={y:2}'
+					'one.js': 'module.exports={a:require("./chunk.QEIVLBZW.js")}',
+					'two.js': 'module.exports={b:require("./chunk.DM4GUZG2.js")}',
+					'chunk.QEIVLBZW.js': 'module.exports={x:1}',
+					'chunk.DM4GUZG2.js': 'module.exports={y:2}'
 				},
 				outEsm: {
-					'one.js': 'import a from"./chunk.LXE3LGLW.js";export default{a}',
-					'two.js': 'import a from"./chunk.B73MGLFK.js";export default{b:a}',
-					'chunk.LXE3LGLW.js': 'export default{x:1}',
-					'chunk.B73MGLFK.js': 'export default{y:2}'
+					'one.js': 'import a from"./chunk.UQMAZ4OK.js";export default{a}',
+					'two.js': 'import a from"./chunk.NYZZMNUQ.js";export default{b:a}',
+					'chunk.UQMAZ4OK.js': 'export default{x:1}',
+					'chunk.NYZZMNUQ.js': 'export default{y:2}'
 				},
 				outJs: {
-					'one.js': '{a:require("./chunk.VPMQVDCH.js")}',
-					'two.js': '{b:require("./chunk.XBIF2NMO.js")}',
-					'chunk.VPMQVDCH.js': 'module.exports={x:1}',
-					'chunk.XBIF2NMO.js': 'module.exports={y:2}'
+					'one.js': '{a:require("./chunk.QEIVLBZW.js")}',
+					'two.js': '{b:require("./chunk.DM4GUZG2.js")}',
+					'chunk.QEIVLBZW.js': 'module.exports={x:1}',
+					'chunk.DM4GUZG2.js': 'module.exports={y:2}'
 				}
 			});
 		});
@@ -2219,16 +2227,16 @@ describe('Code splitting', () => {
 				};
 			},
 			outCjs: {
-				'one.js': 'module.exports=require("./chunk.VPMQVDCH.js")',
-				'chunk.VPMQVDCH.js': 'module.exports={x:1}'
+				'one.js': 'module.exports=require("./chunk.QEIVLBZW.js")',
+				'chunk.QEIVLBZW.js': 'module.exports={x:1}'
 			},
 			outEsm: {
-				'one.js': 'import a from"./chunk.LXE3LGLW.js";export default a',
-				'chunk.LXE3LGLW.js': 'export default{x:1}'
+				'one.js': 'import a from"./chunk.UQMAZ4OK.js";export default a',
+				'chunk.UQMAZ4OK.js': 'export default{x:1}'
 			},
 			outJs: {
-				'one.js': 'require("./chunk.VPMQVDCH.js")',
-				'chunk.VPMQVDCH.js': 'module.exports={x:1}'
+				'one.js': 'require("./chunk.QEIVLBZW.js")',
+				'chunk.QEIVLBZW.js': 'module.exports={x:1}'
 			}
 		});
 
@@ -2244,16 +2252,16 @@ describe('Code splitting', () => {
 					};
 				},
 				outCjs: {
-					'one.js': 'module.exports=require("./chunk.VW2V5KZS.js")',
-					'chunk.VW2V5KZS.js': 'const a={isBottom:true},b={isTop:true,bottom:a};a.top=b;module.exports=b'
+					'one.js': 'module.exports=require("./chunk.DKWSO3XU.js")',
+					'chunk.DKWSO3XU.js': 'const a={isBottom:true},b={isTop:true,bottom:a};a.top=b;module.exports=b'
 				},
 				outEsm: {
-					'one.js': 'import a from"./chunk.R4FUDKFL.js";export default a',
-					'chunk.R4FUDKFL.js': 'const a={isBottom:true},b={isTop:true,bottom:a};a.top=b;export default b'
+					'one.js': 'import a from"./chunk.HKMXWHSI.js";export default a',
+					'chunk.HKMXWHSI.js': 'const a={isBottom:true},b={isTop:true,bottom:a};a.top=b;export default b'
 				},
 				outJs: {
-					'one.js': 'require("./chunk.VW2V5KZS.js")',
-					'chunk.VW2V5KZS.js': 'const a={isBottom:true},b={isTop:true,bottom:a};a.top=b;module.exports=b'
+					'one.js': 'require("./chunk.DKWSO3XU.js")',
+					'chunk.DKWSO3XU.js': 'const a={isBottom:true},b={isTop:true,bottom:a};a.top=b;module.exports=b'
 				},
 				validate({one}) {
 					expect(one.bottom.top).toBe(one);
@@ -2271,16 +2279,16 @@ describe('Code splitting', () => {
 					};
 				},
 				outCjs: {
-					'one.js': 'module.exports={x:require("./chunk.VW2V5KZS.js")}',
-					'chunk.VW2V5KZS.js': 'const a={isBottom:true},b={isTop:true,bottom:a};a.top=b;module.exports=b'
+					'one.js': 'module.exports={x:require("./chunk.DKWSO3XU.js")}',
+					'chunk.DKWSO3XU.js': 'const a={isBottom:true},b={isTop:true,bottom:a};a.top=b;module.exports=b'
 				},
 				outEsm: {
-					'one.js': 'import a from"./chunk.R4FUDKFL.js";export default{x:a}',
-					'chunk.R4FUDKFL.js': 'const a={isBottom:true},b={isTop:true,bottom:a};a.top=b;export default b'
+					'one.js': 'import a from"./chunk.HKMXWHSI.js";export default{x:a}',
+					'chunk.HKMXWHSI.js': 'const a={isBottom:true},b={isTop:true,bottom:a};a.top=b;export default b'
 				},
 				outJs: {
-					'one.js': '{x:require("./chunk.VW2V5KZS.js")}',
-					'chunk.VW2V5KZS.js': 'const a={isBottom:true},b={isTop:true,bottom:a};a.top=b;module.exports=b'
+					'one.js': '{x:require("./chunk.DKWSO3XU.js")}',
+					'chunk.DKWSO3XU.js': 'const a={isBottom:true},b={isTop:true,bottom:a};a.top=b;module.exports=b'
 				},
 				validate({one}) {
 					const top = one.x;
@@ -2299,16 +2307,16 @@ describe('Code splitting', () => {
 					};
 				},
 				outCjs: {
-					'one.js': 'module.exports={x:require("./chunk.VW2V5KZS.js")}',
-					'chunk.VW2V5KZS.js': 'const a={isBottom:true},b={isTop:true,bottom:a};a.top=b;module.exports=b'
+					'one.js': 'module.exports={x:require("./chunk.DKWSO3XU.js")}',
+					'chunk.DKWSO3XU.js': 'const a={isBottom:true},b={isTop:true,bottom:a};a.top=b;module.exports=b'
 				},
 				outEsm: {
-					'one.js': 'import a from"./chunk.R4FUDKFL.js";export default{x:a}',
-					'chunk.R4FUDKFL.js': 'const a={isBottom:true},b={isTop:true,bottom:a};a.top=b;export default b'
+					'one.js': 'import a from"./chunk.HKMXWHSI.js";export default{x:a}',
+					'chunk.HKMXWHSI.js': 'const a={isBottom:true},b={isTop:true,bottom:a};a.top=b;export default b'
 				},
 				outJs: {
-					'one.js': '{x:require("./chunk.VW2V5KZS.js")}',
-					'chunk.VW2V5KZS.js': 'const a={isBottom:true},b={isTop:true,bottom:a};a.top=b;module.exports=b'
+					'one.js': '{x:require("./chunk.DKWSO3XU.js")}',
+					'chunk.DKWSO3XU.js': 'const a={isBottom:true},b={isTop:true,bottom:a};a.top=b;module.exports=b'
 				},
 				validate({one}) {
 					const top = one.x;
@@ -2364,16 +2372,16 @@ describe('Code splitting', () => {
 					one: splitAsync({x: 1})
 				}),
 				outCjs: {
-					'one.js': 'module.exports=()=>import("./chunk.VPMQVDCH.js")',
-					'chunk.VPMQVDCH.js': 'module.exports={x:1}'
+					'one.js': 'module.exports=()=>import("./chunk.QEIVLBZW.js")',
+					'chunk.QEIVLBZW.js': 'module.exports={x:1}'
 				},
 				outEsm: {
-					'one.js': 'export default(()=>import("./chunk.LXE3LGLW.js"))',
-					'chunk.LXE3LGLW.js': 'export default{x:1}'
+					'one.js': 'export default(()=>import("./chunk.UQMAZ4OK.js"))',
+					'chunk.UQMAZ4OK.js': 'export default{x:1}'
 				},
 				outJs: {
-					'one.js': '()=>import("./chunk.VPMQVDCH.js")',
-					'chunk.VPMQVDCH.js': 'module.exports={x:1}'
+					'one.js': '()=>import("./chunk.QEIVLBZW.js")',
+					'chunk.QEIVLBZW.js': 'module.exports={x:1}'
 				},
 				async validate({one}) {
 					expect(one).toBeFunction();
@@ -2409,16 +2417,16 @@ describe('Code splitting', () => {
 						'sub/subSub/one': splitAsync({x: 1})
 					}),
 					outCjs: {
-						'sub/subSub/one.js': 'module.exports=()=>import("../../chunk.VPMQVDCH.js")',
-						'chunk.VPMQVDCH.js': 'module.exports={x:1}'
+						'sub/subSub/one.js': 'module.exports=()=>import("../../chunk.QEIVLBZW.js")',
+						'chunk.QEIVLBZW.js': 'module.exports={x:1}'
 					},
 					outEsm: {
-						'sub/subSub/one.js': 'export default(()=>import("../../chunk.LXE3LGLW.js"))',
-						'chunk.LXE3LGLW.js': 'export default{x:1}'
+						'sub/subSub/one.js': 'export default(()=>import("../../chunk.UQMAZ4OK.js"))',
+						'chunk.UQMAZ4OK.js': 'export default{x:1}'
 					},
 					outJs: {
-						'sub/subSub/one.js': '()=>import("../../chunk.VPMQVDCH.js")',
-						'chunk.VPMQVDCH.js': 'module.exports={x:1}'
+						'sub/subSub/one.js': '()=>import("../../chunk.QEIVLBZW.js")',
+						'chunk.QEIVLBZW.js': 'module.exports={x:1}'
 					},
 					async validate({'sub/subSub/one': one}) {
 						expect(one).toBeFunction();
@@ -2623,25 +2631,25 @@ describe('Code splitting', () => {
 				};
 			},
 			outCjs: {
-				'one.js': 'const a=require("./chunk.VERTVG3T.js");module.exports={sharedInner:a[1],sharedOuter:a[0]}',
-				'two.js': 'const a=require("./chunk.VERTVG3T.js");module.exports={sharedInner:a[1],sharedOuter:a[0]}',
+				'one.js': 'const a=require("./chunk.UDJMERLJ.js");module.exports={sharedInner:a[1],sharedOuter:a[0]}',
+				'two.js': 'const a=require("./chunk.UDJMERLJ.js");module.exports={sharedInner:a[1],sharedOuter:a[0]}',
 				'three.js': 'module.exports=()=>import("./sharedOuter.js")',
-				'sharedOuter.js': 'module.exports=require("./chunk.VERTVG3T.js")[0]',
-				'chunk.VERTVG3T.js': 'const a={isSharedInner:true};module.exports=[{isSharedOuter:true,sharedInner:a},a]'
+				'sharedOuter.js': 'module.exports=require("./chunk.UDJMERLJ.js")[0]',
+				'chunk.UDJMERLJ.js': 'const a={isSharedInner:true};module.exports=[{isSharedOuter:true,sharedInner:a},a]'
 			},
 			outEsm: {
-				'one.js': 'import a from"./chunk.XKLDTATC.js";export default{sharedInner:a[1],sharedOuter:a[0]}',
-				'two.js': 'import a from"./chunk.XKLDTATC.js";export default{sharedInner:a[1],sharedOuter:a[0]}',
+				'one.js': 'import a from"./chunk.WSDEFBGJ.js";export default{sharedInner:a[1],sharedOuter:a[0]}',
+				'two.js': 'import a from"./chunk.WSDEFBGJ.js";export default{sharedInner:a[1],sharedOuter:a[0]}',
 				'three.js': 'export default(()=>import("./sharedOuter.js"))',
-				'sharedOuter.js': 'import a from"./chunk.XKLDTATC.js";export default a[0]',
-				'chunk.XKLDTATC.js': 'const a={isSharedInner:true};export default[{isSharedOuter:true,sharedInner:a},a]'
+				'sharedOuter.js': 'import a from"./chunk.WSDEFBGJ.js";export default a[0]',
+				'chunk.WSDEFBGJ.js': 'const a={isSharedInner:true};export default[{isSharedOuter:true,sharedInner:a},a]'
 			},
 			outJs: {
-				'one.js': '(()=>{const a=require("./chunk.VERTVG3T.js");return{sharedInner:a[1],sharedOuter:a[0]}})()',
-				'two.js': '(()=>{const a=require("./chunk.VERTVG3T.js");return{sharedInner:a[1],sharedOuter:a[0]}})()',
+				'one.js': '(()=>{const a=require("./chunk.UDJMERLJ.js");return{sharedInner:a[1],sharedOuter:a[0]}})()',
+				'two.js': '(()=>{const a=require("./chunk.UDJMERLJ.js");return{sharedInner:a[1],sharedOuter:a[0]}})()',
 				'three.js': '()=>import("./sharedOuter.js")',
-				'sharedOuter.js': 'module.exports=require("./chunk.VERTVG3T.js")[0]',
-				'chunk.VERTVG3T.js': 'const a={isSharedInner:true};module.exports=[{isSharedOuter:true,sharedInner:a},a]'
+				'sharedOuter.js': 'module.exports=require("./chunk.UDJMERLJ.js")[0]',
+				'chunk.UDJMERLJ.js': 'const a={isSharedInner:true};module.exports=[{isSharedOuter:true,sharedInner:a},a]'
 			},
 			async validate({one, two, three}) {
 				expect(one).toEqual({
@@ -2740,10 +2748,10 @@ describe('Code splitting', () => {
 					'imported.js': 'export default{x:1}'
 				},
 				outJs: {
-					'one.js': 'require("./chunk.GJ6R6CTZ.js")',
-					'two.js': 'require("./chunk.GJ6R6CTZ.js")',
+					'one.js': 'require("./chunk.CZPEC3H2.js")',
+					'two.js': 'require("./chunk.CZPEC3H2.js")',
 					'imported.js': 'module.exports={x:1}',
-					'chunk.GJ6R6CTZ.js': 'module.exports=()=>import("./imported.js")'
+					'chunk.CZPEC3H2.js': 'module.exports=()=>import("./imported.js")'
 				},
 				async validate({one, two}) {
 					expect(one).toBeFunction();
