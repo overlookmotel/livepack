@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.3.0
+
+Breaking changes:
+
+* ESM entry points
+
+Features:
+
+* `ext` + `mapExp` options
+
+Bug fixes:
+
+* Chunk filenames contain dot before hash in line with ESBuild
+* CLI: Error if duplicate entry names
+
+Refactor:
+
+* Serialize: Simplify `reviseOutput`
+
+Tests:
+
+* Fix `format` option test [fix]
+
+No code:
+
+* Correct code comments
+
 ## 0.2.1
 
 Docs:
