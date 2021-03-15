@@ -17,7 +17,7 @@ describe('Options', () => {
 		});
 
 		it('js', () => {
-			expect(serialize(1)).toBe('1');
+			expect(serialize(1, {format: 'js'})).toBe('1');
 		});
 
 		it('cjs', () => {
