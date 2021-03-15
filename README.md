@@ -149,6 +149,8 @@ module.exports = (async () => {
 |-|-|-|
 | `--output` / `-o` | Output directory (required) | |
 | `--format` / `-f` | Output format - either `esm` or `cjs` | `esm` |
+| `--ext` | JS file extension | `js` |
+| `--map-ext` | Source map files extension | `map` |
 | `--esm` | Enable if codebase being serialized contains ECMAScript modules (`import x from 'x'`) | Disabled |
 | `--jsx` | Enable if codebase being serialized contains JSX | Disabled |
 | `--minify` / `-m` | Minify output | Disabled |
@@ -172,6 +174,8 @@ You can set options in a `livepack.config.json` file rather than on command line
   "input": "src/index.js",
   "output": "build",
   "format": "esm",
+  "ext": "js",
+  "mapExt": "map",
   "esm": true,
   "jsx": true,
   "minify": true,
@@ -292,6 +296,8 @@ serialize( {x: 1}, {
 | Option | Type | Usage | Default |
 |-|-|-|-|
 | `format` | `string` | Output format. Valid options are `js`, `cjs` or `esm` (see [below](#output-formats)). | `js` |
+| `ext` | `string` | JS file extension | `js` |
+| `mapExt` | Source map files extension | `map` |
 | `exec` | `boolean` | Set to `true` to treat input as a function which should be executed when the code runs (as with CLI) | `false` |
 | `minify` | `boolean` | Minify output | `true` |
 | `mangle` | `boolean` | Mangle (shorten) variable names | `options.minify` |

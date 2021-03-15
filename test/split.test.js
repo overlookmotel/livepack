@@ -1860,6 +1860,20 @@ describe('Code splitting', () => {
 			});
 		});
 
+		it('`ext` option alters shared file filenames', () => {
+			const shared = {isShared: true};
+			expect(
+				serializeEntries(
+					{one: {shared}, two: {shared}},
+					{ext: 'mjs', format: 'esm'}
+				)
+			).toEqual([
+				{filename: 'one.mjs', content: 'import a from"./chunk.HW2BJAJH.mjs";export default{shared:a}'},
+				{filename: 'two.mjs', content: 'import a from"./chunk.HW2BJAJH.mjs";export default{shared:a}'},
+				{filename: 'chunk.HW2BJAJH.mjs', content: 'export default{isShared:true}'}
+			]);
+		});
+
 		describe('source maps use correct relative paths', () => {
 			const testFilename = basename(__filename);
 			describe('with no slashes in names', () => {
@@ -2325,6 +2339,20 @@ describe('Code splitting', () => {
 				'split1.js': 'module.exports={isObj1:true}'
 			}
 		});
+
+		it('`ext` option alters split file filenames', () => {
+			expect(
+				serializeEntries(
+					{
+						one: split({isSplit: true})
+					},
+					{ext: 'mjs', format: 'esm'}
+				)
+			).toEqual([
+				{filename: 'one.mjs', content: 'import a from"./chunk.P4XPXXFO.mjs";export default a'},
+				{filename: 'chunk.P4XPXXFO.mjs', content: 'export default{isSplit:true}'}
+			]);
+		});
 	});
 
 	describe('splitAsync', () => {
@@ -2787,6 +2815,20 @@ describe('Code splitting', () => {
 				expect(importFn1).toBeFunction();
 				await expectToResolveToModuleWithDefaultExportEqualling(importFn1(), {x: 1});
 			}
+		});
+
+		it('`ext` option alters split file filenames', () => {
+			expect(
+				serializeEntries(
+					{
+						one: splitAsync({isSplit: true})
+					},
+					{ext: 'mjs', format: 'esm'}
+				)
+			).toEqual([
+				{filename: 'one.mjs', content: 'export default(()=>import("./chunk.P4XPXXFO.mjs"))'},
+				{filename: 'chunk.P4XPXXFO.mjs', content: 'export default{isSplit:true}'}
+			]);
 		});
 	});
 });

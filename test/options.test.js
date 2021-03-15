@@ -29,6 +29,66 @@ describe('Options', () => {
 		});
 	});
 
+	describe('ext', () => {
+		it('default', () => {
+			expect(serialize(1, {files: true, sourceMaps: true})).toEqual([
+				{filename: 'index.js', content: '1\n//# sourceMappingURL=index.js.map'},
+				{filename: 'index.js.map', content: '{"version":3,"sources":[],"names":[],"mappings":""}'}
+			]);
+		});
+
+		it('js', () => {
+			expect(serialize(1, {ext: 'js', files: true, sourceMaps: true})).toEqual([
+				{filename: 'index.js', content: '1\n//# sourceMappingURL=index.js.map'},
+				{filename: 'index.js.map', content: '{"version":3,"sources":[],"names":[],"mappings":""}'}
+			]);
+		});
+
+		it('cjs', () => {
+			expect(serialize(1, {ext: 'cjs', files: true, sourceMaps: true})).toEqual([
+				{filename: 'index.cjs', content: '1\n//# sourceMappingURL=index.cjs.map'},
+				{filename: 'index.cjs.map', content: '{"version":3,"sources":[],"names":[],"mappings":""}'}
+			]);
+		});
+
+		it('mjs', () => {
+			expect(serialize(1, {ext: 'mjs', files: true, sourceMaps: true})).toEqual([
+				{filename: 'index.mjs', content: '1\n//# sourceMappingURL=index.mjs.map'},
+				{filename: 'index.mjs.map', content: '{"version":3,"sources":[],"names":[],"mappings":""}'}
+			]);
+		});
+	});
+
+	describe('mapExt', () => {
+		it('default', () => {
+			expect(serialize(1, {files: true, sourceMaps: true})).toEqual([
+				{filename: 'index.js', content: '1\n//# sourceMappingURL=index.js.map'},
+				{filename: 'index.js.map', content: '{"version":3,"sources":[],"names":[],"mappings":""}'}
+			]);
+		});
+
+		it('map', () => {
+			expect(serialize(1, {mapExt: 'map', files: true, sourceMaps: true})).toEqual([
+				{filename: 'index.js', content: '1\n//# sourceMappingURL=index.js.map'},
+				{filename: 'index.js.map', content: '{"version":3,"sources":[],"names":[],"mappings":""}'}
+			]);
+		});
+
+		it('custom', () => {
+			expect(serialize(1, {mapExt: 'm', files: true, sourceMaps: true})).toEqual([
+				{filename: 'index.js', content: '1\n//# sourceMappingURL=index.js.m'},
+				{filename: 'index.js.m', content: '{"version":3,"sources":[],"names":[],"mappings":""}'}
+			]);
+		});
+
+		it('custom with custom `ext` option', () => {
+			expect(serialize(1, {ext: 'mjs', mapExt: 'm', files: true, sourceMaps: true})).toEqual([
+				{filename: 'index.mjs', content: '1\n//# sourceMappingURL=index.mjs.m'},
+				{filename: 'index.mjs.m', content: '{"version":3,"sources":[],"names":[],"mappings":""}'}
+			]);
+		});
+	});
+
 	describe('exec', () => {
 		it('default', () => {
 			const fn = (0, function() { console.log('foo'); }); // eslint-disable-line no-console
