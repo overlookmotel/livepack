@@ -6,7 +6,7 @@ const {splitAsync} = require('livepack');
 const Person = require('./components/Person.js');
 
 // Return array of objects, each of form `{name, component}`.
-// Each component uses `React.lazy` and `splitAsync` to load it asyncronously on demand.
+// Each component uses `React.lazy` and `splitAsync` to load it asynchronously on demand.
 function createPages(people) {
 	return people.map(createPage);
 }
