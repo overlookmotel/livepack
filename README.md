@@ -156,6 +156,9 @@ module.exports = (async () => {
 | `--minify` / `-m` | Minify output | Disabled |
 | `--mangle` / `--no-mangle` | Mangle (shorten) var names | Follows `minify` |
 | `--comments` / `--no-comments` | Remove comments from source | Follows `minify` |
+| `--entry-chunk-name` | Template for entry point chunk names ([more info](#customizing-chunk-names)) | `[name]` |
+| `--split-chunk-name` | Template for split chunk names ([more info](#customizing-chunk-names)) | `[name].[hash]` |
+| `--common-chunk-name` | Template for common chunk names ([more info](#customizing-chunk-names)) | `common.[hash]` |
 | `--no-inline` | More verbose output. Only useful for debugging. | Inlining enabled |
 | `--source-maps` / `-s` | Output source maps. `--source-maps inline` for inline source maps. | Disabled |
 | `--no-exec` | Output a file which exports the input rather than executes it. | Exec enabled |
@@ -182,6 +185,9 @@ You can set options in a `livepack.config.json` file rather than on command line
   "mangle": true,
   "comments": false,
   "inline": true,
+  "entryChunkName": "[name]",
+  "splitChunkName": "[name].[hash]",
+  "commonChunkName": "common.[hash]",
   "sourceMaps": true,
   "exec": true,
   "babelConfig": false,
@@ -278,8 +284,8 @@ const files = serializeEntries( {
   other: { y: 2 }
 } );
 // files = [
-//   { filename: 'index.js', content: '{x:1}' },
-//   { filename: 'other.js', content: '{y:1}' }
+//   { type: 'entry', name: 'index', filename: 'index.js', content: '{x:1}' },
+//   { type: 'entry', name: 'other', filename: 'other.js', content: '{y:1}' }
 // ]
 ```
 
@@ -312,6 +318,9 @@ serialize( {x: 1}, {
 | `comments` | `boolean` | Include comments in output | `!options.minify` |
 | `inline` | `boolean` | Less verbose output | `true` |
 | `files` | `boolean` | `true` to output array of files (see [below](#files)) | `false` for `serialize()`,<br />`true` for `serializeEntries()` |
+| `entryChunkName` | `string` | Template for entry point chunk names ([more info](#customizing-chunk-names)) | `[name]` |
+| `splitChunkName` | `string` | Template for split chunk names ([more info](#customizing-chunk-names)) | `[name].[hash]` |
+| `commonChunkName` | `string` | Template for common chunk names ([more info](#customizing-chunk-names)) | `common.[hash]` |
 | `sourceMaps` | `boolean` or `'inline'` | Create source maps. `'inline'` adds source maps inline, `true` in separate `.map` files.<br />If `true`, `files` option must also be `true`. | `false` |
 | `outputDir` | `string` | Path to dir code would be output to. If provided, source maps will use relative paths (relative to `outputDir`). | `undefined` |
 
@@ -325,7 +334,7 @@ All these options (except `files` and `outputDir`) correspond to CLI options of 
 
 #### Files
 
-If the `files` option is set, the return value of `serialize()` will be an array of file objects, each with `filename` and `content` properties.
+If the `files` option is set, the return value of `serialize()` will be an array of file objects, each with `type`, `name`, `filename` and `content` properties.
 
 Use this if you want source maps in a separate file.
 
@@ -341,10 +350,14 @@ outputs:
 ```js
 [
   {
+    type: 'entry',
+    name: 'index',
     filename: 'index.js',
     content: 'export default{x:1}\n//# sourceMappingURL=index.js.map'
   },
   {
+    type: 'source map',
+    name: null,
     filename: 'index.js.map',
     content: '{"version":3,"sources":[],"names":[],"mappings":""}'
   }
@@ -359,7 +372,7 @@ Livepack pays no attention to what files code originates in, and *splits the out
 
 This produces an optimal split of the app, where each entry point only includes exactly the code it needs, and nothing more. It's more efficient than Livepack or Rollup's file-level code splitting.
 
-Any values shared between entry points are placed in common chunks. These are named `chunk.XXXXXXXX.js`, where `XXXXXXXX` is a hash of the file's content.
+Any values shared between entry points are placed in common chunks. By default, these are named `common.XXXXXXXX.js`, where `XXXXXXXX` is a hash of the file's content.
 
 For example, if your input is:
 
@@ -384,14 +397,14 @@ Livepack will bundle this as:
 
 ```js
 // build/entry1.js
-import timesTen from "./chunk.6N2RIGAZ.js";
+import timesTen from "./common.6N2RIGAZ.js";
 export default ((double,timesTen)=>()=>double(timesTen(10)))(function double(n){return n*2},timesTen)
 
 // build/entry2.js
-import timesTen from "./chunk.6N2RIGAZ.js";
+import timesTen from "./common.6N2RIGAZ.js";
 export default ((triple,timesTen)=>()=>triple(timesTen(20)))(function triple(n){return n*3},timesTen)
 
-// build/chunk.6N2RIGAZ.js
+// build/common.6N2RIGAZ.js
 export default function timesTen(n){return n*10}
 ```
 
@@ -428,17 +441,17 @@ Bundled output:
 
 ```js
 // index.js
-import obj from "./chunk.V4ULTFDU.js";
+import obj from "./split.V4ULTFDU.js";
 export default(obj=>function getX(){return obj.x;})(obj)
 
-// chunk.V4ULTFDU.js
+// split.V4ULTFDU.js
 export default {iAmABigObjectWhichChangesInfrequently:true,x:123}
 ```
 
 If you want to specify the name of split point files, pass name as 2nd argument to `split()`.
 
 ```js
-// Split off in a file called `my-big-object.js`
+// Split off in a file called `my-big-object.XXXXXXXX.js`
 split( obj, 'my-big-object' );
 ```
 
@@ -448,7 +461,7 @@ split( obj, 'my-big-object' );
 
 `splitAsync()` takes a value and returns an import function. Just like `import()`, this import function returns a Promise of a module object. The `.default` property of the module object is the value `splitAsync()` was called with.
 
-When Livepack serializes an import function, it puts the value into a separate file and outputs `() => import('./chunk.XXXXXXXX.js')`.
+When Livepack serializes an import function, it puts the value into a separate file and outputs `() => import('./split.XXXXXXXX.js')`.
 
 Example input:
 
@@ -475,17 +488,17 @@ export default(importDouble=>(
     return double(double(n))
   }
 )(
-  ()=>import("./chunk.LKCG7RVO.js")
+  ()=>import("./split.LKCG7RVO.js")
 )
 
-// chunk.LKCG7RVO.js
+// split.LKCG7RVO.js
 export default function double(n){return n*2}
 ```
 
 There's a few things to notice here:
 
 1. `double` has been split into a separate file
-2. `importDouble` is output as a dynamic import `()=>import("./chunk.LKCG7RVO.js")`
+2. `importDouble` is output as a dynamic import `()=>import("./split.LKCG7RVO.js")`
 3. `double` didn't need to be defined in a separate file to be split off
 
 All looks very weird? Maybe. But it does open up some patterns which usually aren't possible.
@@ -521,6 +534,23 @@ Where it gets really interesting is that data passed in to each lazy component i
 So you could, for example, provide customized components for each person. e.g. include a Google Maps component only for the pages where you know the person's address, by adding a `.MapComponent` property to some of the `person` objects. Only pages where a map is needed would include the code for displaying a map.
 
 More broadly, components can be created at build time however you like - create code according to data. It's far more flexible than the usual model.
+
+### Customizing chunk names
+
+There are 3 options for customizing chunk names:
+
+* `entryChunkName` - entry point chunks
+* `splitChunkName` - split chunks (`split()` or `splitAsync()`)
+* `commonChunkName` - common chunks (code in common between entry points)
+
+For each you can use placeholders `[name]` or `[hash]` within the name. e.g.:
+
+* `entryChunkName: '[name].[hash]'` will add hashes to the end of all entry point chunks.
+* `commonChunkName: 'shared/[hash]'` will place all common chunks in a subfolder `shared`.
+
+`commonChunkName` must include `[hash]`. `splitChunkName` must include `[hash]` if any split points are not named.
+
+These options should not include the file extension. Use `ext` option if you want to alter file extensions from the default `.js`.
 
 ## What's missing
 

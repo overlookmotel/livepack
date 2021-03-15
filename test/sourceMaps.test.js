@@ -37,10 +37,14 @@ describe('Source maps', () => {
 		const out = serialize(1, {sourceMaps: true, files: true});
 		expect(out).toEqual([
 			{
+				type: 'entry',
+				name: 'index',
 				filename: 'index.js',
 				content: '1\n//# sourceMappingURL=index.js.map'
 			},
 			{
+				type: 'source map',
+				name: null,
 				filename: 'index.js.map',
 				content: expect.stringMatching(/^\{.+\}$/)
 			}
@@ -62,10 +66,14 @@ describe('Source maps', () => {
 		const out = serialize(fn, {sourceMaps: true, files: true});
 		expect(out).toEqual([
 			{
+				type: 'entry',
+				name: 'index',
 				filename: 'index.js',
 				content: 'function(){}\n//# sourceMappingURL=index.js.map'
 			},
 			{
+				type: 'source map',
+				name: null,
 				filename: 'index.js.map',
 				content: expect.stringMatching(/^\{.+\}$/)
 			}
@@ -90,10 +98,14 @@ describe('Source maps', () => {
 		const out = serialize(fn, {sourceMaps: true, files: true, outputDir: outputDirPath});
 		expect(out).toEqual([
 			{
+				type: 'entry',
+				name: 'index',
 				filename: 'index.js',
 				content: 'function(){}\n//# sourceMappingURL=index.js.map'
 			},
 			{
+				type: 'source map',
+				name: null,
 				filename: 'index.js.map',
 				content: expect.stringMatching(/^\{.+\}$/)
 			}
@@ -119,10 +131,14 @@ describe('Source maps', () => {
 
 		expect(out).toEqual([
 			{
+				type: 'entry',
+				name: 'index',
 				filename: 'index.js',
 				content: 'function(){throw new Error("oops")}\n//# sourceMappingURL=index.js.map'
 			},
 			{
+				type: 'source map',
+				name: null,
 				filename: 'index.js.map',
 				content: expect.stringMatching(/^\{.+\}$/)
 			}
@@ -173,10 +189,14 @@ describe('Source maps', () => {
 
 			expect(out).toEqual([
 				{
+					type: 'entry',
+					name: 'index',
 					filename: 'index.js',
 					content: '(a=>function(){throw new Error(a)})("foo")\n//# sourceMappingURL=index.js.map'
 				},
 				{
+					type: 'source map',
+					name: null,
 					filename: 'index.js.map',
 					content: expect.stringMatching(/^\{.+\}$/)
 				}
@@ -234,10 +254,14 @@ describe('Source maps', () => {
 
 			expect(out).toEqual([
 				{
+					type: 'entry',
+					name: 'index',
 					filename: 'index.js',
 					content: '(a=>function(){throw new Error(a)})("foo")\n//# sourceMappingURL=index.js.map'
 				},
 				{
+					type: 'source map',
+					name: null,
 					filename: 'index.js.map',
 					content: expect.stringMatching(/^\{.+\}$/)
 				}

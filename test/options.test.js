@@ -32,29 +32,69 @@ describe('Options', () => {
 	describe('ext', () => {
 		it('default', () => {
 			expect(serialize(1, {files: true, sourceMaps: true})).toEqual([
-				{filename: 'index.js', content: '1\n//# sourceMappingURL=index.js.map'},
-				{filename: 'index.js.map', content: '{"version":3,"sources":[],"names":[],"mappings":""}'}
+				{
+					type: 'entry',
+					name: 'index',
+					filename: 'index.js',
+					content: '1\n//# sourceMappingURL=index.js.map'
+				},
+				{
+					type: 'source map',
+					name: null,
+					filename: 'index.js.map',
+					content: '{"version":3,"sources":[],"names":[],"mappings":""}'
+				}
 			]);
 		});
 
 		it('js', () => {
 			expect(serialize(1, {ext: 'js', files: true, sourceMaps: true})).toEqual([
-				{filename: 'index.js', content: '1\n//# sourceMappingURL=index.js.map'},
-				{filename: 'index.js.map', content: '{"version":3,"sources":[],"names":[],"mappings":""}'}
+				{
+					type: 'entry',
+					name: 'index',
+					filename: 'index.js',
+					content: '1\n//# sourceMappingURL=index.js.map'
+				},
+				{
+					type: 'source map',
+					name: null,
+					filename: 'index.js.map',
+					content: '{"version":3,"sources":[],"names":[],"mappings":""}'
+				}
 			]);
 		});
 
 		it('cjs', () => {
 			expect(serialize(1, {ext: 'cjs', files: true, sourceMaps: true})).toEqual([
-				{filename: 'index.cjs', content: '1\n//# sourceMappingURL=index.cjs.map'},
-				{filename: 'index.cjs.map', content: '{"version":3,"sources":[],"names":[],"mappings":""}'}
+				{
+					type: 'entry',
+					name: 'index',
+					filename: 'index.cjs',
+					content: '1\n//# sourceMappingURL=index.cjs.map'
+				},
+				{
+					type: 'source map',
+					name: null,
+					filename: 'index.cjs.map',
+					content: '{"version":3,"sources":[],"names":[],"mappings":""}'
+				}
 			]);
 		});
 
 		it('mjs', () => {
 			expect(serialize(1, {ext: 'mjs', files: true, sourceMaps: true})).toEqual([
-				{filename: 'index.mjs', content: '1\n//# sourceMappingURL=index.mjs.map'},
-				{filename: 'index.mjs.map', content: '{"version":3,"sources":[],"names":[],"mappings":""}'}
+				{
+					type: 'entry',
+					name: 'index',
+					filename: 'index.mjs',
+					content: '1\n//# sourceMappingURL=index.mjs.map'
+				},
+				{
+					type: 'source map',
+					name: null,
+					filename: 'index.mjs.map',
+					content: '{"version":3,"sources":[],"names":[],"mappings":""}'
+				}
 			]);
 		});
 	});
@@ -62,29 +102,69 @@ describe('Options', () => {
 	describe('mapExt', () => {
 		it('default', () => {
 			expect(serialize(1, {files: true, sourceMaps: true})).toEqual([
-				{filename: 'index.js', content: '1\n//# sourceMappingURL=index.js.map'},
-				{filename: 'index.js.map', content: '{"version":3,"sources":[],"names":[],"mappings":""}'}
+				{
+					type: 'entry',
+					name: 'index',
+					filename: 'index.js',
+					content: '1\n//# sourceMappingURL=index.js.map'
+				},
+				{
+					type: 'source map',
+					name: null,
+					filename: 'index.js.map',
+					content: '{"version":3,"sources":[],"names":[],"mappings":""}'
+				}
 			]);
 		});
 
 		it('map', () => {
 			expect(serialize(1, {mapExt: 'map', files: true, sourceMaps: true})).toEqual([
-				{filename: 'index.js', content: '1\n//# sourceMappingURL=index.js.map'},
-				{filename: 'index.js.map', content: '{"version":3,"sources":[],"names":[],"mappings":""}'}
+				{
+					type: 'entry',
+					name: 'index',
+					filename: 'index.js',
+					content: '1\n//# sourceMappingURL=index.js.map'
+				},
+				{
+					type: 'source map',
+					name: null,
+					filename: 'index.js.map',
+					content: '{"version":3,"sources":[],"names":[],"mappings":""}'
+				}
 			]);
 		});
 
 		it('custom', () => {
 			expect(serialize(1, {mapExt: 'm', files: true, sourceMaps: true})).toEqual([
-				{filename: 'index.js', content: '1\n//# sourceMappingURL=index.js.m'},
-				{filename: 'index.js.m', content: '{"version":3,"sources":[],"names":[],"mappings":""}'}
+				{
+					type: 'entry',
+					name: 'index',
+					filename: 'index.js',
+					content: '1\n//# sourceMappingURL=index.js.m'
+				},
+				{
+					type: 'source map',
+					name: null,
+					filename: 'index.js.m',
+					content: '{"version":3,"sources":[],"names":[],"mappings":""}'
+				}
 			]);
 		});
 
 		it('custom with custom `ext` option', () => {
 			expect(serialize(1, {ext: 'mjs', mapExt: 'm', files: true, sourceMaps: true})).toEqual([
-				{filename: 'index.mjs', content: '1\n//# sourceMappingURL=index.mjs.m'},
-				{filename: 'index.mjs.m', content: '{"version":3,"sources":[],"names":[],"mappings":""}'}
+				{
+					type: 'entry',
+					name: 'index',
+					filename: 'index.mjs',
+					content: '1\n//# sourceMappingURL=index.mjs.m'
+				},
+				{
+					type: 'source map',
+					name: null,
+					filename: 'index.mjs.m',
+					content: '{"version":3,"sources":[],"names":[],"mappings":""}'
+				}
 			]);
 		});
 	});
@@ -237,6 +317,8 @@ describe('Options', () => {
 				const out = serialize(fn, {files: true});
 				expect(out).toBeArrayOfSize(1);
 				expect(out[0]).toEqual({
+					type: 'entry',
+					name: 'index',
 					filename: 'index.js',
 					content: 'function(a){return a+10}'
 				});
@@ -246,13 +328,17 @@ describe('Options', () => {
 				const out = serialize(fn, {files: true, sourceMaps: true});
 				expect(out).toBeArrayOfSize(2);
 				expect(out[0]).toEqual({
+					type: 'entry',
+					name: 'index',
 					filename: 'index.js',
 					content: 'function(a){return a+10}\n//# sourceMappingURL=index.js.map'
 				});
-				expect(out[1]).toBeObject();
-				expect(out[1]).toContainKeys(['filename', 'content']);
-				expect(out[1].filename).toBe('index.js.map');
-				expect(out[1].content).toBeString();
+				expect(out[1]).toEqual({
+					type: 'source map',
+					name: null,
+					filename: 'index.js.map',
+					content: expect.stringMatching(/\{"version":3,"sources":\[/)
+				});
 			});
 		});
 	});
