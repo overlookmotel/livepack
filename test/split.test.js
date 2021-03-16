@@ -1595,7 +1595,7 @@ describe('Code splitting', () => {
 			}
 		);
 
-		itSerializesEntriesEqual('creates unique shared chunk filenames if chunks have same content', {
+		itSerializesEntriesEqual('creates unique common chunk filenames if chunks have same content', {
 			in() {
 				const shared1 = {isShared: true},
 					shared2 = {isShared: true},
@@ -1841,7 +1841,7 @@ describe('Code splitting', () => {
 					{
 						type: 'entry',
 						name: 'two',
-						filename: 'two.C5U4DOZE.js',
+						filename: 'two.2OQEXRGZ.js',
 						content: 'import a from"./one.LXE3LGLW.js";export default a'
 					},
 					{
