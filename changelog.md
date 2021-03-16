@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.3.2
+
+Features:
+
+* Customizable chunk names
+* Stats file
+
+Bug fixes:
+
+* File hashes depend on type of source maps
+* CLI: Accept `sourceMaps: true` option in config file
+
+Refactor:
+
+* Split compiling AST into separate function
+* Refer to shared chunks as "common"
+
+Tests:
+
+* Move code-splitting source map tests [refactor]
+
+Docs:
+
+* Update License year
+* Example: Fix comment typo [nocode]
+
 ## 0.3.1
 
 Bug fixes:
