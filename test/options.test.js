@@ -343,6 +343,60 @@ describe('Options', () => {
 		});
 	});
 
+	describe('stats', () => {
+		it('default', () => {
+			expect(serialize({x: 1}, {files: true})).toEqual([{
+				type: 'entry',
+				name: 'index',
+				filename: 'index.js',
+				content: '{x:1}'
+			}]);
+		});
+
+		it('false', () => {
+			expect(serialize({x: 1}, {stats: false, files: true})).toEqual([{
+				type: 'entry',
+				name: 'index',
+				filename: 'index.js',
+				content: '{x:1}'
+			}]);
+		});
+
+		it('true', () => {
+			expect(serialize({x: 1}, {stats: true, files: true})).toEqual([
+				{
+					type: 'entry',
+					name: 'index',
+					filename: 'index.js',
+					content: '{x:1}'
+				},
+				{
+					type: 'stats',
+					name: null,
+					filename: 'livepack-stats.json',
+					content: '{"files":[{"type":"entry","name":"index","filename":"index.js"}]}'
+				}
+			]);
+		});
+
+		it('string', () => {
+			expect(serialize({x: 1}, {stats: 'stats.json', files: true})).toEqual([
+				{
+					type: 'entry',
+					name: 'index',
+					filename: 'index.js',
+					content: '{x:1}'
+				},
+				{
+					type: 'stats',
+					name: null,
+					filename: 'stats.json',
+					content: '{"files":[{"type":"entry","name":"index","filename":"index.js"}]}'
+				}
+			]);
+		});
+	});
+
 	describe('shouldPrintComment', () => {
 		function fn(
 			// single in params

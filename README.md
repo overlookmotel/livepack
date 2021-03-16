@@ -162,6 +162,7 @@ module.exports = (async () => {
 | `--no-inline` | More verbose output. Only useful for debugging. | Inlining enabled |
 | `--source-maps` / `-s` | Output source maps. `--source-maps inline` for inline source maps. | Disabled |
 | `--no-exec` | Output a file which exports the input rather than executes it. | Exec enabled |
+| `--stats` | Output stats file.<br />Provide filename or `true` for `livepack-stats.json`. | Disabled |
 | `--babel-config` | By default, Livepack ignores any `babel.config.js` files. Set this option to `pre` to transform code with Babel before running and serializing it. | Disabled |
 | `--babelrc` | By default, Livepack ignores any `.babelrc` files. Set this option to `pre` to transform code with Babel before running and serializing it. Follows `babel-config` option by default. | Disabled |
 | `--babel-config-file` | Path to Babel config file (optional) | (none) |
@@ -190,6 +191,7 @@ You can set options in a `livepack.config.json` file rather than on command line
   "commonChunkName": "common.[hash]",
   "sourceMaps": true,
   "exec": true,
+  "stats": false,
   "babelConfig": false,
   "babelrc": false,
   "babelConfigFile": null,
@@ -551,6 +553,8 @@ For each you can use placeholders `[name]` or `[hash]` within the name. e.g.:
 `commonChunkName` must include `[hash]`. `splitChunkName` must include `[hash]` if any split points are not named.
 
 These options should not include the file extension. Use `ext` option if you want to alter file extensions from the default `.js`.
+
+If you include `[hash]` in `entryChunkName`, you may need to consult the `files` object returned by `serialize()` / `serializeEntries()` to get the eventual filenames of the entry points. If using the CLI, you can use the `--stats` option to output a stats file including this information.
 
 ## What's missing
 
