@@ -2237,293 +2237,6 @@ describe('Code splitting', () => {
 			expect(serializeEntries(entries, {sourceMaps: 'inline'})[2].filename).toBe('common.ZNSPQDJA.js');
 			expect(serializeEntries(entries, {sourceMaps: true})[4].filename).toBe('common.7ANF66YZ.js');
 		});
-
-		describe('source maps use correct relative paths', () => {
-			const testFilename = basename(__filename);
-			describe('with no slashes in names', () => {
-				it('output in same dir as source', () => {
-					const files = serializeEntries({
-						one: [() => 1, split(() => 2)]
-					}, {sourceMaps: true, format: 'cjs', outputDir: __dirname});
-
-					expect(files).toEqual([
-						{
-							type: 'entry',
-							name: 'one',
-							filename: 'one.js',
-							content: 'module.exports=[()=>1,require("./split.3OES3VXY.js")]\n//# sourceMappingURL=one.js.map'
-						},
-						{
-							type: 'source map',
-							name: null,
-							filename: 'one.js.map',
-							content: expect.stringContaining('{"version":3,')
-						},
-						{
-							type: 'split',
-							name: null,
-							filename: 'split.3OES3VXY.js',
-							content: 'module.exports=()=>2\n//# sourceMappingURL=split.3OES3VXY.js.map'
-						},
-						{
-							type: 'source map',
-							name: null,
-							filename: 'split.3OES3VXY.js.map',
-							content: expect.stringContaining('{"version":3,')
-						}
-					]);
-					expect(JSON.parse(files[1].content).sources).toEqual([`./${testFilename}`]);
-					expect(JSON.parse(files[3].content).sources).toEqual([`./${testFilename}`]);
-				});
-
-				it('output in dir below source', () => {
-					const files = serializeEntries({
-						one: [() => 1, split(() => 2)]
-					}, {sourceMaps: true, format: 'cjs', outputDir: pathJoin(__dirname, 'build')});
-
-					expect(files).toEqual([
-						{
-							type: 'entry',
-							name: 'one',
-							filename: 'one.js',
-							content: 'module.exports=[()=>1,require("./split.3OES3VXY.js")]\n//# sourceMappingURL=one.js.map'
-						},
-						{
-							type: 'source map',
-							name: null,
-							filename: 'one.js.map',
-							content: expect.stringContaining('{"version":3,')
-						},
-						{
-							type: 'split',
-							name: null,
-							filename: 'split.3OES3VXY.js',
-							content: 'module.exports=()=>2\n//# sourceMappingURL=split.3OES3VXY.js.map'
-						},
-						{
-							type: 'source map',
-							name: null,
-							filename: 'split.3OES3VXY.js.map',
-							content: expect.stringContaining('{"version":3,')
-						}
-					]);
-					expect(JSON.parse(files[1].content).sources).toEqual([`../${testFilename}`]);
-					expect(JSON.parse(files[3].content).sources).toEqual([`../${testFilename}`]);
-				});
-
-				it('output in dir above source', () => {
-					const files = serializeEntries({
-						one: [() => 1, split(() => 2)]
-					}, {sourceMaps: true, format: 'cjs', outputDir: pathJoin(__dirname, '..')});
-
-					expect(files).toEqual([
-						{
-							type: 'entry',
-							name: 'one',
-							filename: 'one.js',
-							content: 'module.exports=[()=>1,require("./split.3OES3VXY.js")]\n//# sourceMappingURL=one.js.map'
-						},
-						{
-							type: 'source map',
-							name: null,
-							filename: 'one.js.map',
-							content: expect.stringContaining('{"version":3,')
-						},
-						{
-							type: 'split',
-							name: null,
-							filename: 'split.3OES3VXY.js',
-							content: 'module.exports=()=>2\n//# sourceMappingURL=split.3OES3VXY.js.map'
-						},
-						{
-							type: 'source map',
-							name: null,
-							filename: 'split.3OES3VXY.js.map',
-							content: expect.stringContaining('{"version":3,')
-						}
-					]);
-					expect(JSON.parse(files[1].content).sources).toEqual([`./test/${testFilename}`]);
-					expect(JSON.parse(files[3].content).sources).toEqual([`./test/${testFilename}`]);
-				});
-
-				it('output in dir beside source', () => {
-					const files = serializeEntries({
-						one: [() => 1, split(() => 2)]
-					}, {sourceMaps: true, format: 'cjs', outputDir: pathJoin(__dirname, '../build')});
-
-					expect(files).toEqual([
-						{
-							type: 'entry',
-							name: 'one',
-							filename: 'one.js',
-							content: 'module.exports=[()=>1,require("./split.3OES3VXY.js")]\n//# sourceMappingURL=one.js.map'
-						},
-						{
-							type: 'source map',
-							name: null,
-							filename: 'one.js.map',
-							content: expect.stringContaining('{"version":3,')
-						},
-						{
-							type: 'split',
-							name: null,
-							filename: 'split.3OES3VXY.js',
-							content: 'module.exports=()=>2\n//# sourceMappingURL=split.3OES3VXY.js.map'
-						},
-						{
-							type: 'source map',
-							name: null,
-							filename: 'split.3OES3VXY.js.map',
-							content: expect.stringContaining('{"version":3,')
-						}
-					]);
-					expect(JSON.parse(files[1].content).sources).toEqual([`../test/${testFilename}`]);
-					expect(JSON.parse(files[3].content).sources).toEqual([`../test/${testFilename}`]);
-				});
-			});
-
-			describe('with slashes in names', () => {
-				it('output in same dir as source', () => {
-					const files = serializeEntries({
-						'sub/one': [() => 1, split(() => 2, 'sub2/split1')]
-					}, {sourceMaps: true, format: 'cjs', outputDir: __dirname});
-
-					expect(files).toEqual([
-						{
-							type: 'entry',
-							name: 'sub/one',
-							filename: 'sub/one.js',
-							content: 'module.exports=[()=>1,require("../sub2/split1.3OES3VXY.js")]\n//# sourceMappingURL=one.js.map'
-						},
-						{
-							type: 'source map',
-							name: null,
-							filename: 'sub/one.js.map',
-							content: expect.stringContaining('{"version":3,')
-						},
-						{
-							type: 'split',
-							name: 'sub2/split1',
-							filename: 'sub2/split1.3OES3VXY.js',
-							content: 'module.exports=()=>2\n//# sourceMappingURL=split1.3OES3VXY.js.map'
-						},
-						{
-							type: 'source map',
-							name: null,
-							filename: 'sub2/split1.3OES3VXY.js.map',
-							content: expect.stringContaining('{"version":3,')
-						}
-					]);
-					expect(JSON.parse(files[1].content).sources).toEqual([`../${testFilename}`]);
-					expect(JSON.parse(files[3].content).sources).toEqual([`../${testFilename}`]);
-				});
-
-				it('output in dir below source', () => {
-					const files = serializeEntries({
-						'sub/one': [() => 1, split(() => 2, 'sub2/split1')]
-					}, {sourceMaps: true, format: 'cjs', outputDir: pathJoin(__dirname, 'build')});
-
-					expect(files).toEqual([
-						{
-							type: 'entry',
-							name: 'sub/one',
-							filename: 'sub/one.js',
-							content: 'module.exports=[()=>1,require("../sub2/split1.3OES3VXY.js")]\n//# sourceMappingURL=one.js.map'
-						},
-						{
-							type: 'source map',
-							name: null,
-							filename: 'sub/one.js.map',
-							content: expect.stringContaining('{"version":3,')
-						},
-						{
-							type: 'split',
-							name: 'sub2/split1',
-							filename: 'sub2/split1.3OES3VXY.js',
-							content: 'module.exports=()=>2\n//# sourceMappingURL=split1.3OES3VXY.js.map'
-						},
-						{
-							type: 'source map',
-							name: null,
-							filename: 'sub2/split1.3OES3VXY.js.map',
-							content: expect.stringContaining('{"version":3,')
-						}
-					]);
-					expect(JSON.parse(files[1].content).sources).toEqual([`../../${testFilename}`]);
-					expect(JSON.parse(files[3].content).sources).toEqual([`../../${testFilename}`]);
-				});
-
-				it('output in dir above source', () => {
-					const files = serializeEntries({
-						'sub/one': [() => 1, split(() => 2, 'sub2/split1')]
-					}, {sourceMaps: true, format: 'cjs', outputDir: pathJoin(__dirname, '..')});
-
-					expect(files).toEqual([
-						{
-							type: 'entry',
-							name: 'sub/one',
-							filename: 'sub/one.js',
-							content: 'module.exports=[()=>1,require("../sub2/split1.3OES3VXY.js")]\n//# sourceMappingURL=one.js.map'
-						},
-						{
-							type: 'source map',
-							name: null,
-							filename: 'sub/one.js.map',
-							content: expect.stringContaining('{"version":3,')
-						},
-						{
-							type: 'split',
-							name: 'sub2/split1',
-							filename: 'sub2/split1.3OES3VXY.js',
-							content: 'module.exports=()=>2\n//# sourceMappingURL=split1.3OES3VXY.js.map'
-						},
-						{
-							type: 'source map',
-							name: null,
-							filename: 'sub2/split1.3OES3VXY.js.map',
-							content: expect.stringContaining('{"version":3,')
-						}
-					]);
-					expect(JSON.parse(files[1].content).sources).toEqual([`../test/${testFilename}`]);
-					expect(JSON.parse(files[3].content).sources).toEqual([`../test/${testFilename}`]);
-				});
-
-				it('output in dir beside source', () => {
-					const files = serializeEntries({
-						'sub/one': [() => 1, split(() => 2, 'sub2/split1')]
-					}, {sourceMaps: true, format: 'cjs', outputDir: pathJoin(__dirname, '../build')});
-
-					expect(files).toEqual([
-						{
-							type: 'entry',
-							name: 'sub/one',
-							filename: 'sub/one.js',
-							content: 'module.exports=[()=>1,require("../sub2/split1.3OES3VXY.js")]\n//# sourceMappingURL=one.js.map'
-						},
-						{
-							type: 'source map',
-							name: null,
-							filename: 'sub/one.js.map',
-							content: expect.stringContaining('{"version":3,')
-						},
-						{
-							type: 'split',
-							name: 'sub2/split1',
-							filename: 'sub2/split1.3OES3VXY.js',
-							content: 'module.exports=()=>2\n//# sourceMappingURL=split1.3OES3VXY.js.map'
-						},
-						{
-							type: 'source map',
-							name: null,
-							filename: 'sub2/split1.3OES3VXY.js.map',
-							content: expect.stringContaining('{"version":3,')
-						}
-					]);
-					expect(JSON.parse(files[1].content).sources).toEqual([`../../test/${testFilename}`]);
-					expect(JSON.parse(files[3].content).sources).toEqual([`../../test/${testFilename}`]);
-				});
-			});
-		});
 	});
 
 	describe('split', () => {
@@ -3597,6 +3310,293 @@ describe('Code splitting', () => {
 					content: 'export default{isSplit:true}'
 				}
 			]);
+		});
+	});
+
+	describe('source maps use correct relative paths', () => {
+		const testFilename = basename(__filename);
+		describe('with no slashes in names', () => {
+			it('output in same dir as source', () => {
+				const files = serializeEntries({
+					one: [() => 1, split(() => 2)]
+				}, {sourceMaps: true, format: 'cjs', outputDir: __dirname});
+
+				expect(files).toEqual([
+					{
+						type: 'entry',
+						name: 'one',
+						filename: 'one.js',
+						content: 'module.exports=[()=>1,require("./split.3OES3VXY.js")]\n//# sourceMappingURL=one.js.map'
+					},
+					{
+						type: 'source map',
+						name: null,
+						filename: 'one.js.map',
+						content: expect.stringContaining('{"version":3,')
+					},
+					{
+						type: 'split',
+						name: null,
+						filename: 'split.3OES3VXY.js',
+						content: 'module.exports=()=>2\n//# sourceMappingURL=split.3OES3VXY.js.map'
+					},
+					{
+						type: 'source map',
+						name: null,
+						filename: 'split.3OES3VXY.js.map',
+						content: expect.stringContaining('{"version":3,')
+					}
+				]);
+				expect(JSON.parse(files[1].content).sources).toEqual([`./${testFilename}`]);
+				expect(JSON.parse(files[3].content).sources).toEqual([`./${testFilename}`]);
+			});
+
+			it('output in dir below source', () => {
+				const files = serializeEntries({
+					one: [() => 1, split(() => 2)]
+				}, {sourceMaps: true, format: 'cjs', outputDir: pathJoin(__dirname, 'build')});
+
+				expect(files).toEqual([
+					{
+						type: 'entry',
+						name: 'one',
+						filename: 'one.js',
+						content: 'module.exports=[()=>1,require("./split.3OES3VXY.js")]\n//# sourceMappingURL=one.js.map'
+					},
+					{
+						type: 'source map',
+						name: null,
+						filename: 'one.js.map',
+						content: expect.stringContaining('{"version":3,')
+					},
+					{
+						type: 'split',
+						name: null,
+						filename: 'split.3OES3VXY.js',
+						content: 'module.exports=()=>2\n//# sourceMappingURL=split.3OES3VXY.js.map'
+					},
+					{
+						type: 'source map',
+						name: null,
+						filename: 'split.3OES3VXY.js.map',
+						content: expect.stringContaining('{"version":3,')
+					}
+				]);
+				expect(JSON.parse(files[1].content).sources).toEqual([`../${testFilename}`]);
+				expect(JSON.parse(files[3].content).sources).toEqual([`../${testFilename}`]);
+			});
+
+			it('output in dir above source', () => {
+				const files = serializeEntries({
+					one: [() => 1, split(() => 2)]
+				}, {sourceMaps: true, format: 'cjs', outputDir: pathJoin(__dirname, '..')});
+
+				expect(files).toEqual([
+					{
+						type: 'entry',
+						name: 'one',
+						filename: 'one.js',
+						content: 'module.exports=[()=>1,require("./split.3OES3VXY.js")]\n//# sourceMappingURL=one.js.map'
+					},
+					{
+						type: 'source map',
+						name: null,
+						filename: 'one.js.map',
+						content: expect.stringContaining('{"version":3,')
+					},
+					{
+						type: 'split',
+						name: null,
+						filename: 'split.3OES3VXY.js',
+						content: 'module.exports=()=>2\n//# sourceMappingURL=split.3OES3VXY.js.map'
+					},
+					{
+						type: 'source map',
+						name: null,
+						filename: 'split.3OES3VXY.js.map',
+						content: expect.stringContaining('{"version":3,')
+					}
+				]);
+				expect(JSON.parse(files[1].content).sources).toEqual([`./test/${testFilename}`]);
+				expect(JSON.parse(files[3].content).sources).toEqual([`./test/${testFilename}`]);
+			});
+
+			it('output in dir beside source', () => {
+				const files = serializeEntries({
+					one: [() => 1, split(() => 2)]
+				}, {sourceMaps: true, format: 'cjs', outputDir: pathJoin(__dirname, '../build')});
+
+				expect(files).toEqual([
+					{
+						type: 'entry',
+						name: 'one',
+						filename: 'one.js',
+						content: 'module.exports=[()=>1,require("./split.3OES3VXY.js")]\n//# sourceMappingURL=one.js.map'
+					},
+					{
+						type: 'source map',
+						name: null,
+						filename: 'one.js.map',
+						content: expect.stringContaining('{"version":3,')
+					},
+					{
+						type: 'split',
+						name: null,
+						filename: 'split.3OES3VXY.js',
+						content: 'module.exports=()=>2\n//# sourceMappingURL=split.3OES3VXY.js.map'
+					},
+					{
+						type: 'source map',
+						name: null,
+						filename: 'split.3OES3VXY.js.map',
+						content: expect.stringContaining('{"version":3,')
+					}
+				]);
+				expect(JSON.parse(files[1].content).sources).toEqual([`../test/${testFilename}`]);
+				expect(JSON.parse(files[3].content).sources).toEqual([`../test/${testFilename}`]);
+			});
+		});
+
+		describe('with slashes in names', () => {
+			it('output in same dir as source', () => {
+				const files = serializeEntries({
+					'sub/one': [() => 1, split(() => 2, 'sub2/split1')]
+				}, {sourceMaps: true, format: 'cjs', outputDir: __dirname});
+
+				expect(files).toEqual([
+					{
+						type: 'entry',
+						name: 'sub/one',
+						filename: 'sub/one.js',
+						content: 'module.exports=[()=>1,require("../sub2/split1.3OES3VXY.js")]\n//# sourceMappingURL=one.js.map'
+					},
+					{
+						type: 'source map',
+						name: null,
+						filename: 'sub/one.js.map',
+						content: expect.stringContaining('{"version":3,')
+					},
+					{
+						type: 'split',
+						name: 'sub2/split1',
+						filename: 'sub2/split1.3OES3VXY.js',
+						content: 'module.exports=()=>2\n//# sourceMappingURL=split1.3OES3VXY.js.map'
+					},
+					{
+						type: 'source map',
+						name: null,
+						filename: 'sub2/split1.3OES3VXY.js.map',
+						content: expect.stringContaining('{"version":3,')
+					}
+				]);
+				expect(JSON.parse(files[1].content).sources).toEqual([`../${testFilename}`]);
+				expect(JSON.parse(files[3].content).sources).toEqual([`../${testFilename}`]);
+			});
+
+			it('output in dir below source', () => {
+				const files = serializeEntries({
+					'sub/one': [() => 1, split(() => 2, 'sub2/split1')]
+				}, {sourceMaps: true, format: 'cjs', outputDir: pathJoin(__dirname, 'build')});
+
+				expect(files).toEqual([
+					{
+						type: 'entry',
+						name: 'sub/one',
+						filename: 'sub/one.js',
+						content: 'module.exports=[()=>1,require("../sub2/split1.3OES3VXY.js")]\n//# sourceMappingURL=one.js.map'
+					},
+					{
+						type: 'source map',
+						name: null,
+						filename: 'sub/one.js.map',
+						content: expect.stringContaining('{"version":3,')
+					},
+					{
+						type: 'split',
+						name: 'sub2/split1',
+						filename: 'sub2/split1.3OES3VXY.js',
+						content: 'module.exports=()=>2\n//# sourceMappingURL=split1.3OES3VXY.js.map'
+					},
+					{
+						type: 'source map',
+						name: null,
+						filename: 'sub2/split1.3OES3VXY.js.map',
+						content: expect.stringContaining('{"version":3,')
+					}
+				]);
+				expect(JSON.parse(files[1].content).sources).toEqual([`../../${testFilename}`]);
+				expect(JSON.parse(files[3].content).sources).toEqual([`../../${testFilename}`]);
+			});
+
+			it('output in dir above source', () => {
+				const files = serializeEntries({
+					'sub/one': [() => 1, split(() => 2, 'sub2/split1')]
+				}, {sourceMaps: true, format: 'cjs', outputDir: pathJoin(__dirname, '..')});
+
+				expect(files).toEqual([
+					{
+						type: 'entry',
+						name: 'sub/one',
+						filename: 'sub/one.js',
+						content: 'module.exports=[()=>1,require("../sub2/split1.3OES3VXY.js")]\n//# sourceMappingURL=one.js.map'
+					},
+					{
+						type: 'source map',
+						name: null,
+						filename: 'sub/one.js.map',
+						content: expect.stringContaining('{"version":3,')
+					},
+					{
+						type: 'split',
+						name: 'sub2/split1',
+						filename: 'sub2/split1.3OES3VXY.js',
+						content: 'module.exports=()=>2\n//# sourceMappingURL=split1.3OES3VXY.js.map'
+					},
+					{
+						type: 'source map',
+						name: null,
+						filename: 'sub2/split1.3OES3VXY.js.map',
+						content: expect.stringContaining('{"version":3,')
+					}
+				]);
+				expect(JSON.parse(files[1].content).sources).toEqual([`../test/${testFilename}`]);
+				expect(JSON.parse(files[3].content).sources).toEqual([`../test/${testFilename}`]);
+			});
+
+			it('output in dir beside source', () => {
+				const files = serializeEntries({
+					'sub/one': [() => 1, split(() => 2, 'sub2/split1')]
+				}, {sourceMaps: true, format: 'cjs', outputDir: pathJoin(__dirname, '../build')});
+
+				expect(files).toEqual([
+					{
+						type: 'entry',
+						name: 'sub/one',
+						filename: 'sub/one.js',
+						content: 'module.exports=[()=>1,require("../sub2/split1.3OES3VXY.js")]\n//# sourceMappingURL=one.js.map'
+					},
+					{
+						type: 'source map',
+						name: null,
+						filename: 'sub/one.js.map',
+						content: expect.stringContaining('{"version":3,')
+					},
+					{
+						type: 'split',
+						name: 'sub2/split1',
+						filename: 'sub2/split1.3OES3VXY.js',
+						content: 'module.exports=()=>2\n//# sourceMappingURL=split1.3OES3VXY.js.map'
+					},
+					{
+						type: 'source map',
+						name: null,
+						filename: 'sub2/split1.3OES3VXY.js.map',
+						content: expect.stringContaining('{"version":3,')
+					}
+				]);
+				expect(JSON.parse(files[1].content).sources).toEqual([`../../test/${testFilename}`]);
+				expect(JSON.parse(files[3].content).sources).toEqual([`../../test/${testFilename}`]);
+			});
 		});
 	});
 });
