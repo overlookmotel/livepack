@@ -63,6 +63,7 @@
     "reserved-words": "^0.1.2",
     "simple-invariant": "^2.0.0",
     "source-map": "^0.5.7",
+    "string-splice": "^1.3.0",
     "strip-json-comments": "^3.1.1",
     "yargs": "^16.2.0"
   },

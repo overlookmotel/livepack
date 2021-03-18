@@ -278,22 +278,22 @@ describe('Code splitting', () => {
 					'one.js': 'module.exports={sharedOuter:require("./common.5TU5B27S.js")}',
 					'two.js': 'module.exports={sharedOuter:require("./common.5TU5B27S.js")}',
 					'three.js': 'module.exports={sharedInner:require("./common.BWXH2ONA.js")}',
-					'common.5TU5B27S.js': 'module.exports={isSharedOuter:true,sharedInner:require("./common.BWXH2ONA.js")}',
-					'common.BWXH2ONA.js': 'module.exports={isSharedInner:true}'
+					'common.BWXH2ONA.js': 'module.exports={isSharedInner:true}',
+					'common.5TU5B27S.js': 'module.exports={isSharedOuter:true,sharedInner:require("./common.BWXH2ONA.js")}'
 				},
 				outEsm: {
 					'one.js': 'import a from"./common.QA7ITTAL.js";export default{sharedOuter:a}',
 					'two.js': 'import a from"./common.QA7ITTAL.js";export default{sharedOuter:a}',
 					'three.js': 'import a from"./common.A3RNHI7M.js";export default{sharedInner:a}',
-					'common.QA7ITTAL.js': 'import a from"./common.A3RNHI7M.js";export default{isSharedOuter:true,sharedInner:a}',
-					'common.A3RNHI7M.js': 'export default{isSharedInner:true}'
+					'common.A3RNHI7M.js': 'export default{isSharedInner:true}',
+					'common.QA7ITTAL.js': 'import a from"./common.A3RNHI7M.js";export default{isSharedOuter:true,sharedInner:a}'
 				},
 				outJs: {
 					'one.js': '{sharedOuter:require("./common.5TU5B27S.js")}',
 					'two.js': '{sharedOuter:require("./common.5TU5B27S.js")}',
 					'three.js': '{sharedInner:require("./common.BWXH2ONA.js")}',
-					'common.5TU5B27S.js': 'module.exports={isSharedOuter:true,sharedInner:require("./common.BWXH2ONA.js")}',
-					'common.BWXH2ONA.js': 'module.exports={isSharedInner:true}'
+					'common.BWXH2ONA.js': 'module.exports={isSharedInner:true}',
+					'common.5TU5B27S.js': 'module.exports={isSharedOuter:true,sharedInner:require("./common.BWXH2ONA.js")}'
 				},
 				validate({one, two, three}) {
 					expect(two.sharedOuter).toBe(one.sharedOuter);
@@ -318,27 +318,27 @@ describe('Code splitting', () => {
 					'two.js': 'module.exports={sharedOuter1:require("./common.INKBM2EP.js")}',
 					'three.js': 'module.exports={sharedOuter2:require("./common.ACDGH2IU.js")}',
 					'four.js': 'module.exports={sharedOuter2:require("./common.ACDGH2IU.js")}',
+					'common.BWXH2ONA.js': 'module.exports={isSharedInner:true}',
 					'common.INKBM2EP.js': 'module.exports={isSharedOuter1:true,sharedInner:require("./common.BWXH2ONA.js")}',
-					'common.ACDGH2IU.js': 'module.exports={isSharedOuter2:true,sharedInner:require("./common.BWXH2ONA.js")}',
-					'common.BWXH2ONA.js': 'module.exports={isSharedInner:true}'
+					'common.ACDGH2IU.js': 'module.exports={isSharedOuter2:true,sharedInner:require("./common.BWXH2ONA.js")}'
 				},
 				outEsm: {
 					'one.js': 'import a from"./common.ZRZSRPPN.js";export default{sharedOuter1:a}',
 					'two.js': 'import a from"./common.ZRZSRPPN.js";export default{sharedOuter1:a}',
 					'three.js': 'import a from"./common.35LYUJI3.js";export default{sharedOuter2:a}',
 					'four.js': 'import a from"./common.35LYUJI3.js";export default{sharedOuter2:a}',
+					'common.A3RNHI7M.js': 'export default{isSharedInner:true}',
 					'common.ZRZSRPPN.js': 'import a from"./common.A3RNHI7M.js";export default{isSharedOuter1:true,sharedInner:a}',
-					'common.35LYUJI3.js': 'import a from"./common.A3RNHI7M.js";export default{isSharedOuter2:true,sharedInner:a}',
-					'common.A3RNHI7M.js': 'export default{isSharedInner:true}'
+					'common.35LYUJI3.js': 'import a from"./common.A3RNHI7M.js";export default{isSharedOuter2:true,sharedInner:a}'
 				},
 				outJs: {
 					'one.js': '{sharedOuter1:require("./common.INKBM2EP.js")}',
 					'two.js': '{sharedOuter1:require("./common.INKBM2EP.js")}',
 					'three.js': '{sharedOuter2:require("./common.ACDGH2IU.js")}',
 					'four.js': '{sharedOuter2:require("./common.ACDGH2IU.js")}',
+					'common.BWXH2ONA.js': 'module.exports={isSharedInner:true}',
 					'common.INKBM2EP.js': 'module.exports={isSharedOuter1:true,sharedInner:require("./common.BWXH2ONA.js")}',
-					'common.ACDGH2IU.js': 'module.exports={isSharedOuter2:true,sharedInner:require("./common.BWXH2ONA.js")}',
-					'common.BWXH2ONA.js': 'module.exports={isSharedInner:true}'
+					'common.ACDGH2IU.js': 'module.exports={isSharedOuter2:true,sharedInner:require("./common.BWXH2ONA.js")}'
 				},
 				validate({one, two, three, four}) {
 					expect(two.sharedOuter1).toBe(one.sharedOuter1);
@@ -1610,37 +1610,37 @@ describe('Code splitting', () => {
 				};
 			},
 			outCjs: {
-				'one.js': 'module.exports={x:require("./common.BVVQNWXW.js")}',
-				'two.js': 'module.exports={x:require("./common.BVVQNWXW.js")}',
+				'one.js': 'module.exports={x:require("./common.7ANF66YZ.js")}',
+				'two.js': 'module.exports={x:require("./common.7ANF66YZ.js")}',
 				'three.js': 'module.exports={x:require("./common.VSF42ZCA.js")}',
 				'four.js': 'module.exports={x:require("./common.VSF42ZCA.js")}',
-				'five.js': 'module.exports={x:require("./common.7ANF66YZ.js")}',
-				'six.js': 'module.exports={x:require("./common.7ANF66YZ.js")}',
-				'common.BVVQNWXW.js': 'module.exports={isShared:true}',
+				'five.js': 'module.exports={x:require("./common.BVVQNWXW.js")}',
+				'six.js': 'module.exports={x:require("./common.BVVQNWXW.js")}',
+				'common.7ANF66YZ.js': 'module.exports={isShared:true}',
 				'common.VSF42ZCA.js': 'module.exports={isShared:true}',
-				'common.7ANF66YZ.js': 'module.exports={isShared:true}'
+				'common.BVVQNWXW.js': 'module.exports={isShared:true}'
 			},
 			outEsm: {
-				'one.js': 'import a from"./common.QGMT774W.js";export default{x:a}',
-				'two.js': 'import a from"./common.QGMT774W.js";export default{x:a}',
+				'one.js': 'import a from"./common.KOPFAARQ.js";export default{x:a}',
+				'two.js': 'import a from"./common.KOPFAARQ.js";export default{x:a}',
 				'three.js': 'import a from"./common.LG3B3BIH.js";export default{x:a}',
 				'four.js': 'import a from"./common.LG3B3BIH.js";export default{x:a}',
-				'five.js': 'import a from"./common.KOPFAARQ.js";export default{x:a}',
-				'six.js': 'import a from"./common.KOPFAARQ.js";export default{x:a}',
-				'common.QGMT774W.js': 'export default{isShared:true}',
+				'five.js': 'import a from"./common.QGMT774W.js";export default{x:a}',
+				'six.js': 'import a from"./common.QGMT774W.js";export default{x:a}',
+				'common.KOPFAARQ.js': 'export default{isShared:true}',
 				'common.LG3B3BIH.js': 'export default{isShared:true}',
-				'common.KOPFAARQ.js': 'export default{isShared:true}'
+				'common.QGMT774W.js': 'export default{isShared:true}'
 			},
 			outJs: {
-				'one.js': '{x:require("./common.BVVQNWXW.js")}',
-				'two.js': '{x:require("./common.BVVQNWXW.js")}',
+				'one.js': '{x:require("./common.7ANF66YZ.js")}',
+				'two.js': '{x:require("./common.7ANF66YZ.js")}',
 				'three.js': '{x:require("./common.VSF42ZCA.js")}',
 				'four.js': '{x:require("./common.VSF42ZCA.js")}',
-				'five.js': '{x:require("./common.7ANF66YZ.js")}',
-				'six.js': '{x:require("./common.7ANF66YZ.js")}',
-				'common.BVVQNWXW.js': 'module.exports={isShared:true}',
+				'five.js': '{x:require("./common.BVVQNWXW.js")}',
+				'six.js': '{x:require("./common.BVVQNWXW.js")}',
+				'common.7ANF66YZ.js': 'module.exports={isShared:true}',
 				'common.VSF42ZCA.js': 'module.exports={isShared:true}',
-				'common.7ANF66YZ.js': 'module.exports={isShared:true}'
+				'common.BVVQNWXW.js': 'module.exports={isShared:true}'
 			},
 			validate({one, two, three, four, five, six}) {
 				expect(two.x).toBe(one.x);
@@ -2466,18 +2466,18 @@ describe('Code splitting', () => {
 			},
 			outCjs: {
 				'one.js': 'module.exports=require("./split2.HZNH55MB.js")',
-				'split2.HZNH55MB.js': 'module.exports={isObj2:true,obj1:require("./split1.PR4BUK4J.js")}',
-				'split1.PR4BUK4J.js': 'module.exports={isObj1:true}'
+				'split1.PR4BUK4J.js': 'module.exports={isObj1:true}',
+				'split2.HZNH55MB.js': 'module.exports={isObj2:true,obj1:require("./split1.PR4BUK4J.js")}'
 			},
 			outEsm: {
 				'one.js': 'import a from"./split2.XNM4XEI3.js";export default a',
-				'split2.XNM4XEI3.js': 'import a from"./split1.IP3W5MMO.js";export default{isObj2:true,obj1:a}',
-				'split1.IP3W5MMO.js': 'export default{isObj1:true}'
+				'split1.IP3W5MMO.js': 'export default{isObj1:true}',
+				'split2.XNM4XEI3.js': 'import a from"./split1.IP3W5MMO.js";export default{isObj2:true,obj1:a}'
 			},
 			outJs: {
 				'one.js': 'require("./split2.HZNH55MB.js")',
-				'split2.HZNH55MB.js': 'module.exports={isObj2:true,obj1:require("./split1.PR4BUK4J.js")}',
-				'split1.PR4BUK4J.js': 'module.exports={isObj1:true}'
+				'split1.PR4BUK4J.js': 'module.exports={isObj1:true}',
+				'split2.HZNH55MB.js': 'module.exports={isObj2:true,obj1:require("./split1.PR4BUK4J.js")}'
 			}
 		});
 
@@ -2572,20 +2572,20 @@ describe('Code splitting', () => {
 				outCjs: {
 					'one.js': 'module.exports={shared:require("./share/X2IN7VZX.js")}',
 					'two.js': 'module.exports={shared:require("./share/X2IN7VZX.js")}',
-					'share/X2IN7VZX.js': 'module.exports={split1:require("../splits/Y4EZPJ2P.js")}',
-					'splits/Y4EZPJ2P.js': 'module.exports={isSplit:true}'
+					'splits/Y4EZPJ2P.js': 'module.exports={isSplit:true}',
+					'share/X2IN7VZX.js': 'module.exports={split1:require("../splits/Y4EZPJ2P.js")}'
 				},
 				outEsm: {
 					'one.js': 'import a from"./share/KC2PDPCA.js";export default{shared:a}',
 					'two.js': 'import a from"./share/KC2PDPCA.js";export default{shared:a}',
-					'share/KC2PDPCA.js': 'import a from"../splits/L22RYOUC.js";export default{split1:a}',
-					'splits/L22RYOUC.js': 'export default{isSplit:true}'
+					'splits/L22RYOUC.js': 'export default{isSplit:true}',
+					'share/KC2PDPCA.js': 'import a from"../splits/L22RYOUC.js";export default{split1:a}'
 				},
 				outJs: {
 					'one.js': '{shared:require("./share/X2IN7VZX.js")}',
 					'two.js': '{shared:require("./share/X2IN7VZX.js")}',
-					'share/X2IN7VZX.js': 'module.exports={split1:require("../splits/Y4EZPJ2P.js")}',
-					'splits/Y4EZPJ2P.js': 'module.exports={isSplit:true}'
+					'splits/Y4EZPJ2P.js': 'module.exports={isSplit:true}',
+					'share/X2IN7VZX.js': 'module.exports={split1:require("../splits/Y4EZPJ2P.js")}'
 				}
 			});
 		});
@@ -2888,22 +2888,22 @@ describe('Code splitting', () => {
 				'one.js': 'const a=require("./split.UDJMERLJ.js");module.exports={sharedInner:a[1],sharedOuter:a[0]}',
 				'two.js': 'const a=require("./split.UDJMERLJ.js");module.exports={sharedInner:a[1],sharedOuter:a[0]}',
 				'three.js': 'module.exports=()=>import("./sharedOuter.TMQVHOIC.js")',
-				'sharedOuter.TMQVHOIC.js': 'module.exports=require("./split.UDJMERLJ.js")[0]',
-				'split.UDJMERLJ.js': 'const a={isSharedInner:true};module.exports=[{isSharedOuter:true,sharedInner:a},a]'
+				'split.UDJMERLJ.js': 'const a={isSharedInner:true};module.exports=[{isSharedOuter:true,sharedInner:a},a]',
+				'sharedOuter.TMQVHOIC.js': 'module.exports=require("./split.UDJMERLJ.js")[0]'
 			},
 			outEsm: {
 				'one.js': 'import a from"./split.WSDEFBGJ.js";export default{sharedInner:a[1],sharedOuter:a[0]}',
 				'two.js': 'import a from"./split.WSDEFBGJ.js";export default{sharedInner:a[1],sharedOuter:a[0]}',
 				'three.js': 'export default(()=>import("./sharedOuter.ULKZKTSE.js"))',
-				'sharedOuter.ULKZKTSE.js': 'import a from"./split.WSDEFBGJ.js";export default a[0]',
-				'split.WSDEFBGJ.js': 'const a={isSharedInner:true};export default[{isSharedOuter:true,sharedInner:a},a]'
+				'split.WSDEFBGJ.js': 'const a={isSharedInner:true};export default[{isSharedOuter:true,sharedInner:a},a]',
+				'sharedOuter.ULKZKTSE.js': 'import a from"./split.WSDEFBGJ.js";export default a[0]'
 			},
 			outJs: {
 				'one.js': '(()=>{const a=require("./split.UDJMERLJ.js");return{sharedInner:a[1],sharedOuter:a[0]}})()',
 				'two.js': '(()=>{const a=require("./split.UDJMERLJ.js");return{sharedInner:a[1],sharedOuter:a[0]}})()',
 				'three.js': '()=>import("./sharedOuter.TMQVHOIC.js")',
-				'sharedOuter.TMQVHOIC.js': 'module.exports=require("./split.UDJMERLJ.js")[0]',
-				'split.UDJMERLJ.js': 'const a={isSharedInner:true};module.exports=[{isSharedOuter:true,sharedInner:a},a]'
+				'split.UDJMERLJ.js': 'const a={isSharedInner:true};module.exports=[{isSharedOuter:true,sharedInner:a},a]',
+				'sharedOuter.TMQVHOIC.js': 'module.exports=require("./split.UDJMERLJ.js")[0]'
 			},
 			async validate({one, two, three}) {
 				expect(one).toEqual({
@@ -3057,18 +3057,18 @@ describe('Code splitting', () => {
 			},
 			outCjs: {
 				'one.js': 'module.exports=()=>import("./imported2.IXXBWE7H.js")',
-				'imported2.IXXBWE7H.js': 'module.exports=()=>import("./imported1.QEIVLBZW.js")',
-				'imported1.QEIVLBZW.js': 'module.exports={x:1}'
+				'imported1.QEIVLBZW.js': 'module.exports={x:1}',
+				'imported2.IXXBWE7H.js': 'module.exports=()=>import("./imported1.QEIVLBZW.js")'
 			},
 			outEsm: {
 				'one.js': 'export default(()=>import("./imported2.ZBOMFFWE.js"))',
-				'imported2.ZBOMFFWE.js': 'export default(()=>import("./imported1.UQMAZ4OK.js"))',
-				'imported1.UQMAZ4OK.js': 'export default{x:1}'
+				'imported1.UQMAZ4OK.js': 'export default{x:1}',
+				'imported2.ZBOMFFWE.js': 'export default(()=>import("./imported1.UQMAZ4OK.js"))'
 			},
 			outJs: {
 				'one.js': '()=>import("./imported2.IXXBWE7H.js")',
-				'imported2.IXXBWE7H.js': 'module.exports=()=>import("./imported1.QEIVLBZW.js")',
-				'imported1.QEIVLBZW.js': 'module.exports={x:1}'
+				'imported1.QEIVLBZW.js': 'module.exports={x:1}',
+				'imported2.IXXBWE7H.js': 'module.exports=()=>import("./imported1.QEIVLBZW.js")'
 			},
 			async validate({one: importFn2}) {
 				expect(importFn2).toBeFunction();
@@ -3077,6 +3077,422 @@ describe('Code splitting', () => {
 				expect(importFn1).toBeFunction();
 				await expectToResolveToModuleWithDefaultExportEqualling(importFn1(), {x: 1});
 			}
+		});
+
+		describe('circular imports', () => {
+			describe('self-referencing', () => {
+				itSerializesEntries('unnamed split', {
+					in() {
+						const obj = {};
+						obj.importFn = splitAsync(obj);
+						return {one: obj};
+					},
+					outCjs: {
+						'one.js': 'module.exports=require("./split.MWGRVYM7.js")',
+						'split.MWGRVYM7.js': 'module.exports={importFn:(0,()=>import("./split.MWGRVYM7.js"))}'
+					},
+					outEsm: {
+						'one.js': 'import a from"./split.VUXPEVSK.js";export default a',
+						'split.VUXPEVSK.js': 'export default{importFn:(0,()=>import("./split.VUXPEVSK.js"))}'
+					},
+					outJs: {
+						'one.js': 'require("./split.MWGRVYM7.js")',
+						'split.MWGRVYM7.js': 'module.exports={importFn:(0,()=>import("./split.MWGRVYM7.js"))}'
+					},
+					async validate({one: obj}) {
+						expect(obj).toBeObject();
+						expect(obj).toHaveOwnPropertyNames(['importFn']);
+						const {importFn} = obj;
+						expect(importFn).toBeFunction();
+						const mod = await expectToResolveToModule(importFn());
+						expect(mod.default).toBe(obj);
+					}
+				});
+
+				itSerializesEntries('named split', {
+					in() {
+						const obj = {};
+						obj.importFn = splitAsync(obj, 'obj');
+						return {one: obj};
+					},
+					outCjs: {
+						'one.js': 'module.exports=require("./obj.J6GCTQJ5.js")',
+						'obj.J6GCTQJ5.js': 'module.exports={importFn:(0,()=>import("./obj.J6GCTQJ5.js"))}'
+					},
+					outEsm: {
+						'one.js': 'import a from"./obj.TD6Y76CX.js";export default a',
+						'obj.TD6Y76CX.js': 'export default{importFn:(0,()=>import("./obj.TD6Y76CX.js"))}'
+					},
+					outJs: {
+						'one.js': 'require("./obj.J6GCTQJ5.js")',
+						'obj.J6GCTQJ5.js': 'module.exports={importFn:(0,()=>import("./obj.J6GCTQJ5.js"))}'
+					},
+					async validate({one: obj}) {
+						expect(obj).toBeObject();
+						expect(obj).toHaveOwnPropertyNames(['importFn']);
+						const {importFn} = obj;
+						expect(importFn).toBeFunction();
+						const mod = await expectToResolveToModule(importFn());
+						expect(mod.default).toBe(obj);
+					}
+				});
+
+				itSerializesEntries('named split with no hash', {
+					in() {
+						const obj = {};
+						obj.importFn = splitAsync(obj, 'obj');
+						return {one: obj};
+					},
+					splitChunkName: '[name]',
+					outCjs: {
+						'one.js': 'module.exports=require("./obj.js")',
+						'obj.js': 'module.exports={importFn:(0,()=>import("./obj.js"))}'
+					},
+					outEsm: {
+						'one.js': 'import a from"./obj.js";export default a',
+						'obj.js': 'export default{importFn:(0,()=>import("./obj.js"))}'
+					},
+					outJs: {
+						'one.js': 'require("./obj.js")',
+						'obj.js': 'module.exports={importFn:(0,()=>import("./obj.js"))}'
+					},
+					async validate({one: obj}) {
+						expect(obj).toBeObject();
+						expect(obj).toHaveOwnPropertyNames(['importFn']);
+						const {importFn} = obj;
+						expect(importFn).toBeFunction();
+						const mod = await expectToResolveToModule(importFn());
+						expect(mod.default).toBe(obj);
+					}
+				});
+			});
+
+			describe('two outputs referencing each other, with entry exporting one', () => {
+				itSerializesEntries('unnamed split', {
+					in() {
+						const obj1 = {};
+						const obj2 = {};
+						obj1.importObj2 = splitAsync(obj2);
+						obj2.importObj1 = splitAsync(obj1);
+						return {one: obj1};
+					},
+					outCjs: {
+						'one.js': 'module.exports=require("./split.OHBQNHOB.js")',
+						'split.INGOVYHD.js': 'module.exports={importObj1:(0,()=>import("./split.OHBQNHOB.js"))}',
+						'split.OHBQNHOB.js': 'module.exports={importObj2:(0,()=>import("./split.INGOVYHD.js"))}'
+					},
+					outEsm: {
+						'one.js': 'import a from"./split.M55WYAKU.js";export default a',
+						'split.DC7SLTHR.js': 'export default{importObj1:(0,()=>import("./split.M55WYAKU.js"))}',
+						'split.M55WYAKU.js': 'export default{importObj2:(0,()=>import("./split.DC7SLTHR.js"))}'
+					},
+					outJs: {
+						'one.js': 'require("./split.OHBQNHOB.js")',
+						'split.INGOVYHD.js': 'module.exports={importObj1:(0,()=>import("./split.OHBQNHOB.js"))}',
+						'split.OHBQNHOB.js': 'module.exports={importObj2:(0,()=>import("./split.INGOVYHD.js"))}'
+					},
+					async validate({one: obj1}) {
+						expect(obj1).toBeObject();
+						expect(obj1).toHaveOwnPropertyNames(['importObj2']);
+						const {importObj2} = obj1;
+						expect(importObj2).toBeFunction();
+						const mod2 = await expectToResolveToModule(importObj2());
+						const obj2 = mod2.default;
+						expect(obj2).toBeObject();
+						expect(obj2).toHaveOwnPropertyNames(['importObj1']);
+						const {importObj1} = obj2;
+						expect(importObj1).toBeFunction();
+						const mod1 = await expectToResolveToModule(importObj1());
+						expect(mod1.default).toBe(obj1);
+					}
+				});
+
+				itSerializesEntries('named split with no hash', {
+					in() {
+						const obj1 = {};
+						const obj2 = {};
+						obj1.importObj2 = splitAsync(obj2, 'obj2');
+						obj2.importObj1 = splitAsync(obj1, 'obj1');
+						return {one: obj1};
+					},
+					splitChunkName: '[name]',
+					outCjs: {
+						'one.js': 'module.exports=require("./obj1.js")',
+						'obj2.js': 'module.exports={importObj1:(0,()=>import("./obj1.js"))}',
+						'obj1.js': 'module.exports={importObj2:(0,()=>import("./obj2.js"))}'
+					},
+					outEsm: {
+						'one.js': 'import a from"./obj1.js";export default a',
+						'obj2.js': 'export default{importObj1:(0,()=>import("./obj1.js"))}',
+						'obj1.js': 'export default{importObj2:(0,()=>import("./obj2.js"))}'
+					},
+					outJs: {
+						'one.js': 'require("./obj1.js")',
+						'obj2.js': 'module.exports={importObj1:(0,()=>import("./obj1.js"))}',
+						'obj1.js': 'module.exports={importObj2:(0,()=>import("./obj2.js"))}'
+					},
+					async validate({one: obj1}) {
+						expect(obj1).toBeObject();
+						expect(obj1).toHaveOwnPropertyNames(['importObj2']);
+						const {importObj2} = obj1;
+						expect(importObj2).toBeFunction();
+						const mod2 = await expectToResolveToModule(importObj2());
+						const obj2 = mod2.default;
+						expect(obj2).toBeObject();
+						expect(obj2).toHaveOwnPropertyNames(['importObj1']);
+						const {importObj1} = obj2;
+						expect(importObj1).toBeFunction();
+						const mod1 = await expectToResolveToModule(importObj1());
+						expect(mod1.default).toBe(obj1);
+					}
+				});
+			});
+
+			describe('two outputs referencing each other, with entry exporting both', () => {
+				itSerializesEntries('unnamed split', {
+					in() {
+						const obj1 = {};
+						const obj2 = {};
+						obj1.importObj2 = splitAsync(obj2);
+						obj2.importObj1 = splitAsync(obj1);
+						return {one: {obj1, obj2}};
+					},
+					outCjs: {
+						'one.js': 'module.exports={obj1:require("./split.OHBQNHOB.js"),obj2:require("./split.INGOVYHD.js")}',
+						'split.INGOVYHD.js': 'module.exports={importObj1:(0,()=>import("./split.OHBQNHOB.js"))}',
+						'split.OHBQNHOB.js': 'module.exports={importObj2:(0,()=>import("./split.INGOVYHD.js"))}'
+					},
+					outEsm: {
+						'one.js': 'import a from"./split.M55WYAKU.js";import b from"./split.DC7SLTHR.js";export default{obj1:a,obj2:b}',
+						'split.DC7SLTHR.js': 'export default{importObj1:(0,()=>import("./split.M55WYAKU.js"))}',
+						'split.M55WYAKU.js': 'export default{importObj2:(0,()=>import("./split.DC7SLTHR.js"))}'
+					},
+					outJs: {
+						'one.js': '{obj1:require("./split.OHBQNHOB.js"),obj2:require("./split.INGOVYHD.js")}',
+						'split.INGOVYHD.js': 'module.exports={importObj1:(0,()=>import("./split.OHBQNHOB.js"))}',
+						'split.OHBQNHOB.js': 'module.exports={importObj2:(0,()=>import("./split.INGOVYHD.js"))}'
+					},
+					async validate({one}) {
+						expect(one).toBeObject();
+						expect(one).toHaveOwnPropertyNames(['obj1', 'obj2']);
+						const {obj1, obj2} = one;
+						expect(obj1).toBeObject();
+						expect(obj1).toHaveOwnPropertyNames(['importObj2']);
+						expect(obj2).toBeObject();
+						expect(obj2).toHaveOwnPropertyNames(['importObj1']);
+						const {importObj1} = obj2;
+						expect(importObj1).toBeFunction();
+						const {importObj2} = obj1;
+						expect(importObj2).toBeFunction();
+						const mod1 = await expectToResolveToModule(importObj1());
+						const mod2 = await expectToResolveToModule(importObj2());
+						expect(mod1.default).toBe(obj1);
+						expect(mod2.default).toBe(obj2);
+					}
+				});
+
+				itSerializesEntries('named split with no hash', {
+					in() {
+						const obj1 = {};
+						const obj2 = {};
+						obj1.importObj2 = splitAsync(obj2, 'obj2');
+						obj2.importObj1 = splitAsync(obj1, 'obj1');
+						return {one: {obj1, obj2}};
+					},
+					splitChunkName: '[name]',
+					outCjs: {
+						'one.js': 'module.exports={obj1:require("./obj1.js"),obj2:require("./obj2.js")}',
+						'obj2.js': 'module.exports={importObj1:(0,()=>import("./obj1.js"))}',
+						'obj1.js': 'module.exports={importObj2:(0,()=>import("./obj2.js"))}'
+					},
+					outEsm: {
+						'one.js': 'import a from"./obj1.js";import b from"./obj2.js";export default{obj1:a,obj2:b}',
+						'obj2.js': 'export default{importObj1:(0,()=>import("./obj1.js"))}',
+						'obj1.js': 'export default{importObj2:(0,()=>import("./obj2.js"))}'
+					},
+					outJs: {
+						'one.js': '{obj1:require("./obj1.js"),obj2:require("./obj2.js")}',
+						'obj2.js': 'module.exports={importObj1:(0,()=>import("./obj1.js"))}',
+						'obj1.js': 'module.exports={importObj2:(0,()=>import("./obj2.js"))}'
+					},
+					async validate({one}) {
+						expect(one).toBeObject();
+						expect(one).toHaveOwnPropertyNames(['obj1', 'obj2']);
+						const {obj1, obj2} = one;
+						expect(obj1).toBeObject();
+						expect(obj1).toHaveOwnPropertyNames(['importObj2']);
+						expect(obj2).toBeObject();
+						expect(obj2).toHaveOwnPropertyNames(['importObj1']);
+						const {importObj1} = obj2;
+						expect(importObj1).toBeFunction();
+						const {importObj2} = obj1;
+						expect(importObj2).toBeFunction();
+						const mod1 = await expectToResolveToModule(importObj1());
+						const mod2 = await expectToResolveToModule(importObj2());
+						expect(mod1.default).toBe(obj1);
+						expect(mod2.default).toBe(obj2);
+					}
+				});
+			});
+
+			describe('two interlocking loops of dependence', () => {
+				itSerializesEntries('unnamed splits', {
+					in() {
+						const z = split({});
+						const y = split({z});
+						const x = {y};
+						const w = {x, y, z};
+						y.importW = splitAsync(w);
+						z.importX = splitAsync(x);
+						return {one: w};
+					},
+					outCjs: {
+						'one.js': 'module.exports=require("./split.27LNZMBZ.js")',
+						'split.KMYPLRQ6.js': 'module.exports={z:require("./split.RYU2ZU4N.js"),importW:(0,()=>import("./split.27LNZMBZ.js"))}',
+						'split.D3RPHW7Y.js': 'module.exports={y:require("./split.KMYPLRQ6.js")}',
+						'split.RYU2ZU4N.js': 'module.exports={importX:(0,()=>import("./split.D3RPHW7Y.js"))}',
+						'split.27LNZMBZ.js': 'module.exports={x:require("./split.D3RPHW7Y.js"),y:require("./split.KMYPLRQ6.js"),z:require("./split.RYU2ZU4N.js")}'
+					},
+					outEsm: {
+						'one.js': 'import a from"./split.T5CIMF5G.js";export default a',
+						'split.4CGABIXF.js': 'import a from"./split.PIVYA4B5.js";export default{z:a,importW:(0,()=>import("./split.T5CIMF5G.js"))}',
+						'split.2T54CSMH.js': 'import a from"./split.4CGABIXF.js";export default{y:a}',
+						'split.PIVYA4B5.js': 'export default{importX:(0,()=>import("./split.2T54CSMH.js"))}',
+						'split.T5CIMF5G.js': 'import a from"./split.2T54CSMH.js";import b from"./split.4CGABIXF.js";import c from"./split.PIVYA4B5.js";export default{x:a,y:b,z:c}'
+					},
+					outJs: {
+						'one.js': 'require("./split.27LNZMBZ.js")',
+						'split.KMYPLRQ6.js': 'module.exports={z:require("./split.RYU2ZU4N.js"),importW:(0,()=>import("./split.27LNZMBZ.js"))}',
+						'split.D3RPHW7Y.js': 'module.exports={y:require("./split.KMYPLRQ6.js")}',
+						'split.RYU2ZU4N.js': 'module.exports={importX:(0,()=>import("./split.D3RPHW7Y.js"))}',
+						'split.27LNZMBZ.js': 'module.exports={x:require("./split.D3RPHW7Y.js"),y:require("./split.KMYPLRQ6.js"),z:require("./split.RYU2ZU4N.js")}'
+					},
+					async validate({one: w}) {
+						expect(w).toBeObject();
+						expect(w).toHaveOwnPropertyNames(['x', 'y', 'z']);
+						const {x, y, z} = w;
+						expect(x).toBeObject();
+						expect(x).toHaveOwnPropertyNames(['y']);
+						expect(x.y).toBe(y);
+						expect(y).toBeObject();
+						expect(y).toHaveOwnPropertyNames(['z', 'importW']);
+						expect(y.z).toBe(z);
+						const {importW} = y;
+						expect(importW).toBeFunction();
+						const {importX} = z;
+						expect(importX).toBeFunction();
+						const modW = await expectToResolveToModule(importW());
+						const modX = await expectToResolveToModule(importX());
+						expect(modW.default).toBe(w);
+						expect(modX.default).toBe(x);
+					}
+				});
+
+				itSerializesEntries('named splits', {
+					in() {
+						const z = split({}, 'z');
+						const y = split({z}, 'y');
+						const x = {y};
+						const w = {x, y, z};
+						y.importW = splitAsync(w, 'w');
+						z.importX = splitAsync(x, 'x');
+						return {one: w};
+					},
+					outCjs: {
+						'one.js': 'module.exports=require("./w.SNNIGSWK.js")',
+						'y.CZU377HI.js': 'module.exports={z:require("./z.XDDGK5DG.js"),importW:(0,()=>import("./w.SNNIGSWK.js"))}',
+						'x.VFQKIXTD.js': 'module.exports={y:require("./y.CZU377HI.js")}',
+						'z.XDDGK5DG.js': 'module.exports={importX:(0,()=>import("./x.VFQKIXTD.js"))}',
+						'w.SNNIGSWK.js': 'module.exports={x:require("./x.VFQKIXTD.js"),y:require("./y.CZU377HI.js"),z:require("./z.XDDGK5DG.js")}'
+					},
+					outEsm: {
+						'one.js': 'import a from"./w.YVAIRXM3.js";export default a',
+						'y.ZSR2OQRD.js': 'import a from"./z.BPN5STRH.js";export default{z:a,importW:(0,()=>import("./w.YVAIRXM3.js"))}',
+						'x.TSCRKSCQ.js': 'import a from"./y.ZSR2OQRD.js";export default{y:a}',
+						'z.BPN5STRH.js': 'export default{importX:(0,()=>import("./x.TSCRKSCQ.js"))}',
+						'w.YVAIRXM3.js': 'import a from"./x.TSCRKSCQ.js";import b from"./y.ZSR2OQRD.js";import c from"./z.BPN5STRH.js";export default{x:a,y:b,z:c}'
+					},
+					outJs: {
+						'one.js': 'require("./w.SNNIGSWK.js")',
+						'y.CZU377HI.js': 'module.exports={z:require("./z.XDDGK5DG.js"),importW:(0,()=>import("./w.SNNIGSWK.js"))}',
+						'x.VFQKIXTD.js': 'module.exports={y:require("./y.CZU377HI.js")}',
+						'z.XDDGK5DG.js': 'module.exports={importX:(0,()=>import("./x.VFQKIXTD.js"))}',
+						'w.SNNIGSWK.js': 'module.exports={x:require("./x.VFQKIXTD.js"),y:require("./y.CZU377HI.js"),z:require("./z.XDDGK5DG.js")}'
+					},
+					async validate({one: w}) {
+						expect(w).toBeObject();
+						expect(w).toHaveOwnPropertyNames(['x', 'y', 'z']);
+						const {x, y, z} = w;
+						expect(x).toBeObject();
+						expect(x).toHaveOwnPropertyNames(['y']);
+						expect(x.y).toBe(y);
+						expect(y).toBeObject();
+						expect(y).toHaveOwnPropertyNames(['z', 'importW']);
+						expect(y.z).toBe(z);
+						const {importW} = y;
+						expect(importW).toBeFunction();
+						const {importX} = z;
+						expect(importX).toBeFunction();
+						const modW = await expectToResolveToModule(importW());
+						const modX = await expectToResolveToModule(importX());
+						expect(modW.default).toBe(w);
+						expect(modX.default).toBe(x);
+					}
+				});
+
+				itSerializesEntries('named splits with no hashes', {
+					in() {
+						const z = split({}, 'z');
+						const y = split({z}, 'y');
+						const x = {y};
+						const w = {x, y, z};
+						y.importW = splitAsync(w, 'w');
+						z.importX = splitAsync(x, 'x');
+						return {one: w};
+					},
+					splitChunkName: '[name]',
+					outCjs: {
+						'one.js': 'module.exports=require("./w.js")',
+						'z.js': 'module.exports={importX:(0,()=>import("./x.js"))}',
+						'y.js': 'module.exports={z:require("./z.js"),importW:(0,()=>import("./w.js"))}',
+						'x.js': 'module.exports={y:require("./y.js")}',
+						'w.js': 'module.exports={x:require("./x.js"),y:require("./y.js"),z:require("./z.js")}'
+					},
+					outEsm: {
+						'one.js': 'import a from"./w.js";export default a',
+						'z.js': 'export default{importX:(0,()=>import("./x.js"))}',
+						'y.js': 'import a from"./z.js";export default{z:a,importW:(0,()=>import("./w.js"))}',
+						'x.js': 'import a from"./y.js";export default{y:a}',
+						'w.js': 'import a from"./x.js";import b from"./y.js";import c from"./z.js";export default{x:a,y:b,z:c}'
+					},
+					outJs: {
+						'one.js': 'require("./w.js")',
+						'z.js': 'module.exports={importX:(0,()=>import("./x.js"))}',
+						'y.js': 'module.exports={z:require("./z.js"),importW:(0,()=>import("./w.js"))}',
+						'x.js': 'module.exports={y:require("./y.js")}',
+						'w.js': 'module.exports={x:require("./x.js"),y:require("./y.js"),z:require("./z.js")}'
+					},
+					async validate({one: w}) {
+						expect(w).toBeObject();
+						expect(w).toHaveOwnPropertyNames(['x', 'y', 'z']);
+						const {x, y, z} = w;
+						expect(x).toBeObject();
+						expect(x).toHaveOwnPropertyNames(['y']);
+						expect(x.y).toBe(y);
+						expect(y).toBeObject();
+						expect(y).toHaveOwnPropertyNames(['z', 'importW']);
+						expect(y.z).toBe(z);
+						const {importW} = y;
+						expect(importW).toBeFunction();
+						const {importX} = z;
+						expect(importX).toBeFunction();
+						const modW = await expectToResolveToModule(importW());
+						const modX = await expectToResolveToModule(importX());
+						expect(modW.default).toBe(w);
+						expect(modX.default).toBe(x);
+					}
+				});
+			});
 		});
 
 		describe('`splitChunkName` option', () => {
