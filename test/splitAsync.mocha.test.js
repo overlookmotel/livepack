@@ -60,7 +60,7 @@ describe('splitAsync', () => {
 			(val, index) => {
 				const path = fixturesPaths[index || 0];
 				val = require(path);// eslint-disable-line global-require, import/no-dynamic-require
-				const importFn = () => import(path);
+				const importFn = (0, () => import(path));
 				return {val, importFn};
 			},
 			true,
@@ -82,6 +82,10 @@ function runTests(createImport, isNativeImport, skipTestsRelyingOnImport) {
 		describe('returns', () => {
 			it('a function', () => {
 				expect(importFn).toBeFunction();
+			});
+
+			it('a function with no name', () => {
+				expect(importFn.name).toBe('');
 			});
 
 			it('a function which returns a promise', async () => {

@@ -2637,6 +2637,7 @@ describe('Code splitting', () => {
 				},
 				async validate({one}) {
 					expect(one).toBeFunction();
+					expect(one.name).toBe('');
 					await expectToResolveToModuleWithDefaultExportEqualling(one(), {x: 1});
 				}
 			});
@@ -2659,6 +2660,7 @@ describe('Code splitting', () => {
 				},
 				async validate({one}) {
 					expect(one).toBeFunction();
+					expect(one.name).toBe('');
 					await expectToResolveToModuleWithDefaultExportEqualling(one(), {x: 1});
 				}
 			});
@@ -2925,15 +2927,15 @@ describe('Code splitting', () => {
 					};
 				},
 				outCjs: {
-					'one.js': 'const a=()=>import("./imported.QEIVLBZW.js");module.exports={x:a,y:a}',
+					'one.js': 'const a=(0,()=>import("./imported.QEIVLBZW.js"));module.exports={x:a,y:a}',
 					'imported.QEIVLBZW.js': 'module.exports={x:1}'
 				},
 				outEsm: {
-					'one.js': 'const a=()=>import("./imported.UQMAZ4OK.js");export default{x:a,y:a}',
+					'one.js': 'const a=(0,()=>import("./imported.UQMAZ4OK.js"));export default{x:a,y:a}',
 					'imported.UQMAZ4OK.js': 'export default{x:1}'
 				},
 				outJs: {
-					'one.js': '(()=>{const a=()=>import("./imported.QEIVLBZW.js");return{x:a,y:a}})()',
+					'one.js': '(()=>{const a=(0,()=>import("./imported.QEIVLBZW.js"));return{x:a,y:a}})()',
 					'imported.QEIVLBZW.js': 'module.exports={x:1}'
 				},
 				async validate({one}) {
