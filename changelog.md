@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.3.3
+
+Bug fixes:
+
+* Code splitting handle cyclic dependencies
+* Functions returned by `splitAsync` are anonymous
+
+Improvements:
+
+* Ensure unique filenames not unique hashes
+
+Performance:
+
+* Avoid property lookup
+* Pre-calculate temp filenames
+
+Refactor:
+
+* Init `output.filename` property
+
+Tests:
+
+* `itSerializes` takes entry chunk options [refactor]
+
 ## 0.3.2
 
 Features:
