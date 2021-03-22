@@ -1720,267 +1720,219 @@ describe('Code splitting', () => {
 		});
 
 		describe('`entryChunkName` option', () => {
-			it('`[name].[hash]` adds hashes to filenames', () => {
-				expect(
-					serializeEntries(
-						{
-							one: {x: 1},
-							two: {y: 2}
-						},
-						{entryChunkName: '[name].[hash]', format: 'esm'}
-					)
-				).toEqual([
-					{
-						type: 'entry',
-						name: 'one',
-						filename: 'one.LXE3LGLW.js',
-						content: 'export default{x:1}'
-					},
-					{
-						type: 'entry',
-						name: 'two',
-						filename: 'two.B73MGLFK.js',
-						content: 'export default{y:2}'
-					}
-				]);
+			itSerializesEntriesEqual('`[name].[hash]` adds hashes to filenames', {
+				in: () => ({
+					one: {x: 1},
+					two: {y: 2}
+				}),
+				entryChunkName: '[name].[hash]',
+				outCjs: {
+					'one.QEIVLBZW.js': 'module.exports={x:1}',
+					'two.DM4GUZG2.js': 'module.exports={y:2}'
+				},
+				outEsm: {
+					'one.UQMAZ4OK.js': 'export default{x:1}',
+					'two.NYZZMNUQ.js': 'export default{y:2}'
+				},
+				outJs: {
+					'one.Q3NOKDYG.js': '{x:1}',
+					'two.J4XTNSPO.js': '{y:2}'
+				}
 			});
 
-			it('`[name]-[hash]` adds hashes to filenames with custom join', () => {
-				expect(
-					serializeEntries(
-						{
-							one: {x: 1},
-							two: {y: 2}
-						},
-						{entryChunkName: '[name]-[hash]', format: 'esm'}
-					)
-				).toEqual([
-					{
-						type: 'entry',
-						name: 'one',
-						filename: 'one-LXE3LGLW.js',
-						content: 'export default{x:1}'
-					},
-					{
-						type: 'entry',
-						name: 'two',
-						filename: 'two-B73MGLFK.js',
-						content: 'export default{y:2}'
-					}
-				]);
+			itSerializesEntriesEqual('`[name]-[hash]` adds hashes to filenames with custom join', {
+				in: () => ({
+					one: {x: 1},
+					two: {y: 2}
+				}),
+				entryChunkName: '[name]-[hash]',
+				outCjs: {
+					'one-QEIVLBZW.js': 'module.exports={x:1}',
+					'two-DM4GUZG2.js': 'module.exports={y:2}'
+				},
+				outEsm: {
+					'one-UQMAZ4OK.js': 'export default{x:1}',
+					'two-NYZZMNUQ.js': 'export default{y:2}'
+				},
+				outJs: {
+					'one-Q3NOKDYG.js': '{x:1}',
+					'two-J4XTNSPO.js': '{y:2}'
+				}
 			});
 
-			it('`[hash]` makes filenames hash only', () => {
-				expect(
-					serializeEntries(
-						{
-							one: {x: 1},
-							two: {y: 2}
-						},
-						{entryChunkName: '[hash]', format: 'esm'}
-					)
-				).toEqual([
-					{
-						type: 'entry',
-						name: 'one',
-						filename: 'LXE3LGLW.js',
-						content: 'export default{x:1}'
-					},
-					{
-						type: 'entry',
-						name: 'two',
-						filename: 'B73MGLFK.js',
-						content: 'export default{y:2}'
-					}
-				]);
+			itSerializesEntriesEqual('`[hash]` makes filenames hash only', {
+				in: () => ({
+					one: {x: 1},
+					two: {y: 2}
+				}),
+				entryChunkName: '[hash]',
+				outCjs: {
+					'QEIVLBZW.js': 'module.exports={x:1}',
+					'DM4GUZG2.js': 'module.exports={y:2}'
+				},
+				outEsm: {
+					'UQMAZ4OK.js': 'export default{x:1}',
+					'NYZZMNUQ.js': 'export default{y:2}'
+				},
+				outJs: {
+					'Q3NOKDYG.js': '{x:1}',
+					'J4XTNSPO.js': '{y:2}'
+				}
 			});
 
-			it('`entries/[name]` places files in subfolder', () => {
-				expect(
-					serializeEntries(
-						{
-							one: {x: 1},
-							two: {y: 2}
-						},
-						{entryChunkName: 'entries/[name]', format: 'esm'}
-					)
-				).toEqual([
-					{
-						type: 'entry',
-						name: 'one',
-						filename: 'entries/one.js',
-						content: 'export default{x:1}'
-					},
-					{
-						type: 'entry',
-						name: 'two',
-						filename: 'entries/two.js',
-						content: 'export default{y:2}'
-					}
-				]);
+			itSerializesEntriesEqual('`entries/[name]` places files in subfolder', {
+				in: () => ({
+					one: {x: 1},
+					two: {y: 2}
+				}),
+				entryChunkName: 'entries/[name]',
+				outCjs: {
+					'entries/one.js': 'module.exports={x:1}',
+					'entries/two.js': 'module.exports={y:2}'
+				},
+				outEsm: {
+					'entries/one.js': 'export default{x:1}',
+					'entries/two.js': 'export default{y:2}'
+				},
+				outJs: {
+					'entries/one.js': '{x:1}',
+					'entries/two.js': '{y:2}'
+				}
 			});
 
-			it('`[name].[hash]` supports entry points importing each other', () => {
-				const shared = {x: 1};
-				expect(
-					serializeEntries(
-						{
-							one: shared,
-							two: shared,
-							three: shared
-						},
-						{entryChunkName: '[name].[hash]', format: 'esm'}
-					)
-				).toEqual([
-					{
-						type: 'entry',
-						name: 'one',
-						filename: 'one.LXE3LGLW.js',
-						content: 'export default{x:1}'
-					},
-					{
-						type: 'entry',
-						name: 'two',
-						filename: 'two.2OQEXRGZ.js',
-						content: 'import a from"./one.LXE3LGLW.js";export default a'
-					},
-					{
-						type: 'entry',
-						name: 'three',
-						filename: 'three.2OQEXRGZ.js',
-						content: 'import a from"./one.LXE3LGLW.js";export default a'
-					}
-				]);
+			itSerializesEntriesEqual('`[name].[hash]` supports entry points importing each other', {
+				in() {
+					const shared = {x: 1};
+					return {
+						one: shared,
+						two: shared,
+						three: shared
+					};
+				},
+				entryChunkName: '[name].[hash]',
+				outCjs: {
+					'one.QEIVLBZW.js': 'module.exports={x:1}',
+					'two.ZA6KBKSY.js': 'module.exports=require("./one.QEIVLBZW.js")',
+					'three.ZA6KBKSY.js': 'module.exports=require("./one.QEIVLBZW.js")'
+				},
+				outEsm: {
+					'one.UQMAZ4OK.js': 'export default{x:1}',
+					'two.7APHPBSY.js': 'import a from"./one.UQMAZ4OK.js";export default a',
+					'three.7APHPBSY.js': 'import a from"./one.UQMAZ4OK.js";export default a'
+				},
+				outJs: {
+					'one.H6IUH4X5.js': 'require("./common.QEIVLBZW.js")',
+					'two.H6IUH4X5.js': 'require("./common.QEIVLBZW.js")',
+					'three.H6IUH4X5.js': 'require("./common.QEIVLBZW.js")',
+					'common.QEIVLBZW.js': 'module.exports={x:1}'
+				}
 			});
 		});
 
 		describe('`commonChunkName` option', () => {
-			it('`[name]-[hash]` adds hashes to filenames with custom join', () => {
-				const shared = {isShared: true};
-				expect(
-					serializeEntries(
-						{
-							one: {shared},
-							two: {shared}
-						},
-						{commonChunkName: '[name]-[hash]', format: 'esm'}
-					)
-				).toEqual([
-					{
-						type: 'entry',
-						name: 'one',
-						filename: 'one.js',
-						content: 'import a from"./common-HW2BJAJH.js";export default{shared:a}'
-					},
-					{
-						type: 'entry',
-						name: 'two',
-						filename: 'two.js',
-						content: 'import a from"./common-HW2BJAJH.js";export default{shared:a}'
-					},
-					{
-						type: 'common',
-						name: null,
-						filename: 'common-HW2BJAJH.js',
-						content: 'export default{isShared:true}'
-					}
-				]);
+			itSerializesEntriesEqual('`[name]-[hash]` adds hashes to filenames with custom join', {
+				in() {
+					const shared = {isShared: true};
+					return {
+						one: {shared},
+						two: {shared}
+					};
+				},
+				commonChunkName: '[name]-[hash]',
+				outCjs: {
+					'one.js': 'module.exports={shared:require("./common-7ANF66YZ.js")}',
+					'two.js': 'module.exports={shared:require("./common-7ANF66YZ.js")}',
+					'common-7ANF66YZ.js': 'module.exports={isShared:true}'
+				},
+				outEsm: {
+					'one.js': 'import a from"./common-KOPFAARQ.js";export default{shared:a}',
+					'two.js': 'import a from"./common-KOPFAARQ.js";export default{shared:a}',
+					'common-KOPFAARQ.js': 'export default{isShared:true}'
+				},
+				outJs: {
+					'one.js': '{shared:require("./common-7ANF66YZ.js")}',
+					'two.js': '{shared:require("./common-7ANF66YZ.js")}',
+					'common-7ANF66YZ.js': 'module.exports={isShared:true}'
+				}
 			});
 
-			it('`[hash]` makes filenames hash only', () => {
-				const shared = {isShared: true};
-				expect(
-					serializeEntries(
-						{
-							one: {shared},
-							two: {shared}
-						},
-						{commonChunkName: '[hash]', format: 'esm'}
-					)
-				).toEqual([
-					{
-						type: 'entry',
-						name: 'one',
-						filename: 'one.js',
-						content: 'import a from"./HW2BJAJH.js";export default{shared:a}'
-					},
-					{
-						type: 'entry',
-						name: 'two',
-						filename: 'two.js',
-						content: 'import a from"./HW2BJAJH.js";export default{shared:a}'
-					},
-					{
-						type: 'common',
-						name: null,
-						filename: 'HW2BJAJH.js',
-						content: 'export default{isShared:true}'
-					}
-				]);
+			itSerializesEntriesEqual('`[hash]` makes filenames hash only', {
+				in() {
+					const shared = {isShared: true};
+					return {
+						one: {shared},
+						two: {shared}
+					};
+				},
+				commonChunkName: '[hash]',
+				outCjs: {
+					'one.js': 'module.exports={shared:require("./7ANF66YZ.js")}',
+					'two.js': 'module.exports={shared:require("./7ANF66YZ.js")}',
+					'7ANF66YZ.js': 'module.exports={isShared:true}'
+				},
+				outEsm: {
+					'one.js': 'import a from"./KOPFAARQ.js";export default{shared:a}',
+					'two.js': 'import a from"./KOPFAARQ.js";export default{shared:a}',
+					'KOPFAARQ.js': 'export default{isShared:true}'
+				},
+				outJs: {
+					'one.js': '{shared:require("./7ANF66YZ.js")}',
+					'two.js': '{shared:require("./7ANF66YZ.js")}',
+					'7ANF66YZ.js': 'module.exports={isShared:true}'
+				}
 			});
 
-			it('`share/[hash]` places files in subfolder', () => {
-				const shared = {isShared: true};
-				expect(
-					serializeEntries(
-						{
-							one: {shared},
-							two: {shared}
-						},
-						{commonChunkName: 'share/[hash]', format: 'esm'}
-					)
-				).toEqual([
-					{
-						type: 'entry',
-						name: 'one',
-						filename: 'one.js',
-						content: 'import a from"./share/HW2BJAJH.js";export default{shared:a}'
-					},
-					{
-						type: 'entry',
-						name: 'two',
-						filename: 'two.js',
-						content: 'import a from"./share/HW2BJAJH.js";export default{shared:a}'
-					},
-					{
-						type: 'common',
-						name: null,
-						filename: 'share/HW2BJAJH.js',
-						content: 'export default{isShared:true}'
-					}
-				]);
+			itSerializesEntriesEqual('`share/[hash]` places files in subfolder', {
+				in() {
+					const shared = {isShared: true};
+					return {
+						one: {shared},
+						two: {shared}
+					};
+				},
+				commonChunkName: 'share/[hash]',
+				outCjs: {
+					'one.js': 'module.exports={shared:require("./share/7ANF66YZ.js")}',
+					'two.js': 'module.exports={shared:require("./share/7ANF66YZ.js")}',
+					'share/7ANF66YZ.js': 'module.exports={isShared:true}'
+				},
+				outEsm: {
+					'one.js': 'import a from"./share/KOPFAARQ.js";export default{shared:a}',
+					'two.js': 'import a from"./share/KOPFAARQ.js";export default{shared:a}',
+					'share/KOPFAARQ.js': 'export default{isShared:true}'
+				},
+				outJs: {
+					'one.js': '{shared:require("./share/7ANF66YZ.js")}',
+					'two.js': '{shared:require("./share/7ANF66YZ.js")}',
+					'share/7ANF66YZ.js': 'module.exports={isShared:true}'
+				}
 			});
 
-			it('interacts with `entryChunkName` option', () => {
-				const shared = {isShared: true};
-				expect(
-					serializeEntries(
-						{
-							one: {shared},
-							two: {shared}
-						},
-						{entryChunkName: 'entries/[name]', commonChunkName: 'share/[hash]', format: 'esm'}
-					)
-				).toEqual([
-					{
-						type: 'entry',
-						name: 'one',
-						filename: 'entries/one.js',
-						content: 'import a from"../share/HW2BJAJH.js";export default{shared:a}'
-					},
-					{
-						type: 'entry',
-						name: 'two',
-						filename: 'entries/two.js',
-						content: 'import a from"../share/HW2BJAJH.js";export default{shared:a}'
-					},
-					{
-						type: 'common',
-						name: null,
-						filename: 'share/HW2BJAJH.js',
-						content: 'export default{isShared:true}'
-					}
-				]);
+			itSerializesEntriesEqual('interacts with `entryChunkName` option', {
+				in() {
+					const shared = {isShared: true};
+					return {
+						one: {shared},
+						two: {shared}
+					};
+				},
+				commonChunkName: 'share/[hash]',
+				entryChunkName: 'entries/[name]',
+				outCjs: {
+					'entries/one.js': 'module.exports={shared:require("../share/7ANF66YZ.js")}',
+					'entries/two.js': 'module.exports={shared:require("../share/7ANF66YZ.js")}',
+					'share/7ANF66YZ.js': 'module.exports={isShared:true}'
+				},
+				outEsm: {
+					'entries/one.js': 'import a from"../share/KOPFAARQ.js";export default{shared:a}',
+					'entries/two.js': 'import a from"../share/KOPFAARQ.js";export default{shared:a}',
+					'share/KOPFAARQ.js': 'export default{isShared:true}'
+				},
+				outJs: {
+					'entries/one.js': '{shared:require("../share/7ANF66YZ.js")}',
+					'entries/two.js': '{shared:require("../share/7ANF66YZ.js")}',
+					'share/7ANF66YZ.js': 'module.exports={isShared:true}'
+				}
 			});
 		});
 
@@ -2530,138 +2482,111 @@ describe('Code splitting', () => {
 		});
 
 		describe('`splitChunkName` option', () => {
-			it('`[name]-[hash]` adds hashes to filenames with custom join', () => {
-				expect(
-					serializeEntries(
-						{
-							one: split({isSplit: true})
-						},
-						{splitChunkName: '[name]-[hash]', format: 'esm'}
-					)
-				).toEqual([
-					{
-						type: 'entry',
-						name: 'one',
-						filename: 'one.js',
-						content: 'import a from"./split-P4XPXXFO.js";export default a'
-					},
-					{
-						type: 'split',
-						name: null,
-						filename: 'split-P4XPXXFO.js',
-						content: 'export default{isSplit:true}'
-					}
-				]);
+			itSerializesEntriesEqual('`[name]-[hash]` adds hashes to filenames with custom join', {
+				in: () => ({
+					one: split({isSplit: true})
+				}),
+				splitChunkName: '[name]-[hash]',
+				outCjs: {
+					'one.js': 'module.exports=require("./split-Y4EZPJ2P.js")',
+					'split-Y4EZPJ2P.js': 'module.exports={isSplit:true}'
+				},
+				outEsm: {
+					'one.js': 'import a from"./split-L22RYOUC.js";export default a',
+					'split-L22RYOUC.js': 'export default{isSplit:true}'
+				},
+				outJs: {
+					'one.js': 'require("./split-Y4EZPJ2P.js")',
+					'split-Y4EZPJ2P.js': 'module.exports={isSplit:true}'
+				}
 			});
 
-			it('`[hash]` makes filenames hash only', () => {
-				expect(
-					serializeEntries(
-						{
-							one: split({isSplit: true})
-						},
-						{splitChunkName: '[hash]', format: 'esm'}
-					)
-				).toEqual([
-					{
-						type: 'entry',
-						name: 'one',
-						filename: 'one.js',
-						content: 'import a from"./P4XPXXFO.js";export default a'
-					},
-					{
-						type: 'split',
-						name: null,
-						filename: 'P4XPXXFO.js',
-						content: 'export default{isSplit:true}'
-					}
-				]);
+			itSerializesEntriesEqual('`[hash]` makes filenames hash only', {
+				in: () => ({
+					one: split({isSplit: true})
+				}),
+				splitChunkName: '[hash]',
+				outCjs: {
+					'one.js': 'module.exports=require("./Y4EZPJ2P.js")',
+					'Y4EZPJ2P.js': 'module.exports={isSplit:true}'
+				},
+				outEsm: {
+					'one.js': 'import a from"./L22RYOUC.js";export default a',
+					'L22RYOUC.js': 'export default{isSplit:true}'
+				},
+				outJs: {
+					'one.js': 'require("./Y4EZPJ2P.js")',
+					'Y4EZPJ2P.js': 'module.exports={isSplit:true}'
+				}
 			});
 
-			it('`splits/[hash]` places files in subfolder', () => {
-				expect(
-					serializeEntries(
-						{
-							one: split({isSplit: true})
-						},
-						{splitChunkName: 'splits/[hash]', format: 'esm'}
-					)
-				).toEqual([
-					{
-						type: 'entry',
-						name: 'one',
-						filename: 'one.js',
-						content: 'import a from"./splits/P4XPXXFO.js";export default a'
-					},
-					{
-						type: 'split',
-						name: null,
-						filename: 'splits/P4XPXXFO.js',
-						content: 'export default{isSplit:true}'
-					}
-				]);
+			itSerializesEntriesEqual('`splits/[hash]` places files in subfolder', {
+				in: () => ({
+					one: split({isSplit: true})
+				}),
+				splitChunkName: 'splits/[hash]',
+				outCjs: {
+					'one.js': 'module.exports=require("./splits/Y4EZPJ2P.js")',
+					'splits/Y4EZPJ2P.js': 'module.exports={isSplit:true}'
+				},
+				outEsm: {
+					'one.js': 'import a from"./splits/L22RYOUC.js";export default a',
+					'splits/L22RYOUC.js': 'export default{isSplit:true}'
+				},
+				outJs: {
+					'one.js': 'require("./splits/Y4EZPJ2P.js")',
+					'splits/Y4EZPJ2P.js': 'module.exports={isSplit:true}'
+				}
 			});
 
-			it('interacts with `entryChunkName` option', () => {
-				expect(
-					serializeEntries(
-						{
-							one: split({isSplit: true})
-						},
-						{entryChunkName: 'entries/[name]', splitChunkName: 'splits/[hash]', format: 'esm'}
-					)
-				).toEqual([
-					{
-						type: 'entry',
-						name: 'one',
-						filename: 'entries/one.js',
-						content: 'import a from"../splits/P4XPXXFO.js";export default a'
-					},
-					{
-						type: 'split',
-						name: null,
-						filename: 'splits/P4XPXXFO.js',
-						content: 'export default{isSplit:true}'
-					}
-				]);
+			itSerializesEntriesEqual('interacts with `entryChunkName` option', {
+				in: () => ({
+					one: split({isSplit: true})
+				}),
+				splitChunkName: 'splits/[hash]',
+				entryChunkName: 'entries/[name]',
+				outCjs: {
+					'entries/one.js': 'module.exports=require("../splits/Y4EZPJ2P.js")',
+					'splits/Y4EZPJ2P.js': 'module.exports={isSplit:true}'
+				},
+				outEsm: {
+					'entries/one.js': 'import a from"../splits/L22RYOUC.js";export default a',
+					'splits/L22RYOUC.js': 'export default{isSplit:true}'
+				},
+				outJs: {
+					'entries/one.js': 'require("../splits/Y4EZPJ2P.js")',
+					'splits/Y4EZPJ2P.js': 'module.exports={isSplit:true}'
+				}
 			});
 
-			it('interacts with `commonChunkName` option', () => {
-				const shared = {split1: split({isSplit: true})};
-				expect(
-					serializeEntries(
-						{
-							one: {shared},
-							two: {shared}
-						},
-						{commonChunkName: 'share/[hash]', splitChunkName: 'splits/[hash]', format: 'esm'}
-					)
-				).toEqual([
-					{
-						type: 'entry',
-						name: 'one',
-						filename: 'one.js',
-						content: 'import a from"./share/X6ZGGON3.js";export default{shared:a}'
-					},
-					{
-						type: 'entry',
-						name: 'two',
-						filename: 'two.js',
-						content: 'import a from"./share/X6ZGGON3.js";export default{shared:a}'
-					},
-					{
-						type: 'common',
-						name: null,
-						filename: 'share/X6ZGGON3.js',
-						content: 'import a from"../splits/P4XPXXFO.js";export default{split1:a}'
-					},
-					{
-						type: 'split',
-						name: null,
-						filename: 'splits/P4XPXXFO.js',
-						content: 'export default{isSplit:true}'
-					}
-				]);
+			itSerializesEntriesEqual('interacts with `commonChunkName` option', {
+				in() {
+					const shared = {split1: split({isSplit: true})};
+					return {
+						one: {shared},
+						two: {shared}
+					};
+				},
+				splitChunkName: 'splits/[hash]',
+				commonChunkName: 'share/[hash]',
+				outCjs: {
+					'one.js': 'module.exports={shared:require("./share/X2IN7VZX.js")}',
+					'two.js': 'module.exports={shared:require("./share/X2IN7VZX.js")}',
+					'share/X2IN7VZX.js': 'module.exports={split1:require("../splits/Y4EZPJ2P.js")}',
+					'splits/Y4EZPJ2P.js': 'module.exports={isSplit:true}'
+				},
+				outEsm: {
+					'one.js': 'import a from"./share/KC2PDPCA.js";export default{shared:a}',
+					'two.js': 'import a from"./share/KC2PDPCA.js";export default{shared:a}',
+					'share/KC2PDPCA.js': 'import a from"../splits/L22RYOUC.js";export default{split1:a}',
+					'splits/L22RYOUC.js': 'export default{isSplit:true}'
+				},
+				outJs: {
+					'one.js': '{shared:require("./share/X2IN7VZX.js")}',
+					'two.js': '{shared:require("./share/X2IN7VZX.js")}',
+					'share/X2IN7VZX.js': 'module.exports={split1:require("../splits/Y4EZPJ2P.js")}',
+					'splits/Y4EZPJ2P.js': 'module.exports={isSplit:true}'
+				}
 			});
 		});
 
@@ -3153,138 +3078,140 @@ describe('Code splitting', () => {
 		});
 
 		describe('`splitChunkName` option', () => {
-			it('`[name]-[hash]` adds hashes to filenames with custom join', () => {
-				expect(
-					serializeEntries(
-						{
-							one: splitAsync({isSplit: true})
-						},
-						{splitChunkName: '[name]-[hash]', format: 'esm'}
-					)
-				).toEqual([
-					{
-						type: 'entry',
-						name: 'one',
-						filename: 'one.js',
-						content: 'export default(()=>import("./split-P4XPXXFO.js"))'
-					},
-					{
-						type: 'split',
-						name: null,
-						filename: 'split-P4XPXXFO.js',
-						content: 'export default{isSplit:true}'
-					}
-				]);
+			itSerializesEntries('`[name]-[hash]` adds hashes to filenames with custom join', {
+				in: () => ({
+					one: splitAsync({isSplit: true})
+				}),
+				splitChunkName: '[name]-[hash]',
+				outCjs: {
+					'one.js': 'module.exports=()=>import("./split-Y4EZPJ2P.js")',
+					'split-Y4EZPJ2P.js': 'module.exports={isSplit:true}'
+				},
+				outEsm: {
+					'one.js': 'export default(()=>import("./split-L22RYOUC.js"))',
+					'split-L22RYOUC.js': 'export default{isSplit:true}'
+				},
+				outJs: {
+					'one.js': '()=>import("./split-Y4EZPJ2P.js")',
+					'split-Y4EZPJ2P.js': 'module.exports={isSplit:true}'
+				},
+				async validate({one}) {
+					expect(one).toBeFunction();
+					await expectToResolveToModuleWithDefaultExportEqualling(one(), {isSplit: true});
+				}
 			});
 
-			it('`[hash]` makes filenames hash only', () => {
-				expect(
-					serializeEntries(
-						{
-							one: splitAsync({isSplit: true})
-						},
-						{splitChunkName: '[hash]', format: 'esm'}
-					)
-				).toEqual([
-					{
-						type: 'entry',
-						name: 'one',
-						filename: 'one.js',
-						content: 'export default(()=>import("./P4XPXXFO.js"))'
-					},
-					{
-						type: 'split',
-						name: null,
-						filename: 'P4XPXXFO.js',
-						content: 'export default{isSplit:true}'
-					}
-				]);
+			itSerializesEntries('`[hash]` makes filenames hash only', {
+				in: () => ({
+					one: splitAsync({isSplit: true})
+				}),
+				splitChunkName: '[hash]',
+				outCjs: {
+					'one.js': 'module.exports=()=>import("./Y4EZPJ2P.js")',
+					'Y4EZPJ2P.js': 'module.exports={isSplit:true}'
+				},
+				outEsm: {
+					'one.js': 'export default(()=>import("./L22RYOUC.js"))',
+					'L22RYOUC.js': 'export default{isSplit:true}'
+				},
+				outJs: {
+					'one.js': '()=>import("./Y4EZPJ2P.js")',
+					'Y4EZPJ2P.js': 'module.exports={isSplit:true}'
+				},
+				async validate({one}) {
+					expect(one).toBeFunction();
+					await expectToResolveToModuleWithDefaultExportEqualling(one(), {isSplit: true});
+				}
 			});
 
-			it('`splits/[hash]` places files in subfolder', () => {
-				expect(
-					serializeEntries(
-						{
-							one: splitAsync({isSplit: true})
-						},
-						{splitChunkName: 'splits/[hash]', format: 'esm'}
-					)
-				).toEqual([
-					{
-						type: 'entry',
-						name: 'one',
-						filename: 'one.js',
-						content: 'export default(()=>import("./splits/P4XPXXFO.js"))'
-					},
-					{
-						type: 'split',
-						name: null,
-						filename: 'splits/P4XPXXFO.js',
-						content: 'export default{isSplit:true}'
-					}
-				]);
+			itSerializesEntries('`splits/[hash]` places files in subfolder', {
+				in: () => ({
+					one: splitAsync({isSplit: true})
+				}),
+				splitChunkName: 'splits/[hash]',
+				outCjs: {
+					'one.js': 'module.exports=()=>import("./splits/Y4EZPJ2P.js")',
+					'splits/Y4EZPJ2P.js': 'module.exports={isSplit:true}'
+				},
+				outEsm: {
+					'one.js': 'export default(()=>import("./splits/L22RYOUC.js"))',
+					'splits/L22RYOUC.js': 'export default{isSplit:true}'
+				},
+				outJs: {
+					'one.js': '()=>import("./splits/Y4EZPJ2P.js")',
+					'splits/Y4EZPJ2P.js': 'module.exports={isSplit:true}'
+				},
+				async validate({one}) {
+					expect(one).toBeFunction();
+					await expectToResolveToModuleWithDefaultExportEqualling(one(), {isSplit: true});
+				}
 			});
 
-			it('interacts with `entryChunkName` option', () => {
-				expect(
-					serializeEntries(
-						{
-							one: splitAsync({isSplit: true})
-						},
-						{entryChunkName: 'entries/[name]', splitChunkName: 'splits/[hash]', format: 'esm'}
-					)
-				).toEqual([
-					{
-						type: 'entry',
-						name: 'one',
-						filename: 'entries/one.js',
-						content: 'export default(()=>import("../splits/P4XPXXFO.js"))'
-					},
-					{
-						type: 'split',
-						name: null,
-						filename: 'splits/P4XPXXFO.js',
-						content: 'export default{isSplit:true}'
-					}
-				]);
+			itSerializesEntries('interacts with `entryChunkName` option', {
+				in: () => ({
+					one: splitAsync({isSplit: true})
+				}),
+				entryChunkName: 'entries/[name]',
+				splitChunkName: 'splits/[hash]',
+				outCjs: {
+					'entries/one.js': 'module.exports=()=>import("../splits/Y4EZPJ2P.js")',
+					'splits/Y4EZPJ2P.js': 'module.exports={isSplit:true}'
+				},
+				outEsm: {
+					'entries/one.js': 'export default(()=>import("../splits/L22RYOUC.js"))',
+					'splits/L22RYOUC.js': 'export default{isSplit:true}'
+				},
+				outJs: {
+					'entries/one.js': '()=>import("../splits/Y4EZPJ2P.js")',
+					'splits/Y4EZPJ2P.js': 'module.exports={isSplit:true}'
+				},
+				async validate({one}) {
+					expect(one).toBeFunction();
+					await expectToResolveToModuleWithDefaultExportEqualling(one(), {isSplit: true});
+				}
 			});
 
-			it('interacts with `commonChunkName` option', () => {
-				const shared = {split1: splitAsync({isSplit: true})};
-				expect(
-					serializeEntries(
-						{
-							one: {shared},
-							two: {shared}
-						},
-						{commonChunkName: 'share/[hash]', splitChunkName: 'splits/[hash]', format: 'esm'}
-					)
-				).toEqual([
-					{
-						type: 'entry',
-						name: 'one',
-						filename: 'one.js',
-						content: 'import a from"./share/A5RSWZMJ.js";export default{shared:a}'
-					},
-					{
-						type: 'entry',
-						name: 'two',
-						filename: 'two.js',
-						content: 'import a from"./share/A5RSWZMJ.js";export default{shared:a}'
-					},
-					{
-						type: 'split',
-						name: null,
-						filename: 'splits/P4XPXXFO.js',
-						content: 'export default{isSplit:true}'
-					},
-					{
-						type: 'common',
-						name: null,
-						filename: 'share/A5RSWZMJ.js',
-						content: 'export default{split1:(0,()=>import("../splits/P4XPXXFO.js"))}'
-					}
-				]);
+			itSerializesEntries('interacts with `commonChunkName` option', {
+				in() {
+					const shared = {importFn: splitAsync({isSplit: true})};
+					return {
+						one: {shared},
+						two: {shared}
+					};
+				},
+				commonChunkName: 'share/[hash]',
+				splitChunkName: 'splits/[hash]',
+				outCjs: {
+					'one.js': 'module.exports={shared:require("./share/UZRSAHZL.js")}',
+					'two.js': 'module.exports={shared:require("./share/UZRSAHZL.js")}',
+					'splits/Y4EZPJ2P.js': 'module.exports={isSplit:true}',
+					'share/UZRSAHZL.js': 'module.exports={importFn:(0,()=>import("../splits/Y4EZPJ2P.js"))}'
+				},
+				outEsm: {
+					'one.js': 'import a from"./share/ZUXNQ4F7.js";export default{shared:a}',
+					'two.js': 'import a from"./share/ZUXNQ4F7.js";export default{shared:a}',
+					'splits/L22RYOUC.js': 'export default{isSplit:true}',
+					'share/ZUXNQ4F7.js': 'export default{importFn:(0,()=>import("../splits/L22RYOUC.js"))}'
+				},
+				outJs: {
+					'one.js': '{shared:require("./share/UZRSAHZL.js")}',
+					'two.js': '{shared:require("./share/UZRSAHZL.js")}',
+					'splits/Y4EZPJ2P.js': 'module.exports={isSplit:true}',
+					'share/UZRSAHZL.js': 'module.exports={importFn:(0,()=>import("../splits/Y4EZPJ2P.js"))}'
+				},
+				async validate({one, two}) {
+					expect(one).toBeObject();
+					expect(one).toHaveOwnPropertyNames(['shared']);
+					expect(two).toBeObject();
+					expect(two).toHaveOwnPropertyNames(['shared']);
+					const {shared} = one;
+					expect(shared).toBeObject();
+					expect(shared).toHaveOwnPropertyNames(['importFn']);
+					const {importFn} = shared;
+					expect(importFn).toBeFunction();
+					await expectToResolveToModuleWithDefaultExportEqualling(importFn(), {isSplit: true});
+					expect(two.shared).toBe(shared);
+				}
 			});
 		});
 

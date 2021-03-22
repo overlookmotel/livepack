@@ -239,12 +239,19 @@ function itSerializes(name, options, defaultOptions, describe, runExpectation) {
 		'`out` / `outJs` / `outEsm` / `outCjs`, `validate`, `validateOutput` or `equal` option must be provided'
 	);
 
+	const otherOptions = {};
+	for (const optName of ['entryChunkName', 'splitChunkName', 'commonChunkName']) {
+		const value = options[optName];
+		if (value != null) otherOptions[optName] = value;
+	}
+
 	const unknownKey = Object.keys(options).find(
 		key => ![
 			'in', 'out', 'outJs', 'outEsm', 'outCjs',
 			'validate', 'validateInput', 'validateOutput',
 			'format', 'equal', 'entries', 'preserveLineBreaks', 'preserveComments',
-			'minify', 'inline', 'mangle'
+			'minify', 'inline', 'mangle',
+			'entryChunkName', 'splitChunkName', 'commonChunkName'
 		].includes(key)
 	);
 	assert(!unknownKey, `Unexpected option '${unknownKey}'`);
@@ -275,6 +282,7 @@ function itSerializes(name, options, defaultOptions, describe, runExpectation) {
 			opts.comments = true;
 			opts.sourceMaps = !NO_SOURCE_MAPS;
 			opts.files = true;
+			Object.assign(opts, otherOptions);
 
 			// Get value
 			const ctx = Object.create(null);
@@ -284,11 +292,14 @@ function itSerializes(name, options, defaultOptions, describe, runExpectation) {
 			const outputFiles = entries ? serializeEntries(input, opts) : serialize(input, opts);
 
 			// Convert files to object and discard source map files
-			const outputFilesObj = {};
-			for (const {filename, content} of outputFiles) {
+			const outputFilesObj = {},
+				fileMappings = [];
+			for (const file of outputFiles) {
+				const {filename} = file;
 				if (filename.endsWith('.map')) continue;
 				assert(!outputFilesObj[filename], `Multiple outputs with same filename '${filename}'`);
-				outputFilesObj[filename] = content;
+				outputFilesObj[filename] = file.content;
+				if (file.type === 'entry') fileMappings.push({name: file.name, filename});
 			}
 
 			// Check output matches expected
@@ -309,10 +320,6 @@ function itSerializes(name, options, defaultOptions, describe, runExpectation) {
 			}
 
 			// Evaluate output
-			const fileMappings = entries
-				? Object.keys(input).map(inputName => ({name: inputName, filename: `${inputName}.js`}))
-				: [{name: 'index', filename: 'index.js'}];
-
 			let output = execFiles(outputFilesObj, fileMappings, format);
 			if (!entries) output = output.index;
 
