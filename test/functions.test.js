@@ -4695,6 +4695,42 @@ describe('Functions', () => {
 			}
 		});
 
+		itSerializes('reserved word', {
+			in: () => ({export: function() {}}.export), // eslint-disable-line object-shorthand
+			out: 'Object.defineProperties(function(){},{name:{value:"export"}})',
+			validate(fn) {
+				expect(
+					Object.getOwnPropertyNames(fn).filter(key => key !== 'arguments' && key !== 'caller')
+				).toEqual(['length', 'name', 'prototype']);
+				expect(fn.name).toBe('export');
+				expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
+			}
+		});
+
+		itSerializes('arguments', {
+			in: () => ({arguments: function() {}}.arguments), // eslint-disable-line object-shorthand
+			out: 'Object.defineProperties(function(){},{name:{value:"arguments"}})',
+			validate(fn) {
+				expect(
+					Object.getOwnPropertyNames(fn).filter(key => key !== 'arguments' && key !== 'caller')
+				).toEqual(['length', 'name', 'prototype']);
+				expect(fn.name).toBe('arguments');
+				expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
+			}
+		});
+
+		itSerializes('eval', {
+			in: () => ({eval: function() {}}.eval), // eslint-disable-line object-shorthand
+			out: 'Object.defineProperties(function(){},{name:{value:"eval"}})',
+			validate(fn) {
+				expect(
+					Object.getOwnPropertyNames(fn).filter(key => key !== 'arguments' && key !== 'caller')
+				).toEqual(['length', 'name', 'prototype']);
+				expect(fn.name).toBe('eval');
+				expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
+			}
+		});
+
 		describe('descriptor altered', () => {
 			itSerializes('value altered', {
 				in() {

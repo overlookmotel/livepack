@@ -2994,6 +2994,70 @@ describe('Classes', () => {
 		});
 	});
 
+	describe('name maintained where', () => {
+		itSerializes('unnamed class as object property', {
+			in: () => ({a: (0, class {})}),
+			out: '{a:(0,class{})}',
+			validate(obj) {
+				expect(obj).toBeObject();
+				expect(obj).toContainAllKeys(['a']);
+				const Klass = obj.a;
+				expect(Klass).toBeFunction();
+				expect(Klass.name).toBe('');
+			}
+		});
+
+		itSerializes('not valid JS identifier', {
+			in: () => ({'0a': class {}}['0a']),
+			out: 'Object.defineProperties(class{},{name:{value:"0a",configurable:true}})',
+			validate(Klass) {
+				expect(Klass).toHaveOwnPropertyNames(['length', 'prototype', 'name']);
+				expect(Klass.name).toBe('0a');
+				expect(Klass).toHaveDescriptorModifiersFor('name', false, false, true);
+			}
+		});
+
+		itSerializes('reserved word', {
+			in: () => ({export: class {}}.export),
+			out: 'Object.defineProperties(class{},{name:{value:"export",configurable:true}})',
+			validate(Klass) {
+				expect(Klass).toHaveOwnPropertyNames(['length', 'prototype', 'name']);
+				expect(Klass.name).toBe('export');
+				expect(Klass).toHaveDescriptorModifiersFor('name', false, false, true);
+			}
+		});
+
+		itSerializes('arguments', {
+			in: () => ({arguments: class {}}.arguments),
+			out: 'Object.defineProperties(class{},{name:{value:"arguments",configurable:true}})',
+			validate(Klass) {
+				expect(Klass).toHaveOwnPropertyNames(['length', 'prototype', 'name']);
+				expect(Klass.name).toBe('arguments');
+				expect(Klass).toHaveDescriptorModifiersFor('name', false, false, true);
+			}
+		});
+
+		itSerializes('eval', {
+			in: () => ({eval: class {}}.eval),
+			out: 'Object.defineProperties(class{},{name:{value:"eval",configurable:true}})',
+			validate(Klass) {
+				expect(Klass).toHaveOwnPropertyNames(['length', 'prototype', 'name']);
+				expect(Klass.name).toBe('eval');
+				expect(Klass).toHaveDescriptorModifiersFor('name', false, false, true);
+			}
+		});
+
+		itSerializes('not valid JS identifier with static method', {
+			in: () => ({'0a': class {static foo() {}}}['0a']),
+			out: 'Object.defineProperties(class{},{foo:{value:{foo(){}}.foo,writable:true,configurable:true},name:{value:"0a",configurable:true}})',
+			validate(Klass) {
+				expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'foo', 'name']);
+				expect(Klass.name).toBe('0a');
+				expect(Klass).toHaveDescriptorModifiersFor('name', false, false, true);
+			}
+		});
+	});
+
 	describe('classes nested in functions left untouched', () => {
 		describe('not extending another class', () => {
 			itSerializes('empty', {
