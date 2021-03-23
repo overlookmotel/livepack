@@ -311,18 +311,18 @@ serialize( {x: 1}, {
 
 | Option | Type | Usage | Default |
 |-|-|-|-|
-| `format` | `string` | Output format. Valid options are `js`, `cjs` or `esm` (see [below](#output-formats)). | `js` |
-| `ext` | `string` | JS file extension | `js` |
-| `mapExt` | `string` | Source maps file extension | `map` |
+| `format` | `string` | Output format. Valid options are `js`, `cjs` or `esm` (see [below](#output-formats)). | `'js'` |
+| `ext` | `string` | JS file extension | `'js'` |
+| `mapExt` | `string` | Source maps file extension | `'map'` |
 | `exec` | `boolean` | Set to `true` to treat input as a function which should be executed when the code runs (as with CLI) | `false` |
 | `minify` | `boolean` | Minify output | `true` |
 | `mangle` | `boolean` | Mangle (shorten) variable names | `options.minify` |
 | `comments` | `boolean` | Include comments in output | `!options.minify` |
 | `inline` | `boolean` | Less verbose output | `true` |
 | `files` | `boolean` | `true` to output array of files (see [below](#files)) | `false` for `serialize()`,<br />`true` for `serializeEntries()` |
-| `entryChunkName` | `string` | Template for entry point chunk names ([more info](#customizing-chunk-names)) | `[name]` |
-| `splitChunkName` | `string` | Template for split chunk names ([more info](#customizing-chunk-names)) | `[name].[hash]` |
-| `commonChunkName` | `string` | Template for common chunk names ([more info](#customizing-chunk-names)) | `common.[hash]` |
+| `entryChunkName` | `string` | Template for entry point chunk names ([more info](#customizing-chunk-names)) | `'[name]'` |
+| `splitChunkName` | `string` | Template for split chunk names ([more info](#customizing-chunk-names)) | `'[name].[hash]'` |
+| `commonChunkName` | `string` | Template for common chunk names ([more info](#customizing-chunk-names)) | `'common.[hash]'` |
 | `sourceMaps` | `boolean` or `'inline'` | Create source maps. `'inline'` adds source maps inline, `true` in separate `.map` files.<br />If `true`, `files` option must also be `true`. | `false` |
 | `outputDir` | `string` | Path to dir code would be output to. If provided, source maps will use relative paths (relative to `outputDir`). | `undefined` |
 
