@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.5
+
+Docs:
+
+* Fix formatting [fix]
+
 ## 0.3.4
 
 Bug fixes:
