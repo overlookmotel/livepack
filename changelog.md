@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.6
+
+Docs:
+
+* Formatting
+
 ## 0.3.5
 
 Docs:
