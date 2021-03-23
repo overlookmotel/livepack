@@ -313,7 +313,7 @@ serialize( {x: 1}, {
 |-|-|-|-|
 | `format` | `string` | Output format. Valid options are `js`, `cjs` or `esm` (see [below](#output-formats)). | `js` |
 | `ext` | `string` | JS file extension | `js` |
-| `mapExt` | Source map files extension | `map` |
+| `mapExt` | `string` | Source maps file extension | `map` |
 | `exec` | `boolean` | Set to `true` to treat input as a function which should be executed when the code runs (as with CLI) | `false` |
 | `minify` | `boolean` | Minify output | `true` |
 | `mangle` | `boolean` | Mangle (shorten) variable names | `options.minify` |
