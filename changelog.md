@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.4
+
+Bug fixes:
+
+* Handle functions/classes with name reserved word
+
+Dependencies:
+
+* Update dependencies
+
 ## 0.3.3
 
 Bug fixes:
