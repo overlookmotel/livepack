@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.7
+
+Bug fixes:
+
+* Prevent anonymous functions getting named by `export default`
+
 ## 0.3.6
 
 Docs:
