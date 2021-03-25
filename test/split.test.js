@@ -362,7 +362,7 @@ describe('Code splitting', () => {
 					'two.js': 'module.exports=require("./one.js")'
 				},
 				outEsm: {
-					'one.js': 'export default(()=>1)',
+					'one.js': 'export default(0,()=>1)',
 					'two.js': 'import a from"./one.js";export default a'
 				},
 				outJs: {
@@ -387,8 +387,8 @@ describe('Code splitting', () => {
 					'two.js': 'module.exports=()=>2'
 				},
 				outEsm: {
-					'one.js': 'export default(()=>1)',
-					'two.js': 'export default(()=>2)'
+					'one.js': 'export default(0,()=>1)',
+					'two.js': 'export default(0,()=>2)'
 				},
 				outJs: {
 					'one.js': '()=>1',
@@ -2014,19 +2014,19 @@ describe('Code splitting', () => {
 							type: 'entry',
 							name: 'one',
 							filename: 'one.js',
-							content: 'import a from"./common.BV7UVVU7.js";a()'
+							content: 'import a from"./common.JWCKETAR.js";a()'
 						},
 						{
 							type: 'entry',
 							name: 'two',
 							filename: 'two.js',
-							content: 'import a from"./common.BV7UVVU7.js";a()'
+							content: 'import a from"./common.JWCKETAR.js";a()'
 						},
 						{
 							type: 'common',
 							name: null,
-							filename: 'common.BV7UVVU7.js',
-							content: 'export default(()=>console.log("shared"))'
+							filename: 'common.JWCKETAR.js',
+							content: 'export default(0,()=>console.log("shared"))'
 						}
 					]);
 				});
@@ -2050,19 +2050,19 @@ describe('Code splitting', () => {
 							type: 'entry',
 							name: 'one',
 							filename: 'one.js',
-							content: 'import a from"./common.BV7UVVU7.js";(a=>()=>{a();console.log("one")})(a)()'
+							content: 'import a from"./common.JWCKETAR.js";(a=>()=>{a();console.log("one")})(a)()'
 						},
 						{
 							type: 'entry',
 							name: 'two',
 							filename: 'two.js',
-							content: 'import a from"./common.BV7UVVU7.js";a()'
+							content: 'import a from"./common.JWCKETAR.js";a()'
 						},
 						{
 							type: 'common',
 							name: null,
-							filename: 'common.BV7UVVU7.js',
-							content: 'export default(()=>console.log("shared"))'
+							filename: 'common.JWCKETAR.js',
+							content: 'export default(0,()=>console.log("shared"))'
 						}
 					]);
 				});
@@ -2086,19 +2086,19 @@ describe('Code splitting', () => {
 							type: 'entry',
 							name: 'one',
 							filename: 'one.js',
-							content: 'import a from"./common.BV7UVVU7.js";a()'
+							content: 'import a from"./common.JWCKETAR.js";a()'
 						},
 						{
 							type: 'entry',
 							name: 'two',
 							filename: 'two.js',
-							content: 'import a from"./common.BV7UVVU7.js";(a=>()=>{a();console.log("two")})(a)()'
+							content: 'import a from"./common.JWCKETAR.js";(a=>()=>{a();console.log("two")})(a)()'
 						},
 						{
 							type: 'common',
 							name: null,
-							filename: 'common.BV7UVVU7.js',
-							content: 'export default(()=>console.log("shared"))'
+							filename: 'common.JWCKETAR.js',
+							content: 'export default(0,()=>console.log("shared"))'
 						}
 					]);
 				});
@@ -2628,7 +2628,7 @@ describe('Code splitting', () => {
 					'split.QEIVLBZW.js': 'module.exports={x:1}'
 				},
 				outEsm: {
-					'one.js': 'export default(()=>import("./split.UQMAZ4OK.js"))',
+					'one.js': 'export default(0,()=>import("./split.UQMAZ4OK.js"))',
 					'split.UQMAZ4OK.js': 'export default{x:1}'
 				},
 				outJs: {
@@ -2651,7 +2651,7 @@ describe('Code splitting', () => {
 					'imported.QEIVLBZW.js': 'module.exports={x:1}'
 				},
 				outEsm: {
-					'one.js': 'export default(()=>import("./imported.UQMAZ4OK.js"))',
+					'one.js': 'export default(0,()=>import("./imported.UQMAZ4OK.js"))',
 					'imported.UQMAZ4OK.js': 'export default{x:1}'
 				},
 				outJs: {
@@ -2675,7 +2675,7 @@ describe('Code splitting', () => {
 						'split.QEIVLBZW.js': 'module.exports={x:1}'
 					},
 					outEsm: {
-						'sub/subSub/one.js': 'export default(()=>import("../../split.UQMAZ4OK.js"))',
+						'sub/subSub/one.js': 'export default(0,()=>import("../../split.UQMAZ4OK.js"))',
 						'split.UQMAZ4OK.js': 'export default{x:1}'
 					},
 					outJs: {
@@ -2697,7 +2697,7 @@ describe('Code splitting', () => {
 						'imported.QEIVLBZW.js': 'module.exports={x:1}'
 					},
 					outEsm: {
-						'sub/subSub/one.js': 'export default(()=>import("../../imported.UQMAZ4OK.js"))',
+						'sub/subSub/one.js': 'export default(0,()=>import("../../imported.UQMAZ4OK.js"))',
 						'imported.UQMAZ4OK.js': 'export default{x:1}'
 					},
 					outJs: {
@@ -2719,7 +2719,7 @@ describe('Code splitting', () => {
 						'sub/subSub/imported.QEIVLBZW.js': 'module.exports={x:1}'
 					},
 					outEsm: {
-						'one.js': 'export default(()=>import("./sub/subSub/imported.UQMAZ4OK.js"))',
+						'one.js': 'export default(0,()=>import("./sub/subSub/imported.UQMAZ4OK.js"))',
 						'sub/subSub/imported.UQMAZ4OK.js': 'export default{x:1}'
 					},
 					outJs: {
@@ -2741,7 +2741,7 @@ describe('Code splitting', () => {
 						'sub/subSub/imported.QEIVLBZW.js': 'module.exports={x:1}'
 					},
 					outEsm: {
-						'sub/one.js': 'export default(()=>import("./subSub/imported.UQMAZ4OK.js"))',
+						'sub/one.js': 'export default(0,()=>import("./subSub/imported.UQMAZ4OK.js"))',
 						'sub/subSub/imported.UQMAZ4OK.js': 'export default{x:1}'
 					},
 					outJs: {
@@ -2806,7 +2806,7 @@ describe('Code splitting', () => {
 				'imported.QEIVLBZW.js': 'module.exports={x:1}'
 			},
 			outEsm: {
-				'one.js': 'export default(()=>import("./imported.UQMAZ4OK.js"))',
+				'one.js': 'export default(0,()=>import("./imported.UQMAZ4OK.js"))',
 				'imported.UQMAZ4OK.js': 'export default{x:1}'
 			},
 			outJs: {
@@ -2894,7 +2894,7 @@ describe('Code splitting', () => {
 			outEsm: {
 				'one.js': 'import a from"./split.WSDEFBGJ.js";export default{sharedInner:a[1],sharedOuter:a[0]}',
 				'two.js': 'import a from"./split.WSDEFBGJ.js";export default{sharedInner:a[1],sharedOuter:a[0]}',
-				'three.js': 'export default(()=>import("./sharedOuter.ULKZKTSE.js"))',
+				'three.js': 'export default(0,()=>import("./sharedOuter.ULKZKTSE.js"))',
 				'split.WSDEFBGJ.js': 'const a={isSharedInner:true};export default[{isSharedOuter:true,sharedInner:a},a]',
 				'sharedOuter.ULKZKTSE.js': 'import a from"./split.WSDEFBGJ.js";export default a[0]'
 			},
@@ -2997,7 +2997,7 @@ describe('Code splitting', () => {
 					'imported.QEIVLBZW.js': 'module.exports={x:1}'
 				},
 				outEsm: {
-					'one.js': 'export default(()=>import("./imported.UQMAZ4OK.js"))',
+					'one.js': 'export default(0,()=>import("./imported.UQMAZ4OK.js"))',
 					'two.js': 'import a from"./one.js";export default a',
 					'imported.UQMAZ4OK.js': 'export default{x:1}'
 				},
@@ -3028,8 +3028,8 @@ describe('Code splitting', () => {
 					'imported.QEIVLBZW.js': 'module.exports={x:1}'
 				},
 				outEsm: {
-					'one.js': 'export default(()=>import("./imported.UQMAZ4OK.js"))',
-					'two.js': 'export default(()=>import("./imported.UQMAZ4OK.js"))',
+					'one.js': 'export default(0,()=>import("./imported.UQMAZ4OK.js"))',
+					'two.js': 'export default(0,()=>import("./imported.UQMAZ4OK.js"))',
 					'imported.UQMAZ4OK.js': 'export default{x:1}'
 				},
 				outJs: {
@@ -3061,9 +3061,9 @@ describe('Code splitting', () => {
 				'imported2.IXXBWE7H.js': 'module.exports=()=>import("./imported1.QEIVLBZW.js")'
 			},
 			outEsm: {
-				'one.js': 'export default(()=>import("./imported2.ZBOMFFWE.js"))',
+				'one.js': 'export default(0,()=>import("./imported2.UVSVXFBR.js"))',
 				'imported1.UQMAZ4OK.js': 'export default{x:1}',
-				'imported2.ZBOMFFWE.js': 'export default(()=>import("./imported1.UQMAZ4OK.js"))'
+				'imported2.UVSVXFBR.js': 'export default(0,()=>import("./imported1.UQMAZ4OK.js"))'
 			},
 			outJs: {
 				'one.js': '()=>import("./imported2.IXXBWE7H.js")',
@@ -3506,7 +3506,7 @@ describe('Code splitting', () => {
 					'split-Y4EZPJ2P.js': 'module.exports={isSplit:true}'
 				},
 				outEsm: {
-					'one.js': 'export default(()=>import("./split-L22RYOUC.js"))',
+					'one.js': 'export default(0,()=>import("./split-L22RYOUC.js"))',
 					'split-L22RYOUC.js': 'export default{isSplit:true}'
 				},
 				outJs: {
@@ -3529,7 +3529,7 @@ describe('Code splitting', () => {
 					'Y4EZPJ2P.js': 'module.exports={isSplit:true}'
 				},
 				outEsm: {
-					'one.js': 'export default(()=>import("./L22RYOUC.js"))',
+					'one.js': 'export default(0,()=>import("./L22RYOUC.js"))',
 					'L22RYOUC.js': 'export default{isSplit:true}'
 				},
 				outJs: {
@@ -3552,7 +3552,7 @@ describe('Code splitting', () => {
 					'splits/Y4EZPJ2P.js': 'module.exports={isSplit:true}'
 				},
 				outEsm: {
-					'one.js': 'export default(()=>import("./splits/L22RYOUC.js"))',
+					'one.js': 'export default(0,()=>import("./splits/L22RYOUC.js"))',
 					'splits/L22RYOUC.js': 'export default{isSplit:true}'
 				},
 				outJs: {
@@ -3576,7 +3576,7 @@ describe('Code splitting', () => {
 					'splits/Y4EZPJ2P.js': 'module.exports={isSplit:true}'
 				},
 				outEsm: {
-					'entries/one.js': 'export default(()=>import("../splits/L22RYOUC.js"))',
+					'entries/one.js': 'export default(0,()=>import("../splits/L22RYOUC.js"))',
 					'splits/L22RYOUC.js': 'export default{isSplit:true}'
 				},
 				outJs: {
@@ -3646,7 +3646,7 @@ describe('Code splitting', () => {
 					type: 'entry',
 					name: 'one',
 					filename: 'one.mjs',
-					content: 'export default(()=>import("./split.P4XPXXFO.mjs"))'
+					content: 'export default(0,()=>import("./split.P4XPXXFO.mjs"))'
 				},
 				{
 					type: 'split',

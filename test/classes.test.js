@@ -3007,6 +3007,18 @@ describe('Classes', () => {
 			}
 		});
 
+		itSerializes('unnamed class as default export', {
+			in() {
+				return class {};
+			},
+			format: 'esm',
+			out: 'export default(0,class{})',
+			validate(Klass) {
+				expect(Klass).toBeFunction();
+				expect(Klass.name).toBe('');
+			}
+		});
+
 		itSerializes('not valid JS identifier', {
 			in: () => ({'0a': class {}}['0a']),
 			out: 'Object.defineProperties(class{},{name:{value:"0a",configurable:true}})',

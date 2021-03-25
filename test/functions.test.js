@@ -4683,6 +4683,18 @@ describe('Functions', () => {
 			}
 		});
 
+		itSerializes('unnamed function as default export', {
+			in() {
+				return function() {};
+			},
+			format: 'esm',
+			out: 'export default(0,function(){})',
+			validate(fn) {
+				expect(fn).toBeFunction();
+				expect(fn.name).toBe('');
+			}
+		});
+
 		itSerializes('not valid JS identifier', {
 			in: () => ({'0a': function() {}}['0a']),
 			out: 'Object.defineProperties(function(){},{name:{value:"0a"}})',
