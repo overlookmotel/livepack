@@ -199,7 +199,7 @@ You can set options in a `livepack.config.json` file rather than on command line
 }
 ```
 
-`inputs` can be:
+`input` can be:
 
 * File path - absolute or relative to current directory
 * Array of file paths - outputs will be named same as the inputs
@@ -331,7 +331,7 @@ All these options (except `files` and `outputDir`) correspond to CLI options of 
 #### Output formats
 
 * `js` (default) - output an expression which can be inserted into code e.g. `function() {}`
-* `cjs` - output a CommonJs module e.g. `module.exports = function() {}`
+* `cjs` - output a CommonJS module e.g. `module.exports = function() {}`
 * `esm` - output an ESM module e.g. `export default function() {}`
 
 #### Files
