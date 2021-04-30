@@ -518,13 +518,13 @@ const people = [
   { firstName: 'Peewee', lastName: 'Herman', loadsMoreData: { /* ... */ } }
 ];
 
-const lazyComponents = people.map( person => (
-  React.lazy(
+const lazyComponents = people.map(
+  person => React.lazy(
     splitAsync(
       () => <PersonPage person={person} />
     )
   )
-) );
+);
 ```
 
 NB See [here](./example/react-splitAsync) for a full runnable example expanding on this.
