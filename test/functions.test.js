@@ -456,8 +456,8 @@ describe('Functions', () => {
 			describe('assignment only', () => {
 				itSerializes('direct assignment', {
 					in() {
-						let extA = {extA: 1};
-						return () => extA = 123; // eslint-disable-line no-unused-vars, no-return-assign
+						let extA = {extA: 1}; // eslint-disable-line no-unused-vars
+						return () => extA = 123; // eslint-disable-line no-return-assign
 					},
 					out: '(a=>()=>a=123)()',
 					validate(fn) {
@@ -468,8 +468,8 @@ describe('Functions', () => {
 
 				itSerializes('array destructuring', {
 					in() {
-						let extA = {extA: 1};
-						return () => [extA] = [123]; // eslint-disable-line no-unused-vars, no-return-assign
+						let extA = {extA: 1}; // eslint-disable-line no-unused-vars
+						return () => [extA] = [123]; // eslint-disable-line no-return-assign
 					},
 					out: '(a=>()=>[a]=[123])()',
 					validate(fn) {
@@ -480,8 +480,8 @@ describe('Functions', () => {
 
 				itSerializes('array rest destructuring', {
 					in() {
-						let extA = {extA: 1};
-						return () => [...extA] = [123]; // eslint-disable-line no-unused-vars, no-return-assign
+						let extA = {extA: 1}; // eslint-disable-line no-unused-vars
+						return () => [...extA] = [123]; // eslint-disable-line no-return-assign
 					},
 					out: '(a=>()=>[...a]=[123])()',
 					validate(fn) {
@@ -492,8 +492,8 @@ describe('Functions', () => {
 
 				itSerializes('object destructuring', {
 					in() {
-						let extA = {extA: 1};
-						return () => ({x: extA} = {x: 123}); // eslint-disable-line no-unused-vars, no-return-assign
+						let extA = {extA: 1}; // eslint-disable-line no-unused-vars
+						return () => ({x: extA} = {x: 123}); // eslint-disable-line no-return-assign
 					},
 					out: '(a=>()=>({x:a}={x:123}))()',
 					validate(fn) {
