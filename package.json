@@ -75,7 +75,6 @@
     "@overlookmotel/eslint-config-node": "^2.1.2",
     "coveralls": "^3.1.0",
     "cross-env": "^7.0.3",
-    "escape-string-regexp": "^4.0.0",
     "eslint": "^7.25.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-eslint-comments": "^3.2.0",

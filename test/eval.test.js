@@ -8,7 +8,7 @@
 'use strict';
 
 // Modules
-const escapeRegex = require('escape-string-regexp');
+const escapeRegex = require('lodash/escapeRegExp');
 
 // Imports
 const {
