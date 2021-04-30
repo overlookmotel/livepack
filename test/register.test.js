@@ -39,7 +39,7 @@ describe('register', () => {
 				"module.exports = require('simple-invariant');"
 			);
 			expect(js).toBe(
-				'(c=>function invariant(a,b){if(!a)throw new Error(b||c)})("Invariant failed")'
+				'(d=>function invariant(a,b){if(!a){const c=new Error(b||d);Error.captureStackTrace(c,invariant);throw c}})("Invariant failed")'
 			);
 		});
 	});
@@ -48,24 +48,6 @@ describe('register', () => {
 		const babelRegisterPath = require.resolve('@babel/register'),
 			babelCorePath = resolveFrom('@babel/core', babelRegisterPath),
 			babelTypesPath = resolveFrom('@babel/types', babelCorePath);
-
-		it('lodash/cloneDeep', async () => {
-			const path = resolveFrom('lodash/cloneDeep', babelRegisterPath);
-
-			const js = await serializeInNewProcess(
-				`module.exports = require(${JSON.stringify(path)});`
-			);
-			expect(js).toStartWith('(()=>{const a=function isObject(a){');
-		});
-
-		it('lodash/isPlainObject', async () => {
-			const path = resolveFrom('lodash/isPlainObject', babelTypesPath);
-
-			const js = await serializeInNewProcess(
-				`module.exports = require(${JSON.stringify(path)});`
-			);
-			expect(js).toStartWith('(()=>{const a=Symbol.toStringTag,');
-		});
 
 		it('to-fast-properties', async () => {
 			const path = resolveFrom('to-fast-properties', babelTypesPath);
