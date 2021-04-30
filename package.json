@@ -109,7 +109,7 @@
     "cover-main": "jest --coverage"
   },
   "engines": {
-    "node": ">=10.4"
+    "node": ">=12"
   },
   "readmeFilename": "README.md",
   "license": "MIT"

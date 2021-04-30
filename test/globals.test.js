@@ -6,21 +6,12 @@
 'use strict';
 
 // Module
-const fs = require('fs'),
-	parseNodeVersion = require('parse-node-version');
+const fs = require('fs');
 
 // Imports
 const {itSerializesEqual, stripSourceMapComment} = require('./support/index.js');
 
 // Tests
-
-const itSerializesEqualIfNode12 = parseNodeVersion(process.version).major >= 12
-	? itSerializesEqual
-	: itSerializesEqual.skip;
-
-// `globalThis` is not defined on Node v10
-// eslint-disable-next-line node/no-unsupported-features/es-builtins
-if (typeof globalThis === 'undefined') global.globalThis = global;
 
 describe('Globals', () => {
 	itSerializesEqual('`globalThis`', {
@@ -129,13 +120,12 @@ describe('Globals', () => {
 			}
 		});
 
-		// Node v10 does not use setters for `fs.ReadStream` etc
-		itSerializesEqualIfNode12('setter', {
+		itSerializesEqual('setter', {
 			in: () => Object.getOwnPropertyDescriptor(fs, 'ReadStream').set,
 			out: 'Object.getOwnPropertyDescriptor(require("fs"),"ReadStream").set',
 			validate(fn, {isOutput, input}) {
-				expect(fn).toBeFunction(); // eslint-disable-line jest/no-standalone-expect
-				if (isOutput) expect(fn).toBe(input); // eslint-disable-line jest/no-standalone-expect
+				expect(fn).toBeFunction();
+				if (isOutput) expect(fn).toBe(input);
 			}
 		});
 	});
@@ -155,16 +145,6 @@ describe('Globals', () => {
 	});
 
 	describe('shimmed globals', () => {
-		itSerializesEqual('Symbol', {
-			in: () => Symbol,
-			out: 'Symbol'
-		});
-
-		itSerializesEqual('Symbol.for', {
-			in: () => Symbol.for,
-			out: 'Symbol.for'
-		});
-
 		itSerializesEqual('Function.prototype.bind', {
 			in: () => Function.prototype.bind,
 			out: 'Function.prototype.bind'

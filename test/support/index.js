@@ -8,7 +8,6 @@
 // Modules
 const {join: pathJoin, dirname} = require('path').posix,
 	{serialize, serializeEntries} = require('livepack'),
-	parseNodeVersion = require('parse-node-version'),
 	mapValues = require('lodash/mapValues'),
 	{isString, isFullString, isObject, isFunction, isArray, isBoolean} = require('is-it-type'),
 	assert = require('simple-invariant');
@@ -31,12 +30,10 @@ module.exports = { // eslint-disable-line jest/no-export
 	createFixturesFunctions
 };
 
-// Disable source maps on Node 10 on CI as causes out of memory errors
-const {env} = process;
-const NO_SOURCE_MAPS = !!env.CI && parseNodeVersion(process.version).major < 12;
-
 // `LIVEPACK_TEST_QUICK` env runs tests in default options only
-const DEFAULT_OPTIONS = env.LIVEPACK_TEST_QUICK ? {minify: true, mangle: true, inline: true} : null;
+const DEFAULT_OPTIONS = process.env.LIVEPACK_TEST_QUICK
+	? {minify: true, mangle: true, inline: true}
+	: null;
 
 /**
  * Wrap `itSerializes` to add `.skip()`, `.only()` and `.each()` methods, as with Jest's `it()`.
@@ -280,7 +277,7 @@ function itSerializes(name, options, defaultOptions, describe, runExpectation) {
 			// Add other options
 			opts.format = format;
 			opts.comments = true;
-			opts.sourceMaps = !NO_SOURCE_MAPS;
+			opts.sourceMaps = true;
 			opts.files = true;
 			Object.assign(opts, otherOptions);
 
