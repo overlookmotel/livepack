@@ -501,10 +501,48 @@ describe('Functions', () => {
 						expect(fn()).toEqual({x: 123});
 					}
 				});
+
+				itSerializes('object rest destructuring', {
+					in() {
+						let extA = {extA: 1}; // eslint-disable-line no-unused-vars
+						return () => ({...extA} = {x: 123}); // eslint-disable-line no-return-assign
+					},
+					out: '(a=>()=>({...a}={x:123}))()',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						expect(fn()).toEqual({x: 123});
+					}
+				});
+
+				itSerializes('for in', {
+					in() {
+						let extA = {extA: 1}; // eslint-disable-line no-unused-vars
+						return () => {
+							for (extA in {}) {} // eslint-disable-line no-empty
+						};
+					},
+					out: '(a=>()=>{for(a in{}){}})()',
+					validate(fn) {
+						expect(fn).toBeFunction();
+					}
+				});
+
+				itSerializes('for of', {
+					in() {
+						let extA = {extA: 1}; // eslint-disable-line no-unused-vars
+						return () => {
+							for (extA of []) {} // eslint-disable-line no-empty
+						};
+					},
+					out: '(a=>()=>{for(a of[]){}})()',
+					validate(fn) {
+						expect(fn).toBeFunction();
+					}
+				});
 			});
 
 			describe('assignment and reading', () => {
-				itSerializes('assignment with operator which reads', {
+				itSerializes('assignment with operator which reads (+=)', {
 					in() {
 						let extA = 100;
 						return () => extA += 50; // eslint-disable-line no-return-assign
@@ -513,6 +551,18 @@ describe('Functions', () => {
 					validate(fn) {
 						expect(fn).toBeFunction();
 						expect(fn()).toBe(150);
+					}
+				});
+
+				itSerializes('assignment with operator which reads (++)', {
+					in() {
+						let extA = 100;
+						return () => ++extA;
+					},
+					out: '(a=>()=>++a)(100)',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						expect(fn()).toBe(101);
 					}
 				});
 
