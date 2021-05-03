@@ -5,12 +5,17 @@
 
 'use strict';
 
+// Modules
+const parseNodeVersion = require('parse-node-version');
+
 // Imports
 const {itSerializes, createFixturesFunctions, stripSourceMapComment} = require('./support/index.js');
 
 const {requireFixtures} = createFixturesFunctions(__filename);
 
 // Tests
+
+const describeIfNode16 = parseNodeVersion(process.version).major >= 16 ? describe : describe.skip;
 
 describe('Functions', () => {
 	describe('without scope', () => {
@@ -5389,6 +5394,623 @@ describe('Functions', () => {
 				expect(proto2).toBeFunction();
 				expect(proto2.name).toBe('D');
 			}
+		});
+	});
+
+	describe('const violations', () => {
+		itSerializes('straight assignment', {
+			in() {
+				const extA = 1;
+				let extB = 2;
+				return [
+					() => {
+						extA = extB++; // eslint-disable-line no-const-assign
+					},
+					() => extA,
+					() => extB
+				];
+			},
+			out: `(()=>{
+				const a=((b,c)=>[
+					()=>{c++,(()=>{const a=0;a=0})()},
+					()=>b,
+					()=>c
+				])(1,2);
+				return[a[0],a[1],a[2]]
+			})()`,
+			validate([setA, getA, getB]) {
+				expect(setA).toBeFunction();
+				expect(setA).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+				expect(getA()).toBe(1); // Assignment not made
+				expect(getB()).toBe(3); // Side effect executed
+			}
+		});
+
+		describe('assignment expression', () => {
+			itSerializes('+=', {
+				in() {
+					const calls = [];
+					const extA = {
+						valueOf() {
+							calls.push('valueOf');
+							return 1;
+						}
+					};
+					const f = (0, () => calls.push('f'));
+					return [
+						() => {
+							extA += f(); // eslint-disable-line no-const-assign
+						},
+						() => extA,
+						calls
+					];
+				},
+				out: `(()=>{
+					const a=[],
+						b=void 0,
+						c=((b,c,d)=>[
+							a=>b=a,
+							a=>c=a,
+							{valueOf(){d.push("valueOf");return 1}}.valueOf,
+							()=>d.push("f"),
+							()=>{
+								b+c(),(()=>{const a=0;a=0})()
+							},
+							()=>b
+						])(b,b,a);
+					c[0]({valueOf:c[2]});
+					c[1](c[3]);
+					return[c[4],c[5],a]
+				})()`,
+				validate([setA, getA, calls]) {
+					expect(setA).toBeFunction();
+					expect(setA).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+					expect(getA()).toBeObject(); // Assignment not made
+					expect(calls).toEqual(['f', 'valueOf']); // `.valueOf` called + side effect executed
+				}
+			});
+
+			itSerializes('>>>=', {
+				in() {
+					const calls = [];
+					const extA = {
+						valueOf() {
+							calls.push('valueOf');
+							return 1;
+						}
+					};
+					const f = (0, () => calls.push('f'));
+					return [
+						() => {
+							extA >>>= f(); // eslint-disable-line no-const-assign, no-bitwise
+						},
+						() => extA,
+						calls
+					];
+				},
+				out: `(()=>{
+					const a=[],
+						b=void 0,
+						c=((b,c,d)=>[
+							a=>b=a,
+							a=>c=a,
+							{valueOf(){d.push("valueOf");return 1}}.valueOf,
+							()=>d.push("f"),
+							()=>{
+								b>>>c(),
+								(()=>{const a=0;a=0})()
+							},
+							()=>b
+						])(b,b,a);
+					c[0]({valueOf:c[2]});
+					c[1](c[3]);
+					return[c[4],c[5],a]
+				})()`,
+				validate([setA, getA, calls]) {
+					expect(setA).toBeFunction();
+					expect(setA).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+					expect(getA()).toBeObject(); // Assignment not made
+					expect(calls).toEqual(['f', 'valueOf']); // `.valueOf` called + side effect executed
+				}
+			});
+
+			describeIfNode16('&&=', () => {
+				itSerializes('where executes', {
+					in() {
+						const extA = 1;
+						let extB = 2; // eslint-disable-line prefer-const
+						return [
+							// Using eval here as otherwise syntax error on Node < 16
+							eval('() => {extA &&= extB++;}'), // eslint-disable-line no-eval
+							() => extA,
+							() => extB
+						];
+					},
+					out: `(()=>{
+						const a=((b,c)=>[
+							()=>{
+								b&&(c++,(()=>{const a=0;a=0})())
+							},
+							()=>b,
+							()=>c
+						])(1,2);
+						return[a[0],a[1],a[2]]
+					})()`,
+					validate([setA, getA, getB]) {
+						expect(setA).toBeFunction();
+						expect(setA).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+						expect(getA()).toBe(1); // Assignment not made
+						expect(getB()).toBe(3); // Side effect executed
+					}
+				});
+
+				itSerializes('where does not execute', {
+					in() {
+						const extA = 0;
+						let extB = 2; // eslint-disable-line prefer-const
+						return [
+							// Using eval here as otherwise syntax error on Node < 16
+							eval('() => {extA &&= extB++;}'), // eslint-disable-line no-eval
+							() => extA,
+							() => extB
+						];
+					},
+					out: `(()=>{
+						const a=((b,c)=>[
+							()=>{
+								b&&(c++,(()=>{const a=0;a=0})())
+							},
+							()=>b,
+							()=>c
+						])(0,2);
+						return[a[0],a[1],a[2]]
+					})()`,
+					validate([setA, getA, getB]) {
+						expect(setA).toBeFunction();
+						setA(); // Does not throw
+						expect(getA()).toBe(0); // Assignment not made
+						expect(getB()).toBe(2); // Side effect not executed
+					}
+				});
+			});
+		});
+
+		describe('update expression', () => {
+			itSerializes('x++', {
+				in() {
+					const calls = [];
+					const extA = {
+						valueOf() {
+							calls.push('valueOf');
+							return 1;
+						}
+					};
+					return [
+						() => {
+							extA++; // eslint-disable-line no-const-assign
+						},
+						() => extA,
+						calls
+					];
+				},
+				out: `(()=>{
+					const a=[],
+						b=((b,c)=>[
+							a=>b=a,
+							{valueOf(){c.push("valueOf");return 1}}.valueOf,
+							()=>{
+								+b,
+								(()=>{const a=0;a=0})()
+							},
+							()=>b
+						])(void 0,a);
+					b[0]({valueOf:b[1]});
+					return[b[2],b[3],a]
+				})()`,
+				validate([setA, getA, calls]) {
+					expect(setA).toBeFunction();
+					expect(setA).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+					expect(getA()).toBeObject(); // Assignment not made
+					expect(calls).toEqual(['valueOf']); // `.valueOf` called
+				}
+			});
+
+			itSerializes('--x', {
+				in() {
+					const calls = [];
+					const extA = {
+						valueOf() {
+							calls.push('valueOf');
+							return 1;
+						}
+					};
+					return [
+						() => {
+							--extA; // eslint-disable-line no-const-assign
+						},
+						() => extA,
+						calls
+					];
+				},
+				out: `(()=>{
+					const a=[],
+						b=((b,c)=>[
+							a=>b=a,
+							{valueOf(){c.push("valueOf");return 1}}.valueOf,
+							()=>{
+								+b,
+								(()=>{const a=0;a=0})()
+							},
+							()=>b
+						])(void 0,a);
+					b[0]({valueOf:b[1]});
+					return[b[2],b[3],a]
+				})()`,
+				validate([setA, getA, calls]) {
+					expect(setA).toBeFunction();
+					expect(setA).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+					expect(getA()).toBeObject(); // Assignment not made
+					expect(calls).toEqual(['valueOf']); // `.valueOf` called
+				}
+			});
+		});
+
+		describe('assignment via deconstruction', () => {
+			itSerializes('array deconstruction', {
+				in() {
+					const extA = 1;
+					let extB = 2,
+						extC = 3;
+					const arr = [
+						() => {
+							// eslint-disable-next-line no-const-assign
+							[extB, extA, extC] = Object.defineProperty([4, 5, 6], 1, {
+								get() {
+									arr[4] = true;
+									return 5;
+								}
+							});
+						},
+						() => extA,
+						() => extB,
+						() => extC
+					];
+					return arr;
+				},
+				out: `(()=>{
+					const a=((c,d,e,f)=>[
+							a=>f=a,
+							()=>{
+								[c,{set a(a){const b=0;b=0}}.a,e]=Object.defineProperty([4,5,6],1,{
+									get(){f[4]=true;return 5}
+								})
+							},
+							()=>d,
+							()=>c,
+							()=>e
+						])(2,1,3),
+						b=[a[1],a[2],a[3],a[4]];
+					a[0](b);
+					return b
+				})()`,
+				validate(arr) {
+					const [setA, getA, getB, getC] = arr;
+					expect(setA).toBeFunction();
+					expect(setA).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+					expect(getA()).toBe(1); // Assignment not made
+					expect(getB()).toBe(4); // Prior assignment was made
+					expect(getC()).toBe(3); // Later assignment not made
+					expect(arr[4]).toBeTrue(); // Getter executed
+				}
+			});
+
+			itSerializes('array rest deconstruction', {
+				in() {
+					const extA = 1;
+					let extB = 2;
+					const arr = [
+						() => {
+							// eslint-disable-next-line no-const-assign
+							[extB, ...extA] = Object.defineProperties([4, 5, 6], {
+								1: {
+									get() {
+										arr[3] += 1;
+										return 5;
+									}
+								},
+								2: {
+									get() {
+										arr[3] += 2;
+										return 6;
+									}
+								}
+							});
+						},
+						() => extA,
+						() => extB,
+						0
+					];
+					return arr;
+				},
+				out: `(()=>{
+					const a=((c,d,e)=>[
+							a=>e=a,
+							()=>{
+								[c,...{set a(a){const b=0;b=0}}.a]=Object.defineProperties([4,5,6],{
+									1:{get(){e[3]+=1;return 5}},
+									2:{get(){e[3]+=2;return 6}}
+								})
+							},
+							()=>d,
+							()=>c
+						])(2,1),
+						b=[a[1],a[2],a[3],0];
+					a[0](b);
+					return b
+				})()`,
+				validate(arr) {
+					const [setA, getA, getB] = arr;
+					expect(setA).toBeFunction();
+					expect(setA).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+					expect(getA()).toBe(1); // Assignment not made
+					expect(getB()).toBe(4); // Prior assignment was made
+					expect(arr[3]).toBe(3); // Getters executed
+				}
+			});
+
+			itSerializes('object deconstruction', {
+				in() {
+					const extA = 1;
+					let extB = 2,
+						extC = 3;
+					const arr = [
+						() => {
+							// eslint-disable-next-line no-const-assign
+							({x: extB, y: extA, z: extC} = Object.defineProperty({x: 4, y: 5, z: 6}, 'y', {
+								get() {
+									arr[4] = true;
+									return 5;
+								}
+							}));
+						},
+						() => extA,
+						() => extB,
+						() => extC
+					];
+					return arr;
+				},
+				out: `(()=>{
+					const a=((c,d,e,f)=>[
+							a=>f=a,
+							()=>{
+								({x:c,y:{set a(a){const b=0;b=0}}.a,z:e}=Object.defineProperty({x:4,y:5,z:6},"y",{
+									get(){f[4]=true;return 5}
+								}))
+							},
+							()=>d,
+							()=>c,
+							()=>e
+						])(2,1,3),
+						b=[a[1],a[2],a[3],a[4]];
+					a[0](b);
+					return b
+				})()`,
+				validate(arr) {
+					const [setA, getA, getB, getC] = arr;
+					expect(setA).toBeFunction();
+					expect(setA).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+					expect(getA()).toBe(1); // Assignment not made
+					expect(getB()).toBe(4); // Prior assignment was made
+					expect(getC()).toBe(3); // Later assignment not made
+					expect(arr[4]).toBeTrue(); // Getter executed
+				}
+			});
+
+			itSerializes('object rest deconstruction', {
+				in() {
+					const extA = 1;
+					let extB = 2;
+					const arr = [
+						() => {
+							// eslint-disable-next-line no-const-assign
+							({x: extB, ...extA} = Object.defineProperties({x: 4, y: 5, z: 6}, {
+								y: {
+									get() {
+										arr[3] += 1;
+										return 5;
+									}
+								},
+								z: {
+									get() {
+										arr[3] += 2;
+										return 6;
+									}
+								}
+							}));
+						},
+						() => extA,
+						() => extB,
+						0
+					];
+					return arr;
+				},
+				out: `(()=>{
+					const a=((c,d,e)=>[
+							a=>e=a,
+							()=>{
+								({x:c,...{set a(a){const b=0;b=0}}.a}=Object.defineProperties({x:4,y:5,z:6},{
+									y:{get(){e[3]+=1;return 5}},
+									z:{get(){e[3]+=2;return 6}}
+								}))
+							},
+							()=>d,
+							()=>c
+						])(2,1),
+						b=[a[1],a[2],a[3],0];
+					a[0](b);
+					return b
+				})()`,
+				validate(arr) {
+					const [setA, getA, getB] = arr;
+					expect(setA).toBeFunction();
+					expect(setA).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+					expect(getA()).toBe(1); // Assignment not made
+					expect(getB()).toBe(4); // Prior assignment was made
+					expect(arr[3]).toBe(3); // Getters executed
+				}
+			});
+		});
+
+		describe('for in statement', () => {
+			itSerializes('where assignment occurs', {
+				in() {
+					const extA = 1;
+					const arr = [
+						() => {
+							for (extA in {x: 1}) { // eslint-disable-line no-const-assign
+								arr[2] = 3;
+							}
+						},
+						() => extA,
+						2
+					];
+					return arr;
+				},
+				out: `(()=>{
+					const a=((c,d)=>[
+							a=>d=a,
+							()=>{
+								for({set a(a){const b=0;b=0}}.a in{x:1}){
+									d[2]=3
+								}
+							},
+							()=>c
+						])(1),
+						b=[a[1],a[2],2];
+					a[0](b);
+					return b
+				})()`,
+				validate(arr) {
+					const [setA, getA] = arr;
+					expect(setA).toBeFunction();
+					expect(setA).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+					expect(getA()).toBe(1); // Assignment not made
+					expect(arr[2]).toBe(2); // Loop body doesn't execute
+				}
+			});
+
+			itSerializes("where assignment doesn't occur", {
+				in() {
+					const extA = 1;
+					const arr = [
+						() => {
+							for (extA in {}) { // eslint-disable-line no-const-assign
+								arr[2] = 3;
+							}
+						},
+						() => extA,
+						2
+					];
+					return arr;
+				},
+				out: `(()=>{
+					const a=((c,d)=>[
+							a=>d=a,
+							()=>{
+								for({set a(a){const b=0;b=0}}.a in{}){
+									d[2]=3
+								}
+							},
+							()=>c
+						])(1),
+						b=[a[1],a[2],2];
+					a[0](b);
+					return b
+				})()`,
+				validate(arr) {
+					const [setA, getA] = arr;
+					expect(setA).toBeFunction();
+					setA(); // Doesn't throw
+					expect(getA()).toBe(1); // Assignment not made
+					expect(arr[2]).toBe(2); // Loop body doesn't execute
+				}
+			});
+		});
+
+		describe('for of statement', () => {
+			itSerializes('where assignment occurs', {
+				in() {
+					const extA = 1;
+					const arr = [
+						() => {
+							for (extA of [1]) { // eslint-disable-line no-const-assign
+								arr[2] = 3;
+							}
+						},
+						() => extA,
+						2
+					];
+					return arr;
+				},
+				out: `(()=>{
+					const a=((c,d)=>[
+							a=>d=a,
+							()=>{
+								for({set a(a){const b=0;b=0}}.a of[1]){
+									d[2]=3
+								}
+							},
+							()=>c
+						])(1),
+						b=[a[1],a[2],2];
+					a[0](b);
+					return b
+				})()`,
+				validate(arr) {
+					const [setA, getA] = arr;
+					expect(setA).toBeFunction();
+					expect(setA).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+					expect(getA()).toBe(1); // Assignment not made
+					expect(arr[2]).toBe(2); // Loop body doesn't execute
+				}
+			});
+
+			itSerializes("where assignment doesn't occur", {
+				in() {
+					const extA = 1;
+					const arr = [
+						() => {
+							for (extA of []) { // eslint-disable-line no-const-assign
+								arr[2] = 3;
+							}
+						},
+						() => extA,
+						2
+					];
+					return arr;
+				},
+				out: `(()=>{
+					const a=((c,d)=>[
+							a=>d=a,
+							()=>{
+								for({set a(a){const b=0;b=0}}.a of[]){
+									d[2]=3
+								}
+							},
+							()=>c
+						])(1),
+						b=[a[1],a[2],2];
+					a[0](b);
+					return b
+				})()`,
+				validate(arr) {
+					const [setA, getA] = arr;
+					expect(setA).toBeFunction();
+					setA(); // Doesn't throw
+					expect(getA()).toBe(1); // Assignment not made
+					expect(arr[2]).toBe(2); // Loop body doesn't execute
+				}
+			});
 		});
 	});
 });
