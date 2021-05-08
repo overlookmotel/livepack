@@ -4321,13 +4321,10 @@ describe('Functions', () => {
 					},
 					out: `(()=>{
 						const a=(
-								()=>{
-									let a;
-									return[
-										(...b)=>a(...b),
-										c=>a=c
-									]
-								}
+								a=>[
+									(...b)=>a(...b),
+									c=>a=c
+								]
 							)(),
 							b={
 								obj:{
@@ -4377,13 +4374,10 @@ describe('Functions', () => {
 						return arr;
 					},
 					out: `(()=>{
-						const a=(0,()=>{
-								let a;
-								return[
-									(...b)=>a(...b),
-									c=>a=c
-								]
-							}),
+						const a=(0,a=>[
+								(...b)=>a(...b),
+								c=>a=c
+							]),
 							b=a(),
 							c=Object.defineProperties,
 							d=function fn(a,b,c,d,e){return[this,a,b,c,d,e]},
