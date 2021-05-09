@@ -52,6 +52,25 @@ describe('Boxed Strings', () => {
 		}
 	});
 
+	itSerializes('with `toString` property', {
+		in() {
+			const str = new String('abc');
+			str.toString = () => 'e';
+			return str;
+		},
+		out: 'Object.assign(new String("abc"),{toString:(0,()=>"e")})',
+		validate(str) {
+			expect(typeof str).toBe('object');
+			expect(str).toHavePrototype(String.prototype);
+			expect(String.prototype.toString.call(str)).toBe('abc');
+			expect(String(str)).toBe('e');
+			expect(str).toHaveLength(3);
+			expect(str.toString).toBeFunction();
+			expect(str).toHaveDescriptorModifiersFor('toString', true, true, true);
+			expect(str.toString()).toBe('e');
+		}
+	});
+
 	itSerializes('String subclass', {
 		in() {
 			class S extends String {}
@@ -97,6 +116,24 @@ describe('Boxed Booleans', () => {
 		validate(bool) {
 			expect(typeof bool).toBe('object');
 			expect(bool).toHavePrototype(Boolean.prototype);
+			expect(bool.valueOf()).toBe(false);
+		}
+	});
+
+	itSerializes('with `valueOf` property', {
+		in() {
+			const bool = new Boolean(true);
+			bool.valueOf = () => false;
+			return bool;
+		},
+		out: 'Object.assign(new Boolean(1),{valueOf:(0,()=>false)})',
+		validate(bool) {
+			expect(typeof bool).toBe('object');
+			expect(bool).toHavePrototype(Boolean.prototype);
+			expect(Boolean.prototype.valueOf.call(bool)).toBe(true);
+			expect(bool + '').toBe('false'); // eslint-disable-line prefer-template
+			expect(bool.valueOf).toBeFunction();
+			expect(bool).toHaveDescriptorModifiersFor('valueOf', true, true, true);
 			expect(bool.valueOf()).toBe(false);
 		}
 	});
@@ -216,6 +253,24 @@ describe('Boxed Numbers', () => {
 			expect(typeof num).toBe('object');
 			expect(num).toHavePrototype(Number.prototype);
 			expect(Number(num)).toBe(NaN);
+		}
+	});
+
+	itSerializes('with `valueOf` property', {
+		in() {
+			const num = new Number(1);
+			num.valueOf = () => 2;
+			return num;
+		},
+		out: 'Object.assign(new Number(1),{valueOf:(0,()=>2)})',
+		validate(num) {
+			expect(typeof num).toBe('object');
+			expect(num).toHavePrototype(Number.prototype);
+			expect(Number.prototype.valueOf.call(num)).toBe(1);
+			expect(Number(num)).toBe(2);
+			expect(num.valueOf).toBeFunction();
+			expect(num).toHaveDescriptorModifiersFor('valueOf', true, true, true);
+			expect(num.valueOf()).toBe(2);
 		}
 	});
 
