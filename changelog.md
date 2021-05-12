@@ -1,5 +1,43 @@
 # Changelog
 
+## 0.4.0
+
+Breaking changes:
+
+* Drop support for Node v10
+
+Bug fixes:
+
+* Maintain const violation errors in output
+* Don't treat object method names as variables
+* Fix identifying read-only var assignments in functions
+* Fix serialization of boxed primitives with `toString` / `valueOf` methods
+
+Improvements:
+
+* Shorten runtime function for creating bound functions with circular references
+
+Dependencies:
+
+* Update `yargs` dependency
+* Update dependencies
+
+No code:
+
+* Remove whitespace
+
+Dev:
+
+* Replace `escape-string-regexp` dev dependency with `lodash/escapeRegExp`
+* CI run tests on Node v16
+* Update dev dependencies
+
+Docs:
+
+* Fix typos [fix]
+* Fix code formatting [fix]
+* Code formatting [improve]
+
 ## 0.3.7
 
 Bug fixes:
