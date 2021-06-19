@@ -258,7 +258,9 @@ describe('Arrays', () => {
 				)`,
 				validate(arr) {
 					expect(arr).toBeArrayOfSize(3);
-					expect(arr).toEqual([1, 2, 3]);
+					expect(arr[0]).toBe(1);
+					expect(arr[1]).toBe(2);
+					expect(arr[2]).toBe(3);
 					expect(arr).toHaveDescriptorModifiersFor(0, false, true, true);
 					expect(arr).toHaveDescriptorModifiersFor(1, true, false, true);
 					expect(arr).toHaveDescriptorModifiersFor(2, true, true, false);
