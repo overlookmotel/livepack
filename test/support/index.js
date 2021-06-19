@@ -506,6 +506,7 @@ function stripLineBreaks(js) {
 /**
  * Execute function and return error it throws, or `undefined` if it doesn't throw.
  * @param {Function} fn - Function
+ * @returns {*|undefined} - Error thrown, or `undefined` if it doesn't throw
  */
 function tryCatch(fn) { // eslint-disable-line consistent-return
 	try {

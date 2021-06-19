@@ -76,7 +76,7 @@ function createFixtures(tempPath, files) {
  * Write a single fixture file to temp dir and return path to file.
  * @param {string} tempPath - Temp dir path
  * @param {string} code - File content
- * @return {string} - File path
+ * @returns {string} - File path
  */
 function createFixture(tempPath, code) {
 	return createFixtures(tempPath, {[DEFAULT_FILENAME]: code})[DEFAULT_FILENAME];
