@@ -74,7 +74,7 @@ describe('Built-in modules', () => {
 				minify: true,
 				validateOutput(obj, {outputJs, mangle, inline}) {
 					expect(stripSourceMapComment(outputJs)).toBe(
-						mangle // eslint-disable-line no-nested-ternary
+						mangle
 							? inline
 								? 'import a from"path";export default{path:a,path2:a,path3:a}'
 								: 'import a from"path";const b={path:a,path2:a,path3:a};export default b'
@@ -110,7 +110,7 @@ describe('Built-in modules', () => {
 				minify: true,
 				validateOutput(res, {outputJs, mangle, inline}) {
 					expect(stripSourceMapComment(outputJs)).toBe(
-						mangle // eslint-disable-line no-nested-ternary
+						mangle
 							? inline
 								? 'import a from"path";export default a.join'
 								: 'import a from"path";const b=a.join;export default b'
@@ -154,7 +154,7 @@ describe('Built-in modules', () => {
 				minify: true,
 				validateOutput(obj, {outputJs, mangle, inline}) {
 					expect(stripSourceMapComment(outputJs)).toBe(
-						mangle // eslint-disable-line no-nested-ternary
+						mangle
 							? inline
 								? 'import a from"path";const b=a.join;export default{pathJoin:b,pathJoin2:b,pathJoin3:b}'
 								: 'import a from"path";const b=a.join,c={pathJoin:b,pathJoin2:b,pathJoin3:b};export default c'

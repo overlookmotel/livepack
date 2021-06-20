@@ -12,7 +12,6 @@ module.exports = {
 	},
 	rules: {
 		'import/no-unresolved': ['off'],
-		'node/no-missing-require': ['off'],
 		'no-unused-vars': ['off']
 	}
 };

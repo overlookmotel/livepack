@@ -13,7 +13,6 @@ module.exports = {
 	],
 	rules: {
 		'import/no-unresolved': ['error', {ignore: ['^livepack$']}],
-		'node/no-missing-require': ['error', {allowModules: ['livepack']}],
 		'jest/no-standalone-expect': [
 			'error',
 			{

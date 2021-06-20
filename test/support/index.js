@@ -64,7 +64,7 @@ function wrapItSerializes(defaultOptions) {
 	};
 	wrapped.each = function each(cases, name, getOptions) {
 		const customExpect = createRunExpectationFn(each);
-		describe.each(cases)(name, (...caseProps) => {
+		describe.each(cases)(name, (...caseProps) => { // eslint-disable-line jest/valid-title
 			itSerializes(name, getOptions(...caseProps), defaultOptions, null, customExpect);
 		});
 	};
@@ -255,7 +255,7 @@ function itSerializes(name, options, defaultOptions, describe, runExpectation) {
 
 	// Run test function with all options
 	if (describe) {
-		describe(name, defineTests); // eslint-disable-line jest/valid-describe
+		describe(name, defineTests); // eslint-disable-line jest/valid-describe, jest/valid-title
 	} else {
 		defineTests();
 	}

@@ -108,13 +108,13 @@ describe('`__dirname`', () => {
 		out: '()=>__dirname',
 		validateOutput(fn, {outputJs, minify, inline, mangle}) {
 			expect(stripLineBreaks(outputJs)).toBe(
-				minify // eslint-disable-line no-nested-ternary
-					? inline // eslint-disable-line no-nested-ternary
+				minify
+					? inline
 						? '()=>__dirname'
 						: mangle
 							? '(()=>{const a=(0,()=>__dirname);return a})()'
 							: '(()=>{const index=(0,()=>__dirname);return index})()'
-					: inline // eslint-disable-line no-nested-ternary
+					: inline
 						? '() => __dirname'
 						: mangle
 							? '(() => {const a = (0, () => __dirname);return a;})()'
@@ -138,13 +138,13 @@ describe('`__filename`', () => {
 		out: '()=>__filename',
 		validateOutput(fn, {outputJs, minify, inline, mangle}) {
 			expect(stripLineBreaks(outputJs)).toBe(
-				minify // eslint-disable-line no-nested-ternary
-					? inline // eslint-disable-line no-nested-ternary
+				minify
+					? inline
 						? '()=>__filename'
 						: mangle
 							? '(()=>{const a=(0,()=>__filename);return a})()'
 							: '(()=>{const index=(0,()=>__filename);return index})()'
-					: inline // eslint-disable-line no-nested-ternary
+					: inline
 						? '() => __filename'
 						: mangle
 							? '(() => {const a = (0, () => __filename);return a;})()'
