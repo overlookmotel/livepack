@@ -3493,7 +3493,7 @@ describe('Functions', () => {
 				itSerializes('destructured 2 levels deep', {
 					in() {
 						function outer(x, y, ww, q, z) { // eslint-disable-line no-unused-vars
-						// eslint-disable-next-line no-shadow
+							// eslint-disable-next-line no-shadow
 							return ({vv: {v, w}}, {xx: {x}, yy: {q: y}, ...z}) => [v, w, x, y, z];
 						}
 						return outer();
