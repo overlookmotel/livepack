@@ -86,8 +86,9 @@ function createRunExpectationFn(callFn) {
 		try {
 			fn();
 		} catch (err) {
-			err.message = `${msg}${err.message.match(/\r?\n\r?\n[\s\S]*$/)[0]}`;
-			err.stack = callErr.stack;
+			const message = `${msg}${err.message.match(/\r?\n\r?\n[\s\S]*$/)[0]}`;
+			err.message = message;
+			err.stack = callErr.stack.replace(/^[^\r\n]+/, message);
 			throw err;
 		}
 	};
