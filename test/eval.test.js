@@ -391,7 +391,9 @@ describe('eval', () => {
 						const fn = require(srcPath);
 
 						// Sanity check: Ensure var used has changed prefix outside eval
-						expect(transpiledFiles[srcPath].code).toInclude('const livepack1_tracker = require("');
+						expect(transpiledFiles[srcPath].code).toInclude(
+							'const [livepack1_tracker, livepack1_getScopeId] = require("'
+						);
 
 						return fn;
 					},
@@ -407,7 +409,9 @@ describe('eval', () => {
 						const fn = require(srcPath);
 
 						// Sanity check: Ensure var used has not changed prefix outside eval
-						expect(transpiledFiles[srcPath].code).toInclude('const livepack_tracker = require("');
+						expect(transpiledFiles[srcPath].code).toInclude(
+							'const [livepack_tracker, livepack_getScopeId] = require("'
+						);
 
 						return fn;
 					},
@@ -424,7 +428,9 @@ describe('eval', () => {
 						const fn = require(srcPath);
 
 						// Sanity check: Ensure var used has changed prefix outside eval
-						expect(transpiledFiles[srcPath].code).toInclude('const livepack1_tracker = require("');
+						expect(transpiledFiles[srcPath].code).toInclude(
+							'const [livepack1_tracker, livepack1_getScopeId] = require("'
+						);
 
 						return fn;
 					},
@@ -441,7 +447,9 @@ describe('eval', () => {
 						const fn = require(srcPath);
 
 						// Sanity check: Ensure var used has changed prefix outside eval
-						expect(transpiledFiles[srcPath].code).toInclude('const livepack1_tracker = require("');
+						expect(transpiledFiles[srcPath].code).toInclude(
+							'const [livepack1_tracker, livepack1_getScopeId] = require("'
+						);
 
 						return fn;
 					},
@@ -1131,7 +1139,9 @@ describe('eval', () => {
 					const fn = require(srcPath);
 
 					// Sanity check: Ensure var used has changed prefix outside eval
-					expect(transpiledFiles[srcPath].code).toInclude('const livepack1_tracker = require("');
+					expect(transpiledFiles[srcPath].code).toInclude(
+						'const [livepack1_tracker, livepack1_getScopeId] = require("'
+					);
 
 					return fn;
 				},
@@ -1148,7 +1158,9 @@ describe('eval', () => {
 					const fn = require(srcPath);
 
 					// Sanity check: Ensure var used has not changed prefix outside eval
-					expect(transpiledFiles[srcPath].code).toInclude('const livepack_tracker = require("');
+					expect(transpiledFiles[srcPath].code).toInclude(
+						'const [livepack_tracker, livepack_getScopeId] = require("'
+					);
 
 					return fn;
 				},
@@ -1165,7 +1177,9 @@ describe('eval', () => {
 					const fn = require(srcPath);
 
 					// Sanity check: Ensure var used has not changed prefix outside eval
-					expect(transpiledFiles[srcPath].code).toInclude('const livepack_tracker = require("');
+					expect(transpiledFiles[srcPath].code).toInclude(
+						'const [livepack_tracker, livepack_getScopeId] = require("'
+					);
 
 					return fn;
 				},
@@ -1183,7 +1197,9 @@ describe('eval', () => {
 					const fn = require(srcPath);
 
 					// Sanity check: Ensure var used has changed prefix outside eval
-					expect(transpiledFiles[srcPath].code).toInclude('const livepack1_tracker = require("');
+					expect(transpiledFiles[srcPath].code).toInclude(
+						'const [livepack1_tracker, livepack1_getScopeId] = require("'
+					);
 
 					return fn;
 				},
@@ -1201,7 +1217,9 @@ describe('eval', () => {
 					const fn = require(srcPath);
 
 					// Sanity check: Ensure var used has changed prefix outside eval
-					expect(transpiledFiles[srcPath].code).toInclude('const livepack1_tracker = require("');
+					expect(transpiledFiles[srcPath].code).toInclude(
+						'const [livepack1_tracker, livepack1_getScopeId] = require("'
+					);
 
 					return fn;
 				},

@@ -22,7 +22,9 @@ describe('Internal vars created by Babel plugin do not interfere with code', () 
 			// Check the temp var name which Babel transform creates matches the one being tested for
 			// NB code for this file is injected into `files` in babel transform
 			// (see `test/support/transform.js`)
-			expect(transpiledFiles[__filename].code).toMatch(/const( )livepack1_tracker = require\("/);
+			expect(transpiledFiles[__filename].code).toMatch(
+				/const \[livepack1_tracker, livepack1_getScopeId\] = require\("/
+			);
 
 			expect(fn()).toBe('undefined');
 		}
@@ -38,7 +40,7 @@ describe('Internal vars created by Babel plugin do not interfere with code', () 
 			// NB code for this file is injected into `files` in babel transform
 			// (see `test/support/transform.js`)
 			expect(transpiledFiles[__filename].code)
-				.toMatch(/const( )livepack1_scopeId_1 = livepack1_tracker\(\);/);
+				.toMatch(/const( )livepack1_scopeId_1 = livepack1_getScopeId\(\);/);
 
 			expect(fn()).toBe('undefined');
 		}

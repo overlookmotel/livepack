@@ -9,7 +9,9 @@
 const parseNodeVersion = require('parse-node-version');
 
 // Imports
-const {itSerializes, createFixturesFunctions, stripSourceMapComment} = require('./support/index.js');
+const {
+	itSerializes, createFixturesFunctions, stripSourceMapComment, stripLineBreaks
+} = require('./support/index.js');
 
 const {requireFixtures} = createFixturesFunctions(__filename);
 
@@ -3523,6 +3525,90 @@ describe('Functions', () => {
 				});
 			});
 
+			describe('object destructuring with dynamic keys', () => {
+				itSerializes('referencing no external vars', {
+					in() {
+						return ({['x' + 'y']: x}) => x; // eslint-disable-line no-useless-concat
+					},
+					out: '({["x"+"y"]:a})=>a',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						const param = {xy: {}};
+						const res = fn(param);
+						expect(res).toBe(param.xy);
+					}
+				});
+
+				itSerializes('referencing external vars in function body', {
+					in() {
+						const extA = 10;
+						return ({['x' + 'y']: x}) => x + extA; // eslint-disable-line no-useless-concat
+					},
+					out: '(b=>({["x"+"y"]:a})=>a+b)(10)',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						const res = fn({xy: 5});
+						expect(res).toBe(15);
+					}
+				});
+
+				itSerializes('referencing external vars in dynamic key', {
+					in() {
+						const extA = 'xy';
+						return ({[extA]: x}) => x;
+					},
+					out: '(b=>({[b]:a})=>a)("xy")',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						const res = fn({xy: 5});
+						expect(res).toBe(5);
+					}
+				});
+
+				itSerializes('referencing external vars in dynamic key and function body', {
+					in() {
+						const extA = 'xy';
+						return ({[extA]: x}) => x + extA;
+					},
+					out: '(b=>({[b]:a})=>a+b)("xy")',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						const res = fn({xy: 'ab'});
+						expect(res).toBe('abxy');
+					}
+				});
+
+				itSerializes('with function in dynamic key', {
+					in() {
+						const obj = {};
+						obj.fn1 = ({[!(obj.fn2 = () => obj)]: x}) => x;
+						return obj;
+					},
+					out: `(()=>{
+						const a=(
+								b=>[
+									a=>b=a,
+									({[!(b.fn2=()=>b)]:a})=>a
+								]
+							)(),
+							b={fn1:a[1]};
+						a[0](b);
+						return b
+					})()`,
+					validate(obj) {
+						expect(obj).toBeObject();
+						const {fn1} = obj;
+						expect(fn1).toBeFunction();
+						const param = {};
+						expect(fn1({false: param})).toBe(param);
+
+						const {fn2} = obj;
+						expect(fn2).toBeFunction();
+						expect(fn2()).toBe(obj);
+					}
+				});
+			});
+
 			describe('array destructuring', () => {
 				itSerializes('destructured 1 level deep', {
 					in() {
@@ -3659,26 +3745,31 @@ describe('Functions', () => {
 				out: '(a=1,b=2)=>[a,b]',
 				validate(fn) {
 					expect(fn).toBeFunction();
-					const param1 = {};
-					const res = fn(param1);
-					expect(res).toEqual([param1, 2]);
-					expect(res[0]).toBe(param1);
+					const param = {};
+					const res = fn(param);
+					expect(res).toEqual([param, 2]);
+					expect(res[0]).toBe(param);
 				}
 			});
 
 			itSerializes('function expression', {
 				in() {
-					return function(x = 1, y = 2) {
-						return [x, y];
+					// eslint-disable-next-line no-invalid-this, prefer-rest-params
+					return function(w = 1, x = 2, y = this, z = arguments) {
+						return [w, x, y, z];
 					};
 				},
-				out: 'function(a=1,b=2){return[a,b]}',
+				out: 'function(a=1,b=2,c=this,d=arguments){return[a,b,c,d]}',
 				validate(fn) {
 					expect(fn).toBeFunction();
-					const param1 = {};
-					const res = fn(param1);
-					expect(res).toEqual([param1, 2]);
-					expect(res[0]).toBe(param1);
+					const param = {},
+						ctx = {ctx: 3};
+					const res = fn.call(ctx, param);
+					expect(res).toEqual([param, 2, ctx, expect.objectContaining({0: param, length: 1})]);
+					expect(res[0]).toBe(param);
+					expect(res[2]).toBe(ctx);
+					expect(res[3]).toBeArguments();
+					expect(res[3][0]).toBe(param);
 				}
 			});
 		});
@@ -3686,17 +3777,78 @@ describe('Functions', () => {
 		describe('referencing external vars', () => {
 			itSerializes('arrow function', {
 				in() {
-					const extA = {extA: 1},
-						extB = {extB: 2};
-					return (x = extA, y = extB) => [x, y];
+					function outer(extA, extB) {
+						// eslint-disable-next-line no-invalid-this, prefer-rest-params
+						return (w = extA, x = extB, y = this, z = arguments) => [w, x, y, z];
+					}
+					return outer.call({ctx: 3}, {extA: 1}, {extB: 2});
 				},
-				out: '((c,d)=>(a=c,b=d)=>[a,b])({extA:1},{extB:2})',
+				out: `(()=>{
+					const a={extA:1},b={extB:2};
+					return(
+						(e,f,g,h)=>(a=e,b=f,c=g,d=h)=>[a,b,c,d]
+					)(a,b,{ctx:3},function(){return arguments}(a,b))
+				})()`,
 				validate(fn) {
 					expect(fn).toBeFunction();
-					const param1 = {};
-					const res = fn(param1);
-					expect(res).toEqual([param1, {extB: 2}]);
-					expect(res[0]).toBe(param1);
+					const param = {param: 4};
+					const res = fn.call({ctx: 5}, param);
+					expect(res).toEqual([
+						param, {extB: 2}, {ctx: 3},
+						expect.objectContaining({0: {extA: 1}, 1: {extB: 2}, length: 2})
+					]);
+					expect(res[0]).toBe(param);
+					expect(res[3]).toBeArguments();
+					expect(res[3][1]).toBe(res[1]);
+				}
+			});
+
+			itSerializes('function expression', {
+				in() {
+					function outer(extA, extB) {
+						// eslint-disable-next-line no-invalid-this, prefer-rest-params
+						return function(w = extA, x = extB, y = this, z = arguments) {
+							return [w, x, y, z];
+						};
+					}
+					return outer.call({ctx: 3}, {extA: 1}, {extB: 2});
+				},
+				out: '((e,f)=>function(a=e,b=f,c=this,d=arguments){return[a,b,c,d]})({extA:1},{extB:2})',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					const param = {},
+						ctx = {ctx: 5};
+					const res = fn.call(ctx, param);
+					expect(res).toEqual([param, {extB: 2}, ctx, expect.objectContaining({0: param, length: 1})]);
+					expect(res[0]).toBe(param);
+					expect(res[2]).toBe(ctx);
+					expect(res[3]).toBeArguments();
+					expect(res[3][0]).toBe(param);
+				}
+			});
+		});
+
+		describe('referencing external vars shadowed inside function', () => {
+			itSerializes('arrow function', {
+				in() {
+					const extA = {extA: 1},
+						extB = {extB: 2};
+					return (x = extA, y = extB) => {
+						const extA = 11, extB = 22; // eslint-disable-line no-shadow, one-var-declaration-per-line
+						return [x, y, extA, extB];
+					};
+				},
+				out: '((e,f)=>(a=e,b=f)=>{const c=11,d=22;return[a,b,c,d]})({extA:1},{extB:2})',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					const param = {};
+					const res1 = fn(param);
+					expect(res1).toEqual([param, {extB: 2}, 11, 22]);
+					expect(res1[0]).toBe(param);
+
+					const res2 = fn(undefined, param);
+					expect(res2).toEqual([{extA: 1}, param, 11, 22]);
+					expect(res2[1]).toBe(param);
 				}
 			});
 
@@ -3705,16 +3857,21 @@ describe('Functions', () => {
 					const extA = {extA: 1},
 						extB = {extB: 2};
 					return function(x = extA, y = extB) {
-						return [x, y];
+						const extA = 11, extB = 22; // eslint-disable-line no-shadow, one-var-declaration-per-line
+						return [x, y, extA, extB];
 					};
 				},
-				out: '((c,d)=>function(a=c,b=d){return[a,b]})({extA:1},{extB:2})',
+				out: '((e,f)=>function(a=e,b=f){const c=11,d=22;return[a,b,c,d]})({extA:1},{extB:2})',
 				validate(fn) {
 					expect(fn).toBeFunction();
-					const param1 = {};
-					const res = fn(param1);
-					expect(res).toEqual([param1, {extB: 2}]);
-					expect(res[0]).toBe(param1);
+					const param = {};
+					const res1 = fn(param);
+					expect(res1).toEqual([param, {extB: 2}, 11, 22]);
+					expect(res1[0]).toBe(param);
+
+					const res2 = fn(undefined, param);
+					expect(res2).toEqual([{extA: 1}, param, 11, 22]);
+					expect(res2[1]).toBe(param);
 				}
 			});
 		});
@@ -6012,5 +6169,157 @@ describe('Functions', () => {
 				}
 			});
 		});
+	});
+
+	describe('placement of tracker does not disrupt normal functioning', () => {
+		const ext = 100; // eslint-disable-line no-unused-vars
+		itSerializes.each(
+			[
+				// Simple parameters
+				['() => []', 0, [], []],
+				['x => [x]', 1, [1], [1]],
+				['(x, y, z) => [x, y, z]', 3, [1, 2, 3], [1, 2, 3]],
+
+				// Object deconstruction
+				['({x}) => [x]', 1, [{x: 1}], [1]],
+				[
+					'({x = 1}) => [x]',
+					1,
+					[{}], [1],
+					[{x: 2}], [2]
+				],
+				['({["a" + ""]: x}) => [x]', 1, [{a: 1}], [1]],
+				['({}) => []', 1, [{}], []],
+
+				// Array deconstruction
+				['([x]) => [x]', 1, [[1]], [1]],
+				['([[[x]]]) => [x]', 1, [[[[1]]]], [1]],
+				['([{x}]) => [x]', 1, [[{x: 1}]], [1]],
+				['([]) => []', 1, [[]], []],
+				['([[]]) => []', 1, [[[]]], []],
+				['([{}]) => []', 1, [[{}]], []],
+
+				// Defaults
+				[
+					'(x = 1) => [x]',
+					0,
+					[], [1],
+					[2], [2]
+				],
+				[
+					'({x} = {x: 1}) => [x]',
+					0,
+					[], [1],
+					[{x: 2}], [2]
+				],
+
+				// Rest parameter
+				['(...x) => [x]', 0, [1, 2, 3], [[1, 2, 3]]],
+				['(x, y, ...z) => [x, y, z]', 2, [1, 2, 3, 4, 5], [1, 2, [3, 4, 5]]],
+				['(...[x]) => [x]', 0, [1, 2, 3], [1]],
+				[
+					'(...[x = 1]) => [x]',
+					0,
+					[], [1],
+					[2], [2]
+				],
+				['(...{1: x, length: y}) => [x, y]', 0, [1, 2, 33], [2, 3]],
+				['(...{...x}) => [x]', 0, [1, 2, 3], [{0: 1, 1: 2, 2: 3}]],
+
+				// Array rest
+				['([...x]) => [x]', 1, [[1, 2, 3], 4], [[1, 2, 3]]],
+				['([[[...x]]]) => [x]', 1, [[[[1, 2, 3], 4], 5]], [[1, 2, 3]]],
+				['([...[...[...x]]]) => [x]', 1, [[1, 2, 3]], [[1, 2, 3]]],
+				['([...x], [...y]) => [x, y]', 2, [[1, 2, 3], [4, 5, 6], 7], [[1, 2, 3], [4, 5, 6]]],
+				['([...{length}]) => [length]', 1, [[1, 2, 33]], [3]],
+				['([...{length: x}]) => [x]', 1, [[1, 2, 33]], [3]],
+				['([...[...[...{length}]]]) => [length]', 1, [[1, 2, 33]], [3]],
+
+				// Object rest
+				['({...x}) => [x]', 1, [{a: 1, b: 2}], [{a: 1, b: 2}]],
+				['({...x}, y) => [x, y]', 2, [{a: 1, b: 2}, 3], [{a: 1, b: 2}, 3]],
+				['({...x}, {y}) => [x, y]', 2, [{a: 1, b: 2}, {y: 3}], [{a: 1, b: 2}, 3]],
+				['({...x}, {...y}) => [x, y]', 2, [{a: 1, b: 2}, {c: 3, d: 4}], [{a: 1, b: 2}, {c: 3, d: 4}]]
+			],
+			'%s',
+			(fnStr, len, ...callAndReturns) => {
+				// Add reference to external var `ext` return value to ensure function is called when serializing
+				// `x => [x]` -> `x => (ext, [x])`
+				const fnStrWithExtAdded = fnStr.replace(/=> (.+?)$/, (_, ret) => `=> (ext, ${ret})`);
+
+				return {
+					in: () => eval(`(${fnStrWithExtAdded})`), // eslint-disable-line no-eval
+					validate(fn, {isOutput, outputJs, minify, mangle, inline}) {
+						expect(fn).toBeFunction();
+						expect(fn).toHaveLength(len);
+
+						for (let i = 0; i < callAndReturns.length; i += 2) {
+							const callArgs = callAndReturns[i],
+								expectedRes = callAndReturns[i + 1];
+							expect(fn(...callArgs)).toEqual(expectedRes);
+						}
+
+						if (isOutput && minify && !mangle && inline) {
+							expect(stripLineBreaks(outputJs)).toBe(
+								`(ext=>${fnStrWithExtAdded.replace(/ /g, '')})(100)`
+							);
+						}
+					}
+				};
+			}
+		);
+	});
+
+	describe('serializing function does not cause side effects', () => {
+		itSerializes.each(
+			[
+				// Defaults
+				'(x = mutate()) => x',
+				'(x, y = mutate()) => [x, y]',
+				'(y = mutate()) => [x, y]',
+				'([x = mutate()]) => x',
+				'([[x = mutate()]]) => x',
+				'({x = mutate()}) => x',
+				'({x, y = mutate()}) => [x, y]',
+				'({x: y = mutate()}) => y',
+				'([...[x = mutate()]]) => x',
+				'([...[x, y = mutate()]]) => [x, y]',
+				'([...[...[x = mutate()]]]) => x',
+				'({...x}, y = mutate()) => [x, y]',
+				'(...[x = mutate()]) => x',
+				'(...[x, y = mutate()]) => [x, y]',
+				'(...{x = mutate()}) => x',
+				'(...{x: y = mutate()}) => y',
+				'(...{x, y = mutate()}) => [x, y]',
+
+				// Computed object keys
+				'({[mutate()]: x}) => x',
+				'(x, {[mutate()]: y}) => [x, y]',
+				'({x, [mutate()]: y}) => [x, y]',
+				'({a: {[mutate()]: x}}) => x',
+				'([{[mutate()]: x}]) => x',
+				'([...{[mutate()]: x}]) => x',
+				'(...{[mutate()]: x}) => x',
+				'(...[...{[mutate()]: x}]) => x'
+			].map(fnStr => [fnStr]),
+			'%s',
+			fnStr => ({
+				in({ctx}) {
+					ctx.sideEffect = false;
+					function mutate() { // eslint-disable-line no-unused-vars
+						ctx.sideEffect = true;
+					}
+
+					return eval(`(${fnStr})`); // eslint-disable-line no-eval
+				},
+				validate(fn, {isOutput, outputJs, ctx: {sideEffect}}) {
+					expect(fn).toBeFunction();
+					expect(sideEffect).toBeFalse();
+
+					// Sanity check: `mutate()` was captured in scope
+					if (isOutput) expect(outputJs).toMatch(/\{\s*sideEffect:\s*false\s*\}/);
+				}
+			})
+		);
 	});
 });
