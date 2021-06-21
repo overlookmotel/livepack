@@ -12,7 +12,7 @@ const {join: pathJoin, basename} = require('path'),
 
 // Imports
 const {itSerializes, stripSourceMapComment, stripLineBreaks} = require('./support/index.js'),
-	internalSplitPoints = require('../lib/internal.js').splitPoints;
+	internalSplitPoints = require('../lib/shared/internal.js').splitPoints;
 
 // Tests
 

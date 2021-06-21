@@ -14,7 +14,7 @@ const escapeRegex = require('lodash/escapeRegExp');
 const {
 		itSerializes, itSerializesEqual, createFixturesFunctions, tryCatch
 	} = require('./support/index.js'),
-	{transpiledFiles} = require('../lib/internal.js');
+	{transpiledFiles} = require('../lib/shared/internal.js');
 
 const {createFixture, requireFixture} = createFixturesFunctions(__filename);
 

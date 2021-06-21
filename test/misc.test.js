@@ -7,7 +7,7 @@
 
 // Imports
 const {itSerializes} = require('./support/index.js'),
-	{transpiledFiles} = require('../lib/internal.js');
+	{transpiledFiles} = require('../lib/shared/internal.js');
 
 // Tests
 const ext = {};

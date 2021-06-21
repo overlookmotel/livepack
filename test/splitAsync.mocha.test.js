@@ -17,7 +17,7 @@ const {splitAsync} = require('../index.js'), // livepack
 
 // Imports
 const createFixturesFunctions = require('./support/fixtures.js'),
-	internalSplitPoints = require('../lib/internal.js').splitPoints;
+	internalSplitPoints = require('../lib/shared/internal.js').splitPoints;
 
 // Constants
 const NUM_FIXTURES = 5;
