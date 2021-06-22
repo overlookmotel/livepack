@@ -30,7 +30,7 @@ describe('register', () => {
 				"module.exports = require('is-it-type').isType;"
 			);
 			expect(js).toBe(
-				'(c=>function isType(a,b){return c(b)===a})(function getType(a){return typeof a})'
+				'(()=>{"use strict";return(c=>function isType(a,b){return c(b)===a})(function getType(a){return typeof a})})()'
 			);
 		});
 
@@ -39,7 +39,7 @@ describe('register', () => {
 				"module.exports = require('simple-invariant');"
 			);
 			expect(js).toBe(
-				'(d=>function invariant(a,b){if(!a){const c=new Error(b||d);Error.captureStackTrace(c,invariant);throw c}})("Invariant failed")'
+				'(d=>{"use strict";return function invariant(a,b){if(!a){const c=new Error(b||d);Error.captureStackTrace(c,invariant);throw c}}})("Invariant failed")'
 			);
 		});
 	});
@@ -55,7 +55,7 @@ describe('register', () => {
 			const js = await serializeInNewProcess(
 				`module.exports = require(${JSON.stringify(path)});`
 			);
-			expect(js).toStartWith('(()=>{const a=((c,d)=>[');
+			expect(js).toStartWith('(()=>{const a=((c,d)=>{');
 		});
 
 		it('convert-source-map', async () => {
@@ -64,7 +64,7 @@ describe('register', () => {
 			const js = await serializeInNewProcess(
 				`module.exports = require(${JSON.stringify(path)});`
 			);
-			expect(js).toStartWith('(()=>{const a=void 0,b=(');
+			expect(js).toStartWith('(()=>{"use strict";const a=void 0,b=(');
 		});
 
 		it('source-map', async () => {

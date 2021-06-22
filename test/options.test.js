@@ -3,7 +3,7 @@
  * Tests for options
  * ------------------*/
 
-'use strict';
+/* eslint-disable strict */
 
 // Modules
 const {serialize} = require('livepack');
@@ -193,14 +193,14 @@ describe('Options', () => {
 				});
 
 				it('esm', () => {
-					expect(serialize(() => {}, {exec: true, format: 'esm'})).toBe('');
+					expect(serialize(() => { 'use strict'; }, {exec: true, format: 'esm'})).toBe('');
 				});
 			});
 
 			describe('unwraps', () => {
 				it('single-line pure function', () => {
 					const fn = (0, function() { console.log('foo'); }); // eslint-disable-line no-console
-					expect(serialize(fn, {exec: true, format: 'esm'})).toBe('console.log("foo")');
+					expect(serialize(fn, {exec: true, format: 'cjs'})).toBe('console.log("foo")');
 				});
 
 				it('multiple-line pure function', () => {
@@ -208,7 +208,7 @@ describe('Options', () => {
 						const x = 'foo';
 						console.log(x); // eslint-disable-line no-console
 					});
-					expect(serialize(fn, {exec: true, format: 'esm'})).toBe('const a="foo";console.log(a)');
+					expect(serialize(fn, {exec: true, format: 'cjs'})).toBe('const a="foo";console.log(a)');
 				});
 			});
 
@@ -217,12 +217,12 @@ describe('Options', () => {
 					function fn() {
 						console.log(fn); // eslint-disable-line no-console
 					}
-					expect(serialize(fn, {exec: true, format: 'esm'})).toBe('(function fn(){console.log(fn)})()');
+					expect(serialize(fn, {exec: true, format: 'cjs'})).toBe('(function fn(){console.log(fn)})()');
 				});
 
 				it('function with parameters', () => {
 					const fn = (0, x => console.log(x)); // eslint-disable-line no-console
-					expect(serialize(fn, {exec: true, format: 'esm'})).toBe('(a=>console.log(a))()');
+					expect(serialize(fn, {exec: true, format: 'cjs'})).toBe('(a=>console.log(a))()');
 				});
 
 				it('function with external scope', () => {
@@ -230,26 +230,26 @@ describe('Options', () => {
 					const fn = (0, function() {
 						console.log(x); // eslint-disable-line no-console
 					});
-					expect(serialize(fn, {exec: true, format: 'esm'})).toBe(
+					expect(serialize(fn, {exec: true, format: 'cjs'})).toBe(
 						'(a=>function(){console.log(a)})("foo")()'
 					);
 				});
 
 				it('async function', () => {
 					const fn = (0, async () => { console.log('foo'); }); // eslint-disable-line no-console
-					expect(serialize(fn, {exec: true, format: 'esm'})).toBe('(async()=>{console.log("foo")})()');
+					expect(serialize(fn, {exec: true, format: 'cjs'})).toBe('(async()=>{console.log("foo")})()');
 				});
 
 				it('generator function', () => {
 					// eslint-disable-next-line no-console, require-yield
 					const fn = (0, function*() { console.log('foo'); });
-					expect(serialize(fn, {exec: true, format: 'esm'})).toBe('(function*(){console.log("foo")})()');
+					expect(serialize(fn, {exec: true, format: 'cjs'})).toBe('(function*(){console.log("foo")})()');
 				});
 
 				it('async generator function', () => {
 					// eslint-disable-next-line no-console, require-yield
 					const fn = (0, async function*() { console.log('foo'); });
-					expect(serialize(fn, {exec: true, format: 'esm'})).toBe(
+					expect(serialize(fn, {exec: true, format: 'cjs'})).toBe(
 						'(async function*(){console.log("foo")})()'
 					);
 				});
@@ -414,6 +414,58 @@ describe('Options', () => {
 					content: '{"files":[{"type":"entry","name":"index","filename":"index.js"}]}'
 				}
 			]);
+		});
+	});
+
+	describe('strictEnv', () => {
+		'use strict';
+
+		describe('`js` format', () => {
+			it('default', () => {
+				expect(serialize(() => 1)).toBe('()=>{"use strict";return 1}');
+			});
+
+			it('false', () => {
+				expect(serialize(() => 1, {strictEnv: false})).toBe('()=>{"use strict";return 1}');
+			});
+
+			it('true', () => {
+				expect(serialize(() => 1, {strictEnv: true})).toBe('()=>1');
+			});
+		});
+
+		describe('`cjs` format', () => {
+			it('default', () => {
+				expect(serialize(() => 1, {format: 'cjs'})).toBe('"use strict";module.exports=()=>1');
+			});
+
+			it('false', () => {
+				expect(
+					serialize(() => 1, {format: 'cjs', strictEnv: false})
+				).toBe('"use strict";module.exports=()=>1');
+			});
+
+			it('true (throws error)', () => {
+				expect(
+					() => serialize(() => 1, {format: 'cjs', strictEnv: true})
+				).toThrow(new Error('options.strictEnv cannot be true for CommonJS format'));
+			});
+		});
+
+		describe('`esm` format', () => {
+			it('default', () => {
+				expect(serialize(() => 1, {format: 'esm'})).toBe('export default(0,()=>1)');
+			});
+
+			it('false (throws error)', () => {
+				expect(
+					() => serialize(() => 1, {format: 'esm', strictEnv: false})
+				).toThrow(new Error('options.strictEnv cannot be false for ESM format'));
+			});
+
+			it('true', () => {
+				expect(serialize(() => 1, {format: 'esm', strictEnv: true})).toBe('export default(0,()=>1)');
+			});
 		});
 	});
 

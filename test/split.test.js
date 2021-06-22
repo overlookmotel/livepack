@@ -358,7 +358,7 @@ describe('Code splitting', () => {
 					};
 				},
 				outCjs: {
-					'one.js': 'module.exports=()=>1',
+					'one.js': '"use strict";module.exports=()=>1',
 					'two.js': 'module.exports=require("./one.js")'
 				},
 				outEsm: {
@@ -366,9 +366,9 @@ describe('Code splitting', () => {
 					'two.js': 'import a from"./one.js";export default a'
 				},
 				outJs: {
-					'one.js': 'require("./common.IJDQ3VBR.js")',
-					'two.js': 'require("./common.IJDQ3VBR.js")',
-					'common.IJDQ3VBR.js': 'module.exports=()=>1'
+					'one.js': 'require("./common.CXQW2IBR.js")',
+					'two.js': 'require("./common.CXQW2IBR.js")',
+					'common.CXQW2IBR.js': '"use strict";module.exports=()=>1'
 				},
 				validate({one, two}) {
 					expect(one).toBeFunction();
@@ -383,8 +383,8 @@ describe('Code splitting', () => {
 					two: (0, () => 2)
 				}),
 				outCjs: {
-					'one.js': 'module.exports=()=>1',
-					'two.js': 'module.exports=()=>2'
+					'one.js': '"use strict";module.exports=()=>1',
+					'two.js': '"use strict";module.exports=()=>2'
 				},
 				outEsm: {
 					'one.js': 'export default(0,()=>1)',
@@ -416,8 +416,8 @@ describe('Code splitting', () => {
 					};
 				},
 				outCjs: {
-					'one.js': 'module.exports=(a=>()=>a)(1)',
-					'two.js': 'module.exports=(a=>()=>a)(2)'
+					'one.js': '"use strict";module.exports=(a=>()=>a)(1)',
+					'two.js': '"use strict";module.exports=(a=>()=>a)(2)'
 				},
 				outEsm: {
 					'one.js': 'export default(a=>()=>a)(1)',
@@ -444,9 +444,9 @@ describe('Code splitting', () => {
 					};
 				},
 				outCjs: {
-					'one.js': 'module.exports=require("./common.2JJDZNGZ.js")[0]',
-					'two.js': 'module.exports=require("./common.2JJDZNGZ.js")[1]',
-					'common.2JJDZNGZ.js': 'module.exports=(a=>[()=>a,()=>a])({ext:1})'
+					'one.js': 'module.exports=require("./common.Q5KRYCH6.js")[0]',
+					'two.js': 'module.exports=require("./common.Q5KRYCH6.js")[1]',
+					'common.Q5KRYCH6.js': '"use strict";module.exports=(a=>[()=>a,()=>a])({ext:1})'
 				},
 				outEsm: {
 					'one.js': 'import a from"./common.JQX2KVJO.js";export default a[0]',
@@ -454,9 +454,9 @@ describe('Code splitting', () => {
 					'common.JQX2KVJO.js': 'export default(a=>[()=>a,()=>a])({ext:1})'
 				},
 				outJs: {
-					'one.js': 'require("./common.2JJDZNGZ.js")[0]',
-					'two.js': 'require("./common.2JJDZNGZ.js")[1]',
-					'common.2JJDZNGZ.js': 'module.exports=(a=>[()=>a,()=>a])({ext:1})'
+					'one.js': 'require("./common.Q5KRYCH6.js")[0]',
+					'two.js': 'require("./common.Q5KRYCH6.js")[1]',
+					'common.Q5KRYCH6.js': '"use strict";module.exports=(a=>[()=>a,()=>a])({ext:1})'
 				},
 				validate({one, two}) {
 					expect(one).toBeFunction();
@@ -479,9 +479,9 @@ describe('Code splitting', () => {
 					};
 				},
 				outCjs: {
-					'one.js': 'module.exports=require("./common.SR3RUJRV.js")(1)',
-					'two.js': 'module.exports=require("./common.SR3RUJRV.js")(2)',
-					'common.SR3RUJRV.js': 'module.exports=a=>()=>a'
+					'one.js': 'module.exports=require("./common.FBDKZHSA.js")(1)',
+					'two.js': 'module.exports=require("./common.FBDKZHSA.js")(2)',
+					'common.FBDKZHSA.js': '"use strict";module.exports=a=>()=>a'
 				},
 				outEsm: {
 					'one.js': 'import a from"./common.54QNI3XL.js";export default a(1)',
@@ -489,9 +489,9 @@ describe('Code splitting', () => {
 					'common.54QNI3XL.js': 'export default(a=>()=>a)'
 				},
 				outJs: {
-					'one.js': 'require("./common.SR3RUJRV.js")(1)',
-					'two.js': 'require("./common.SR3RUJRV.js")(2)',
-					'common.SR3RUJRV.js': 'module.exports=a=>()=>a'
+					'one.js': 'require("./common.FBDKZHSA.js")(1)',
+					'two.js': 'require("./common.FBDKZHSA.js")(2)',
+					'common.FBDKZHSA.js': '"use strict";module.exports=a=>()=>a'
 				},
 				validate({one, two}) {
 					expect(one).toBeFunction();
@@ -514,9 +514,9 @@ describe('Code splitting', () => {
 					};
 				},
 				outCjs: {
-					'one.js': 'module.exports={fn:require("./common.SDHB37W4.js")}',
-					'two.js': 'module.exports={fn:require("./common.SDHB37W4.js")}',
-					'common.SDHB37W4.js': 'const a=function fn(){};a.prototype.x=()=>{};module.exports=a'
+					'one.js': 'module.exports={fn:require("./common.4DCYXAQV.js")}',
+					'two.js': 'module.exports={fn:require("./common.4DCYXAQV.js")}',
+					'common.4DCYXAQV.js': '"use strict";const a=function fn(){};a.prototype.x=()=>{};module.exports=a'
 				},
 				outEsm: {
 					'one.js': 'import a from"./common.OKCNIS4G.js";export default{fn:a}',
@@ -524,9 +524,9 @@ describe('Code splitting', () => {
 					'common.OKCNIS4G.js': 'const a=function fn(){};a.prototype.x=()=>{};export default a'
 				},
 				outJs: {
-					'one.js': '{fn:require("./common.SDHB37W4.js")}',
-					'two.js': '{fn:require("./common.SDHB37W4.js")}',
-					'common.SDHB37W4.js': 'const a=function fn(){};a.prototype.x=()=>{};module.exports=a'
+					'one.js': '{fn:require("./common.4DCYXAQV.js")}',
+					'two.js': '{fn:require("./common.4DCYXAQV.js")}',
+					'common.4DCYXAQV.js': '"use strict";const a=function fn(){};a.prototype.x=()=>{};module.exports=a'
 				},
 				validate({one, two}) {
 					expect(one).toBeObject();
@@ -552,11 +552,11 @@ describe('Code splitting', () => {
 					};
 				},
 				outCjs: {
-					'one.js': 'module.exports={fn:require("./common.APMYJZX2.js")[1]}',
-					'two.js': 'module.exports={fn:require("./common.APMYJZX2.js")[1]}',
-					'three.js': 'module.exports={proto:require("./common.APMYJZX2.js")[0]}',
-					'four.js': 'module.exports={proto:require("./common.APMYJZX2.js")[0]}',
-					'common.APMYJZX2.js': 'const a=function fn(){},b=a.prototype;b.x=()=>{};module.exports=[b,a]'
+					'one.js': 'module.exports={fn:require("./common.FDM3HO4R.js")[1]}',
+					'two.js': 'module.exports={fn:require("./common.FDM3HO4R.js")[1]}',
+					'three.js': 'module.exports={proto:require("./common.FDM3HO4R.js")[0]}',
+					'four.js': 'module.exports={proto:require("./common.FDM3HO4R.js")[0]}',
+					'common.FDM3HO4R.js': '"use strict";const a=function fn(){},b=a.prototype;b.x=()=>{};module.exports=[b,a]'
 				},
 				outEsm: {
 					'one.js': 'import a from"./common.QJ676DZH.js";export default{fn:a[1]}',
@@ -566,11 +566,11 @@ describe('Code splitting', () => {
 					'common.QJ676DZH.js': 'const a=function fn(){},b=a.prototype;b.x=()=>{};export default[b,a]'
 				},
 				outJs: {
-					'one.js': '{fn:require("./common.APMYJZX2.js")[1]}',
-					'two.js': '{fn:require("./common.APMYJZX2.js")[1]}',
-					'three.js': '{proto:require("./common.APMYJZX2.js")[0]}',
-					'four.js': '{proto:require("./common.APMYJZX2.js")[0]}',
-					'common.APMYJZX2.js': 'const a=function fn(){},b=a.prototype;b.x=()=>{};module.exports=[b,a]'
+					'one.js': '{fn:require("./common.FDM3HO4R.js")[1]}',
+					'two.js': '{fn:require("./common.FDM3HO4R.js")[1]}',
+					'three.js': '{proto:require("./common.FDM3HO4R.js")[0]}',
+					'four.js': '{proto:require("./common.FDM3HO4R.js")[0]}',
+					'common.FDM3HO4R.js': '"use strict";const a=function fn(){},b=a.prototype;b.x=()=>{};module.exports=[b,a]'
 				},
 				validate({one, two, three, four}) {
 					expect(one).toBeObject();
@@ -602,9 +602,9 @@ describe('Code splitting', () => {
 					};
 				},
 				outCjs: {
-					'one.js': 'module.exports={fn:require("./common.RBUTKIKF.js")}',
-					'two.js': 'module.exports={fn:require("./common.RBUTKIKF.js")}',
-					'common.RBUTKIKF.js': 'const a=class fn{};Object.defineProperties(a.prototype,{x:{value:{x(){}}.x,writable:true,configurable:true}});module.exports=a'
+					'one.js': 'module.exports={fn:require("./common.WEQMUD7B.js")}',
+					'two.js': 'module.exports={fn:require("./common.WEQMUD7B.js")}',
+					'common.WEQMUD7B.js': '"use strict";const a=class fn{};Object.defineProperties(a.prototype,{x:{value:{x(){}}.x,writable:true,configurable:true}});module.exports=a'
 				},
 				outEsm: {
 					'one.js': 'import a from"./common.LGMIS4VH.js";export default{fn:a}',
@@ -612,9 +612,9 @@ describe('Code splitting', () => {
 					'common.LGMIS4VH.js': 'const a=class fn{};Object.defineProperties(a.prototype,{x:{value:{x(){}}.x,writable:true,configurable:true}});export default a'
 				},
 				outJs: {
-					'one.js': '{fn:require("./common.RBUTKIKF.js")}',
-					'two.js': '{fn:require("./common.RBUTKIKF.js")}',
-					'common.RBUTKIKF.js': 'const a=class fn{};Object.defineProperties(a.prototype,{x:{value:{x(){}}.x,writable:true,configurable:true}});module.exports=a'
+					'one.js': '{fn:require("./common.WEQMUD7B.js")}',
+					'two.js': '{fn:require("./common.WEQMUD7B.js")}',
+					'common.WEQMUD7B.js': '"use strict";const a=class fn{};Object.defineProperties(a.prototype,{x:{value:{x(){}}.x,writable:true,configurable:true}});module.exports=a'
 				},
 				validate({one, two}) {
 					expect(one).toBeObject();
@@ -638,9 +638,9 @@ describe('Code splitting', () => {
 					};
 				},
 				outCjs: {
-					'one.js': 'module.exports={fn:require("./common.NEPYRDEA.js")}',
-					'two.js': 'module.exports={fn:require("./common.NEPYRDEA.js")}',
-					'common.NEPYRDEA.js': 'const a=function fn(){};Object.defineProperties(a.prototype,{constructor:{enumerable:true}});module.exports=a'
+					'one.js': 'module.exports={fn:require("./common.UFKJ6QNU.js")}',
+					'two.js': 'module.exports={fn:require("./common.UFKJ6QNU.js")}',
+					'common.UFKJ6QNU.js': '"use strict";const a=function fn(){};Object.defineProperties(a.prototype,{constructor:{enumerable:true}});module.exports=a'
 				},
 				outEsm: {
 					'one.js': 'import a from"./common.ZA2H42HN.js";export default{fn:a}',
@@ -648,9 +648,9 @@ describe('Code splitting', () => {
 					'common.ZA2H42HN.js': 'const a=function fn(){};Object.defineProperties(a.prototype,{constructor:{enumerable:true}});export default a'
 				},
 				outJs: {
-					'one.js': '{fn:require("./common.NEPYRDEA.js")}',
-					'two.js': '{fn:require("./common.NEPYRDEA.js")}',
-					'common.NEPYRDEA.js': 'const a=function fn(){};Object.defineProperties(a.prototype,{constructor:{enumerable:true}});module.exports=a'
+					'one.js': '{fn:require("./common.UFKJ6QNU.js")}',
+					'two.js': '{fn:require("./common.UFKJ6QNU.js")}',
+					'common.UFKJ6QNU.js': '"use strict";const a=function fn(){};Object.defineProperties(a.prototype,{constructor:{enumerable:true}});module.exports=a'
 				},
 				validate({one, two}) {
 					expect(one).toBeObject();
@@ -677,9 +677,9 @@ describe('Code splitting', () => {
 						};
 					},
 					outCjs: {
-						'one.js': 'module.exports={fn:require("./common.OPUXPLSJ.js")}',
-						'two.js': 'module.exports={fn:require("./common.OPUXPLSJ.js")}',
-						'common.OPUXPLSJ.js': 'const a=function fn(){};Object.setPrototypeOf(a.prototype,function superFn(){}.prototype);module.exports=a'
+						'one.js': 'module.exports={fn:require("./common.ORD47DDP.js")}',
+						'two.js': 'module.exports={fn:require("./common.ORD47DDP.js")}',
+						'common.ORD47DDP.js': '"use strict";const a=function fn(){};Object.setPrototypeOf(a.prototype,function superFn(){}.prototype);module.exports=a'
 					},
 					outEsm: {
 						'one.js': 'import a from"./common.E5QCQNJB.js";export default{fn:a}',
@@ -687,9 +687,9 @@ describe('Code splitting', () => {
 						'common.E5QCQNJB.js': 'const a=function fn(){};Object.setPrototypeOf(a.prototype,function superFn(){}.prototype);export default a'
 					},
 					outJs: {
-						'one.js': '{fn:require("./common.OPUXPLSJ.js")}',
-						'two.js': '{fn:require("./common.OPUXPLSJ.js")}',
-						'common.OPUXPLSJ.js': 'const a=function fn(){};Object.setPrototypeOf(a.prototype,function superFn(){}.prototype);module.exports=a'
+						'one.js': '{fn:require("./common.ORD47DDP.js")}',
+						'two.js': '{fn:require("./common.ORD47DDP.js")}',
+						'common.ORD47DDP.js': '"use strict";const a=function fn(){};Object.setPrototypeOf(a.prototype,function superFn(){}.prototype);module.exports=a'
 					},
 					validate({one, two}) {
 						expect(one).toBeObject();
@@ -725,9 +725,9 @@ describe('Code splitting', () => {
 						};
 					},
 					outCjs: {
-						'one.js': 'module.exports={fn:require("./common.KDBOKE4U.js")}',
-						'two.js': 'module.exports={fn:require("./common.KDBOKE4U.js")}',
-						'common.KDBOKE4U.js': 'const a=function fn(){},b=Object;b.setPrototypeOf(b.defineProperties(a.prototype,{constructor:{enumerable:true}}),function superFn(){}.prototype);module.exports=a'
+						'one.js': 'module.exports={fn:require("./common.PKMKWDZJ.js")}',
+						'two.js': 'module.exports={fn:require("./common.PKMKWDZJ.js")}',
+						'common.PKMKWDZJ.js': '"use strict";const a=function fn(){},b=Object;b.setPrototypeOf(b.defineProperties(a.prototype,{constructor:{enumerable:true}}),function superFn(){}.prototype);module.exports=a'
 					},
 					outEsm: {
 						'one.js': 'import a from"./common.Y333Q7L3.js";export default{fn:a}',
@@ -735,9 +735,9 @@ describe('Code splitting', () => {
 						'common.Y333Q7L3.js': 'const a=function fn(){},b=Object;b.setPrototypeOf(b.defineProperties(a.prototype,{constructor:{enumerable:true}}),function superFn(){}.prototype);export default a'
 					},
 					outJs: {
-						'one.js': '{fn:require("./common.KDBOKE4U.js")}',
-						'two.js': '{fn:require("./common.KDBOKE4U.js")}',
-						'common.KDBOKE4U.js': 'const a=function fn(){},b=Object;b.setPrototypeOf(b.defineProperties(a.prototype,{constructor:{enumerable:true}}),function superFn(){}.prototype);module.exports=a'
+						'one.js': '{fn:require("./common.PKMKWDZJ.js")}',
+						'two.js': '{fn:require("./common.PKMKWDZJ.js")}',
+						'common.PKMKWDZJ.js': '"use strict";const a=function fn(){},b=Object;b.setPrototypeOf(b.defineProperties(a.prototype,{constructor:{enumerable:true}}),function superFn(){}.prototype);module.exports=a'
 					},
 					validate({one, two}) {
 						expect(one).toBeObject();
@@ -1667,9 +1667,9 @@ describe('Code splitting', () => {
 				validateOutput(entries, {format, outputJs}) {
 					expect(mapValues(outputJs, stripSourceMapComment)).toEqual({
 						cjs: {
-							'one.js': 'const shared=require("./common.AFEP3AX6.js"),one={shared};module.exports=one',
-							'two.js': 'const shared=require("./common.AFEP3AX6.js"),two={shared};module.exports=two',
-							'common.AFEP3AX6.js': 'const shared=function shared(){};module.exports=shared'
+							'one.js': 'const shared=require("./common.ES3UJHYS.js"),one={shared};module.exports=one',
+							'two.js': 'const shared=require("./common.ES3UJHYS.js"),two={shared};module.exports=two',
+							'common.ES3UJHYS.js': '"use strict";const shared=function shared(){};module.exports=shared'
 						},
 						esm: {
 							'one.js': 'import shared from"./common.KST74VJL.js";const one={shared};export default one',
@@ -1677,9 +1677,9 @@ describe('Code splitting', () => {
 							'common.KST74VJL.js': 'const shared=function shared(){};export default shared'
 						},
 						js: {
-							'one.js': '(()=>{const shared=require("./common.AFEP3AX6.js"),one={shared};return one})()',
-							'two.js': '(()=>{const shared=require("./common.AFEP3AX6.js"),two={shared};return two})()',
-							'common.AFEP3AX6.js': 'const shared=function shared(){};module.exports=shared'
+							'one.js': '(()=>{const shared=require("./common.ES3UJHYS.js"),one={shared};return one})()',
+							'two.js': '(()=>{const shared=require("./common.ES3UJHYS.js"),two={shared};return two})()',
+							'common.ES3UJHYS.js': '"use strict";const shared=function shared(){};module.exports=shared'
 						}
 					}[format]);
 				}
@@ -1700,9 +1700,9 @@ describe('Code splitting', () => {
 				validateOutput(entries, {format, outputJs}) {
 					expect(mapValues(outputJs, stripSourceMapComment)).toEqual({
 						cjs: {
-							'one.js': 'const shared1_shared2=require("./common.TCG6QM4J.js"),shared1=shared1_shared2[0],shared2=shared1_shared2[1],one={shared1,shared2};module.exports=one',
-							'two.js': 'const shared1_shared2=require("./common.TCG6QM4J.js"),shared1=shared1_shared2[0],shared2=shared1_shared2[1],two={shared1,shared2};module.exports=two',
-							'common.TCG6QM4J.js': 'const shared1=function shared1(){},shared2=function shared2(){},shared1_shared2=[shared1,shared2];module.exports=shared1_shared2'
+							'one.js': 'const shared1_shared2=require("./common.5WJVFRQQ.js"),shared1=shared1_shared2[0],shared2=shared1_shared2[1],one={shared1,shared2};module.exports=one',
+							'two.js': 'const shared1_shared2=require("./common.5WJVFRQQ.js"),shared1=shared1_shared2[0],shared2=shared1_shared2[1],two={shared1,shared2};module.exports=two',
+							'common.5WJVFRQQ.js': '"use strict";const shared1=function shared1(){},shared2=function shared2(){},shared1_shared2=[shared1,shared2];module.exports=shared1_shared2'
 						},
 						esm: {
 							'one.js': 'import shared1_shared2 from"./common.VSFPYWJY.js";const shared1=shared1_shared2[0],shared2=shared1_shared2[1],one={shared1,shared2};export default one',
@@ -1710,9 +1710,9 @@ describe('Code splitting', () => {
 							'common.VSFPYWJY.js': 'const shared1=function shared1(){},shared2=function shared2(){},shared1_shared2=[shared1,shared2];export default shared1_shared2'
 						},
 						js: {
-							'one.js': '(()=>{const shared1_shared2=require("./common.TCG6QM4J.js"),shared1=shared1_shared2[0],shared2=shared1_shared2[1],one={shared1,shared2};return one})()',
-							'two.js': '(()=>{const shared1_shared2=require("./common.TCG6QM4J.js"),shared1=shared1_shared2[0],shared2=shared1_shared2[1],two={shared1,shared2};return two})()',
-							'common.TCG6QM4J.js': 'const shared1=function shared1(){},shared2=function shared2(){},shared1_shared2=[shared1,shared2];module.exports=shared1_shared2'
+							'one.js': '(()=>{const shared1_shared2=require("./common.5WJVFRQQ.js"),shared1=shared1_shared2[0],shared2=shared1_shared2[1],one={shared1,shared2};return one})()',
+							'two.js': '(()=>{const shared1_shared2=require("./common.5WJVFRQQ.js"),shared1=shared1_shared2[0],shared2=shared1_shared2[1],two={shared1,shared2};return two})()',
+							'common.5WJVFRQQ.js': '"use strict";const shared1=function shared1(){},shared2=function shared2(){},shared1_shared2=[shared1,shared2];module.exports=shared1_shared2'
 						}
 					}[format]);
 				}
@@ -2854,7 +2854,7 @@ describe('Code splitting', () => {
 					};
 				},
 				outCjs: {
-					'one.js': 'module.exports=(a=>()=>a)(()=>import("./imported.QEIVLBZW.js"))',
+					'one.js': '"use strict";module.exports=(a=>()=>a)(()=>import("./imported.QEIVLBZW.js"))',
 					'imported.QEIVLBZW.js': 'module.exports={x:1}'
 				},
 				outEsm: {
@@ -3673,7 +3673,7 @@ describe('Code splitting', () => {
 						type: 'entry',
 						name: 'one',
 						filename: 'one.js',
-						content: 'module.exports=[()=>1,require("./split.3OES3VXY.js")]\n//# sourceMappingURL=one.js.map'
+						content: '"use strict";module.exports=[()=>1,require("./split.FZRTVU2Z.js")]\n//# sourceMappingURL=one.js.map'
 					},
 					{
 						type: 'source map',
@@ -3684,13 +3684,13 @@ describe('Code splitting', () => {
 					{
 						type: 'split',
 						name: null,
-						filename: 'split.3OES3VXY.js',
-						content: 'module.exports=()=>2\n//# sourceMappingURL=split.3OES3VXY.js.map'
+						filename: 'split.FZRTVU2Z.js',
+						content: '"use strict";module.exports=()=>2\n//# sourceMappingURL=split.FZRTVU2Z.js.map'
 					},
 					{
 						type: 'source map',
 						name: null,
-						filename: 'split.3OES3VXY.js.map',
+						filename: 'split.FZRTVU2Z.js.map',
 						content: expect.stringContaining('{"version":3,')
 					}
 				]);
@@ -3708,7 +3708,7 @@ describe('Code splitting', () => {
 						type: 'entry',
 						name: 'one',
 						filename: 'one.js',
-						content: 'module.exports=[()=>1,require("./split.3OES3VXY.js")]\n//# sourceMappingURL=one.js.map'
+						content: '"use strict";module.exports=[()=>1,require("./split.FZRTVU2Z.js")]\n//# sourceMappingURL=one.js.map'
 					},
 					{
 						type: 'source map',
@@ -3719,13 +3719,13 @@ describe('Code splitting', () => {
 					{
 						type: 'split',
 						name: null,
-						filename: 'split.3OES3VXY.js',
-						content: 'module.exports=()=>2\n//# sourceMappingURL=split.3OES3VXY.js.map'
+						filename: 'split.FZRTVU2Z.js',
+						content: '"use strict";module.exports=()=>2\n//# sourceMappingURL=split.FZRTVU2Z.js.map'
 					},
 					{
 						type: 'source map',
 						name: null,
-						filename: 'split.3OES3VXY.js.map',
+						filename: 'split.FZRTVU2Z.js.map',
 						content: expect.stringContaining('{"version":3,')
 					}
 				]);
@@ -3743,7 +3743,7 @@ describe('Code splitting', () => {
 						type: 'entry',
 						name: 'one',
 						filename: 'one.js',
-						content: 'module.exports=[()=>1,require("./split.3OES3VXY.js")]\n//# sourceMappingURL=one.js.map'
+						content: '"use strict";module.exports=[()=>1,require("./split.FZRTVU2Z.js")]\n//# sourceMappingURL=one.js.map'
 					},
 					{
 						type: 'source map',
@@ -3754,13 +3754,13 @@ describe('Code splitting', () => {
 					{
 						type: 'split',
 						name: null,
-						filename: 'split.3OES3VXY.js',
-						content: 'module.exports=()=>2\n//# sourceMappingURL=split.3OES3VXY.js.map'
+						filename: 'split.FZRTVU2Z.js',
+						content: '"use strict";module.exports=()=>2\n//# sourceMappingURL=split.FZRTVU2Z.js.map'
 					},
 					{
 						type: 'source map',
 						name: null,
-						filename: 'split.3OES3VXY.js.map',
+						filename: 'split.FZRTVU2Z.js.map',
 						content: expect.stringContaining('{"version":3,')
 					}
 				]);
@@ -3778,7 +3778,7 @@ describe('Code splitting', () => {
 						type: 'entry',
 						name: 'one',
 						filename: 'one.js',
-						content: 'module.exports=[()=>1,require("./split.3OES3VXY.js")]\n//# sourceMappingURL=one.js.map'
+						content: '"use strict";module.exports=[()=>1,require("./split.FZRTVU2Z.js")]\n//# sourceMappingURL=one.js.map'
 					},
 					{
 						type: 'source map',
@@ -3789,13 +3789,13 @@ describe('Code splitting', () => {
 					{
 						type: 'split',
 						name: null,
-						filename: 'split.3OES3VXY.js',
-						content: 'module.exports=()=>2\n//# sourceMappingURL=split.3OES3VXY.js.map'
+						filename: 'split.FZRTVU2Z.js',
+						content: '"use strict";module.exports=()=>2\n//# sourceMappingURL=split.FZRTVU2Z.js.map'
 					},
 					{
 						type: 'source map',
 						name: null,
-						filename: 'split.3OES3VXY.js.map',
+						filename: 'split.FZRTVU2Z.js.map',
 						content: expect.stringContaining('{"version":3,')
 					}
 				]);
@@ -3815,7 +3815,7 @@ describe('Code splitting', () => {
 						type: 'entry',
 						name: 'sub/one',
 						filename: 'sub/one.js',
-						content: 'module.exports=[()=>1,require("../sub2/split1.3OES3VXY.js")]\n//# sourceMappingURL=one.js.map'
+						content: '"use strict";module.exports=[()=>1,require("../sub2/split1.FZRTVU2Z.js")]\n//# sourceMappingURL=one.js.map'
 					},
 					{
 						type: 'source map',
@@ -3826,13 +3826,13 @@ describe('Code splitting', () => {
 					{
 						type: 'split',
 						name: 'sub2/split1',
-						filename: 'sub2/split1.3OES3VXY.js',
-						content: 'module.exports=()=>2\n//# sourceMappingURL=split1.3OES3VXY.js.map'
+						filename: 'sub2/split1.FZRTVU2Z.js',
+						content: '"use strict";module.exports=()=>2\n//# sourceMappingURL=split1.FZRTVU2Z.js.map'
 					},
 					{
 						type: 'source map',
 						name: null,
-						filename: 'sub2/split1.3OES3VXY.js.map',
+						filename: 'sub2/split1.FZRTVU2Z.js.map',
 						content: expect.stringContaining('{"version":3,')
 					}
 				]);
@@ -3850,7 +3850,7 @@ describe('Code splitting', () => {
 						type: 'entry',
 						name: 'sub/one',
 						filename: 'sub/one.js',
-						content: 'module.exports=[()=>1,require("../sub2/split1.3OES3VXY.js")]\n//# sourceMappingURL=one.js.map'
+						content: '"use strict";module.exports=[()=>1,require("../sub2/split1.FZRTVU2Z.js")]\n//# sourceMappingURL=one.js.map'
 					},
 					{
 						type: 'source map',
@@ -3861,13 +3861,13 @@ describe('Code splitting', () => {
 					{
 						type: 'split',
 						name: 'sub2/split1',
-						filename: 'sub2/split1.3OES3VXY.js',
-						content: 'module.exports=()=>2\n//# sourceMappingURL=split1.3OES3VXY.js.map'
+						filename: 'sub2/split1.FZRTVU2Z.js',
+						content: '"use strict";module.exports=()=>2\n//# sourceMappingURL=split1.FZRTVU2Z.js.map'
 					},
 					{
 						type: 'source map',
 						name: null,
-						filename: 'sub2/split1.3OES3VXY.js.map',
+						filename: 'sub2/split1.FZRTVU2Z.js.map',
 						content: expect.stringContaining('{"version":3,')
 					}
 				]);
@@ -3885,7 +3885,7 @@ describe('Code splitting', () => {
 						type: 'entry',
 						name: 'sub/one',
 						filename: 'sub/one.js',
-						content: 'module.exports=[()=>1,require("../sub2/split1.3OES3VXY.js")]\n//# sourceMappingURL=one.js.map'
+						content: '"use strict";module.exports=[()=>1,require("../sub2/split1.FZRTVU2Z.js")]\n//# sourceMappingURL=one.js.map'
 					},
 					{
 						type: 'source map',
@@ -3896,13 +3896,13 @@ describe('Code splitting', () => {
 					{
 						type: 'split',
 						name: 'sub2/split1',
-						filename: 'sub2/split1.3OES3VXY.js',
-						content: 'module.exports=()=>2\n//# sourceMappingURL=split1.3OES3VXY.js.map'
+						filename: 'sub2/split1.FZRTVU2Z.js',
+						content: '"use strict";module.exports=()=>2\n//# sourceMappingURL=split1.FZRTVU2Z.js.map'
 					},
 					{
 						type: 'source map',
 						name: null,
-						filename: 'sub2/split1.3OES3VXY.js.map',
+						filename: 'sub2/split1.FZRTVU2Z.js.map',
 						content: expect.stringContaining('{"version":3,')
 					}
 				]);
@@ -3920,7 +3920,7 @@ describe('Code splitting', () => {
 						type: 'entry',
 						name: 'sub/one',
 						filename: 'sub/one.js',
-						content: 'module.exports=[()=>1,require("../sub2/split1.3OES3VXY.js")]\n//# sourceMappingURL=one.js.map'
+						content: '"use strict";module.exports=[()=>1,require("../sub2/split1.FZRTVU2Z.js")]\n//# sourceMappingURL=one.js.map'
 					},
 					{
 						type: 'source map',
@@ -3931,13 +3931,13 @@ describe('Code splitting', () => {
 					{
 						type: 'split',
 						name: 'sub2/split1',
-						filename: 'sub2/split1.3OES3VXY.js',
-						content: 'module.exports=()=>2\n//# sourceMappingURL=split1.3OES3VXY.js.map'
+						filename: 'sub2/split1.FZRTVU2Z.js',
+						content: '"use strict";module.exports=()=>2\n//# sourceMappingURL=split1.FZRTVU2Z.js.map'
 					},
 					{
 						type: 'source map',
 						name: null,
-						filename: 'sub2/split1.3OES3VXY.js.map',
+						filename: 'sub2/split1.FZRTVU2Z.js.map',
 						content: expect.stringContaining('{"version":3,')
 					}
 				]);

@@ -320,13 +320,14 @@ serialize( {x: 1}, {
 | `comments` | `boolean` | Include comments in output | `!options.minify` |
 | `inline` | `boolean` | Less verbose output | `true` |
 | `files` | `boolean` | `true` to output array of files (see [below](#files)) | `false` for `serialize()`,<br />`true` for `serializeEntries()` |
+| `strictEnv` | `boolean` | `true` if environment code will execute in is strict mode (only relevant for `js` format) | `false` for `js` or `cjs` format, `true` for `esm` |
 | `entryChunkName` | `string` | Template for entry point chunk names ([more info](#customizing-chunk-names)) | `'[name]'` |
 | `splitChunkName` | `string` | Template for split chunk names ([more info](#customizing-chunk-names)) | `'[name].[hash]'` |
 | `commonChunkName` | `string` | Template for common chunk names ([more info](#customizing-chunk-names)) | `'common.[hash]'` |
 | `sourceMaps` | `boolean` or `'inline'` | Create source maps. `'inline'` adds source maps inline, `true` in separate `.map` files.<br />If `true`, `files` option must also be `true`. | `false` |
 | `outputDir` | `string` | Path to dir code would be output to. If provided, source maps will use relative paths (relative to `outputDir`). | `undefined` |
 
-All these options (except `files` and `outputDir`) correspond to CLI options of the same names. Unlike the CLI, in the programmatic API `exec` and `files` options default to `false` and `minify` to `true`.
+All these options (except `files`, `outputDir` and `strictEnv`) correspond to CLI options of the same names. Unlike the CLI, in the programmatic API `exec` and `files` options default to `false` and `minify` to `true`.
 
 #### Output formats
 

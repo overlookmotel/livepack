@@ -4829,11 +4829,13 @@ describe('Functions', () => {
 		in() {
 			return requireFixtures({
 				'index.js': `
+					'use strict';
 					const inner1 = require('./1.js'),
 						{inner2, inner3} = require('./2.js');
 					module.exports = {inner1, inner2, inner3};
 				`,
 				'1.js': `
+					'use strict';
 					const extA = {extA1: 1};
 					function outer(extB) {
 						return () => [extA, extB];
@@ -4841,6 +4843,7 @@ describe('Functions', () => {
 					module.exports = outer({extB1: 2});
 				`,
 				'2.js': `
+					'use strict';
 					const inner3 = require('./3.js');
 					const extA = {extA2: 3};
 					function outer(extB) {
@@ -4850,6 +4853,7 @@ describe('Functions', () => {
 					module.exports = {inner2, inner3};
 				`,
 				'3.js': `
+					'use strict';
 					const extA = {extA3: 5};
 					function outer(extB) {
 						return () => [extA, extB];

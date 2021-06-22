@@ -7,7 +7,7 @@
 // NB No strict mode to allow tests for when `arguments` is a user-defined var.
 
 // Imports
-const {itSerializes} = require('./support/index.js');
+const itSerializes = require('./support/index.js').itSerializes.withOptions({strictEnv: false});
 
 // Tests
 

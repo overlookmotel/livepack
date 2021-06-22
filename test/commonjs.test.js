@@ -27,8 +27,11 @@ describe('`module`', () => {
 
 	itSerializes('from another module', {
 		in: () => requireFixtures({
-			'index.js': "const otherModule = require('./other.js');\n"
-				+ 'module.exports = () => otherModule;',
+			'index.js': `
+				'use strict';
+				const otherModule = require('./other.js');
+				module.exports = () => otherModule;
+			`,
 			'other.js': 'module.exports = module;'
 		}),
 		out: '(()=>{const a={};a.exports=a;return(a=>()=>a)(a)})()',
@@ -43,7 +46,7 @@ describe('`module`', () => {
 	});
 
 	itSerializes('in scope of function', {
-		in: () => requireFixture('module.exports = () => module;'),
+		in: () => requireFixture("'use strict';module.exports = () => module;"),
 		out: '(()=>{const a={},b=(a=>()=>a)(a);a.exports=b;return b})()',
 		validate(fn, {isOutput}) {
 			expect(fn).toBeFunction();
@@ -55,10 +58,11 @@ describe('`module`', () => {
 	});
 
 	itSerializes('var reassigned', {
-		in: () => requireFixture(
-			'module.exports = () => module;\n'
-			+ 'module = 123;'
-		),
+		in: () => requireFixture(`
+			'use strict';
+			module.exports = () => module;
+			module = 123;
+		`),
 		out: '(a=>()=>a)(123)',
 		validate(fn) {
 			expect(fn).toBeFunction();
@@ -73,10 +77,11 @@ describe('`exports`', () => {
 			// `Object.setPrototypeOf` necessary because Jest creates `module.exports` in another
 			// execution context, so prototype of `export` object is a *different* `Object.prototype`.
 			// This is just an artefact of the testing environment - does not affect real code.
-			'Object.setPrototypeOf(exports, Object.prototype);\n'
-			+ 'exports.x = () => {\n'
-			+ '  exports.y = 123;\n'
-			+ '};'
+			`'use strict';
+			Object.setPrototypeOf(exports, Object.prototype);
+			exports.x = () => {
+				exports.y = 123;
+			};`
 		),
 		out: '(()=>{const a=(a=>[b=>a=b,()=>{a.y=123}])(),b={x:a[1]};a[0](b);return b})()',
 		validate(exp, {isInput}) {

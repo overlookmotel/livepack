@@ -120,6 +120,7 @@ function createRunExpectationFn(callFn) {
  * @param {boolean} [options.minify] - If defined, only runs with that option
  * @param {boolean} [options.inline] - If defined, only runs with that option
  * @param {boolean} [options.mangle] - If defined, only runs with that option
+ * @param {boolean} [options.strictEnv] - If defined, calls `serialize()` with that option
  * @param {string} [options.entryChunkName] - If defined, calls `serialize()` with that option
  * @param {string} [options.splitChunkName] - If defined, calls `serialize()` with that option
  * @param {string} [options.commonChunkName] - If defined, calls `serialize()` with that option
@@ -245,7 +246,7 @@ function itSerializes(name, options, defaultOptions, describe, runExpectation) {
 	);
 
 	const otherOptions = {};
-	for (const optName of ['entryChunkName', 'splitChunkName', 'commonChunkName']) {
+	for (const optName of ['strictEnv', 'entryChunkName', 'splitChunkName', 'commonChunkName']) {
 		const value = options[optName];
 		if (value != null) otherOptions[optName] = value;
 	}
@@ -256,6 +257,7 @@ function itSerializes(name, options, defaultOptions, describe, runExpectation) {
 			'validate', 'validateInput', 'validateOutput',
 			'format', 'equal', 'entries', 'preserveLineBreaks', 'preserveComments',
 			'minify', 'inline', 'mangle',
+			'strictEnv',
 			'entryChunkName', 'splitChunkName', 'commonChunkName'
 		].includes(key)
 	);
@@ -287,6 +289,7 @@ function itSerializes(name, options, defaultOptions, describe, runExpectation) {
 			opts.comments = true;
 			opts.sourceMaps = true;
 			opts.files = true;
+			if (format !== 'cjs') opts.strictEnv = true;
 			Object.assign(opts, otherOptions);
 
 			// Get value
@@ -325,7 +328,7 @@ function itSerializes(name, options, defaultOptions, describe, runExpectation) {
 			}
 
 			// Evaluate output
-			let output = execFiles(outputFilesObj, fileMappings, format);
+			let output = execFiles(outputFilesObj, fileMappings, format, opts.strictEnv);
 			if (!entries) output = output.index;
 
 			// Check output equals input
@@ -392,9 +395,10 @@ function itAllOptions(options, fn) {
  * @param {Object} filesObj - Javascript code files
  * @param {Array<Object>} fileMappings - Mappings of name to filename for files to execute
  * @param {string} format - 'js' / 'cjs' / 'esm'
+ * @param {boolean} strictEnv - `true` if to run in strict mode
  * @returns {Object} - Result of evaluation
  */
-function execFiles(filesObj, fileMappings, format) {
+function execFiles(filesObj, fileMappings, format, strictEnv) {
 	const moduleCache = Object.create(null),
 		entryFilenames = new Set(fileMappings.map(fileMapping => fileMapping.filename));
 
@@ -445,7 +449,8 @@ function execFiles(filesObj, fileMappings, format) {
 		assert(js, `Attempted to require non-existent file '${filename}'`);
 
 		moduleObj.default = execFile(
-			js, localRequire, localImport, (format === 'js' && !isEntry) ? 'cjs' : format
+			js, localRequire, localImport, (format === 'js' && !isEntry) ? 'cjs' : format,
+			isEntry ? strictEnv : format === 'esm'
 		);
 		return moduleObj;
 	}
@@ -457,10 +462,13 @@ function execFiles(filesObj, fileMappings, format) {
 	return resObj;
 }
 
-function execFile(js, require, importFn, format) {
+/* eslint-disable no-new-func */
+function execFile(js, require, importFn, format, isStrictMode) {
+	if (format === 'js') js = `return ${js}`;
+	if (isStrictMode) js = `'use strict';${js}`;
+
 	if (format === 'esm') {
 		const proxy = {exports: undefined, require, import: importFn};
-		// eslint-disable-next-line no-new-func
 		new Function(
 			'$__proxy',
 			js.replace(/(^|;\n*)export default/, (_, before) => `${before}$__proxy.exports=`)
@@ -478,16 +486,14 @@ function execFile(js, require, importFn, format) {
 	js = js.replace(/(^|[^A-Za-z0_$])import\(/g, (_, before) => `${before}require.$__import(`);
 
 	// JS
-	if (format === 'js') {
-		return new Function('require', `return ${js}`)(require); // eslint-disable-line no-new-func
-	}
+	if (format === 'js') return new Function('require', js)(require);
 
 	// CJS
 	const mod = {exports: {}};
-	// eslint-disable-next-line no-new-func
 	new Function('module', 'exports', 'require', js)(mod, mod.exports, require);
 	return mod.exports;
 }
+/* eslint-enable no-new-func */
 
 /*
  * Code sanitization functions.

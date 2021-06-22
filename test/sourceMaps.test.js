@@ -185,7 +185,9 @@ describe('Source maps', () => {
 			const outputDirPath = pathJoin(srcPath, '../build');
 
 			const fn = require(srcPath);
-			const out = serialize(fn, {sourceMaps: true, files: true, outputDir: outputDirPath});
+			const out = serialize(
+				fn, {sourceMaps: true, files: true, outputDir: outputDirPath, strictEnv: true}
+			);
 
 			expect(out).toEqual([
 				{
@@ -250,7 +252,9 @@ describe('Source maps', () => {
 			const outputDirPath = pathJoin(srcPath, '../build');
 
 			const fn = require(srcPath);
-			const out = serialize(fn, {sourceMaps: true, files: true, outputDir: outputDirPath});
+			const out = serialize(
+				fn, {sourceMaps: true, files: true, outputDir: outputDirPath, strictEnv: true}
+			);
 
 			expect(out).toEqual([
 				{

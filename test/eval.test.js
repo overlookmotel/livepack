@@ -384,10 +384,11 @@ describe('eval', () => {
 			describe('handles internal var name prefixes', () => {
 				itSerializes('altered external to eval', {
 					in() {
-						const srcPath = createFixture(
-							'const livepack_tracker = 1;\n'
-							+ "module.exports = eval('() => livepack_tracker');"
-						);
+						const srcPath = createFixture(`
+							'use strict';
+							const livepack_tracker = 1;
+							module.exports = eval('() => livepack_tracker');
+						`);
 						const fn = require(srcPath);
 
 						// Sanity check: Ensure var used has changed prefix outside eval
@@ -403,9 +404,10 @@ describe('eval', () => {
 
 				itSerializes('altered internal to eval', {
 					in() {
-						const srcPath = createFixture(
-							"module.exports = eval('const livepack_tracker = 1; () => livepack_tracker');"
-						);
+						const srcPath = createFixture(`
+							'use strict';
+							module.exports = eval('const livepack_tracker = 1; () => livepack_tracker');
+						`);
 						const fn = require(srcPath);
 
 						// Sanity check: Ensure var used has not changed prefix outside eval
@@ -421,10 +423,11 @@ describe('eval', () => {
 
 				itSerializes('altered internal and external to eval, matched prefixes', {
 					in() {
-						const srcPath = createFixture(
-							'const livepack_tracker = 1;\n'
-							+ "module.exports = eval('const livepack_tracker = 2; () => livepack_tracker');"
-						);
+						const srcPath = createFixture(`
+							'use strict';
+							const livepack_tracker = 1;\n
+							module.exports = eval('const livepack_tracker = 2; () => livepack_tracker');
+						`);
 						const fn = require(srcPath);
 
 						// Sanity check: Ensure var used has changed prefix outside eval
@@ -440,10 +443,11 @@ describe('eval', () => {
 
 				itSerializes('altered internal and external to eval, unmatched prefixes', {
 					in() {
-						const srcPath = createFixture(
-							'const livepack_tracker = 1;\n'
-							+ "module.exports = eval('const livepack1_tracker = 2; () => [livepack_tracker, livepack1_tracker]');"
-						);
+						const srcPath = createFixture(`
+							'use strict';
+							const livepack_tracker = 1;
+							module.exports = eval('const livepack1_tracker = 2; () => [livepack_tracker, livepack1_tracker]');
+						`);
 						const fn = require(srcPath);
 
 						// Sanity check: Ensure var used has changed prefix outside eval
@@ -514,6 +518,7 @@ describe('eval', () => {
 			describe('functions', () => {
 				itSerializes('returning literal', {
 					in: () => (0, eval)('() => 123'),
+					strictEnv: false,
 					out: '()=>123',
 					validate(fn) {
 						expect(fn).toBeFunction();
@@ -523,6 +528,7 @@ describe('eval', () => {
 
 				itSerializes('returning unscoped', {
 					in: () => (0, eval)('() => ({x: 1})'),
+					strictEnv: false,
 					out: '()=>({x:1})',
 					validate(fn) {
 						expect(fn).toBeFunction();
@@ -532,6 +538,7 @@ describe('eval', () => {
 
 				itSerializes('returning var local to eval', {
 					in: () => (0, eval)('const x = {x: 1}; () => x'),
+					strictEnv: false,
 					out: '(a=>()=>a)({x:1})',
 					validate(fn) {
 						expect(fn).toBeFunction();
@@ -544,6 +551,7 @@ describe('eval', () => {
 						const extA = {x: 1}; // eslint-disable-line no-unused-vars
 						return (0, eval)('() => typeof extA');
 					},
+					strictEnv: false,
 					out: '()=>typeof extA',
 					validate(fn) {
 						expect(fn).toBeFunction();
@@ -558,6 +566,7 @@ describe('eval', () => {
 						}
 						return outer.call({x: 1});
 					},
+					strictEnv: false,
 					out: '()=>this',
 					validate(fn) {
 						expect(fn).toBeFunction();
@@ -577,6 +586,7 @@ describe('eval', () => {
 						}
 						return outer(1, 2, 3);
 					},
+					strictEnv: false,
 					out: '()=>typeof arguments==="undefined"?undefined:arguments',
 					validate(fn, {isOutput}) {
 						expect(fn).toBeFunction();
@@ -618,6 +628,7 @@ describe('eval', () => {
 
 				itSerializes('serializes correctly', {
 					in: () => input,
+					strictEnv: false,
 					out: `(()=>{
 						const a={},
 							b=(
@@ -742,6 +753,7 @@ describe('eval', () => {
 
 				itSerializes('serializes correctly', {
 					in: () => input,
+					strictEnv: false,
 					out: `(()=>{
 						const a={},
 							b=(
@@ -858,6 +870,7 @@ describe('eval', () => {
 
 				itSerializes('serializes correctly', {
 					in: () => input,
+					strictEnv: false,
 					out: `(()=>{
 						const a={},
 							b=(
@@ -1132,10 +1145,11 @@ describe('eval', () => {
 		describe('with prefix changes', () => {
 			itSerializes('altered external to eval', {
 				in() {
-					const srcPath = createFixture(
-						'const livepack_tracker = 1;'
-						+ `module.exports = eval('eval("() => livepack_tracker")');` // eslint-disable-line quotes
-					);
+					const srcPath = createFixture(`
+						'use strict';
+						const livepack_tracker = 1;
+						module.exports = eval('eval("() => livepack_tracker")');
+					`);
 					const fn = require(srcPath);
 
 					// Sanity check: Ensure var used has changed prefix outside eval
@@ -1151,10 +1165,10 @@ describe('eval', () => {
 
 			itSerializes('altered internal to outer eval', {
 				in() {
-					const srcPath = createFixture(
-						// eslint-disable-next-line quotes
-						`module.exports = eval('const livepack_tracker = 1; eval("() => livepack_tracker")');`
-					);
+					const srcPath = createFixture(`
+						'use strict';
+						module.exports = eval('const livepack_tracker = 1; eval("() => livepack_tracker")');
+					`);
 					const fn = require(srcPath);
 
 					// Sanity check: Ensure var used has not changed prefix outside eval
@@ -1170,10 +1184,10 @@ describe('eval', () => {
 
 			itSerializes('altered internal to inner eval', {
 				in() {
-					const srcPath = createFixture(
-						// eslint-disable-next-line quotes
-						`module.exports = eval('eval("const livepack_tracker = 1; () => livepack_tracker")');`
-					);
+					const srcPath = createFixture(`
+						'use strict';
+						module.exports = eval('eval("const livepack_tracker = 1; () => livepack_tracker")');
+					`);
 					const fn = require(srcPath);
 
 					// Sanity check: Ensure var used has not changed prefix outside eval
@@ -1189,11 +1203,11 @@ describe('eval', () => {
 
 			itSerializes('altered internal and external to eval, matched prefixes', {
 				in() {
-					const srcPath = createFixture(
-						'const livepack_tracker = 1;\n'
-						// eslint-disable-next-line quotes
-						+ `module.exports = eval('const livepack_tracker = 2; eval("const livepack_tracker = 3; () => livepack_tracker")');`
-					);
+					const srcPath = createFixture(`
+						'use strict';
+						const livepack_tracker = 1;
+						module.exports = eval('const livepack_tracker = 2; eval("const livepack_tracker = 3; () => livepack_tracker")');
+					`);
 					const fn = require(srcPath);
 
 					// Sanity check: Ensure var used has changed prefix outside eval
@@ -1209,11 +1223,11 @@ describe('eval', () => {
 
 			itSerializes('altered internal and external to eval, unmatched prefixes', {
 				in() {
-					const srcPath = createFixture(
-						'const livepack_tracker = 1;\n'
-						// eslint-disable-next-line quotes
-						+ `module.exports = eval('const livepack1_tracker = 2; eval("const livepack2_tracker = 3; () => [livepack_tracker, livepack1_tracker, livepack2_tracker]")');`
-					);
+					const srcPath = createFixture(`
+						'use strict';
+						const livepack_tracker = 1;\n
+						module.exports = eval('const livepack1_tracker = 2; eval("const livepack2_tracker = 3; () => [livepack_tracker, livepack1_tracker, livepack2_tracker]")');
+					`);
 					const fn = require(srcPath);
 
 					// Sanity check: Ensure var used has changed prefix outside eval
@@ -1247,6 +1261,7 @@ describe('eval', () => {
 
 			itSerializes('serializes correctly', {
 				in: () => input,
+				strictEnv: false,
 				out: `(()=>{
 					const a={},
 						b=(
@@ -1331,6 +1346,7 @@ describe('eval', () => {
 					() => eval('ext')
 				`);
 			},
+			strictEnv: false,
 			out: '(ext=>()=>eval("ext"))(1)',
 			validate(fn) {
 				expect(fn).toBeFunction();
@@ -1343,6 +1359,7 @@ describe('eval', () => {
 				const ext = 1; // eslint-disable-line no-unused-vars
 				return (0, eval)('() => eval("typeof ext")');
 			},
+			strictEnv: false,
 			out: '()=>eval("typeof ext")',
 			validate(fn) {
 				expect(fn).toBeFunction();
@@ -1354,6 +1371,7 @@ describe('eval', () => {
 			in() {
 				return (0, eval)('() => eval("[typeof module, typeof exports]")');
 			},
+			strictEnv: false,
 			out: '()=>eval("[typeof module, typeof exports]")',
 			validate(fn) {
 				expect(fn).toBeFunction();
