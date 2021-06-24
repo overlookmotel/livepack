@@ -116,6 +116,9 @@ function createRunExpectationFn(callFn) {
  * @param {boolean} [options.minify] - If defined, only runs with that option
  * @param {boolean} [options.inline] - If defined, only runs with that option
  * @param {boolean} [options.mangle] - If defined, only runs with that option
+ * @param {string} [options.entryChunkName] - If defined, calls `serialize()` with that option
+ * @param {string} [options.splitChunkName] - If defined, calls `serialize()` with that option
+ * @param {string} [options.commonChunkName] - If defined, calls `serialize()` with that option
  * @param {Object} [defaultOptions] - Default options object (injected by `wrapTestFunction()`)
  * @param {Function} describe - Describe function (injected by `wrapTestFunction()`)
  * @param {Function} runExpectation - Function to run expectation
