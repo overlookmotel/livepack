@@ -43,7 +43,7 @@ const fixturesPaths = Object.values(createFixtures(fixtureFiles));
 // Tests
 
 describe('splitAsync', () => {
-	beforeEach(resetSplitPoints);
+	afterEach(resetSplitPoints);
 
 	runTests(
 		(val, index) => {

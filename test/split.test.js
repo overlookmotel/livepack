@@ -2192,7 +2192,7 @@ describe('Code splitting', () => {
 	});
 
 	describe('split', () => {
-		beforeEach(resetSplitPoints);
+		afterEach(resetSplitPoints);
 
 		describe('splits value into separate file', () => {
 			itSerializesEntriesEqual('with no name argument', {
@@ -2616,7 +2616,7 @@ describe('Code splitting', () => {
 	});
 
 	describe('splitAsync', () => {
-		beforeEach(resetSplitPoints);
+		afterEach(resetSplitPoints);
 
 		describe('splits value into separate file and imports it', () => {
 			itSerializesEntries('with no name argument', {
@@ -3659,6 +3659,8 @@ describe('Code splitting', () => {
 	});
 
 	describe('source maps use correct relative paths', () => {
+		afterEach(resetSplitPoints);
+
 		const testFilename = basename(__filename);
 		describe('with no slashes in names', () => {
 			it('output in same dir as source', () => {
