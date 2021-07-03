@@ -1300,12 +1300,13 @@ describe('Objects', () => {
 					},
 					out: `(()=>{
 						const a=Object,
-							b={};
-						a.defineProperties(
-							a.defineProperty(b,"__proto__",{value:b}),
-							{y:{value:2,writable:true,enumerable:true,configurable:true}}
-						);
-						return b
+							b=a.defineProperty,
+							c=a.defineProperties(
+								b({},"__proto__",{writable:true,enumerable:true,configurable:true}),
+								{y:{value:2,writable:true,enumerable:true,configurable:true}}
+							);
+						b(c,"__proto__",{value:c,writable:false,enumerable:false,configurable:false});
+						return c
 					})()`,
 					validate(obj) {
 						expect(obj).toBeObject();
@@ -1364,12 +1365,18 @@ describe('Objects', () => {
 					},
 					out: `(()=>{
 						const a=Object,
-							b={y:2};
-						a.defineProperties(
-							a.defineProperty(b,"__proto__",{value:b}),
-							{z:{value:3,writable:true,enumerable:true,configurable:true}}
-						);
-						return b
+							b=a.defineProperties,
+							c=a.defineProperty,
+							d=b(
+								c(
+									b({},{y:{value:2,writable:true,enumerable:true,configurable:true}}),
+									"__proto__",
+									{writable:true,enumerable:true,configurable:true}
+								),
+								{z:{value:3,writable:true,enumerable:true,configurable:true}}
+							);
+						c(d,"__proto__",{value:d,writable:false,enumerable:false,configurable:false});
+						return d
 					})()`,
 					validate(obj) {
 						expect(obj).toBeObject();
