@@ -10,6 +10,8 @@ const {itSerializes, itSerializesEqual} = require('./support/index.js');
 
 // Tests
 
+const unsafeNumberString = (BigInt(Number.MAX_SAFE_INTEGER) + BigInt(1)).toString();
+
 describe('Objects', () => {
 	itSerializesEqual('empty object', {
 		in: () => ({}),
@@ -41,6 +43,15 @@ describe('Objects', () => {
 			// 4294967294 is max integer key - integers above max are not moved to first position
 			in: () => ({a: 3, 4294967294: 1, 4294967295: 2}),
 			out: '{4294967294:1,a:3,4294967295:2}'
+		});
+
+		itSerializesEqual('numeric property keys above max safe integer level', {
+			in: () => ({
+				a: 3,
+				[Number.MAX_SAFE_INTEGER]: 1,
+				[unsafeNumberString]: 2
+			}),
+			out: '{a:3,9007199254740991:1,"9007199254740992":2}'
 		});
 
 		itSerializesEqual('properties with names which are JS reserved words', {
@@ -192,18 +203,40 @@ describe('Objects', () => {
 				itSerializesEqual('numeric property keys', {
 					in() {
 						const obj = {};
+						obj['04'] = obj;
 						obj[0] = obj;
 						obj[1] = obj;
 						obj[23] = obj;
-						obj['04'] = obj;
+						// 4294967294 is max integer key
+						obj[4294967294] = obj;
+						obj[4294967295] = obj;
+						obj[Number.MAX_SAFE_INTEGER] = obj;
+						obj[unsafeNumberString] = obj;
 						return obj;
 					},
-					out: '(()=>{const a={};a[0]=a;a[1]=a;a[23]=a;a["04"]=a;return a})()',
+					out: `(()=>{
+						const a={};
+						a[0]=a;
+						a[1]=a;
+						a[23]=a;
+						a[4294967294]=a;
+						a["04"]=a;
+						a[4294967295]=a;
+						a[9007199254740991]=a;
+						a["9007199254740992"]=a;
+						return a
+					})()`,
 					validate(obj) {
+						expect(obj).toHaveOwnPropertyNames([
+							'0', '1', '23', '4294967294', '04', '4294967295', '9007199254740991', '9007199254740992'
+						]);
 						expect(obj[0]).toBe(obj);
 						expect(obj[1]).toBe(obj);
 						expect(obj[23]).toBe(obj);
-						expect(obj['04']).toBe(obj);
+						expect(obj[4294967294]).toBe(obj);
+						expect(obj[4294967295]).toBe(obj);
+						expect(obj[Number.MAX_SAFE_INTEGER]).toBe(obj);
+						expect(obj[unsafeNumberString]).toBe(obj);
 					}
 				});
 			});

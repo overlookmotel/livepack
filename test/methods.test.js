@@ -10,6 +10,8 @@ const {itSerializes} = require('./support/index.js');
 
 // Tests
 
+const unsafeNumberString = (BigInt(Number.MAX_SAFE_INTEGER) + BigInt(1)).toString();
+
 describe('Object methods', () => {
 	describe('without descriptors', () => {
 		itSerializes('plain', {
@@ -207,6 +209,82 @@ describe('Object methods', () => {
 				expect(obj.y).toBe(3);
 			}
 		});
+
+		describe('with integer keys', () => {
+			itSerializes('wrapped', {
+				in() {
+					return [
+						{'0a'() { return this; }}['0a'], // eslint-disable-line object-shorthand
+						{0() { return this; }}[0],
+						{1() { return this; }}[1],
+						// 4294967294 is max integer key
+						{4294967294() { return this; }}[4294967294],
+						{4294967295() { return this; }}[4294967295],
+						{[Number.MAX_SAFE_INTEGER]() { return this; }}[Number.MAX_SAFE_INTEGER],
+						{[unsafeNumberString]() { return this; }}[unsafeNumberString]
+					];
+				},
+				out: `[
+					{"0a"(){return this}}["0a"],
+					{0(){return this}}[0],
+					{1(){return this}}[1],
+					{4294967294(){return this}}[4294967294],
+					{4294967295(){return this}}[4294967295],
+					{9007199254740991(){return this}}[9007199254740991],
+					{"9007199254740992"(){return this}}["9007199254740992"]
+				]`,
+				validate(arr) {
+					expect(arr).toBeArrayOfSize(7);
+					['0a', '0', '1', '4294967294', '4294967295', '9007199254740991', '9007199254740992'].forEach(
+						(name, index) => {
+							const fn = arr[index];
+							expect(fn).toBeFunction();
+							expect(fn.name).toBe(name);
+							expect(fn.prototype).toBeUndefined();
+							const ctx = {};
+							expect(fn.call(ctx)).toBe(ctx);
+						}
+					);
+				}
+			});
+
+			itSerializes('unwrapped', {
+				in: () => ({
+					'0a'() { return this; }, // eslint-disable-line object-shorthand
+					0() { return this; },
+					1() { return this; },
+					// 4294967294 is max integer key
+					4294967294() { return this; },
+					4294967295() { return this; },
+					[Number.MAX_SAFE_INTEGER]() { return this; },
+					[unsafeNumberString]() { return this; }
+				}),
+				out: `{
+					0(){return this},
+					1(){return this},
+					4294967294(){return this},
+					"0a"(){return this},
+					4294967295(){return this},
+					9007199254740991(){return this},
+					"9007199254740992"(){return this}
+				}`,
+				validate(obj) {
+					expect(obj).toBeObject();
+					const keys = [
+						'0', '1', '4294967294', '0a', '4294967295', '9007199254740991', '9007199254740992'
+					];
+					expect(obj).toContainAllKeys(keys);
+
+					for (const key of keys) {
+						const fn = obj[key];
+						expect(fn).toBeFunction();
+						expect(fn.name).toBe(key);
+						expect(fn.prototype).toBeUndefined();
+						expect(obj[key]()).toBe(obj);
+					}
+				}
+			});
+		});
 	});
 
 	describe('with descriptors', () => {
@@ -394,6 +472,50 @@ describe('Object methods', () => {
 				expect(proto.z(1)).toBe(3);
 
 				expect(obj.z()).toBe(proto.z);
+			}
+		});
+
+		itSerializes('with integer keys', {
+			in() {
+				const obj = {
+					'0a'() { return this; }, // eslint-disable-line object-shorthand
+					0() { return this; },
+					1() { return this; },
+					// 4294967294 is max integer key
+					4294967294() { return this; },
+					4294967295() { return this; },
+					[Number.MAX_SAFE_INTEGER]() { return this; },
+					[unsafeNumberString]() { return this; }
+				};
+				for (const key of Object.keys(obj)) {
+					Object.defineProperty(obj, key, {writable: false, enumerable: false, configurable: false});
+				}
+				return obj;
+			},
+			out: `Object.defineProperties({},{
+				0:{value:{0(){return this}}[0]},
+				1:{value:{1(){return this}}[1]},
+				4294967294:{value:{4294967294(){return this}}[4294967294]},
+				"0a":{value:{"0a"(){return this}}["0a"]},
+				4294967295:{value:{4294967295(){return this}}[4294967295]},
+				9007199254740991:{value:{9007199254740991(){return this}}[9007199254740991]},
+				"9007199254740992":{value:{"9007199254740992"(){return this}}["9007199254740992"]}
+			})`,
+			validate(obj) {
+				expect(obj).toBeObject();
+				const keys = [
+					'0', '1', '4294967294', '0a', '4294967295', '9007199254740991', '9007199254740992'
+				];
+				expect(obj).toHaveOwnPropertyNames(keys);
+
+				for (const key of keys) {
+					const fn = obj[key];
+					expect(fn).toBeFunction();
+					expect(fn.name).toBe(key);
+					expect(fn.prototype).toBeUndefined();
+					expect(obj).toHaveDescriptorModifiersFor(key, false, false, false);
+					expect(obj[key]()).toBe(obj);
+				}
 			}
 		});
 
