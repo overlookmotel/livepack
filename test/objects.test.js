@@ -344,7 +344,7 @@ describe('Objects', () => {
 					obj[Symbol('symbol2')] = obj;
 					return obj;
 				},
-				out: '(()=>{const a={x:1,y:2},b=Symbol;a[b("symbol1")]=a;a[b("symbol2")]=a;return a})()',
+				out: '(()=>{const a=Symbol,b={x:1,y:2};b[a("symbol1")]=b;b[a("symbol2")]=b;return b})()',
 				validate(obj) {
 					const symbolKeys = Object.getOwnPropertySymbols(obj);
 					expect(symbolKeys).toBeArrayOfSize(2);
@@ -406,11 +406,11 @@ describe('Objects', () => {
 					return obj;
 				},
 				out: `(()=>{
-					const a=Symbol("symbol1"),
-						b=Object.defineProperties;
+					const a=Object.defineProperties,
+						b=Symbol("symbol1");
 					return{
-						obj1:b({},{[a]:{value:1,writable:true,configurable:true}}),
-						obj2:b({},{[a]:{value:2,writable:true,configurable:true}})
+						obj1:a({},{[b]:{value:1,writable:true,configurable:true}}),
+						obj2:a({},{[b]:{value:2,writable:true,configurable:true}})
 					}
 				})()`,
 				validate(obj) {
@@ -469,13 +469,13 @@ describe('Objects', () => {
 					return obj;
 				},
 				out: `(()=>{
-					const a={x:1,y:2},
-						b=Symbol;
-					Object.defineProperties(a,{
-						[b("symbol1")]:{value:a,writable:true,configurable:true},
-						[b("symbol2")]:{value:a,writable:true,configurable:true}
+					const a=Symbol,
+						b={x:1,y:2};
+					Object.defineProperties(b,{
+						[a("symbol1")]:{value:b,writable:true,configurable:true},
+						[a("symbol2")]:{value:b,writable:true,configurable:true}
 					});
-					return a
+					return b
 				})()`,
 				validate(obj) {
 					const symbolKeys = Object.getOwnPropertySymbols(obj);
@@ -1299,13 +1299,13 @@ describe('Objects', () => {
 						return obj;
 					},
 					out: `(()=>{
-						const a={},
-							b=Object;
-						b.defineProperties(
-							b.defineProperty(a,"__proto__",{value:a}),
+						const a=Object,
+							b={};
+						a.defineProperties(
+							a.defineProperty(b,"__proto__",{value:b}),
 							{y:{value:2,writable:true,enumerable:true,configurable:true}}
 						);
-						return a
+						return b
 					})()`,
 					validate(obj) {
 						expect(obj).toBeObject();
@@ -1363,13 +1363,13 @@ describe('Objects', () => {
 						return obj;
 					},
 					out: `(()=>{
-						const a={y:2},
-							b=Object;
-						b.defineProperties(
-							b.defineProperty(a,"__proto__",{value:a}),
+						const a=Object,
+							b={y:2};
+						a.defineProperties(
+							a.defineProperty(b,"__proto__",{value:b}),
 							{z:{value:3,writable:true,enumerable:true,configurable:true}}
 						);
-						return a
+						return b
 					})()`,
 					validate(obj) {
 						expect(obj).toBeObject();
