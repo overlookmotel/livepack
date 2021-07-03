@@ -396,6 +396,52 @@ describe('Object methods', () => {
 				expect(obj.z()).toBe(proto.z);
 			}
 		});
+
+		itSerializes('with key `value`', {
+			in: () => Object.defineProperty({}, 'value', {value() { return this; }}),
+			out: 'Object.defineProperties({},{value:{value(){return this;}}})',
+			validate(obj) {
+				expect(obj).toBeObject();
+				expect(obj).toHaveOwnPropertyNames(['value']);
+
+				const fn = obj.value;
+				expect(fn).toBeFunction();
+				expect(fn.name).toBe('value');
+				expect(fn.prototype).toBeUndefined();
+				expect(obj).toHaveDescriptorModifiersFor('value', false, false, false);
+				expect(obj.value()).toBe(obj);
+			}
+		});
+
+		itSerializes('named `get` as property getter', {
+			in: () => Object.defineProperty({}, 'x', {get() { return this; }}),
+			out: 'Object.defineProperties({},{x:{get(){return this}}})',
+			validate(obj) {
+				expect(obj).toBeObject();
+				expect(obj).toHaveOwnPropertyNames(['x']);
+				const fn = Object.getOwnPropertyDescriptor(obj, 'x').get;
+				expect(fn.name).toBe('get');
+				expect(fn.prototype).toBeUndefined();
+				expect(obj).toHaveDescriptorModifiersFor('x', undefined, false, false);
+				expect(obj.x).toBe(obj);
+			}
+		});
+
+		itSerializes('named `set` as property setter', {
+			in: () => Object.defineProperty({}, 'x', {set(v) { this.y = v; }}),
+			out: 'Object.defineProperties({},{x:{set(a){this.y=a}}})',
+			validate(obj) {
+				expect(obj).toBeObject();
+				expect(obj).toHaveOwnPropertyNames(['x']);
+				const fn = Object.getOwnPropertyDescriptor(obj, 'x').set;
+				expect(fn.name).toBe('set');
+				expect(fn.prototype).toBeUndefined();
+				expect(obj).toHaveDescriptorModifiersFor('x', undefined, false, false);
+				const temp = {};
+				obj.x = temp;
+				expect(obj.y).toBe(temp);
+			}
+		});
 	});
 
 	itSerializes('async methods', {
