@@ -1387,41 +1387,89 @@ describe('Objects', () => {
 		});
 
 		describe('null prototype object', () => {
-			itSerializesEqual('non-circular', {
-				in: () => Object.defineProperty(Object.create(null), '__proto__', {value: {x: 1}}),
-				out: `(()=>{
-					const a=Object;
-					return a.defineProperty(a.create(null),"__proto__",{value:{x:1}})
-				})()`,
-				validate(obj) {
-					expect(obj).toBeObject();
-					expect(obj).toHaveOwnPropertyNames(['__proto__']);
-					expect(obj.__proto__).toEqual({x: 1}); // eslint-disable-line no-proto
-					expect(obj).toHaveDescriptorModifiersFor('__proto__', false, false, false);
-					expect(obj.x).toBeUndefined();
-					expect(obj).toHavePrototype(null);
-				}
+			describe('non-circular', () => {
+				itSerializesEqual('with no descriptor', {
+					in() {
+						const obj = Object.create(null);
+						obj.__proto__ = {x: 1}; // eslint-disable-line no-proto
+						return obj;
+					},
+					out: `(()=>{
+						const a=Object;
+						return a.defineProperty(
+							a.create(null),
+							"__proto__",
+							{value:{x:1},writable:true,enumerable:true,configurable:true}
+						)
+					})()`,
+					validate(obj) {
+						expect(obj).toBeObject();
+						expect(obj).toHaveOwnPropertyNames(['__proto__']);
+						expect(obj.__proto__).toEqual({x: 1}); // eslint-disable-line no-proto
+						expect(obj).toHaveDescriptorModifiersFor('__proto__', true, true, true);
+						expect(obj.x).toBeUndefined();
+						expect(obj).toHavePrototype(null);
+					}
+				});
+
+				itSerializesEqual('with descriptor', {
+					in: () => Object.defineProperty(Object.create(null), '__proto__', {value: {x: 1}}),
+					out: `(()=>{
+						const a=Object;
+						return a.defineProperty(a.create(null),"__proto__",{value:{x:1}})
+					})()`,
+					validate(obj) {
+						expect(obj).toBeObject();
+						expect(obj).toHaveOwnPropertyNames(['__proto__']);
+						expect(obj.__proto__).toEqual({x: 1}); // eslint-disable-line no-proto
+						expect(obj).toHaveDescriptorModifiersFor('__proto__', false, false, false);
+						expect(obj.x).toBeUndefined();
+						expect(obj).toHavePrototype(null);
+					}
+				});
 			});
 
-			itSerializesEqual('circular', {
-				in() {
-					const obj = Object.create(null);
-					Object.defineProperty(obj, '__proto__', {value: obj});
-					return obj;
-				},
-				out: `(()=>{
-					const a=Object,
-						b=a.create(null);
-					a.defineProperty(b,"__proto__",{value:b});
-					return b
-				})()`,
-				validate(obj) {
-					expect(obj).toBeObject();
-					expect(obj).toHaveOwnPropertyNames(['__proto__']);
-					expect(obj.__proto__).toBe(obj); // eslint-disable-line no-proto
-					expect(obj).toHaveDescriptorModifiersFor('__proto__', false, false, false);
-					expect(obj).toHavePrototype(null);
-				}
+			describe('circular', () => {
+				itSerializesEqual('with no descriptor', {
+					in() {
+						const obj = Object.create(null);
+						obj.__proto__ = obj; // eslint-disable-line no-proto
+						return obj;
+					},
+					out: `(()=>{
+						const a=Object.create(null);
+						a.__proto__=a;
+						return a
+					})()`,
+					validate(obj) {
+						expect(obj).toBeObject();
+						expect(obj).toHaveOwnPropertyNames(['__proto__']);
+						expect(obj.__proto__).toBe(obj); // eslint-disable-line no-proto
+						expect(obj).toHaveDescriptorModifiersFor('__proto__', true, true, true);
+						expect(obj).toHavePrototype(null);
+					}
+				});
+
+				itSerializesEqual('with descriptor', {
+					in() {
+						const obj = Object.create(null);
+						Object.defineProperty(obj, '__proto__', {value: obj});
+						return obj;
+					},
+					out: `(()=>{
+						const a=Object,
+							b=a.create(null);
+						a.defineProperty(b,"__proto__",{value:b});
+						return b
+					})()`,
+					validate(obj) {
+						expect(obj).toBeObject();
+						expect(obj).toHaveOwnPropertyNames(['__proto__']);
+						expect(obj.__proto__).toBe(obj); // eslint-disable-line no-proto
+						expect(obj).toHaveDescriptorModifiersFor('__proto__', false, false, false);
+						expect(obj).toHavePrototype(null);
+					}
+				});
 			});
 		});
 	});
