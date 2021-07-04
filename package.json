@@ -80,6 +80,7 @@
     "jest-extended": "^0.11.5",
     "jest-matcher-utils": "^27.0.6",
     "mocha": "^9.0.2",
+    "npm-run-all": "^4.1.5",
     "source-map-support": "^0.5.19"
   },
   "keywords": [
@@ -94,11 +95,14 @@
     "lint": "eslint .",
     "lint-fix": "eslint . --fix",
     "test-main": "npm run test-jest && npm run test-mocha",
-    "test-jest": "jest; npm run test-cleanup",
-    "test-mocha": "mocha ./test/*.mocha.test.js -R progress; npm run test-cleanup",
+    "test-jest": "npm-run-all -c test-jest-main test-cleanup",
+    "test-jest-main": "jest",
+    "test-mocha": "npm-run-all -c test-mocha-main test-cleanup",
+    "test-mocha-main": "mocha ./test/*.mocha.test.js -R progress",
     "test-cleanup": "rm -rf test/_temp",
-    "cover": "npm run cover-main && rm -rf coverage",
-    "cover-main": "jest --coverage"
+    "cover": "npm-run-all -c cover-main cover-cleanup",
+    "cover-main": "jest --coverage",
+    "cover-cleanup": "rm -rf coverage"
   },
   "engines": {
     "node": ">=12"
