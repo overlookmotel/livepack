@@ -181,10 +181,26 @@ describe('Options', () => {
 		});
 
 		describe('true', () => {
+			it('throws error if format is js', () => {
+				expect(() => serialize(() => {}, {exec: true})).toThrowWithMessage(
+					Error, "options.exec cannot be true if options.format is 'js'"
+				);
+			});
+
+			describe('does not throw if format is', () => {
+				it('cjs', () => {
+					expect(serialize(() => {}, {exec: true, format: 'cjs'})).toBe('');
+				});
+
+				it('esm', () => {
+					expect(serialize(() => {}, {exec: true, format: 'esm'})).toBe('');
+				});
+			});
+
 			describe('unwraps', () => {
 				it('single-line pure function', () => {
 					const fn = (0, function() { console.log('foo'); }); // eslint-disable-line no-console
-					expect(serialize(fn, {exec: true})).toBe('console.log("foo")');
+					expect(serialize(fn, {exec: true, format: 'esm'})).toBe('console.log("foo")');
 				});
 
 				it('multiple-line pure function', () => {
@@ -192,15 +208,7 @@ describe('Options', () => {
 						const x = 'foo';
 						console.log(x); // eslint-disable-line no-console
 					});
-					expect(serialize(fn, {exec: true})).toBe('const a="foo";console.log(a)');
-				});
-
-				it('impure function', () => {
-					const x = 'foo';
-					const fn = (0, function() {
-						console.log(x); // eslint-disable-line no-console
-					});
-					expect(serialize(fn, {exec: true})).toBe('(a=>function(){console.log(a)})("foo")()');
+					expect(serialize(fn, {exec: true, format: 'esm'})).toBe('const a="foo";console.log(a)');
 				});
 			});
 
@@ -209,29 +217,41 @@ describe('Options', () => {
 					function fn() {
 						console.log(fn); // eslint-disable-line no-console
 					}
-					expect(serialize(fn, {exec: true})).toBe('(function fn(){console.log(fn)})()');
+					expect(serialize(fn, {exec: true, format: 'esm'})).toBe('(function fn(){console.log(fn)})()');
 				});
 
 				it('function with parameters', () => {
 					const fn = (0, x => console.log(x)); // eslint-disable-line no-console
-					expect(serialize(fn, {exec: true})).toBe('(a=>console.log(a))()');
+					expect(serialize(fn, {exec: true, format: 'esm'})).toBe('(a=>console.log(a))()');
+				});
+
+				it('function with external scope', () => {
+					const x = 'foo';
+					const fn = (0, function() {
+						console.log(x); // eslint-disable-line no-console
+					});
+					expect(serialize(fn, {exec: true, format: 'esm'})).toBe(
+						'(a=>function(){console.log(a)})("foo")()'
+					);
 				});
 
 				it('async function', () => {
 					const fn = (0, async () => { console.log('foo'); }); // eslint-disable-line no-console
-					expect(serialize(fn, {exec: true})).toBe('(async()=>{console.log("foo")})()');
+					expect(serialize(fn, {exec: true, format: 'esm'})).toBe('(async()=>{console.log("foo")})()');
 				});
 
 				it('generator function', () => {
 					// eslint-disable-next-line no-console, require-yield
 					const fn = (0, function*() { console.log('foo'); });
-					expect(serialize(fn, {exec: true})).toBe('(function*(){console.log("foo")})()');
+					expect(serialize(fn, {exec: true, format: 'esm'})).toBe('(function*(){console.log("foo")})()');
 				});
 
 				it('async generator function', () => {
 					// eslint-disable-next-line no-console, require-yield
 					const fn = (0, async function*() { console.log('foo'); });
-					expect(serialize(fn, {exec: true})).toBe('(async function*(){console.log("foo")})()');
+					expect(serialize(fn, {exec: true, format: 'esm'})).toBe(
+						'(async function*(){console.log("foo")})()'
+					);
 				});
 			});
 		});
