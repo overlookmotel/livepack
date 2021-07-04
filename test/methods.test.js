@@ -724,7 +724,7 @@ describe('Object methods', () => {
 						},
 						set foo(v) {
 							const temp = 'foo';
-							this.y = super[temp] = v * 5; // eslint-disable-line no-multi-assign
+							this.y = super[temp] = v * 5;
 						}
 					},
 					{
