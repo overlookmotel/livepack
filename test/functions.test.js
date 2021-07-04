@@ -4889,6 +4889,18 @@ describe('Functions', () => {
 			}
 		});
 
+		itSerializes('named function as default export', {
+			in() {
+				return function f() {};
+			},
+			format: 'esm',
+			out: 'export default function f(){}',
+			validate(fn) {
+				expect(fn).toBeFunction();
+				expect(fn.name).toBe('f');
+			}
+		});
+
 		itSerializes('unnamed function as default export', {
 			in() {
 				return function() {};

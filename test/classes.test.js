@@ -3007,6 +3007,18 @@ describe('Classes', () => {
 			}
 		});
 
+		itSerializes('named class as default export', {
+			in() {
+				return class X {};
+			},
+			format: 'esm',
+			out: 'export default class X{}',
+			validate(Klass) {
+				expect(Klass).toBeFunction();
+				expect(Klass.name).toBe('X');
+			}
+		});
+
 		itSerializes('unnamed class as default export', {
 			in() {
 				return class {};
