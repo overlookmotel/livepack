@@ -34,6 +34,7 @@ describe('Symbols', () => {
 		out: 'Symbol.for("bar")',
 		validate(sym, {isOutput, input}) {
 			expect(typeof sym).toBe('symbol');
+			expect(Symbol.keyFor(sym)).toBe('bar');
 			if (isOutput) expect(sym).toBe(input);
 		}
 	});

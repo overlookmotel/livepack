@@ -387,3 +387,118 @@ describe('Boxed BigInts', () => {
 		}
 	});
 });
+
+describe('Boxed Symbols', () => {
+	itSerializesEqual('without description', {
+		in: () => Object(Symbol()), // eslint-disable-line symbol-description
+		out: 'Object(Symbol())',
+		validate(sym) {
+			expect(typeof sym).toBe('object');
+			expect(sym).toHavePrototype(Symbol.prototype);
+			const unboxed = sym[Symbol.toPrimitive]();
+			expect(typeof unboxed).toBe('symbol');
+			expect(unboxed.description).toBeUndefined();
+		}
+	});
+
+	itSerializesEqual('with description', {
+		in: () => Object(Symbol('x')),
+		out: 'Object(Symbol("x"))',
+		validate(sym) {
+			expect(typeof sym).toBe('object');
+			expect(sym).toHavePrototype(Symbol.prototype);
+			const unboxed = sym[Symbol.toPrimitive]();
+			expect(typeof unboxed).toBe('symbol');
+			expect(unboxed.description).toBe('x');
+		}
+	});
+
+	itSerializesEqual('with empty description', {
+		in: () => Object(Symbol('')),
+		out: 'Object(Symbol(""))',
+		validate(sym) {
+			expect(typeof sym).toBe('object');
+			expect(sym).toHavePrototype(Symbol.prototype);
+			const unboxed = sym[Symbol.toPrimitive]();
+			expect(typeof unboxed).toBe('symbol');
+			expect(unboxed.description).toBe('');
+		}
+	});
+
+	itSerializes('when unboxed is equal to symbol which was boxed', {
+		in() {
+			const sym = Symbol('x'),
+				boxedSym = Object(sym);
+			return [boxedSym, sym];
+		},
+		out: '(()=>{const a=Symbol("x");return[Object(a),a]})()',
+		validate([boxedSym, sym]) {
+			expect(typeof boxedSym).toBe('object');
+			expect(boxedSym).toHavePrototype(Symbol.prototype);
+			const unboxed = boxedSym[Symbol.toPrimitive]();
+			expect(unboxed).toBe(sym);
+			expect(typeof unboxed).toBe('symbol');
+			expect(unboxed.description).toBe('x');
+		}
+	});
+
+	itSerializesEqual('global symbol', {
+		in: () => Object(Symbol.for('x')),
+		out: 'Object(Symbol.for("x"))',
+		validate(sym, {isOutput, input}) {
+			expect(typeof sym).toBe('object');
+			expect(sym).toHavePrototype(Symbol.prototype);
+			const unboxed = sym[Symbol.toPrimitive]();
+			expect(typeof unboxed).toBe('symbol');
+			expect(unboxed.description).toBe('x');
+			expect(Symbol.keyFor(unboxed)).toBe('x');
+
+			if (isOutput) expect(unboxed).toBe(input[Symbol.toPrimitive]());
+		}
+	});
+
+	itSerializesEqual('with `description` property', {
+		in() {
+			const sym = Object(Symbol('x'));
+			Object.defineProperty(
+				sym, 'description',
+				{value: 'y', writable: true, enumerable: true, configurable: true}
+			);
+			return sym;
+		},
+		out: `(()=>{
+			const a=Object;
+			return a.defineProperties(
+				a(Symbol("x")),
+				{description:{value:"y",writable:true,enumerable:true,configurable:true}}
+			)
+		})()`,
+		validate(sym) {
+			expect(typeof sym).toBe('object');
+			expect(sym).toHavePrototype(Symbol.prototype);
+			expect(sym).toHaveOwnPropertyNames(['description']);
+			expect(sym.description).toBe('y');
+
+			const unboxed = sym[Symbol.toPrimitive]();
+			expect(typeof unboxed).toBe('symbol');
+			expect(unboxed.description).toBe('x');
+		}
+	});
+
+	itSerializesEqual('with prototype altered', {
+		in() {
+			const sym = Object(Symbol('x'));
+			Object.setPrototypeOf(sym, Function.prototype);
+			return sym;
+		},
+		out: '(()=>{const a=Object;return a.setPrototypeOf(a(Symbol("x")),Function.prototype)})()',
+		validate(sym) {
+			expect(typeof sym).toBe('object');
+			expect(sym).toHavePrototype(Function.prototype);
+			expect(sym.description).toBeUndefined();
+			const unboxed = Symbol.prototype[Symbol.toPrimitive].call(sym);
+			expect(typeof unboxed).toBe('symbol');
+			expect(unboxed.description).toBe('x');
+		}
+	});
+});
