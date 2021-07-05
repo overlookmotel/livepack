@@ -31,9 +31,21 @@ describe('numbers', () => {
 		itSerializesEqual('-123', {in: () => -123, out: '-123'});
 	});
 
-	itSerializesEqual('zero', {in: () => 0, out: '0'});
+	itSerializesEqual('zero', {
+		in: () => 0,
+		out: '0',
+		validate(zero) {
+			expect(Object.is(zero, 0)).toBeTrue();
+		}
+	});
 
-	itSerializesEqual('minus zero', {in: () => -0, out: '-0'});
+	itSerializesEqual('minus zero', {
+		in: () => -0,
+		out: '-0',
+		validate(minusZero) {
+			expect(Object.is(minusZero, -0)).toBeTrue();
+		}
+	});
 
 	describe('positive floats', () => {
 		itSerializesEqual('0.1', {in: () => 0.1, out: '0.1'});
@@ -41,11 +53,11 @@ describe('numbers', () => {
 	});
 
 	describe('negative floats', () => {
-		itSerializesEqual('0.1', {in: () => -0.1, out: '-0.1'});
+		itSerializesEqual('-0.1', {in: () => -0.1, out: '-0.1'});
 		itSerializesEqual('-123.0001', {in: () => -123.0001, out: '-123.0001'});
 	});
 
-	describe('infinity', () => {
+	describe('Infinity', () => { // eslint-disable-line jest/lowercase-name
 		itSerializesEqual('serializes correctly', {in: () => 1 / 0, out: 'Infinity'});
 
 		itSerializesEqual('treated as a global var', {
@@ -58,8 +70,8 @@ describe('numbers', () => {
 		itSerializesEqual('serializes correctly', {in: () => -1 / 0, out: '-Infinity'});
 
 		itSerializesEqual('treated as a global var', {
-			in: () => ({x: -1 / 0, y: -1 / 0}),
-			out: '(()=>{const a=-Infinity;return{x:a,y:a}})()'
+			in: () => ({x: -1 / 0, y: -1 / 0, z: 1 / 0}),
+			out: '(()=>{const a=Infinity,b=-a;return{x:b,y:b,z:a}})()'
 		});
 	});
 
