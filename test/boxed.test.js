@@ -346,6 +346,17 @@ describe('Boxed BigInts', () => {
 		}
 	});
 
+	itSerializesEqual('huge negative', {
+		in: () => Object(BigInt('-100000000000000000000')),
+		out: 'Object(-100000000000000000000n)',
+		validate(bigInt) {
+			expect(typeof bigInt).toBe('object');
+			expect(typeof bigInt.valueOf()).toBe('bigint');
+			expect(bigInt.valueOf()).toBe(BigInt('-100000000000000000000'));
+			expect(bigInt).toHavePrototype(BigInt.prototype);
+		}
+	});
+
 	itSerializesEqual('BigInt subclass', {
 		in() {
 			class B extends BigInt {}
