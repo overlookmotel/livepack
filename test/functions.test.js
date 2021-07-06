@@ -6331,6 +6331,18 @@ describe('Functions', () => {
 		/* eslint-enable lines-around-directive */
 	});
 
+	itSerializes('strings in function rendered with double quotes', {
+		in() {
+			// eslint-disable-next-line prefer-template, quotes, no-useless-concat
+			return () => 'w' + "x" + {'z z': "y"}['z z'];
+		},
+		out: '()=>"w"+"x"+{"z z":"y"}["z z"]',
+		validate(fn) {
+			expect(fn).toBeFunction();
+			expect(fn()).toBe('wxy');
+		}
+	});
+
 	describe('placement of tracker does not disrupt normal functioning', () => {
 		const ext = 100; // eslint-disable-line no-unused-vars
 		itSerializes.each(
