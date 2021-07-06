@@ -822,4 +822,92 @@ describe('Object methods', () => {
 			}
 		});
 	});
+
+	describe('directives retained', () => {
+		/* eslint-disable lines-around-directive */
+		describe('in exported method', () => {
+			itSerializes('with 1 directive', {
+				in: () => ({
+					x() {
+						'use fake';
+						return 1;
+					}
+				}.x),
+				out: '{x(){"use fake";return 1}}.x',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					expect(fn()).toBe(1);
+				}
+			});
+
+			itSerializes('with multiple directives', {
+				in: () => ({
+					x() {
+						'use fake';
+						"use bogus"; // eslint-disable-line quotes
+						'use phoney';
+						return 1;
+					}
+				}.x),
+				out: '{x(){"use fake";"use bogus";"use phoney";return 1}}.x',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					expect(fn()).toBe(1);
+				}
+			});
+		});
+
+		describe('in nested method', () => {
+			itSerializes('with 1 directive', {
+				in() {
+					return {
+						x() {
+							return {
+								y() {
+									'use fake';
+									return 1;
+								}
+							};
+						}
+					}.x;
+				},
+				out: '{x(){return{y(){"use fake";return 1}}}}.x',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					const obj = fn();
+					expect(obj).toBeObject();
+					const fnInner = obj.y;
+					expect(fnInner).toBeFunction();
+					expect(fnInner()).toBe(1);
+				}
+			});
+
+			itSerializes('with multiple directives', {
+				in() {
+					return {
+						x() {
+							return {
+								y() {
+									'use fake';
+									"use bogus"; // eslint-disable-line quotes
+									'use phoney';
+									return 1;
+								}
+							};
+						}
+					}.x;
+				},
+				out: '{x(){return{y(){"use fake";"use bogus";"use phoney";return 1}}}}.x',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					const obj = fn();
+					expect(obj).toBeObject();
+					const fnInner = obj.y;
+					expect(fnInner).toBeFunction();
+					expect(fnInner()).toBe(1);
+				}
+			});
+		});
+		/* eslint-enable lines-around-directive */
+	});
 });

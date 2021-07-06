@@ -3082,6 +3082,158 @@ describe('Classes', () => {
 		});
 	});
 
+	describe('directives retained', () => {
+		/* eslint-disable lines-around-directive */
+		describe('in constructor', () => {
+			itSerializes('with 1 directive', {
+				in: () => class {
+					constructor() {
+						'use fake';
+						this.x = 1;
+					}
+				},
+				out: 'class{constructor(){"use fake";this.x=1}}',
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					const instance = new Klass();
+					expect(instance.x).toBe(1);
+				}
+			});
+
+			itSerializes('with multiple directives', {
+				in: () => class {
+					constructor() {
+						'use fake';
+						"use bogus"; // eslint-disable-line quotes
+						'use phoney';
+						this.x = 1;
+					}
+				},
+				out: 'class{constructor(){"use fake";"use bogus";"use phoney";this.x=1}}',
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					const instance = new Klass();
+					expect(instance.x).toBe(1);
+				}
+			});
+		});
+
+		describe('in prototype method', () => {
+			itSerializes('with 1 directive', {
+				in: () => class {
+					foo() { // eslint-disable-line class-methods-use-this
+						'use fake';
+						return 1;
+					}
+				},
+				out: `(()=>{
+					const a=(0,class{});
+					Object.defineProperties(
+						a.prototype,
+						{
+							foo:{
+								value:{foo(){"use fake";return 1}}.foo,
+								writable:true,
+								configurable:true
+							}
+						}
+					);
+					return a
+				})()`,
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					const instance = new Klass();
+					expect(instance.foo).toBeFunction();
+					expect(instance.foo()).toBe(1);
+				}
+			});
+
+			itSerializes('with multiple directives', {
+				in: () => class {
+					foo() { // eslint-disable-line class-methods-use-this
+						'use fake';
+						"use bogus"; // eslint-disable-line quotes
+						'use phoney';
+						return 1;
+					}
+				},
+				out: `(()=>{
+					const a=(0,class{});
+					Object.defineProperties(
+						a.prototype,
+						{
+							foo:{
+								value:{foo(){"use fake";"use bogus";"use phoney";return 1}}.foo,
+								writable:true,
+								configurable:true
+							}
+						}
+					);
+					return a
+				})()`,
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					const instance = new Klass();
+					expect(instance.foo).toBeFunction();
+					expect(instance.foo()).toBe(1);
+				}
+			});
+		});
+
+		describe('in static method', () => {
+			itSerializes('with 1 directive', {
+				in: () => class {
+					static foo() {
+						'use fake';
+						return 1;
+					}
+				},
+				out: `Object.defineProperties(
+					class{},
+					{
+						foo:{
+							value:{foo(){"use fake";return 1}}.foo,
+							writable:true,
+							configurable:true
+						}
+					}
+				)`,
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					expect(Klass.foo).toBeFunction();
+					expect(Klass.foo()).toBe(1);
+				}
+			});
+
+			itSerializes('with multiple directives', {
+				in: () => class {
+					static foo() {
+						'use fake';
+						"use bogus"; // eslint-disable-line quotes
+						'use phoney';
+						return 1;
+					}
+				},
+				out: `Object.defineProperties(
+					class{},
+					{
+						foo:{
+							value:{foo(){"use fake";"use bogus";"use phoney";return 1}}.foo,
+							writable:true,
+							configurable:true
+						}
+					}
+				)`,
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					expect(Klass.foo).toBeFunction();
+					expect(Klass.foo()).toBe(1);
+				}
+			});
+		});
+		/* eslint-enable lines-around-directive */
+	});
+
 	describe('classes nested in functions left untouched', () => {
 		describe('not extending another class', () => {
 			itSerializes('empty', {

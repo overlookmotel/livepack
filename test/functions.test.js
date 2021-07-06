@@ -6183,6 +6183,154 @@ describe('Functions', () => {
 		});
 	});
 
+	describe('directives retained', () => {
+		/* eslint-disable lines-around-directive */
+		describe('in exported', () => {
+			describe('function expression', () => {
+				itSerializes('with 1 directive', {
+					in() {
+						return function() {
+							'use fake';
+							return 1;
+						};
+					},
+					out: 'function(){"use fake";return 1}',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						expect(fn()).toBe(1);
+					}
+				});
+
+				itSerializes('with multiple directives', {
+					in() {
+						return function() {
+							'use fake';
+							"use bogus"; // eslint-disable-line quotes
+							'use phoney';
+							return 1;
+						};
+					},
+					out: 'function(){"use fake";"use bogus";"use phoney";return 1}',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						expect(fn()).toBe(1);
+					}
+				});
+			});
+
+			describe('arrow function', () => {
+				itSerializes('with 1 directive', {
+					in() {
+						return () => {
+							'use fake';
+							return 1;
+						};
+					},
+					out: '()=>{"use fake";return 1}',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						expect(fn()).toBe(1);
+					}
+				});
+
+				itSerializes('with multiple directives', {
+					in() {
+						return () => {
+							'use fake';
+							"use bogus"; // eslint-disable-line quotes
+							'use phoney';
+							return 1;
+						};
+					},
+					out: '()=>{"use fake";"use bogus";"use phoney";return 1}',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						expect(fn()).toBe(1);
+					}
+				});
+			});
+		});
+
+		describe('in nested', () => {
+			describe('function expression', () => {
+				itSerializes('with 1 directive', {
+					in() {
+						return function() {
+							return function() {
+								'use fake';
+								return 1;
+							};
+						};
+					},
+					out: 'function(){return function(){"use fake";return 1}}',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						const fnInner = fn();
+						expect(fnInner).toBeFunction();
+						expect(fnInner()).toBe(1);
+					}
+				});
+
+				itSerializes('with multiple directives', {
+					in() {
+						return function() {
+							return function() {
+								'use fake';
+								"use bogus"; // eslint-disable-line quotes
+								'use phoney';
+								return 1;
+							};
+						};
+					},
+					out: 'function(){return function(){"use fake";"use bogus";"use phoney";return 1}}',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						const fnInner = fn();
+						expect(fnInner).toBeFunction();
+						expect(fnInner()).toBe(1);
+					}
+				});
+			});
+
+			describe('arrow function', () => {
+				itSerializes('with 1 directive', {
+					in() {
+						return () => () => {
+							'use fake';
+							return 1;
+						};
+					},
+					out: '()=>()=>{"use fake";return 1}',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						const fnInner = fn();
+						expect(fnInner).toBeFunction();
+						expect(fnInner()).toBe(1);
+					}
+				});
+
+				itSerializes('with multiple directives', {
+					in() {
+						return () => () => {
+							'use fake';
+							"use bogus"; // eslint-disable-line quotes
+							'use phoney';
+							return 1;
+						};
+					},
+					out: '()=>()=>{"use fake";"use bogus";"use phoney";return 1}',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						const fnInner = fn();
+						expect(fnInner).toBeFunction();
+						expect(fnInner()).toBe(1);
+					}
+				});
+			});
+		});
+		/* eslint-enable lines-around-directive */
+	});
+
 	describe('placement of tracker does not disrupt normal functioning', () => {
 		const ext = 100; // eslint-disable-line no-unused-vars
 		itSerializes.each(
