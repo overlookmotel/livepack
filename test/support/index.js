@@ -85,10 +85,14 @@ function createRunExpectationFn(callFn) {
 	return function(msg, fn) {
 		try {
 			fn();
-		} catch (err) {
-			const message = `${msg}${err.message.match(/\r?\n\r?\n[\s\S]*$/)[0]}`;
-			err.message = message;
-			err.stack = callErr.stack.replace(/^[^\r\n]+/, message);
+		} catch (_err) {
+			const err = _err || new Error('Unknown error');
+			const match = err.message.match(/\r?\n\r?\n[\s\S]*$/);
+			if (match) {
+				const message = `${msg}${match[0]}`;
+				err.message = message;
+				err.stack = callErr.stack.replace(/^[^\r\n]+/, message);
+			}
 			throw err;
 		}
 	};
