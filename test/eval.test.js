@@ -1322,4 +1322,43 @@ describe('eval', () => {
 			});
 		});
 	});
+
+	describe('`eval()` within indirect `eval()` evaluated before serialization', () => {
+		itSerializes('can access vars within outer eval', {
+			in() {
+				return (0, eval)(`
+					const ext = 1;
+					() => eval('ext')
+				`);
+			},
+			out: '(ext=>()=>eval("ext"))(1)',
+			validate(fn) {
+				expect(fn).toBeFunction();
+				expect(fn()).toBe(1);
+			}
+		});
+
+		itSerializes('cannot access vars outside outer eval', {
+			in() {
+				const ext = 1; // eslint-disable-line no-unused-vars
+				return (0, eval)('() => eval("typeof ext")');
+			},
+			out: '()=>eval("typeof ext")',
+			validate(fn) {
+				expect(fn).toBeFunction();
+				expect(fn()).toBe('undefined');
+			}
+		});
+
+		itSerializes('cannot access CommonJS vars', {
+			in() {
+				return (0, eval)('() => eval("[typeof module, typeof exports]")');
+			},
+			out: '()=>eval("[typeof module, typeof exports]")',
+			validate(fn) {
+				expect(fn).toBeFunction();
+				expect(fn()).toEqual(['undefined', 'undefined']);
+			}
+		});
+	});
 });
