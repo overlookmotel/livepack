@@ -17,7 +17,7 @@ const {splitAsync} = require('../index.js'), // livepack
 
 // Imports
 const createFixturesFunctions = require('./support/fixtures.js'),
-	internalSplitPoints = require('../lib/shared/internal.js').splitPoints;
+	resetSplitPoints = require('./support/resetSplitPoints.js');
 
 // Constants
 const NUM_FIXTURES = 5;
@@ -330,10 +330,4 @@ function expectAllToBeSame(values) {
 
 function delay(ms) {
 	return new Promise(resolve => setTimeout(resolve, ms || 20));
-}
-
-function resetSplitPoints() {
-	// Keep each test isolated - splits are stored globally.
-	// Tests still pass without this, but they run slower.
-	internalSplitPoints.clear();
 }

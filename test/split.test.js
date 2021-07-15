@@ -12,7 +12,7 @@ const {join: pathJoin, basename} = require('path'),
 
 // Imports
 const {itSerializes, stripSourceMapComment, stripLineBreaks} = require('./support/index.js'),
-	internalSplitPoints = require('../lib/shared/internal.js').splitPoints;
+	resetSplitPoints = require('./support/resetSplitPoints.js');
 
 // Tests
 
@@ -3973,10 +3973,4 @@ function expectToBeModule(mod) {
 	expect(mod).toHaveOwnPropertySymbols([Symbol.toStringTag]);
 	expect(mod[Symbol.toStringTag]).toBe('Module');
 	expect(mod).toHaveDescriptorModifiersFor(Symbol.toStringTag, false, false, false);
-}
-
-function resetSplitPoints() {
-	// Keep each test isolated - splits are stored globally.
-	// Tests still pass without this, but they run slower.
-	internalSplitPoints.clear();
 }
