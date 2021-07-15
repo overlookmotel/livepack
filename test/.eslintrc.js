@@ -12,7 +12,7 @@ module.exports = {
 		'@overlookmotel/eslint-config-jest'
 	],
 	rules: {
-		'import/no-unresolved': ['error', {ignore: ['^livepack$']}],
+		'import/no-unresolved': ['error', {ignore: ['^livepack$'], commonjs: true}],
 		'jest/no-standalone-expect': [
 			'error',
 			{
