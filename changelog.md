@@ -1,5 +1,90 @@
 # Changelog
 
+## 0.5.0
+
+Breaking changes:
+
+* `exec` option disallowed for `js` format
+
+Minor:
+
+* Drop support for Node v15
+
+Bug fixes:
+
+* Serialize strict mode of functions
+* Move tracker into function params
+* Serialize boxed Symbols
+* `eval()` in ESM or indirect eval does not access CommonJS vars
+* Correctly handle integer object keys above MAX_SAFE_INTEGER
+* Fix serialization of negative numbers
+* Fix serialization of negative BigInts
+* Retain directives in functions
+* Do not catalog experimental `stream/web` module
+* Remove comment from output for runtime function
+* Correct error message
+* Babel plugin: Throw unexpected error with location
+
+Improvements:
+
+* Don't wrap named function default export in brackets
+
+Performance:
+
+* Avoid unnecessary `path.get()`
+* Avoid sparse array
+
+Refactor:
+
+* Separate trackers functions to separate vars
+* Move `tracker.js` + `internal.js` into `lib/shared`
+* Simplify `eval` shim
+* Simplify module object creation by `splitAsync`
+* Simplify logic for removal of trailing semi-colon in output JS
+* `addComments` helper function
+* Add file ext on require
+
+Dependencies:
+
+* Update dependencies
+
+No code:
+
+* Fix JSDoc comments
+* Clarify code comment
+* Code comments
+
+Tests:
+
+* Add tests for object methods shorthand output
+* Fix error reporting [fix]
+* Fix reporting of internal Jest errors [fix]
+* Reset split points after tests [fix]
+* Improve tests for number primitives [improve]
+* Add test for large negative boxed BigInt [improve]
+* Test for rendering strings in functions with double quotes [improve]
+* Move `resetSplitPoints` helper into own file [refactor]
+* Correct indentation [nocode]
+* Correct JSDoc comment [nocode]
+
+Dev:
+
+* Use NPM v7 for development
+* Fix test NPM scripts [fix]
+* Update dev dependencies
+* Update Github Actions dependencies
+* CI run lint and coverage with Node v16
+* Update ESLint configs
+* Remove `cross-env` + `coveralls` dev dependencies
+
+Docs:
+
+* Remove indentation from license
+
+Example:
+
+* Update dependencies
+
 ## 0.4.0
 
 Breaking changes:
