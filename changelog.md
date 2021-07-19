@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.1
+
+Bug fixes:
+
+* Fix hang where functions refer to other functions in same block but different scope in circular pattern
+
 ## 0.5.0
 
 Breaking changes:
