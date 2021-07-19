@@ -2783,6 +2783,53 @@ describe('Functions', () => {
 			});
 		});
 
+		itSerializes('in same block but different scope with circularity (injected)', {
+			in() {
+				function outer(ext) {
+					let other = (0, () => ext);
+					const inner = (0, () => [ext, other]);
+					const setOther = v => other = v; // eslint-disable-line no-return-assign
+					return [inner, other, setOther];
+				}
+
+				const [inner1, other1, setOther1] = outer({ext: 1});
+				const [inner2, other2, setOther2] = outer({ext: 2});
+				setOther1(other2);
+				setOther2(other1);
+				return [inner1, inner2];
+			},
+			out: `(()=>{
+				const a=(a,b)=>[
+						a=>b=a,
+						()=>a,
+						()=>[a,b]
+					],
+					b=a({ext:1}),
+					c=a({ext:2});
+				c[0](b[1]);
+				b[0](c[1]);
+				return[b[2],c[2]]
+			})()`,
+			validate([inner1, inner2]) {
+				expect(inner1).toBeFunction();
+				const res1 = inner1();
+				expect(res1).toBeArrayOfSize(2);
+				const [ext1, other1] = res1;
+				expect(ext1).toEqual({ext: 1});
+				expect(other1).toBeFunction();
+
+				expect(inner2).toBeFunction();
+				const res2 = inner2();
+				expect(res2).toBeArrayOfSize(2);
+				const [ext2, other2] = res2;
+				expect(ext2).toEqual({ext: 2});
+				expect(other2).toBeFunction();
+
+				expect(other1()).toBe(ext2);
+				expect(other2()).toBe(ext1);
+			}
+		});
+
 		describe('in nested scope (injected)', () => {
 			itSerializes('single instantiation', {
 				in() {
