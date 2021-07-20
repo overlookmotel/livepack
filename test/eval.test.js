@@ -632,7 +632,7 @@ describe('eval', () => {
 					out: `(()=>{
 						const a={},
 							b=(
-								(extA,outer,extD,extE,module,exports)=>[
+								(extA,extD,extE,module,exports,outer)=>[
 									outer=(0,function(){
 										const extB=2;
 										return()=>{
@@ -647,7 +647,7 @@ describe('eval', () => {
 										}
 									}.apply(a,b)
 								]
-							)(1,void 0,4,5,a,{}),
+							)(1,4,5,a,{}),
 							c=b[1](
 								2,
 								{x:7},
@@ -751,7 +751,7 @@ describe('eval', () => {
 					out: `(()=>{
 						const a={},
 							b=(
-								(extA,outer,extD,extE,module,exports)=>[
+								(extA,extD,extE,module,exports,outer)=>[
 									outer=(0,function(){
 										const extB=2;
 										return function(){
@@ -764,7 +764,7 @@ describe('eval', () => {
 										return eval("({extA, extB, extC, extD, extE, typeofExtF: typeof extF, outer, module, exports, this: this, arguments: arguments})")
 									}
 								]
-							)(1,void 0,4,5,a,{}),
+							)(1,4,5,a,{}),
 							c=b[1](2);
 						a.exports=c;
 						Object.assign(b[0],{isOuter:true});
@@ -862,7 +862,7 @@ describe('eval', () => {
 					out: `(()=>{
 						const a={},
 							b=(
-								(extA,outer,extD,extE,module,exports)=>[
+								(extA,extD,extE,module,exports,outer)=>[
 									outer=(0,function(){
 										const extB=2;
 										return()=>{
@@ -877,7 +877,7 @@ describe('eval', () => {
 										}
 									}.apply(a,b)
 								]
-							)(1,void 0,4,5,a,{}),
+							)(1,4,5,a,{}),
 							c=b[1](
 								2,
 								{x:7},
@@ -1247,7 +1247,7 @@ describe('eval', () => {
 				out: `(()=>{
 					const a={},
 						b=(
-							(extA,outer,module,exports)=>[
+							(extA,module,exports,outer)=>[
 								outer=(0,function(){
 									const extB=2;
 									return eval("() => {const extC = 3; return eval(\\"const extD = 4; () => ({extA, extB, extC, extD, outer, module, exports, this: this, arguments: arguments})\\")}")
@@ -1259,7 +1259,7 @@ describe('eval', () => {
 									}
 								}.apply(a,b)
 							]
-						)(1,void 0,a,{}),
+						)(1,a,{}),
 						c=b[1](
 							{x:5},
 							function(){return arguments}(6,7,8),

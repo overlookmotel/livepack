@@ -182,13 +182,13 @@ describe('Object methods', () => {
 			out: `(()=>{
 				const a=(
 						(a,b,c)=>[
-							b=>a=b,
+							a=>c=a,
 							{x(){
-								Reflect.get(Object.getPrototypeOf(a),"x",this).call(this);
-								return[b,c]
+								Reflect.get(Object.getPrototypeOf(c),"x",this).call(this);
+								return[a,b]
 							}}.x
 						]
-					)(void 0,1,2),
+					)(1,2),
 					b=Object,
 					c=b.assign(
 						b.create(
