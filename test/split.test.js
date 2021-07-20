@@ -761,6 +761,78 @@ describe('Code splitting', () => {
 					}
 				});
 			});
+
+			itSerializesEntries(
+				'function with value added to prototype where function is only used within another function in same scope',
+				{
+					in() {
+						const x = 1;
+						function fnWithProto() { return x; }
+						fnWithProto.prototype.y = 2;
+						const fn = (0, () => fnWithProto);
+						return {
+							one: {fn},
+							two: {fn}
+						};
+					},
+					outCjs: {
+						'one.js': 'module.exports={fn:require("./common.HKBZZ3YI.js")}',
+						'two.js': 'module.exports={fn:require("./common.HKBZZ3YI.js")}',
+						'common.HKBZZ3YI.js': `
+							"use strict";
+							const a=(
+									(a,b)=>[
+										a=function fnWithProto(){return b},
+										()=>a
+									]
+								)(void 0,1);
+							a[0].prototype.y=2;
+							module.exports=a[1]
+						`
+					},
+					outEsm: {
+						'one.js': 'import a from"./common.X3DLHVKZ.js";export default{fn:a}',
+						'two.js': 'import a from"./common.X3DLHVKZ.js";export default{fn:a}',
+						'common.X3DLHVKZ.js': `
+							const a=(
+									(a,b)=>[
+										a=function fnWithProto(){return b},
+										()=>a
+									]
+								)(void 0,1);
+							a[0].prototype.y=2;
+							export default a[1]
+						`
+					},
+					outJs: {
+						'one.js': '{fn:require("./common.HKBZZ3YI.js")}',
+						'two.js': '{fn:require("./common.HKBZZ3YI.js")}',
+						'common.HKBZZ3YI.js': `
+							"use strict";
+							const a=(
+									(a,b)=>[
+										a=function fnWithProto(){return b},
+										()=>a
+									]
+								)(void 0,1);
+							a[0].prototype.y=2;
+							module.exports=a[1]
+						`
+					},
+					validate({one, two}) {
+						expect(one).toBeObject();
+						expect(one).toHaveOwnPropertyNames(['fn']);
+						expect(two).toBeObject();
+						expect(two).toHaveOwnPropertyNames(['fn']);
+						const {fn} = one;
+						expect(fn).toBeFunction();
+						const fnWithProto = fn();
+						expect(fnWithProto()).toBe(1);
+						expect(fnWithProto.prototype.y).toBe(2);
+						expect(two.fn).toBe(fn);
+					}
+				}
+			);
 		});
 
 		describe('circular values', () => {

@@ -1122,19 +1122,15 @@ describe('Classes', () => {
 							}
 						},
 						c=(
-							b=>[
-								a=>b=a,
-								class{
-									constructor(...a){
-										return Reflect.construct(Object.getPrototypeOf(b),a,b)
-									}
+							b=>b=(0,class{
+								constructor(...a){
+									return Reflect.construct(Object.getPrototypeOf(b),a,b)
 								}
-							]
-						)(),
-						d=a(c[1],b);
-					c[0](d);
-					a(d.prototype,b.prototype);
-					return d
+							})
+						)();
+					a(c,b);
+					a(c.prototype,b.prototype);
+					return c
 				})()`,
 				validate(Klass) {
 					expect(Klass).toBeFunction();
@@ -2787,8 +2783,7 @@ describe('Classes', () => {
 			out: `(()=>{
 				const a=(
 						(b,c,d)=>[
-							a=>d=a,
-							class Y{
+							d=class Y{
 								constructor(){
 									const a=Reflect.construct(Object.getPrototypeOf(Y),[],Y);
 									a.z=[b,c];
@@ -2824,14 +2819,7 @@ describe('Classes', () => {
 						}
 					),
 					f=e.prototype,
-					g=d(
-						c(
-							a[1],
-							{bar:{value:a[2],writable:true,configurable:true}}
-						),
-						e
-					);
-				a[0](g);
+					g=a[0];
 				c(f,{
 					foo:{
 						value:{foo(){this.y=2}}.foo,
@@ -2839,6 +2827,13 @@ describe('Classes', () => {
 						configurable:true
 					}
 				});
+				d(
+					c(
+						g,
+						{bar:{value:a[1],writable:true,configurable:true}}
+					),
+					e
+				);
 				delete g.name;
 				c(g,{
 					name:{value:"Y",configurable:true}
@@ -2848,7 +2843,7 @@ describe('Classes', () => {
 						g.prototype,
 						{
 							foo:{
-								value:a[3],
+								value:a[2],
 								writable:true,
 								configurable:true
 							}
@@ -2888,19 +2883,15 @@ describe('Classes', () => {
 					const a=Object.setPrototypeOf,
 						b=class X{},
 						c=(
-							b=>[
-								a=>b=a,
-								class Y{
-									constructor(...a){
-										return Reflect.construct(Object.getPrototypeOf(b),a,b)
-									}
+							b=>b=class Y{
+								constructor(...a){
+									return Reflect.construct(Object.getPrototypeOf(b),a,b)
 								}
-							]
-						)(),
-						d=a(c[1],b);
-					c[0](d);
-					a(d.prototype,b.prototype);
-					return{Y:d}
+							}
+						)();
+					a(c,b);
+					a(c.prototype,b.prototype);
+					return{Y:c}
 				})()`,
 				validate(obj) {
 					expect(obj).toBeObject();
@@ -2929,19 +2920,15 @@ describe('Classes', () => {
 					const a=Object.setPrototypeOf,
 						b=class X{},
 						c=(
-							b=>[
-								a=>b=a,
-								class Y{
-									constructor(...a){
-										return Reflect.construct(Object.getPrototypeOf(b),a,b)
-									}
+							b=>b=class Y{
+								constructor(...a){
+									return Reflect.construct(Object.getPrototypeOf(b),a,b)
 								}
-							]
-						)(),
-						d=a(c[1],b);
-					c[0](d);
-					a(d.prototype,b.prototype);
-					return{Y:d}
+							}
+						)();
+					a(c,b);
+					a(c.prototype,b.prototype);
+					return{Y:c}
 				})()`,
 				validate(obj) {
 					expect(obj).toBeObject();
@@ -2966,19 +2953,15 @@ describe('Classes', () => {
 					const a=Object.setPrototypeOf,
 						b=class X{},
 						c=(
-							b=>[
-								a=>b=a,
-								class undefined{
-									constructor(...a){
-										return Reflect.construct(Object.getPrototypeOf(b),a,b)
-									}
+							b=>b=class undefined{
+								constructor(...a){
+									return Reflect.construct(Object.getPrototypeOf(b),a,b)
 								}
-							]
-						)(),
-						d=a(c[1],b);
-					c[0](d);
-					a(d.prototype,b.prototype);
-					return{undefined:d}
+							}
+						)();
+					a(c,b);
+					a(c.prototype,b.prototype);
+					return{undefined:c}
 				})()`,
 				validate(obj) {
 					expect(obj).toBeObject();
