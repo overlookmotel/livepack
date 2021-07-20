@@ -64,7 +64,7 @@ describe('register', () => {
 			const js = await serializeInNewProcess(
 				`module.exports = require(${JSON.stringify(path)});`
 			);
-			expect(js).toStartWith('(()=>{"use strict";const a=void 0,b=(');
+			expect(js).toStartWith('(()=>{"use strict";const a=(');
 		});
 
 		it('source-map', async () => {

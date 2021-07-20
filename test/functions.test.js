@@ -985,7 +985,7 @@ describe('Functions', () => {
 						extB = 1;
 					return () => [extA, extB];
 				},
-				out: '((a,b)=>()=>[a,b])(void 0,1)',
+				out: '((a,b)=>()=>[b,a])(1)',
 				validate(fn) {
 					expect(fn).toBeFunction();
 					expect(fn()).toEqual([undefined, 1]);
@@ -999,7 +999,7 @@ describe('Functions', () => {
 						extC = 1;
 					return () => [extA, extB, extC];
 				},
-				out: '(()=>{const a=void 0;return((a,b,c)=>()=>[a,b,c])(a,a,1)})()',
+				out: '((a,b,c)=>()=>[b,c,a])(1)',
 				validate(fn) {
 					expect(fn).toBeFunction();
 					expect(fn()).toEqual([undefined, undefined, 1]);
@@ -3455,9 +3455,9 @@ describe('Functions', () => {
 					out: `(()=>{
 						const a={},
 							b=((a,b)=>[
-								a=(0,()=>b),
-								()=>a
-							])(void 0,a);
+								b=(0,()=>a),
+								()=>b
+							])(a);
 						a.x=b[0];
 						return b[1]
 					})()`,
@@ -3484,20 +3484,19 @@ describe('Functions', () => {
 					},
 					out: `(()=>{
 						const a=(a,b)=>[
-								a=(0,()=>b),
-								()=>a
+								b=(0,()=>a),
+								()=>b
 							],
 							b={num:0},
-							c=void 0,
-							d=a(c,b),
-							e={num:1},
-							f=a(c,e),
-							g={num:2},
-							h=a(c,g);
-						b.fn=d[0];
-						e.fn=f[0];
-						g.fn=h[0];
-						return[d[1],f[1],h[1]]
+							c=a(b),
+							d={num:1},
+							e=a(d),
+							f={num:2},
+							g=a(f);
+						b.fn=c[0];
+						d.fn=e[0];
+						f.fn=g[0];
+						return[c[1],e[1],g[1]]
 					})()`,
 					validate(arr) {
 						expect(arr).toBeArrayOfSize(3);
@@ -3734,7 +3733,15 @@ describe('Functions', () => {
 					obj.fn = () => [obj, ext];
 					return obj;
 				},
-				out: '(()=>{const a=((a,b)=>[b=>a=b,()=>[a,b]])(void 0,{x:1}),b={fn:a[1]};a[0](b);return b})()',
+				out: `(()=>{
+					const a=((a,b)=>[
+							a=>b=a,
+							()=>[b,a]
+						])({x:1}),
+						b={fn:a[1]};
+					a[0](b);
+					return b
+				})()`,
 				validate(obj) {
 					expect(obj).toBeObject();
 					expect(obj).toContainAllKeys(['fn']);
@@ -3756,19 +3763,18 @@ describe('Functions', () => {
 					return obj;
 				},
 				out: `(()=>{
-					const a=void 0,
-						b=(
+					const a=(
 							(a,b,c)=>[
-								b=>a=b,
 								a=>b=a,
-								()=>[a,b,c]
+								a=>c=a,
+								()=>[b,c,a]
 							]
-						)(a,a,{x:1}),
-						c={fn:b[2]},
-						d={inner:c};
-					b[0](d);
-					b[1](c);
-					return d
+						)({x:1}),
+						b={fn:a[2]},
+						c={inner:b};
+					a[0](c);
+					a[1](b);
+					return c
 				})()`,
 				validate(obj) {
 					expect(obj).toBeObject();
@@ -6013,20 +6019,19 @@ describe('Functions', () => {
 				},
 				out: `(()=>{
 					const a=[],
-						b=void 0,
-						c=((b,c,d)=>(
-							c=(0,()=>d.push("f")),
+						b=((b,c,d)=>(
+							d=(0,()=>b.push("f")),
 							[
-								a=>b=a,
-								{valueOf(){d.push("valueOf");return 1}}.valueOf,
+								a=>c=a,
+								{valueOf(){b.push("valueOf");return 1}}.valueOf,
 								()=>{
-									b+c(),(()=>{const a=0;a=0})()
+									c+d(),(()=>{const a=0;a=0})()
 								},
-								()=>b
+								()=>c
 							]
-						))(b,b,a);
-					c[0]({valueOf:c[1]});
-					return[c[2],c[3],a]
+						))(a);
+					b[0]({valueOf:b[1]});
+					return[b[2],b[3],a]
 				})()`,
 				validate([setA, getA, calls]) {
 					expect(setA).toBeFunction();
@@ -6056,21 +6061,20 @@ describe('Functions', () => {
 				},
 				out: `(()=>{
 					const a=[],
-						b=void 0,
-						c=((b,c,d)=>(
-							c=(0,()=>d.push("f")),
+						b=((b,c,d)=>(
+							d=(0,()=>b.push("f")),
 							[
-								a=>b=a,
-								{valueOf(){d.push("valueOf");return 1}}.valueOf,
+								a=>c=a,
+								{valueOf(){b.push("valueOf");return 1}}.valueOf,
 								()=>{
-									b>>>c(),
+									c>>>d(),
 									(()=>{const a=0;a=0})()
 								},
-								()=>b
+								()=>c
 							]
-						))(b,b,a);
-					c[0]({valueOf:c[1]});
-					return[c[2],c[3],a]
+						))(a);
+					b[0]({valueOf:b[1]});
+					return[b[2],b[3],a]
 				})()`,
 				validate([setA, getA, calls]) {
 					expect(setA).toBeFunction();
@@ -6162,14 +6166,14 @@ describe('Functions', () => {
 				out: `(()=>{
 					const a=[],
 						b=((b,c)=>[
-							a=>b=a,
-							{valueOf(){c.push("valueOf");return 1}}.valueOf,
+							a=>c=a,
+							{valueOf(){b.push("valueOf");return 1}}.valueOf,
 							()=>{
-								+b,
+								+c,
 								(()=>{const a=0;a=0})()
 							},
-							()=>b
-						])(void 0,a);
+							()=>c
+						])(a);
 					b[0]({valueOf:b[1]});
 					return[b[2],b[3],a]
 				})()`,
@@ -6201,14 +6205,14 @@ describe('Functions', () => {
 				out: `(()=>{
 					const a=[],
 						b=((b,c)=>[
-							a=>b=a,
-							{valueOf(){c.push("valueOf");return 1}}.valueOf,
+							a=>c=a,
+							{valueOf(){b.push("valueOf");return 1}}.valueOf,
 							()=>{
-								+b,
+								+c,
 								(()=>{const a=0;a=0})()
 							},
-							()=>b
-						])(void 0,a);
+							()=>c
+						])(a);
 					b[0]({valueOf:b[1]});
 					return[b[2],b[3],a]
 				})()`,

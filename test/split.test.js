@@ -776,45 +776,45 @@ describe('Code splitting', () => {
 						};
 					},
 					outCjs: {
-						'one.js': 'module.exports={fn:require("./common.HKBZZ3YI.js")}',
-						'two.js': 'module.exports={fn:require("./common.HKBZZ3YI.js")}',
-						'common.HKBZZ3YI.js': `
+						'one.js': 'module.exports={fn:require("./common.G74ZZDP4.js")}',
+						'two.js': 'module.exports={fn:require("./common.G74ZZDP4.js")}',
+						'common.G74ZZDP4.js': `
 							"use strict";
 							const a=(
 									(a,b)=>[
-										a=function fnWithProto(){return b},
-										()=>a
+										b=function fnWithProto(){return a},
+										()=>b
 									]
-								)(void 0,1);
+								)(1);
 							a[0].prototype.y=2;
 							module.exports=a[1]
 						`
 					},
 					outEsm: {
-						'one.js': 'import a from"./common.X3DLHVKZ.js";export default{fn:a}',
-						'two.js': 'import a from"./common.X3DLHVKZ.js";export default{fn:a}',
-						'common.X3DLHVKZ.js': `
+						'one.js': 'import a from"./common.6D5VV3PG.js";export default{fn:a}',
+						'two.js': 'import a from"./common.6D5VV3PG.js";export default{fn:a}',
+						'common.6D5VV3PG.js': `
 							const a=(
 									(a,b)=>[
-										a=function fnWithProto(){return b},
-										()=>a
+										b=function fnWithProto(){return a},
+										()=>b
 									]
-								)(void 0,1);
+								)(1);
 							a[0].prototype.y=2;
 							export default a[1]
 						`
 					},
 					outJs: {
-						'one.js': '{fn:require("./common.HKBZZ3YI.js")}',
-						'two.js': '{fn:require("./common.HKBZZ3YI.js")}',
-						'common.HKBZZ3YI.js': `
+						'one.js': '{fn:require("./common.G74ZZDP4.js")}',
+						'two.js': '{fn:require("./common.G74ZZDP4.js")}',
+						'common.G74ZZDP4.js': `
 							"use strict";
 							const a=(
 									(a,b)=>[
-										a=function fnWithProto(){return b},
-										()=>a
+										b=function fnWithProto(){return a},
+										()=>b
 									]
-								)(void 0,1);
+								)(1);
 							a[0].prototype.y=2;
 							module.exports=a[1]
 						`
