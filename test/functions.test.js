@@ -2709,78 +2709,462 @@ describe('Functions', () => {
 			});
 		});
 
-		describe('in same scope (injected)', () => {
-			itSerializes('single instantiation', {
-				in() {
-					function outer(extA) {
-						function other() { return extA; }
-						return function inner() { return [extA, other]; };
+		describe('in same scope', () => {
+			describe('consistently (not injected)', () => {
+				itSerializes('single instantiation', {
+					in() {
+						function outer(extA) {
+							function other() { return extA; }
+							return function inner() { return [extA, other]; };
+						}
+						return outer({extA: 1});
+					},
+					out: `
+					((a,b)=>(
+						b=function other(){return a},
+						function inner(){return[a,b]}
+					))({extA:1})
+				`,
+					validate(fn) {
+						expect(fn).toBeFunction();
+						const res = fn();
+						expect(res).toBeArrayOfSize(2);
+						const [resA, other] = res;
+						expect(resA).toEqual({extA: 1});
+						expect(other).toBeFunction();
+						expect(other()).toBe(resA);
 					}
-					return outer({extA: 1});
-				},
-				out: `(()=>{
-					const a=(
-							(a,b)=>[
-								a=>b=a,
-								function other(){return a},
-								function inner(){return[a,b]}
-							]
-						)({extA:1});
-					a[0](a[1]);
-					return a[2]
+				});
+
+				itSerializes('multiple instantiations', {
+					in({ctx}) {
+						function outer(extA) {
+							function other() { return extA; }
+							return function inner() { return [extA, other]; };
+						}
+						const extAs = [{extA1: 1}, {extA2: 2}, {extA3: 3}];
+						ctx.extAs = extAs;
+						return extAs.map(extA => outer(extA));
+					},
+					out: `(()=>{
+					const a=(a,b)=>(
+							b=function other(){return a},
+							function inner(){return[a,b]}
+						);
+					return[a({extA1:1}),a({extA2:2}),a({extA3:3})]
 				})()`,
-				validate(fn) {
-					expect(fn).toBeFunction();
-					const res = fn();
-					expect(res).toBeArrayOfSize(2);
-					const [resA, other] = res;
-					expect(resA).toEqual({extA: 1});
-					expect(other).toBeFunction();
-					expect(other()).toBe(resA);
-				}
+					validate(arr, {ctx: {extAs}}) {
+						expect(arr).toBeArrayOfSize(3);
+						const others = arr.map((inner, index) => {
+							expect(inner).toBeFunction();
+							const res = inner();
+							expect(res).toBeArrayOfSize(2);
+							const [extA, other] = res;
+							expect(extA).toEqual(extAs[index]);
+							expect(other).toBeFunction();
+							expect(other()).toBe(extA);
+							return other;
+						});
+
+						expect(others[0]).not.toBe(others[1]);
+						expect(others[0]).not.toBe(others[2]);
+					}
+				});
 			});
 
-			itSerializes('multiple instantiations', {
-				in({ctx}) {
-					function outer(extA) {
-						function other() { return extA; }
-						return function inner() { return [extA, other]; };
-					}
-					const extAs = [{extA1: 1}, {extA2: 2}, {extA3: 3}];
-					ctx.extAs = extAs;
-					return extAs.map(extA => outer(extA));
-				},
-				out: `(()=>{
-					const a=(a,b)=>[
-							a=>b=a,
-							function other(){return a},
-							function inner(){return[a,b]}
-						],
-						b=a({extA1:1}),
-						c=a({extA2:2}),
-						d=a({extA3:3});
-					b[0](b[1]);
-					c[0](c[1]);
-					d[0](d[1]);
-					return[b[2],c[2],d[2]]
-				})()`,
-				validate(arr, {ctx: {extAs}}) {
-					expect(arr).toBeArrayOfSize(3);
-					const others = arr.map((inner, index) => {
-						expect(inner).toBeFunction();
-						const res = inner();
-						expect(res).toBeArrayOfSize(2);
-						const [extA, other] = res;
-						expect(extA).toEqual(extAs[index]);
-						expect(other).toBeFunction();
-						expect(other()).toBe(extA);
-						return other;
+			describe(
+				'multiple instantiations where scope var is function defined in scope only sometimes (injected)',
+				() => {
+					itSerializes('and other times another value', {
+						in() {
+							function outer(ext) {
+								const other = ext.extA === 1
+									? function other() { return ext; }
+									: {extB: 3};
+								return function inner() { return [ext, other]; };
+							}
+							return [outer({extA: 1}), outer({extA: 2})];
+						},
+						out: `(()=>{
+							const a=(a,b)=>[
+									a=>b=a,
+									function other(){return a},
+									function inner(){return[a,b]}
+								],
+								b=a({extA:1});
+							b[0](b[1]);
+							return[b[2],a({extA:2},{extB:3})[2]]
+						})()`,
+						validate(arr) {
+							expect(arr).toBeArrayOfSize(2);
+							const [inner1, inner2] = arr;
+							expect(inner1).toBeFunction();
+							const res1 = inner1();
+							expect(res1).toBeArrayOfSize(2);
+							const [ext1, other1] = res1;
+							expect(ext1).toEqual({extA: 1});
+							expect(other1).toBeFunction();
+							expect(other1()).toBe(ext1);
+
+							expect(inner2).toBeFunction();
+							expect(inner2()).toEqual([{extA: 2}, {extB: 3}]);
+						}
 					});
 
-					expect(others[0]).not.toBe(others[1]);
-					expect(others[0]).not.toBe(others[2]);
+					itSerializes('and other times undefined', {
+						in() {
+							function outer(ext) {
+								const other = ext.extA === 1
+									? function other() { return ext; }
+									: undefined;
+								return function inner() { return [ext, other]; };
+							}
+							return [outer({extA: 1}), outer({extA: 2})];
+						},
+						out: `(()=>{
+							const a=(a,b)=>[
+									a=>b=a,
+									function other(){return a},
+									function inner(){return[a,b]}
+								],
+								b=a({extA:1});
+							b[0](b[1]);
+							return[b[2],a({extA:2})[2]]
+						})()`,
+						validate(arr) {
+							expect(arr).toBeArrayOfSize(2);
+							const [inner1, inner2] = arr;
+							expect(inner1).toBeFunction();
+							const res1 = inner1();
+							expect(res1).toBeArrayOfSize(2);
+							const [ext1, other1] = res1;
+							expect(ext1).toEqual({extA: 1});
+							expect(other1).toBeFunction();
+							expect(other1()).toBe(ext1);
+
+							expect(inner2).toBeFunction();
+							expect(inner2()).toEqual([{extA: 2}, undefined]);
+						}
+					});
 				}
+			);
+
+			describe('consistently with extra props set on function (returned but not injected)', () => {
+				describe('simple props', () => {
+					itSerializes('single instantiation', {
+						in() {
+							function outer(extA) {
+								function other() { return extA; }
+								other.x = 1;
+								return function inner() { return [extA, other]; };
+							}
+							return outer({extA: 1});
+						},
+						out: `(()=>{
+							const a=(
+									(a,b)=>[
+										b=function other(){return a},
+										function inner(){return[a,b]}
+									]
+								)({extA:1});
+							Object.assign(a[0],{x:1});
+							return a[1]
+						})()`,
+						validate(fn) {
+							expect(fn).toBeFunction();
+							const res = fn();
+							expect(res).toBeArrayOfSize(2);
+							const [resA, other] = res;
+							expect(resA).toEqual({extA: 1});
+							expect(other).toBeFunction();
+							expect(other()).toBe(resA);
+							expect(other.x).toBe(1);
+						}
+					});
+
+					itSerializes('multiple instantiations', {
+						in({ctx}) {
+							function outer(extA, index) {
+								function other() { return extA; }
+								other.index = index;
+								return function inner() { return [extA, other]; };
+							}
+							const extAs = [{extA1: 1}, {extA2: 2}, {extA3: 3}];
+							ctx.extAs = extAs;
+							return extAs.map((extA, index) => outer(extA, index));
+						},
+						out: `(()=>{
+							const a=(a,b)=>[
+									b=function other(){return a},
+									function inner(){return[a,b]}
+								],
+								b=a({extA1:1}),
+								c=Object.assign,
+								d=a({extA2:2}),
+								e=a({extA3:3});
+							c(b[0],{index:0});
+							c(d[0],{index:1});
+							c(e[0],{index:2});
+							return[b[1],d[1],e[1]]
+						})()`,
+						validate(arr, {ctx: {extAs}}) {
+							expect(arr).toBeArrayOfSize(3);
+							const others = arr.map((inner, index) => {
+								expect(inner).toBeFunction();
+								const res = inner();
+								expect(res).toBeArrayOfSize(2);
+								const [extA, other] = res;
+								expect(extA).toEqual(extAs[index]);
+								expect(other).toBeFunction();
+								expect(other()).toBe(extA);
+								expect(other.index).toBe(index);
+								return other;
+							});
+
+							expect(others[0]).not.toBe(others[1]);
+							expect(others[0]).not.toBe(others[2]);
+						}
+					});
+				});
+
+				describe('props requiring descriptor', () => {
+					itSerializes('single instantiation', {
+						in() {
+							function outer(extA) {
+								function other() { return extA; }
+								Object.defineProperty(other, 'x', {value: 1});
+								return function inner() { return [extA, other]; };
+							}
+							return outer({extA: 1});
+						},
+						out: `(()=>{
+							const a=(
+									(a,b)=>[
+										b=function other(){return a},
+										function inner(){return[a,b]}
+									]
+								)({extA:1});
+							Object.defineProperties(a[0],{x:{value:1}});
+							return a[1]
+						})()`,
+						validate(fn) {
+							expect(fn).toBeFunction();
+							const res = fn();
+							expect(res).toBeArrayOfSize(2);
+							const [resA, other] = res;
+							expect(resA).toEqual({extA: 1});
+							expect(other).toBeFunction();
+							expect(other()).toBe(resA);
+							expect(other.x).toBe(1);
+							expect(other).toHaveDescriptorModifiersFor('x', false, false, false);
+						}
+					});
+
+					itSerializes('multiple instantiations', {
+						in({ctx}) {
+							function outer(extA, index) {
+								function other() { return extA; }
+								Object.defineProperty(other, 'index', {value: index});
+								return function inner() { return [extA, other]; };
+							}
+							const extAs = [{extA1: 1}, {extA2: 2}, {extA3: 3}];
+							ctx.extAs = extAs;
+							return extAs.map((extA, index) => outer(extA, index));
+						},
+						out: `(()=>{
+							const a=(a,b)=>[
+									b=function other(){return a},
+									function inner(){return[a,b]}
+								],
+								b=a({extA1:1}),
+								c=Object.defineProperties,
+								d=a({extA2:2}),
+								e=a({extA3:3});
+							c(b[0],{index:{value:0}});
+							c(d[0],{index:{value:1}});
+							c(e[0],{index:{value:2}});
+							return[b[1],d[1],e[1]]
+						})()`,
+						validate(arr, {ctx: {extAs}}) {
+							expect(arr).toBeArrayOfSize(3);
+							const others = arr.map((inner, index) => {
+								expect(inner).toBeFunction();
+								const res = inner();
+								expect(res).toBeArrayOfSize(2);
+								const [extA, other] = res;
+								expect(extA).toEqual(extAs[index]);
+								expect(other).toBeFunction();
+								expect(other()).toBe(extA);
+								expect(other.index).toBe(index);
+								expect(other).toHaveDescriptorModifiersFor('index', false, false, false);
+								return other;
+							});
+
+							expect(others[0]).not.toBe(others[1]);
+							expect(others[0]).not.toBe(others[2]);
+						}
+					});
+				});
+
+				describe('circular props', () => {
+					itSerializes('single instantiation', {
+						in() {
+							function outer(extA) {
+								function other() { return extA; }
+								other.other = other;
+								return function inner() { return [extA, other]; };
+							}
+							return outer({extA: 1});
+						},
+						out: `(()=>{
+							const a=(
+									(a,b)=>[
+										b=function other(){return a},
+										function inner(){return[a,b]}
+									]
+								)({extA:1}),
+								b=a[0];
+							b.other=b;
+							return a[1]
+						})()`,
+						validate(fn) {
+							expect(fn).toBeFunction();
+							const res = fn();
+							expect(res).toBeArrayOfSize(2);
+							const [resA, other] = res;
+							expect(resA).toEqual({extA: 1});
+							expect(other).toBeFunction();
+							expect(other()).toBe(resA);
+							expect(other.other).toBe(other);
+						}
+					});
+
+					itSerializes('multiple instantiations', {
+						in({ctx}) {
+							function outer(extA) {
+								function other() { return extA; }
+								other.other = other;
+								return function inner() { return [extA, other]; };
+							}
+							const extAs = [{extA1: 1}, {extA2: 2}, {extA3: 3}];
+							ctx.extAs = extAs;
+							return extAs.map(extA => outer(extA));
+						},
+						out: `(()=>{
+							const a=(a,b)=>[
+									b=function other(){return a},
+									function inner(){return[a,b]}
+								],
+								b=a({extA1:1}),
+								c=b[0],
+								d=a({extA2:2}),
+								e=d[0],
+								f=a({extA3:3}),
+								g=f[0];
+							c.other=c;
+							e.other=e;
+							g.other=g;
+							return[b[1],d[1],f[1]]
+						})()`,
+						validate(arr, {ctx: {extAs}}) {
+							expect(arr).toBeArrayOfSize(3);
+							const others = arr.map((inner, index) => {
+								expect(inner).toBeFunction();
+								const res = inner();
+								expect(res).toBeArrayOfSize(2);
+								const [extA, other] = res;
+								expect(extA).toEqual(extAs[index]);
+								expect(other).toBeFunction();
+								expect(other()).toBe(extA);
+								expect(other.other).toBe(other);
+								return other;
+							});
+
+							expect(others[0]).not.toBe(others[1]);
+							expect(others[0]).not.toBe(others[2]);
+						}
+					});
+				});
 			});
+
+			describe(
+				'consistently with extra props set on function prototype (returned but not injected)',
+				() => {
+					itSerializes('single instantiation', {
+						in() {
+							function outer(extA) {
+								function other() { return extA; }
+								other.prototype.x = 1;
+								return function inner() { return [extA, other]; };
+							}
+							return outer({extA: 1});
+						},
+						out: `(()=>{
+							const a=(
+									(a,b)=>[
+										b=function other(){return a},
+										function inner(){return[a,b]}
+									]
+								)({extA:1});
+							a[0].prototype.x=1;
+							return a[1]
+						})()`,
+						validate(fn) {
+							expect(fn).toBeFunction();
+							const res = fn();
+							expect(res).toBeArrayOfSize(2);
+							const [resA, other] = res;
+							expect(resA).toEqual({extA: 1});
+							expect(other).toBeFunction();
+							expect(other()).toBe(resA);
+							expect(other.prototype.x).toBe(1);
+						}
+					});
+
+					itSerializes('multiple instantiations', {
+						in({ctx}) {
+							function outer(extA, index) {
+								function other() { return extA; }
+								other.prototype.index = index;
+								return function inner() { return [extA, other]; };
+							}
+							const extAs = [{extA1: 1}, {extA2: 2}, {extA3: 3}];
+							ctx.extAs = extAs;
+							return extAs.map((extA, index) => outer(extA, index));
+						},
+						out: `(()=>{
+							const a=(a,b)=>[
+									b=function other(){return a},
+									function inner(){return[a,b]}
+								],
+								b=a({extA1:1}),
+								c=a({extA2:2}),
+								d=a({extA3:3});
+							b[0].prototype.index=0;
+							c[0].prototype.index=1;
+							d[0].prototype.index=2;
+							return[b[1],c[1],d[1]]
+						})()`,
+						validate(arr, {ctx: {extAs}}) {
+							expect(arr).toBeArrayOfSize(3);
+							const others = arr.map((inner, index) => {
+								expect(inner).toBeFunction();
+								const res = inner();
+								expect(res).toBeArrayOfSize(2);
+								const [extA, other] = res;
+								expect(extA).toEqual(extAs[index]);
+								expect(other).toBeFunction();
+								expect(other()).toBe(extA);
+								expect(other.prototype.index).toBe(index);
+								return other;
+							});
+
+							expect(others[0]).not.toBe(others[1]);
+							expect(others[0]).not.toBe(others[2]);
+						}
+					});
+				}
+			);
 		});
 
 		itSerializes('in same block but different scope with circularity (injected)', {
@@ -2924,7 +3308,7 @@ describe('Functions', () => {
 			});
 		});
 
-		describe('circular references between functions (both injected)', () => {
+		describe('circular references between functions (neither injected)', () => {
 			itSerializes('single instantiation', {
 				in() {
 					function outer(extA) {
@@ -2934,20 +3318,12 @@ describe('Functions', () => {
 					}
 					return outer({extA: 1});
 				},
-				out: `(()=>{
-					const a=(
-							(a,b,c)=>[
-								a=>b=a,
-								a=>c=a,
-								function inner2(){return[a,c]},
-								function inner1(){return[a,b]}
-							]
-						)({extA:1}),
-						b=a[3];
-					a[0](a[2]);
-					a[1](b);
-					return b
-				})()`,
+				out: `
+					((a,b,c)=>(
+						b=function inner2(){return[a,c]},
+						c=function inner1(){return[a,b]}
+					))({extA:1})
+				`,
 				validate(fn) {
 					expect(fn).toBeFunction();
 					const inner1Res = fn();
@@ -2975,25 +3351,11 @@ describe('Functions', () => {
 					return extAs.map(extA => outer(extA));
 				},
 				out: `(()=>{
-					const a=(a,b,c)=>[
-							a=>b=a,
-							a=>c=a,
-							function inner2(){return[a,c]},
-							function inner1(){return[a,b]}
-						],
-						b=a({extA1:1}),
-						c=b[3],
-						d=a({extA2:2}),
-						e=d[3],
-						f=a({extA3:3}),
-						g=f[3];
-					b[0](b[2]);
-					b[1](c);
-					d[0](d[2]);
-					d[1](e);
-					f[0](f[2]);
-					f[1](g);
-					return[c,e,g]
+					const a=(a,b,c)=>(
+							b=function inner2(){return[a,c]},
+							c=function inner1(){return[a,b]}
+						);
+					return[a({extA1:1}),a({extA2:2}),a({extA3:3})]
 				})()`,
 				validate(arr, {ctx: {extAs}}) {
 					expect(arr).toBeArrayOfSize(3);
@@ -3092,11 +3454,12 @@ describe('Functions', () => {
 					},
 					out: `(()=>{
 						const a={},
-							b=((a,b)=>[b=>a=b,()=>b,()=>a])(void 0,a),
-							c=b[1];
-						a.x=c;
-						b[0](c);
-						return b[2]
+							b=((a,b)=>[
+								a=(0,()=>b),
+								()=>a
+							])(void 0,a);
+						a.x=b[0];
+						return b[1]
 					})()`,
 					validate(fn1) {
 						expect(fn1).toBeFunction();
@@ -3121,8 +3484,7 @@ describe('Functions', () => {
 					},
 					out: `(()=>{
 						const a=(a,b)=>[
-								b=>a=b,
-								()=>b,
+								a=(0,()=>b),
 								()=>a
 							],
 							b={num:0},
@@ -3131,17 +3493,11 @@ describe('Functions', () => {
 							e={num:1},
 							f=a(c,e),
 							g={num:2},
-							h=a(c,g),
-							i=d[1],
-							j=f[1],
-							k=h[1];
-						b.fn=i;
-						d[0](i);
-						e.fn=j;
-						f[0](j);
-						g.fn=k;
-						h[0](k);
-						return[d[2],f[2],h[2]]
+							h=a(c,g);
+						b.fn=d[0];
+						e.fn=f[0];
+						g.fn=h[0];
+						return[d[1],f[1],h[1]]
 					})()`,
 					validate(arr) {
 						expect(arr).toBeArrayOfSize(3);
@@ -3248,15 +3604,12 @@ describe('Functions', () => {
 						const a=(
 								(a,b)=>[
 									b=>a=b,
-									a=>b=a,
 									function x(){return b},
-									function y(){return a}
+									b=function y(){return a}
 								]
-							)(),
-							b=a[3];
-						a[0]({x:a[2]});
-						a[1](b);
-						return b
+							)();
+						a[0]({x:a[1]});
+						return a[2]
 					})()`,
 					validate(fn1) {
 						expect(fn1).toBeFunction();
@@ -3284,23 +3637,16 @@ describe('Functions', () => {
 					out: `(()=>{
 						const a=(a,b)=>[
 								b=>a=b,
-								a=>b=a,
 								function x(){return b},
-								function y(){return a}
+								b=function y(){return a}
 							],
 							b=a(),
-							c=b[3],
-							d=a(),
-							e=d[3],
-							f=a(),
-							g=f[3];
-						b[0]({num:0,x:b[2]});
-						b[1](c);
-						d[0]({num:1,x:d[2]});
-						d[1](e);
-						f[0]({num:2,x:f[2]});
-						f[1](g);
-						return[c,e,g]
+							c=a(),
+							d=a();
+						b[0]({num:0,x:b[1]});
+						c[0]({num:1,x:c[1]});
+						d[0]({num:2,x:d[1]});
+						return[b[2],c[2],d[2]]
 					})()`,
 					validate(arr) {
 						expect(arr).toBeArrayOfSize(3);
@@ -5668,19 +6014,19 @@ describe('Functions', () => {
 				out: `(()=>{
 					const a=[],
 						b=void 0,
-						c=((b,c,d)=>[
-							a=>b=a,
-							a=>c=a,
-							{valueOf(){d.push("valueOf");return 1}}.valueOf,
-							()=>d.push("f"),
-							()=>{
-								b+c(),(()=>{const a=0;a=0})()
-							},
-							()=>b
-						])(b,b,a);
-					c[0]({valueOf:c[2]});
-					c[1](c[3]);
-					return[c[4],c[5],a]
+						c=((b,c,d)=>(
+							c=(0,()=>d.push("f")),
+							[
+								a=>b=a,
+								{valueOf(){d.push("valueOf");return 1}}.valueOf,
+								()=>{
+									b+c(),(()=>{const a=0;a=0})()
+								},
+								()=>b
+							]
+						))(b,b,a);
+					c[0]({valueOf:c[1]});
+					return[c[2],c[3],a]
 				})()`,
 				validate([setA, getA, calls]) {
 					expect(setA).toBeFunction();
@@ -5711,20 +6057,20 @@ describe('Functions', () => {
 				out: `(()=>{
 					const a=[],
 						b=void 0,
-						c=((b,c,d)=>[
-							a=>b=a,
-							a=>c=a,
-							{valueOf(){d.push("valueOf");return 1}}.valueOf,
-							()=>d.push("f"),
-							()=>{
-								b>>>c(),
-								(()=>{const a=0;a=0})()
-							},
-							()=>b
-						])(b,b,a);
-					c[0]({valueOf:c[2]});
-					c[1](c[3]);
-					return[c[4],c[5],a]
+						c=((b,c,d)=>(
+							c=(0,()=>d.push("f")),
+							[
+								a=>b=a,
+								{valueOf(){d.push("valueOf");return 1}}.valueOf,
+								()=>{
+									b>>>c(),
+									(()=>{const a=0;a=0})()
+								},
+								()=>b
+							]
+						))(b,b,a);
+					c[0]({valueOf:c[1]});
+					return[c[2],c[3],a]
 				})()`,
 				validate([setA, getA, calls]) {
 					expect(setA).toBeFunction();
