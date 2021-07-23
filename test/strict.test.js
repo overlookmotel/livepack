@@ -1941,10 +1941,6 @@ describe('Strict mode', () => {
 
 			describe('inherits strict/sloppy mode from outer environment when executing eval', () => {
 				it('strict mode, throws SyntaxError for syntax illegal in strict mode', () => {
-					// Babel should throw a parser error, before code gets evaluated but Babel parser `strictMode`
-					// option currently has a fault.
-					// https://github.com/babel/babel/pull/13548
-					// TODO Change this test when Babel bug is fixed.
 					'use strict';
 					expect(() => eval('(function(x, x) { return x; })')).toThrowWithMessage(
 						SyntaxError, 'Duplicate parameter name not allowed in this context'
