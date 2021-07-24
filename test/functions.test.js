@@ -4556,174 +4556,465 @@ describe('Functions', () => {
 	});
 
 	describe('self-referencing functions', () => {
-		itSerializes('own function', {
-			in() {
-				return function x() {
-					return x;
-				};
-			},
-			out: 'function x(){return x}',
-			validate: fn => expect(fn()).toBe(fn)
-		});
+		describe('function expression', () => {
+			itSerializes('referencing own function', {
+				in() {
+					return function x() {
+						return x;
+					};
+				},
+				out: 'function x(){return x}',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					expect(fn.name).toBe('x');
+					expect(fn()).toBe(fn);
+				}
+			});
 
-		itSerializes('upper function', {
-			in() {
-				return function x() {
-					return () => x;
-				};
-			},
-			out: 'function x(){return()=>x}',
-			validate: fn => expect(fn()()).toBe(fn)
-		});
+			itSerializes('referencing upper function', {
+				in() {
+					return function x() {
+						return () => x;
+					};
+				},
+				out: 'function x(){return()=>x}',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					expect(fn.name).toBe('x');
+					const innerFn = fn();
+					expect(innerFn).toBeFunction();
+					expect(innerFn()).toBe(fn);
+				}
+			});
 
-		describe('with name', () => {
-			describe('changed', () => {
-				itSerializes('simple case', {
+			describe('with name', () => {
+				describe('changed', () => {
+					itSerializes('simple case', {
+						in() {
+							const fn = function fn() { return fn; };
+							Object.defineProperty(fn, 'name', {value: 'newName'});
+							return fn;
+						},
+						out: 'function newName(){return newName}',
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn.name).toBe('newName');
+							expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
+							expect(fn()).toBe(fn);
+						}
+					});
+
+					itSerializes('with clashing external var', {
+						in() {
+							const ext = 1;
+							const fn = function fn() { return [fn, ext]; };
+							Object.defineProperty(fn, 'name', {value: 'ext'});
+							return fn;
+						},
+						out: '(a=>function ext(){return[ext,a]})(1)',
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn.name).toBe('ext');
+							expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
+							const res = fn();
+							expect(res).toBeArrayOfSize(2);
+							expect(res[0]).toBe(fn);
+							expect(res[1]).toBe(1);
+						}
+					});
+
+					itSerializes('with clashing internal var', {
+						in() {
+							const fn = function fn() {
+								const int = 1;
+								return [fn, int];
+							};
+							Object.defineProperty(fn, 'name', {value: 'int'});
+							return fn;
+						},
+						out: 'function int(){const a=1;return[int,a]}',
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn.name).toBe('int');
+							expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
+							const res = fn();
+							expect(res).toBeArrayOfSize(2);
+							expect(res[0]).toBe(fn);
+							expect(res[1]).toBe(1);
+						}
+					});
+
+					itSerializes('with clashing global var', {
+						in() {
+							const fn = function fn() {
+								return [fn, console];
+							};
+							Object.defineProperty(fn, 'name', {value: 'console'});
+							return fn;
+						},
+						out: 'Object.defineProperties(function a(){return[a,console]},{name:{value:"console"}})',
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn.name).toBe('console');
+							expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
+							const res = fn();
+							expect(res).toBeArrayOfSize(2);
+							expect(res[0]).toBe(fn);
+							expect(res[1]).toBe(console);
+						}
+					});
+
+					itSerializes('with clashing function name', {
+						in() {
+							const fn = function fn() {
+								function int() { return 2; }
+								return [fn, int];
+							};
+							Object.defineProperty(fn, 'name', {value: 'int'});
+							return fn;
+						},
+						out: `Object.defineProperties(
+							function a(){function int(){return 2}return[a,int]},
+							{name:{value:"int"}}
+						)`,
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn.name).toBe('int');
+							expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
+							const res = fn();
+							expect(res).toBeArrayOfSize(2);
+							expect(res[0]).toBe(fn);
+							const fn2 = res[1];
+							expect(fn2).toBeFunction();
+							expect(fn2.name).toBe('int');
+							expect(fn2()).toBe(2);
+						}
+					});
+
+					itSerializes('to an invalid identifier', {
+						in() {
+							const fn = function fn() { return fn; };
+							Object.defineProperty(fn, 'name', {value: 'new-name'});
+							return fn;
+						},
+						out: 'Object.defineProperties(function a(){return a},{name:{value:"new-name"}})',
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn.name).toBe('new-name');
+							expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
+							expect(fn()).toBe(fn);
+						}
+					});
+
+					itSerializes('to a non-string', {
+						in() {
+							const fn = function fn() { return fn; };
+							Object.defineProperty(fn, 'name', {value: {x: 1}});
+							return fn;
+						},
+						out: 'Object.defineProperties(function a(){return a},{name:{value:{x:1}}})',
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn.name).toEqual({x: 1});
+							expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
+							expect(fn()).toBe(fn);
+						}
+					});
+				});
+
+				itSerializes('deleted', {
 					in() {
-						function fn() { return fn; }
-						Object.defineProperty(fn, 'name', {value: 'newName'});
+						const fn = function fn() { return fn; };
+						delete fn.name;
 						return fn;
 					},
-					out: 'function newName(){return newName}',
+					out: '(()=>{const a=function a(){return a};delete a.name;return a})()',
 					validate(fn) {
 						expect(fn).toBeFunction();
-						expect(fn.name).toBe('newName');
-						expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
+						expect(fn).not.toHaveOwnProperty('name');
+						expect(fn.name).toBe('');
 						expect(fn()).toBe(fn);
 					}
 				});
 
-				itSerializes('with clashing external var', {
+				itSerializes('deleted and redefined (i.e. property order changed)', {
 					in() {
-						const ext = 1;
-						function fn() { return [fn, ext]; }
-						Object.defineProperty(fn, 'name', {value: 'ext'});
+						const fn = function fn() { return fn; };
+						delete fn.name;
+						Object.defineProperty(fn, 'name', {value: 'fn', configurable: true});
 						return fn;
 					},
-					out: '(a=>function ext(){return[ext,a]})(1)',
+					out: `(()=>{
+						const a=function fn(){return fn};
+						delete a.name;
+						Object.defineProperties(a,{name:{value:"fn",configurable:true}});
+						return a
+					})()`,
 					validate(fn) {
 						expect(fn).toBeFunction();
-						expect(fn.name).toBe('ext');
+						expect(fn.name).toBe('fn');
 						expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
-						const res = fn();
-						expect(res).toBeArrayOfSize(2);
-						expect(res[0]).toBe(fn);
-						expect(res[1]).toBe(1);
-					}
-				});
-
-				itSerializes('with clashing internal var', {
-					in() {
-						function fn() {
-							const int = 1;
-							return [fn, int];
-						}
-						Object.defineProperty(fn, 'name', {value: 'int'});
-						return fn;
-					},
-					out: 'function int(){const a=1;return[int,a]}',
-					validate(fn) {
-						expect(fn).toBeFunction();
-						expect(fn.name).toBe('int');
-						expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
-						const res = fn();
-						expect(res).toBeArrayOfSize(2);
-						expect(res[0]).toBe(fn);
-						expect(res[1]).toBe(1);
-					}
-				});
-
-				itSerializes('with clashing global var', {
-					in() {
-						function fn() {
-							return [fn, console];
-						}
-						Object.defineProperty(fn, 'name', {value: 'console'});
-						return fn;
-					},
-					out: 'Object.defineProperties(function a(){return[a,console]},{name:{value:"console"}})',
-					validate(fn) {
-						expect(fn).toBeFunction();
-						expect(fn.name).toBe('console');
-						expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
-						const res = fn();
-						expect(res).toBeArrayOfSize(2);
-						expect(res[0]).toBe(fn);
-						expect(res[1]).toBe(console);
-					}
-				});
-
-				itSerializes('with clashing function name', {
-					in() {
-						function fn() {
-							function int() { return 2; }
-							return [fn, int];
-						}
-						Object.defineProperty(fn, 'name', {value: 'int'});
-						return fn;
-					},
-					out: `Object.defineProperties(
-						function a(){function int(){return 2}return[a,int]},
-						{name:{value:"int"}}
-					)`,
-					validate(fn) {
-						expect(fn).toBeFunction();
-						expect(fn.name).toBe('int');
-						expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
-						const res = fn();
-						expect(res).toBeArrayOfSize(2);
-						expect(res[0]).toBe(fn);
-						const fn2 = res[1];
-						expect(fn2).toBeFunction();
-						expect(fn2.name).toBe('int');
-						expect(fn2()).toBe(2);
-					}
-				});
-
-				itSerializes('to an invalid identifier', {
-					in() {
-						function fn() { return fn; }
-						Object.defineProperty(fn, 'name', {value: 'new-name'});
-						return fn;
-					},
-					out: 'Object.defineProperties(function a(){return a},{name:{value:"new-name"}})',
-					validate(fn) {
-						expect(fn).toBeFunction();
-						expect(fn.name).toBe('new-name');
-						expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
-						expect(fn()).toBe(fn);
-					}
-				});
-
-				itSerializes('to a non-string', {
-					in() {
-						function fn() { return fn; }
-						Object.defineProperty(fn, 'name', {value: {x: 1}});
-						return fn;
-					},
-					out: 'Object.defineProperties(function a(){return a},{name:{value:{x:1}}})',
-					validate(fn) {
-						expect(fn).toBeFunction();
-						expect(fn.name).toEqual({x: 1});
-						expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
+						expect(
+							Object.getOwnPropertyNames(fn).filter(key => key !== 'arguments' && key !== 'caller')
+						).toEqual(['length', 'prototype', 'name']);
 						expect(fn()).toBe(fn);
 					}
 				});
 			});
+		});
 
-			itSerializes('deleted', {
+		describe('function declaration', () => {
+			itSerializes('referencing own function', {
 				in() {
-					function fn() { return fn; }
-					delete fn.name;
-					return fn;
+					function x() {
+						return x;
+					}
+					return x;
 				},
-				out: '(()=>{const a=function a(){return a};delete a.name;return a})()',
+				out: '(a=>a=function x(){return a})()',
 				validate(fn) {
 					expect(fn).toBeFunction();
-					expect(fn).not.toHaveOwnProperty('name');
-					expect(fn.name).toBe('');
+					expect(fn.name).toBe('x');
 					expect(fn()).toBe(fn);
 				}
+			});
+
+			itSerializes('referencing upper function', {
+				in() {
+					function x() {
+						return () => x;
+					}
+					return x;
+				},
+				out: '(a=>a=function x(){return()=>a})()',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					expect(fn.name).toBe('x');
+					const innerFn = fn();
+					expect(innerFn).toBeFunction();
+					expect(innerFn()).toBe(fn);
+				}
+			});
+
+			itSerializes('where var overridden', {
+				in() {
+					function x() {
+						return x;
+					}
+					const f = x;
+					x = 1; // eslint-disable-line no-func-assign
+					return f;
+				},
+				out: '(a=>function x(){return a})(1)',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					expect(fn.name).toBe('x');
+					expect(fn()).toBe(1);
+				}
+			});
+
+			itSerializes('setting var internally', {
+				in() {
+					function x() {
+						const fn = x;
+						x = 1; // eslint-disable-line no-func-assign
+						return fn;
+					}
+					return () => x;
+				},
+				out: '(b=>(b=function x(){const a=b;b=1;return a},()=>b))()',
+				validate(getX) {
+					expect(getX).toBeFunction();
+					const fn = getX();
+					expect(fn.name).toBe('x');
+					expect(fn()).toBe(fn);
+					expect(getX()).toBe(1);
+					expect(fn()).toBe(1);
+				}
+			});
+
+			describe('with name', () => {
+				describe('changed', () => {
+					itSerializes('simple case', {
+						in() {
+							function fn() { return fn; }
+							Object.defineProperty(fn, 'name', {value: 'newName'});
+							return fn;
+						},
+						out: '(a=>a=function newName(){return a})()',
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn.name).toBe('newName');
+							expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
+							expect(fn()).toBe(fn);
+						}
+					});
+
+					itSerializes('with clashing external var', {
+						in() {
+							const ext = 1;
+							function fn() { return [fn, ext]; }
+							Object.defineProperty(fn, 'name', {value: 'ext'});
+							return fn;
+						},
+						out: '((a,b)=>b=function ext(){return[b,a]})(1)',
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn.name).toBe('ext');
+							expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
+							const res = fn();
+							expect(res).toBeArrayOfSize(2);
+							expect(res[0]).toBe(fn);
+							expect(res[1]).toBe(1);
+						}
+					});
+
+					itSerializes('with clashing internal var', {
+						in() {
+							function fn() {
+								const int = 1;
+								return [fn, int];
+							}
+							Object.defineProperty(fn, 'name', {value: 'int'});
+							return fn;
+						},
+						out: '(b=>b=function int(){const a=1;return[b,a]})()',
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn.name).toBe('int');
+							expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
+							const res = fn();
+							expect(res).toBeArrayOfSize(2);
+							expect(res[0]).toBe(fn);
+							expect(res[1]).toBe(1);
+						}
+					});
+
+					itSerializes('with clashing global var', {
+						in() {
+							function fn() {
+								return [fn, console];
+							}
+							Object.defineProperty(fn, 'name', {value: 'console'});
+							return fn;
+						},
+						out: `(()=>{
+							const a=(a=>a=(0,function(){return[a,console]}))();
+							Object.defineProperties(a,{name:{value:"console"}});
+							return a
+						})()`,
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn.name).toBe('console');
+							expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
+							const res = fn();
+							expect(res).toBeArrayOfSize(2);
+							expect(res[0]).toBe(fn);
+							expect(res[1]).toBe(console);
+						}
+					});
+
+					itSerializes('with clashing function name', {
+						in() {
+							function fn() {
+								function int() { return 2; }
+								return [fn, int];
+							}
+							Object.defineProperty(fn, 'name', {value: 'int'});
+							return fn;
+						},
+						out: '(a=>a=function int(){function int(){return 2}return[a,int]})()',
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn.name).toBe('int');
+							expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
+							const res = fn();
+							expect(res).toBeArrayOfSize(2);
+							expect(res[0]).toBe(fn);
+							const fn2 = res[1];
+							expect(fn2).toBeFunction();
+							expect(fn2.name).toBe('int');
+							expect(fn2()).toBe(2);
+						}
+					});
+
+					itSerializes('to an invalid identifier', {
+						in() {
+							function fn() { return fn; }
+							Object.defineProperty(fn, 'name', {value: 'new-name'});
+							return fn;
+						},
+						out: `(()=>{
+							const a=(a=>a=(0,function(){return a}))();
+							Object.defineProperties(a,{name:{value:"new-name"}});
+							return a
+						})()`,
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn.name).toBe('new-name');
+							expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
+							expect(fn()).toBe(fn);
+						}
+					});
+
+					itSerializes('to a non-string', {
+						in() {
+							function fn() { return fn; }
+							Object.defineProperty(fn, 'name', {value: {x: 1}});
+							return fn;
+						},
+						out: `(()=>{
+							const a=(a=>a=(0,function(){return a}))();
+							Object.defineProperties(a,{name:{value:{x:1}}});
+							return a
+						})()`,
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn.name).toEqual({x: 1});
+							expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
+							expect(fn()).toBe(fn);
+						}
+					});
+				});
+
+				itSerializes('deleted', {
+					in() {
+						function fn() { return fn; }
+						delete fn.name;
+						return fn;
+					},
+					out: '(()=>{const a=(a=>a=(0,function(){return a}))();delete a.name;return a})()',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						expect(fn).not.toHaveOwnProperty('name');
+						expect(fn.name).toBe('');
+						expect(fn()).toBe(fn);
+					}
+				});
+
+				itSerializes('deleted and redefined (i.e. property order changed)', {
+					in() {
+						function fn() { return fn; }
+						delete fn.name;
+						Object.defineProperty(fn, 'name', {value: 'fn', configurable: true});
+						return fn;
+					},
+					out: `(()=>{
+						const a=(a=>a=function fn(){return a})();
+						delete a.name;
+						Object.defineProperties(a,{name:{value:"fn",configurable:true}});
+						return a
+					})()`,
+					validate(fn) {
+						expect(fn).toBeFunction();
+						expect(fn.name).toBe('fn');
+						expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
+						expect(
+							Object.getOwnPropertyNames(fn).filter(key => key !== 'arguments' && key !== 'caller')
+						).toEqual(['length', 'prototype', 'name']);
+						expect(fn()).toBe(fn);
+					}
+				});
 			});
 		});
 	});

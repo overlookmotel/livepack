@@ -214,9 +214,9 @@ describe('Options', () => {
 
 			describe('does not unwrap', () => {
 				it('named function', () => {
-					function fn() {
+					const fn = function fn() {
 						console.log(fn); // eslint-disable-line no-console
-					}
+					};
 					expect(serialize(fn, {exec: true, format: 'cjs'})).toBe('(function fn(){console.log(fn)})()');
 				});
 
