@@ -710,6 +710,256 @@ describe('Classes', () => {
 		});
 	});
 
+	describe('referencing class name', () => {
+		describe('in constructor', () => {
+			itSerializes('class declaration', {
+				in() {
+					class X {
+						constructor() {
+							this.x = X;
+						}
+					}
+					const Klass = X;
+					X = 1; // eslint-disable-line no-class-assign
+					return Klass;
+				},
+				out: 'class X{constructor(){this.x=X}}',
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					expect(Klass.name).toBe('X');
+					const instance = new Klass();
+					expect(instance).toBeObject();
+					expect(instance).toContainAllKeys(['x']);
+					expect(instance.x).toBe(Klass);
+					expect(Object.getPrototypeOf(instance)).toBe(Klass.prototype);
+				}
+			});
+
+			itSerializes('class expression', {
+				in() {
+					const X = 1; // eslint-disable-line no-unused-vars
+					return class X { // eslint-disable-line no-shadow
+						constructor() {
+							this.x = X;
+						}
+					};
+				},
+				out: 'class X{constructor(){this.x=X}}',
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					expect(Klass.name).toBe('X');
+					const instance = new Klass();
+					expect(instance).toBeObject();
+					expect(instance).toContainAllKeys(['x']);
+					expect(instance.x).toBe(Klass);
+					expect(Object.getPrototypeOf(instance)).toBe(Klass.prototype);
+				}
+			});
+		});
+
+		describe('in prototype method', () => {
+			itSerializes('class declaration', {
+				in() {
+					class X {
+						meth() { // eslint-disable-line class-methods-use-this
+							return X;
+						}
+					}
+					const Klass = X;
+					X = 1; // eslint-disable-line no-class-assign
+					return Klass;
+				},
+				out: `(()=>{
+					const a=class X{},
+						b=(a=>[
+							b=>a=b,
+							{meth(){return a}}.meth
+						])();
+					b[0](a);
+					Object.defineProperties(a.prototype,{meth:{value:b[1],writable:true,configurable:true}});
+					return a
+				})()`,
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					expect(Klass.name).toBe('X');
+					expect(Klass.prototype.meth).toBeFunction();
+					const instance = new Klass();
+					expect(instance).toBeObject();
+					expect(instance.meth()).toBe(Klass);
+					expect(Object.getPrototypeOf(instance)).toBe(Klass.prototype);
+				}
+			});
+
+			itSerializes('class expression', {
+				in() {
+					const X = 1; // eslint-disable-line no-unused-vars
+					return class X { // eslint-disable-line no-shadow
+						meth() { // eslint-disable-line class-methods-use-this
+							return X;
+						}
+					};
+				},
+				out: `(()=>{
+					const a=class X{},
+						b=(a=>[
+							b=>a=b,
+							{meth(){return a}}.meth
+						])();
+					b[0](a);
+					Object.defineProperties(a.prototype,{meth:{value:b[1],writable:true,configurable:true}});
+					return a
+				})()`,
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					expect(Klass.name).toBe('X');
+					expect(Klass.prototype.meth).toBeFunction();
+					const instance = new Klass();
+					expect(instance).toBeObject();
+					expect(instance.meth()).toBe(Klass);
+					expect(Object.getPrototypeOf(instance)).toBe(Klass.prototype);
+				}
+			});
+		});
+
+		describe('in static method', () => {
+			itSerializes('class declaration', {
+				in() {
+					class X {
+						static meth() {
+							return X;
+						}
+					}
+					const Klass = X;
+					X = 1; // eslint-disable-line no-class-assign
+					return Klass;
+				},
+				out: `(()=>{
+					const a=(a=>[
+							b=>a=b,
+							{meth(){return a}}.meth
+						])(),
+						b=Object.defineProperties(
+							class{},
+							{
+								meth:{value:a[1],writable:true,configurable:true},
+								name:{value:"X",configurable:true}
+							}
+						);
+					a[0](b);
+					return b
+				})()`,
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					expect(Klass.name).toBe('X');
+					expect(Klass.meth).toBeFunction();
+					expect(Klass.meth()).toBe(Klass);
+				}
+			});
+
+			itSerializes('class expression', {
+				in() {
+					const X = 1; // eslint-disable-line no-unused-vars
+					return class X { // eslint-disable-line no-shadow
+						static meth() {
+							return X;
+						}
+					};
+				},
+				out: `(()=>{
+					const a=(a=>[
+							b=>a=b,
+							{meth(){return a}}.meth
+						])(),
+						b=Object.defineProperties(
+							class{},
+							{
+								meth:{value:a[1],writable:true,configurable:true},
+								name:{value:"X",configurable:true}
+							}
+						);
+					a[0](b);
+					return b
+				})()`,
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					expect(Klass.name).toBe('X');
+					expect(Klass.meth).toBeFunction();
+					expect(Klass.meth()).toBe(Klass);
+				}
+			});
+		});
+
+		describe('in extends clause', () => {
+			itSerializes('class declaration', {
+				in() {
+					class X extends function fn() { return X; } {}
+					const Klass = X;
+					X = 1; // eslint-disable-line no-class-assign
+					return Klass;
+				},
+				out: `(()=>{
+					const a=Object.setPrototypeOf,
+						b=(a=>[
+							b=>a=b,
+							function fn(){return a}
+						])(),
+						c=b[1],
+						d=a(
+							class X{
+								constructor(...a){return Reflect.construct(Object.getPrototypeOf(X),a,X)}
+							},
+							c
+						);
+					b[0](d);
+					a(d.prototype,c.prototype);
+					return d
+				})()`,
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					expect(Klass.name).toBe('X');
+					const fn = Object.getPrototypeOf(Klass);
+					expect(fn).toBeFunction();
+					expect(fn.name).toBe('fn');
+					expect(Klass.prototype).toHavePrototype(fn.prototype);
+					expect(fn()).toBe(Klass);
+				}
+			});
+
+			itSerializes('class expression', {
+				in() {
+					const X = 1; // Should be ESLint `no-unused-vars` error on this line, but ESLint gets it wrong
+					return class X extends function fn() { return X; } {}; // eslint-disable-line no-shadow
+				},
+				out: `(()=>{
+					const a=Object.setPrototypeOf,
+						b=(a=>[
+							b=>a=b,
+							function fn(){return a}
+						])(),
+						c=b[1],
+						d=a(
+							class X{
+								constructor(...a){return Reflect.construct(Object.getPrototypeOf(X),a,X)}
+							},
+							c
+						);
+					b[0](d);
+					a(d.prototype,c.prototype);
+					return d
+				})()`,
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					expect(Klass.name).toBe('X');
+					const fn = Object.getPrototypeOf(Klass);
+					expect(fn).toBeFunction();
+					expect(fn.name).toBe('fn');
+					expect(Klass.prototype).toHavePrototype(fn.prototype);
+					expect(fn()).toBe(Klass);
+				}
+			});
+		});
+	});
+
 	describe('with computed method keys', () => {
 		itSerializes('prototype methods', {
 			in() {
@@ -2749,6 +2999,109 @@ describe('Classes', () => {
 			});
 		});
 
+		itSerializes('var used in transpiled super not confused with var in surrounding scope', {
+			in() {
+				class X {
+					constructor() {
+						this.x = Y; // eslint-disable-line no-use-before-define
+					}
+					foo() {
+						this.y = Y; // eslint-disable-line no-use-before-define
+					}
+					static bar() {
+						this.y = Y; // eslint-disable-line no-use-before-define
+					}
+				}
+				class Y extends X {
+					constructor() {
+						super();
+						this.z = Y;
+					}
+					foo() {
+						super.foo();
+						return Y;
+					}
+					static bar() {
+						super.bar();
+						return Y;
+					}
+				}
+				const Klass = Y;
+				Y = 1; // eslint-disable-line no-class-assign
+				return Klass;
+			},
+			out: `(()=>{
+				const a=(a=>[
+						b=>a=b,
+						{bar(){
+							Reflect.get(Object.getPrototypeOf(a),"bar",this).call(this);
+							return a
+						}}.bar,
+						{foo(){
+							Reflect.get(Object.getPrototypeOf(a.prototype),"foo",this).call(this);
+							return a}
+						}.foo
+					])(),
+					b=Object,
+					c=b.defineProperties,
+					d=b.setPrototypeOf,
+					e=(a=>[
+						class{constructor(){this.x=a}},
+						{bar(){this.y=a}}.bar,
+						{foo(){this.y=a}}.foo
+					])(1),
+					f=c(
+						e[0],
+						{
+							bar:{value:e[1],writable:true,configurable:true},
+							name:{value:"X",configurable:true}
+						}
+					),
+					g=f.prototype,
+					h=d(
+						c(
+							class Y{
+								constructor(){
+									const a=Reflect.construct(Object.getPrototypeOf(Y),[],Y);
+									a.z=Y;
+									return a
+								}
+							},
+							{bar:{value:a[1],writable:true,configurable:true}}
+						),
+						f
+					);
+				a[0](h);
+				c(
+					g,
+					{foo:{value:e[2],writable:true,configurable:true}}
+				);
+				delete h.name;
+				c(
+					h,
+					{name:{value:"Y",configurable:true}}
+				);
+				d(
+					c(
+						h.prototype,
+						{foo:{value:a[2],writable:true,configurable:true}}
+					),
+					g
+				);
+				return h
+			})()`,
+			validate(Klass) {
+				expect(Klass).toBeFunction();
+				expect(Klass.bar()).toBe(Klass);
+				expect(Klass.y).toBe(1);
+				const instance = new Klass();
+				expect(instance.x).toEqual(1);
+				expect(instance.z).toBe(Klass);
+				expect(instance.foo()).toEqual(Klass);
+				expect(instance.y).toEqual(1);
+			}
+		});
+
 		itSerializes('globals used in transpiled super do not clash with upper scope vars', {
 			in() {
 				class X {
@@ -2782,28 +3135,32 @@ describe('Classes', () => {
 			},
 			out: `(()=>{
 				const a=(
-						(b,c,d)=>[
-							d=class Y{
+						(b,c)=>[
+							class Y{
 								constructor(){
 									const a=Reflect.construct(Object.getPrototypeOf(Y),[],Y);
 									a.z=[b,c];
 									return a
 								}
 							},
-							{bar(){
-								Reflect.get(Object.getPrototypeOf(d),"bar",this).call(this);
-								return[b,c]
-							}}.bar,
-							{foo(){
-								Reflect.get(Object.getPrototypeOf(d.prototype),"foo",this).call(this);
-								return[b,c]
-							}}.foo
+							a=>[
+								b=>a=b,
+								{bar(){
+									Reflect.get(Object.getPrototypeOf(a),"bar",this).call(this);
+									return[b,c]
+								}}.bar,
+								{foo(){
+									Reflect.get(Object.getPrototypeOf(a.prototype),"foo",this).call(this);
+									return[b,c]
+								}}.foo
+							]
 						]
 					)(4,5),
-					b=Object,
-					c=b.defineProperties,
-					d=b.setPrototypeOf,
-					e=c(
+					b=a[1](),
+					c=Object,
+					d=c.defineProperties,
+					e=c.setPrototypeOf,
+					f=d(
 						class{
 							constructor(){
 								this.x=1
@@ -2818,40 +3175,40 @@ describe('Classes', () => {
 							name:{value:"X",configurable:true}
 						}
 					),
-					f=e.prototype,
-					g=a[0];
-				c(f,{
+					g=f.prototype,
+					h=e(
+						d(
+							a[0],
+							{bar:{value:b[1],writable:true,configurable:true}}
+						),
+						f
+					);
+				b[0](h);
+				d(g,{
 					foo:{
 						value:{foo(){this.y=2}}.foo,
 						writable:true,
 						configurable:true
 					}
 				});
-				d(
-					c(
-						g,
-						{bar:{value:a[1],writable:true,configurable:true}}
-					),
-					e
-				);
-				delete g.name;
-				c(g,{
+				delete h.name;
+				d(h,{
 					name:{value:"Y",configurable:true}
 				});
-				d(
-					c(
-						g.prototype,
+				e(
+					d(
+						h.prototype,
 						{
 							foo:{
-								value:a[2],
+								value:b[2],
 								writable:true,
 								configurable:true
 							}
 						}
 					),
-					f
+					g
 				);
-				return g
+				return h
 			})()`,
 			validate(Klass) {
 				expect(Klass).toBeFunction();
