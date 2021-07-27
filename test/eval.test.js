@@ -360,6 +360,45 @@ describe('eval', () => {
 						}
 					});
 				});
+
+				// These tests don't work due to https://github.com/overlookmotel/livepack/issues/102
+				// TODO Uncomment these tests once that issue resolved.
+				// eslint-disable-next-line jest/no-commented-out-tests
+				/*
+				describe('defined in method key', () => {
+					itSerializes('in function', {
+						in() {
+							let fn;
+							const ext = {x: 1}; // eslint-disable-line no-unused-vars
+							const obj = { // eslint-disable-line no-unused-vars
+								[fn = eval('() => ext')]() {}
+							};
+							return fn;
+						},
+						out: '(a=>()=>a)({x:1})',
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn()).toEqual({x: 1});
+						}
+					});
+
+					itSerializes('at top level', {
+						in: () => requireFixture(`
+							let fn;
+							const ext = {x: 1};
+							const obj = {
+								[fn = eval('() => ext')]() {}
+							};
+							module.exports = fn;
+						`),
+						out: '(a=>()=>a)({x:1})',
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn()).toEqual({x: 1});
+						}
+					});
+				});
+				*/
 			});
 
 			itSerializesEqual('multi-statement eval', {
