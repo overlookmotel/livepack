@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.5.2
+
+Bug fixes:
+
+* Self-referencing function declarations treat self as external var
+* Class name used within class separate scope from outside
+* Handle `eval` in dynamic method key
+
+Improvements:
+
+* No unnecessary injection of functions into own scopes
+* Order scope function params with least used last
+
+Performance:
+
+* Babel plugin: Faster find parent path
+
+Dependencies:
+
+* Update dependencies
+
+No code:
+
+* Remove erroneous code comment
+* Clarify code comment
+
+Dev:
+
+* Update dev dependencies
+
 ## 0.5.1
 
 Bug fixes:
