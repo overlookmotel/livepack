@@ -123,7 +123,8 @@ describe('eval', () => {
 						},
 						out: 'function(){return arguments}({x:1},{y:2})',
 						validate(args) {
-							expect(args.toString()).toBe('[object Arguments]');
+							expect(args).toBeArguments();
+							expect(args).toHaveLength(2);
 							expect(args[0]).toEqual({x: 1});
 							expect(args[1]).toEqual({y: 2});
 						}
@@ -138,7 +139,8 @@ describe('eval', () => {
 						},
 						out: 'function(){return arguments}({x:1},{y:2})',
 						validate(args) {
-							expect(args.toString()).toBe('[object Arguments]');
+							expect(args).toBeArguments();
+							expect(args).toHaveLength(2);
 							expect(args[0]).toEqual({x: 1});
 							expect(args[1]).toEqual({y: 2});
 						}
@@ -247,11 +249,11 @@ describe('eval', () => {
 						out: '(a=>()=>a)(function(){return arguments}({x:1},{y:2}))',
 						validate(fn) {
 							expect(fn).toBeFunction();
-							const res = fn();
-							expect(res).toHaveOwnPropertyNames(['0', '1', 'length', 'callee']);
-							expect(res.toString()).toBe('[object Arguments]');
-							expect(res[0]).toEqual({x: 1});
-							expect(res[1]).toEqual({y: 2});
+							const args = fn();
+							expect(args).toBeArguments();
+							expect(args).toHaveLength(2);
+							expect(args[0]).toEqual({x: 1});
+							expect(args[1]).toEqual({y: 2});
 						}
 					});
 
@@ -265,11 +267,11 @@ describe('eval', () => {
 						out: '(a=>()=>a)(function(){return arguments}({x:1},{y:2}))',
 						validate(fn) {
 							expect(fn).toBeFunction();
-							const res = fn();
-							expect(res).toHaveOwnPropertyNames(['0', '1', 'length', 'callee']);
-							expect(res.toString()).toBe('[object Arguments]');
-							expect(res[0]).toEqual({x: 1});
-							expect(res[1]).toEqual({y: 2});
+							const args = fn();
+							expect(args).toBeArguments();
+							expect(args).toHaveLength(2);
+							expect(args[0]).toEqual({x: 1});
+							expect(args[1]).toEqual({y: 2});
 						}
 					});
 
@@ -285,11 +287,11 @@ describe('eval', () => {
 							expect(fn).toBeFunction();
 							const arg1 = {x: 1},
 								arg2 = {y: 2};
-							const res = fn(arg1, arg2);
-							expect(res).toHaveOwnPropertyNames(['0', '1', 'length', 'callee']);
-							expect(res.toString()).toBe('[object Arguments]');
-							expect(res[0]).toBe(arg1);
-							expect(res[1]).toBe(arg2);
+							const args = fn(arg1, arg2);
+							expect(args).toBeArguments();
+							expect(args).toHaveLength(2);
+							expect(args[0]).toBe(arg1);
+							expect(args[1]).toBe(arg2);
 						}
 					});
 				});
@@ -748,8 +750,8 @@ describe('eval', () => {
 					in: getInput,
 					validate(fn) {
 						const args = fn().arguments;
-						expect(args).toHaveOwnPropertyNames(['0', '1', '2', 'length', 'callee']);
-						expect(args.toString()).toBe('[object Arguments]');
+						expect(args).toBeArguments();
+						expect(args).toHaveLength(3);
 						expect(args[0]).toBe(8);
 						expect(args[1]).toBe(9);
 						expect(args[2]).toBe(10);
@@ -859,8 +861,8 @@ describe('eval', () => {
 					in: getInput,
 					validate(fn) {
 						const args = fn(88, 99, 1010).arguments;
-						expect(args).toHaveOwnPropertyNames(['0', '1', '2', 'length', 'callee']);
-						expect(args.toString()).toBe('[object Arguments]');
+						expect(args).toBeArguments();
+						expect(args).toHaveLength(3);
 						expect(args[0]).toBe(88);
 						expect(args[1]).toBe(99);
 						expect(args[2]).toBe(1010);
@@ -980,8 +982,8 @@ describe('eval', () => {
 					in: getInput,
 					validate(fn) {
 						const args = fn()().arguments;
-						expect(args).toHaveOwnPropertyNames(['0', '1', '2', 'length', 'callee']);
-						expect(args.toString()).toBe('[object Arguments]');
+						expect(args).toBeArguments();
+						expect(args).toHaveLength(3);
 						expect(args[0]).toBe(8);
 						expect(args[1]).toBe(9);
 						expect(args[2]).toBe(10);
@@ -1466,8 +1468,8 @@ describe('eval', () => {
 				in: () => input,
 				validate(fn) {
 					const args = fn()().arguments;
-					expect(args).toHaveOwnPropertyNames(['0', '1', '2', 'length', 'callee']);
-					expect(args.toString()).toBe('[object Arguments]');
+					expect(args).toBeArguments();
+					expect(args).toHaveLength(3);
 					expect(args[0]).toBe(6);
 					expect(args[1]).toBe(7);
 					expect(args[2]).toBe(8);
