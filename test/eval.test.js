@@ -642,7 +642,7 @@ describe('eval', () => {
 				// `Object.setPrototypeOf` necessary because Jest creates `module.exports` in another
 				// execution context, so prototype of `export` object is a *different* `Object.prototype`.
 				// This is just an artefact of the testing environment - does not affect real code.
-				const input = requireFixture(`
+				const getInput = () => requireFixture(`
 					Object.setPrototypeOf(exports, Object.prototype);
 
 					const extA = 1;
@@ -666,7 +666,7 @@ describe('eval', () => {
 				`);
 
 				itSerializes('serializes correctly', {
-					in: () => input,
+					in: getInput,
 					strictEnv: false,
 					out: `(()=>{
 						const a={},
@@ -705,17 +705,17 @@ describe('eval', () => {
 				});
 
 				itSerializes('can access vars from internal scope', {
-					in: () => input,
+					in: getInput,
 					validate: fn => expect(fn().extC).toBe(3)
 				});
 
 				itSerializes('can access vars from immediate upper scope', {
-					in: () => input,
+					in: getInput,
 					validate: fn => expect(fn().extB).toBe(2)
 				});
 
 				itSerializes('can access vars from further upper scope', {
-					in: () => input,
+					in: getInput,
 					validate(fn) {
 						const res = fn();
 						expect(res.extA).toBe(1);
@@ -725,27 +725,27 @@ describe('eval', () => {
 				});
 
 				itSerializes('can access vars declared later in file', {
-					in: () => input,
+					in: getInput,
 					validate: fn => expect(fn().extD).toBe(4)
 				});
 
 				itSerializes('can access vars declared with `var` in block nested in root', {
-					in: () => input,
+					in: getInput,
 					validate: fn => expect(fn().extE).toBe(5)
 				});
 
 				itSerializes('cannot access vars declared with `const` in block nested in root', {
-					in: () => input,
+					in: getInput,
 					validate: fn => expect(fn().typeofExtF).toBe('undefined')
 				});
 
 				itSerializes('can access `this` from external context', {
-					in: () => input,
+					in: getInput,
 					validate: fn => expect(fn().this).toEqual({x: 7})
 				});
 
 				itSerializes('can access `arguments` from external context', {
-					in: () => input,
+					in: getInput,
 					validate(fn) {
 						const args = fn().arguments;
 						expect(args).toHaveOwnPropertyNames(['0', '1', '2', 'length', 'callee']);
@@ -761,7 +761,7 @@ describe('eval', () => {
 				// `Object.setPrototypeOf` necessary because Jest creates `module.exports` in another
 				// execution context, so prototype of `export` object is a *different* `Object.prototype`.
 				// This is just an artefact of the testing environment - does not affect real code.
-				const input = requireFixture(`
+				const getInput = () => requireFixture(`
 					Object.setPrototypeOf(exports, Object.prototype);
 
 					const extA = 1;
@@ -785,7 +785,7 @@ describe('eval', () => {
 				`);
 
 				itSerializes('serializes correctly', {
-					in: () => input,
+					in: getInput,
 					strictEnv: false,
 					out: `(()=>{
 						const a={},
@@ -816,17 +816,17 @@ describe('eval', () => {
 				});
 
 				itSerializes('can access vars from internal scope', {
-					in: () => input,
+					in: getInput,
 					validate: fn => expect(fn().extC).toBe(3)
 				});
 
 				itSerializes('can access vars from immediate upper scope', {
-					in: () => input,
+					in: getInput,
 					validate: fn => expect(fn().extB).toBe(2)
 				});
 
 				itSerializes('can access vars from further upper scope', {
-					in: () => input,
+					in: getInput,
 					validate(fn) {
 						const res = fn();
 						expect(res.extA).toBe(1);
@@ -836,27 +836,27 @@ describe('eval', () => {
 				});
 
 				itSerializes('can access vars declared later in file', {
-					in: () => input,
+					in: getInput,
 					validate: fn => expect(fn().extD).toBe(4)
 				});
 
 				itSerializes('can access vars declared with `var` in block nested in root', {
-					in: () => input,
+					in: getInput,
 					validate: fn => expect(fn().extE).toBe(5)
 				});
 
 				itSerializes('cannot access vars declared with `const` in block nested in root', {
-					in: () => input,
+					in: getInput,
 					validate: fn => expect(fn().typeofExtF).toBe('undefined')
 				});
 
 				itSerializes('cannot access `this` from external context', {
-					in: () => input,
+					in: getInput,
 					validate: fn => expect(fn.call({y: 77}).this).toEqual({y: 77})
 				});
 
 				itSerializes('cannot access `arguments` from external context', {
-					in: () => input,
+					in: getInput,
 					validate(fn) {
 						const args = fn(88, 99, 1010).arguments;
 						expect(args).toHaveOwnPropertyNames(['0', '1', '2', 'length', 'callee']);
@@ -872,7 +872,7 @@ describe('eval', () => {
 				// `Object.setPrototypeOf` necessary because Jest creates `module.exports` in another
 				// execution context, so prototype of `export` object is a *different* `Object.prototype`.
 				// This is just an artefact of the testing environment - does not affect real code.
-				const input = requireFixture(`
+				const getInput = () => requireFixture(`
 					Object.setPrototypeOf(exports, Object.prototype);
 
 					const extA = 1;
@@ -896,7 +896,7 @@ describe('eval', () => {
 				`);
 
 				itSerializes('serializes correctly', {
-					in: () => input,
+					in: getInput,
 					strictEnv: false,
 					out: `(()=>{
 						const a={},
@@ -937,17 +937,17 @@ describe('eval', () => {
 				});
 
 				itSerializes('can access vars from internal scope', {
-					in: () => input,
+					in: getInput,
 					validate: fn => expect(fn()().extC).toBe(3)
 				});
 
 				itSerializes('can access vars from immediate upper scope', {
-					in: () => input,
+					in: getInput,
 					validate: fn => expect(fn()().extB).toBe(2)
 				});
 
 				itSerializes('can access vars from further upper scope', {
-					in: () => input,
+					in: getInput,
 					validate(fn) {
 						const res = fn()();
 						expect(res.extA).toBe(1);
@@ -957,27 +957,27 @@ describe('eval', () => {
 				});
 
 				itSerializes('can access vars declared later in file', {
-					in: () => input,
+					in: getInput,
 					validate: fn => expect(fn()().extD).toBe(4)
 				});
 
 				itSerializes('can access vars declared with `var` in block nested in root', {
-					in: () => input,
+					in: getInput,
 					validate: fn => expect(fn()().extE).toBe(5)
 				});
 
 				itSerializes('cannot access vars declared with `const` in block nested in root', {
-					in: () => input,
+					in: getInput,
 					validate: fn => expect(fn()().typeofExtF).toBe('undefined')
 				});
 
 				itSerializes('can access `this` from external context', {
-					in: () => input,
+					in: getInput,
 					validate: fn => expect(fn()().this).toEqual({x: 7})
 				});
 
 				itSerializes('can access `arguments` from external context', {
-					in: () => input,
+					in: getInput,
 					validate(fn) {
 						const args = fn()().arguments;
 						expect(args).toHaveOwnPropertyNames(['0', '1', '2', 'length', 'callee']);
