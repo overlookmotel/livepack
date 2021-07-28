@@ -988,6 +988,124 @@ describe('eval', () => {
 					}
 				});
 			});
+
+			describe('prevents shadowed vars in upper scopes being accessible to eval', () => {
+				itSerializes('simple case', {
+					in: () => requireFixture(`
+						'use strict';
+						const extA = 1,
+							extB = 2;
+						const fns = {getOuterExts: (0, () => ({extA, extB}))};
+						{
+							const extB = 10;
+							fns.evalFn = (module, exports, fns) => eval('({extA, extB, typeofA: typeof a})');
+						}
+						module.exports = fns;
+					`),
+					out: `(()=>{
+						const a=((extA,extB)=>[
+								()=>({extA,extB}),
+								extB=>(module,exports,fns)=>eval("({extA, extB, typeofA: typeof a})")
+							])(1,2);
+						return{getOuterExts:a[0],evalFn:a[1](10)}
+					})()`,
+					validate({getOuterExts, evalFn}) {
+						expect(getOuterExts).toBeFunction();
+						expect(getOuterExts()).toEqual({extA: 1, extB: 2});
+						expect(evalFn).toBeFunction();
+						// This doesn't work correctly due to https://github.com/overlookmotel/livepack/issues/114.
+						// `typeof a` should equal 'undefined', but at present it doesn't.
+						// So test currently just makes sure outer `extB` var has not been renamed to `a`.
+						// TODO Change this to `expect(evalFn()).toEqual({extA: 1, extB: 10, typeofA: 'undefined'})`
+						// once #114 is fixed.
+						const res = evalFn();
+						expect(res.extA).toBe(1);
+						expect(res.extB).toBe(10);
+						expect(res.typeofA).not.toBeNumber();
+					}
+				});
+
+				itSerializes('where shadowed var block is separate', {
+					in: () => requireFixture(`
+						'use strict';
+						const fns = {};
+						const extA = 1;
+						{
+							const extB = 2;
+							{
+								const extB = 10;
+								fns.evalFn = (module, exports, fns) => eval('({extA, extB, typeofA: typeof a})');
+							}
+							fns.getOuterExts = () => ({extA, extB});
+						}
+						module.exports = fns;
+					`),
+					out: `(()=>{
+						const a=(extA=>[
+								extB=>(module,exports,fns)=>eval("({extA, extB, typeofA: typeof a})"),
+								a=>()=>({extA,extB:a})
+							])(1);
+						return{evalFn:a[0](10),getOuterExts:a[1](2)}
+					})()`,
+					validate({getOuterExts, evalFn}) {
+						expect(getOuterExts).toBeFunction();
+						expect(getOuterExts()).toEqual({extA: 1, extB: 2});
+						expect(evalFn).toBeFunction();
+						// This doesn't work correctly due to https://github.com/overlookmotel/livepack/issues/114.
+						// `typeof a` should equal 'undefined', but at present it doesn't.
+						// So test currently just makes sure outer `extB` var has not been renamed to `a`.
+						// TODO Once #114 is fixed, change this to
+						// `expect(evalFn()).toEqual({extA: 1, extB: 10, typeofA: 'undefined'})`.
+						const res = evalFn();
+						expect(res.extA).toBe(1);
+						expect(res.extB).toBe(10);
+						expect(res.typeofA).not.toBeNumber();
+					}
+				});
+
+				itSerializes('where shadowed var introduced to scope chain later', {
+					in: () => requireFixture(`
+						'use strict';
+						const fns = {};
+						const extA = 1;
+						{
+							const extB = 2;
+							{
+								const extC = 3;
+								{
+									const extB = 10;
+									fns.evalFn = (module, exports, fns) => eval('({extA, extB, extC, typeofA: typeof a})');
+								}
+								// This function inserts outer extB block into scope chain below inner extB
+								fns.getOuterExts = () => ({extA, extB, extC});
+							}
+						}
+						module.exports = fns;
+					`),
+					out: `(()=>{
+						const a=(extA=>extB=>extC=>[
+								()=>({extA,extB,extC}),
+								extB=>(module,exports,fns)=>eval("({extA, extB, extC, typeofA: typeof a})")
+							])(1)(2)(3);
+						return{evalFn:a[1](10),getOuterExts:a[0]}
+					})()`,
+					validate({getOuterExts, evalFn}) {
+						expect(getOuterExts).toBeFunction();
+						expect(getOuterExts()).toEqual({extA: 1, extB: 2, extC: 3});
+						expect(evalFn).toBeFunction();
+						// This doesn't work correctly due to https://github.com/overlookmotel/livepack/issues/114.
+						// `typeof a` should equal 'undefined', but at present it doesn't.
+						// So test currently just makes sure outer `extB` var has not been renamed to `a`.
+						// TODO Once #114 is fixed, change this to
+						// `expect(evalFn()).toEqual({extA: 1, extB: 10, extC: 3, typeofA: 'undefined'})`.
+						const res = evalFn();
+						expect(res.extA).toBe(1);
+						expect(res.extB).toBe(10);
+						expect(res.extC).toBe(3);
+						expect(res.typeofA).not.toBeNumber();
+					}
+				});
+			});
 		});
 
 		describe('indirect `eval`', () => {

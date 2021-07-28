@@ -762,9 +762,9 @@ describe('Strict mode', () => {
 						`),
 						strictEnv: false,
 						out: `(()=>{
-							const a=((ext,a)=>[
+							const a=((ext,package)=>[
 									()=>{"use strict";return eval("ext")},
-									()=>a
+									()=>package
 								])(2,1);
 							return[a[0],a[1]]
 						})()`,
