@@ -6,7 +6,7 @@
 'use strict';
 
 // Modules
-const Module = require('module');
+const {createRequire} = require('module');
 
 // Imports
 const {createFixturesFunctions} = require('./support/index.js');
@@ -55,11 +55,11 @@ describe('register', () => {
 
 	describe('allows serializing modules used internally in Babel', () => {
 		const babelRegisterPath = require.resolve('@babel/register'),
-			babelCorePath = resolveFrom('@babel/core', babelRegisterPath),
-			babelTypesPath = resolveFrom('@babel/types', babelCorePath);
+			babelCorePath = createRequire(babelRegisterPath).resolve('@babel/core'),
+			babelTypesPath = createRequire(babelCorePath).resolve('@babel/types');
 
 		it('to-fast-properties', async () => {
-			const path = resolveFrom('to-fast-properties', babelTypesPath);
+			const path = createRequire(babelTypesPath).resolve('to-fast-properties');
 
 			const js = await serializeInNewProcess(
 				`module.exports = require(${JSON.stringify(path)});`
@@ -68,7 +68,7 @@ describe('register', () => {
 		});
 
 		it('convert-source-map', async () => {
-			const path = resolveFrom('convert-source-map', babelCorePath);
+			const path = createRequire(babelCorePath).resolve('convert-source-map');
 
 			const js = await serializeInNewProcess(
 				`module.exports = require(${JSON.stringify(path)});`
@@ -77,7 +77,7 @@ describe('register', () => {
 		});
 
 		it('source-map', async () => {
-			const path = resolveFrom('source-map', babelCorePath);
+			const path = createRequire(babelCorePath).resolve('source-map');
 
 			const js = await serializeInNewProcess(
 				`module.exports = require(${JSON.stringify(path)});`
@@ -102,10 +102,3 @@ describe('register', () => {
 		expect(map.sourcesContent).toEqual(['module.exports = function foo() {};']);
 	});
 });
-
-function resolveFrom(specifier, fromPath) {
-	// TODO Remove `createRequireFromPath` fallback once support for Node < v12.2.0 is dropped
-	// eslint-disable-next-line node/no-unsupported-features/node-builtins, node/no-deprecated-api
-	const createRequire = Module.createRequire || Module.createRequireFromPath;
-	return createRequire(fromPath).resolve(specifier);
-}

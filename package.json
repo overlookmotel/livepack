@@ -59,7 +59,6 @@
     "is-it-type": "^5.0.0",
     "lodash": "^4.17.21",
     "native-type-of": "^1.1.0",
-    "parse-node-version": "^2.0.0",
     "pirates": "^4.0.1",
     "reserved-words": "^0.1.2",
     "simple-invariant": "^2.0.1",
@@ -82,6 +81,7 @@
     "jest-matcher-utils": "^27.3.1",
     "mocha": "^9.1.3",
     "npm-run-all": "^4.1.5",
+    "parse-node-version": "^2.0.0",
     "source-map-support": "^0.5.21"
   },
   "keywords": [
@@ -106,7 +106,7 @@
     "cover-cleanup": "rm -rf coverage"
   },
   "engines": {
-    "node": ">=12"
+    "node": ">=12.20.0"
   },
   "readmeFilename": "README.md",
   "license": "MIT"
