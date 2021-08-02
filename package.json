@@ -73,7 +73,7 @@
     "@overlookmotel/eslint-config": "^9.0.7",
     "@overlookmotel/eslint-config-jest": "^5.0.1",
     "@overlookmotel/eslint-config-node": "^3.0.1",
-    "eslint": "^7.31.0",
+    "eslint": "^7.32.0",
     "expect": "^27.0.6",
     "jest": "^27.0.6",
     "jest-expect-arguments": "^1.0.0",
