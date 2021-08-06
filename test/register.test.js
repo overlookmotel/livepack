@@ -24,6 +24,15 @@ describe('register', () => {
 		expect(js).toBe('(a=>()=>a)(123)');
 	});
 
+	it('handles files with a hashbang', async () => {
+		const js = await serializeInNewProcess(
+			'#!/usr/bin/env node\n'
+			+ 'const extA = 123;\n'
+			+ 'module.exports = () => extA;'
+		);
+		expect(js).toBe('(a=>()=>a)(123)');
+	});
+
 	describe('allows serializing modules used internally in Livepack', () => {
 		it('is-it-type', async () => {
 			const js = await serializeInNewProcess(
