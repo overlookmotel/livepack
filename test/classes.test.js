@@ -3797,7 +3797,7 @@ describe('Classes', () => {
 	});
 });
 
-// In Node v12 >= 12.16.0, anonymous classes have a `name` property defined as ''.
+// In some versions of Node anonymous classes have a `name` property defined as ''.
 // Work around this discrepancy by ignoring position of 'name' prop on these Node versions.
 // Tests for correct JS output still ensure output is same on these Node versions.
 function expectClassToHaveOwnPropertyNames(Klass, expectedPropNames) {
