@@ -11,8 +11,9 @@ const {join: pathJoin, basename} = require('path'),
 	mapValues = require('lodash/mapValues');
 
 // Imports
-const {itSerializes, stripSourceMapComment, stripLineBreaks} = require('./support/index.js'),
-	resetSplitPoints = require('./support/resetSplitPoints.js');
+const {
+	itSerializes, stripSourceMapComment, stripLineBreaks, resetSplitPoints
+} = require('./support/index.js');
 
 // Tests
 

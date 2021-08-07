@@ -13,7 +13,8 @@ const {join: pathJoin, dirname} = require('path').posix,
 	assert = require('simple-invariant');
 
 // Imports
-const createFixturesFunctions = require('./fixtures.js');
+const createFixturesFunctions = require('./fixtures.js'),
+	internalSplitPoints = require('../../lib/shared/internal.js').splitPoints;
 
 // Constants
 const FORMAT_NAMES = {js: 'JS', esm: 'ESM', cjs: 'CommonJS'};
@@ -25,9 +26,9 @@ module.exports = { // eslint-disable-line jest/no-export
 	itSerializesEqual: wrapItSerializes({equal: true}),
 	stripLineBreaks,
 	stripSourceMapComment,
+	createFixturesFunctions,
 	tryCatch,
-	spy: jest.fn,
-	createFixturesFunctions
+	resetSplitPoints
 };
 
 // `LIVEPACK_TEST_QUICK` env runs tests in default options only
@@ -528,4 +529,15 @@ function tryCatch(fn) { // eslint-disable-line consistent-return
 	} catch (err) {
 		return err;
 	}
+}
+
+/**
+ * Clear set of splits.
+ * Intended to be called with `afterEach()` to keep each test isolated.
+ * Splits are stored globally.
+ * Tests should still pass without this, but they run slower.
+ * @returns {undefined}
+ */
+function resetSplitPoints() {
+	internalSplitPoints.clear();
 }

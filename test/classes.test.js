@@ -8,9 +8,11 @@
 'use strict';
 
 // Modules
-const {itSerializes, spy} = require('./support/index.js');
+const {itSerializes} = require('./support/index.js');
 
 // Tests
+
+const spy = jest.fn;
 
 const anonClassHasNameProp = !!Object.getOwnPropertyDescriptor(class {}, 'name');
 

@@ -6,8 +6,7 @@
 /* eslint-disable strict, lines-around-directive */
 
 // Imports
-const {itSerializes} = require('./support/index.js'),
-	resetSplitPoints = require('./support/resetSplitPoints.js');
+const {itSerializes, resetSplitPoints} = require('./support/index.js');
 
 // Tests
 

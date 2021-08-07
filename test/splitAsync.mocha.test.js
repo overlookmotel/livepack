@@ -16,8 +16,7 @@ const {splitAsync} = require('../index.js'), // livepack
 	parseNodeVersion = require('parse-node-version');
 
 // Imports
-const createFixturesFunctions = require('./support/fixtures.js'),
-	resetSplitPoints = require('./support/resetSplitPoints.js');
+const {createFixturesFunctions, resetSplitPoints} = require('./support/index.js');
 
 // Constants
 const NUM_FIXTURES = 5;
