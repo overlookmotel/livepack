@@ -2709,6 +2709,106 @@ describe('Functions', () => {
 			});
 		});
 
+		describe('also referenced in another scope', () => {
+			itSerializes('nested scope', {
+				in() {
+					const ext = {ext: 1},
+						f = (0, () => ext),
+						getF = (0, () => f),
+						getG = (g => () => g)(f);
+					return {getF, getG};
+				},
+				out: `(()=>{
+					const a=((a,b)=>[
+							b=(0,()=>a),
+							()=>b
+						])({ext:1});
+					return{
+						getF:a[1],
+						getG:(a=>()=>a)(a[0])
+					}
+				})()`,
+				validate({getF, getG}) {
+					expect(getF).toBeFunction();
+					const f = getF();
+					expect(f).toBeFunction();
+					expect(getG()).toBe(f);
+					expect(f()).toEqual({ext: 1});
+				}
+			});
+
+			itSerializes('sibling block', {
+				in() {
+					const {f, getF} = (() => {
+						const ext = {ext: 1},
+							f = (0, () => ext); // eslint-disable-line no-shadow
+						return {
+							f,
+							getF: (0, () => f)
+						};
+					})();
+					const getG = (g => () => g)(f);
+					return {getF, getG};
+				},
+				out: `(()=>{
+					const a=((a,b)=>[
+							b=(0,()=>a),
+							()=>b
+						])({ext:1});
+					return{
+						getF:a[1],
+						getG:(a=>()=>a)(a[0])
+					}
+				})()`,
+				validate({getF, getG}) {
+					expect(getF).toBeFunction();
+					const f = getF();
+					expect(f).toBeFunction();
+					expect(getG()).toBe(f);
+					expect(f()).toEqual({ext: 1});
+				}
+			});
+
+			itSerializes('another var in different scope in same block', {
+				in() {
+					function outer(g) {
+						const ext = {ext: 1},
+							f = (0, () => ext);
+						return {
+							f,
+							getF: (0, () => f),
+							getG: (0, () => g)
+						};
+					}
+					const {f, getF} = outer(),
+						{getG} = outer(f);
+					return {getF, getG};
+				},
+				out: `(()=>{
+					const a=(a,b,c)=>[
+							a=>c=a,
+							b=(0,()=>a),
+							()=>b,
+							()=>c
+						],
+						b=a({ext:1}),
+						c=a();
+					c[0](b[1]);
+					return{
+						getF:b[2],
+						getG:c[3]
+					}
+				})()`,
+				validate({getF, getG}) {
+					expect(getF).toBeFunction();
+					const f = getF();
+					expect(f).toBeFunction();
+					expect(getG()).toBe(f);
+					expect(f()).toEqual({ext: 1});
+				}
+			});
+		});
+
 		describe('in same scope', () => {
 			describe('consistently (not injected)', () => {
 				itSerializes('single instantiation', {
@@ -3165,6 +3265,150 @@ describe('Functions', () => {
 					});
 				}
 			);
+		});
+
+		describe('when function in multiple vars in same scope', () => {
+			describe('with vars referenced by within 1 function', () => {
+				itSerializes('single instantiation', {
+					in() {
+						function outer(extA) {
+							const f = (0, () => extA),
+								g = f;
+							return () => [f, g];
+						}
+						return outer({extA: 1});
+					},
+					out: `
+						((a,b,c)=>(
+							c=b=(0,()=>a),
+							()=>[b,c]
+						))({extA:1})
+					`,
+					validate(getter) {
+						expect(getter).toBeFunction();
+						const res = getter();
+						expect(res).toBeArrayOfSize(2);
+						const f = res[0];
+						expect(f).toBeFunction();
+						expect(res[1]).toBe(f);
+						expect(f()).toEqual({extA: 1});
+					}
+				});
+
+				itSerializes('multiple instantiations', {
+					in({ctx}) {
+						function outer(extA) {
+							const f = (0, () => extA),
+								g = f;
+							return () => [f, g];
+						}
+						const extAs = [{extA1: 1}, {extA2: 2}, {extA3: 3}];
+						ctx.extAs = extAs;
+						return extAs.map(extA => outer(extA));
+					},
+					out: `(()=>{
+						const a=(a,b,c)=>(
+								c=b=(0,()=>a),
+								()=>[b,c]
+							);
+						return[a({extA1:1}),a({extA2:2}),a({extA3:3})]
+					})()`,
+					validate(getters, {ctx: {extAs}}) {
+						expect(getters).toBeArrayOfSize(3);
+						const fns = getters.map((getter, index) => {
+							expect(getter).toBeFunction();
+							const res = getter();
+							expect(res).toBeArrayOfSize(2);
+							const f = res[0];
+							expect(f).toBeFunction();
+							expect(res[1]).toBe(f);
+							expect(f()).toEqual(extAs[index]);
+							return f;
+						});
+
+						expect(getters[0]).not.toBe(getters[1]);
+						expect(getters[0]).not.toBe(getters[2]);
+						expect(fns[0]).not.toBe(fns[1]);
+						expect(fns[0]).not.toBe(fns[2]);
+					}
+				});
+			});
+
+			describe('with vars referenced by multiple functions', () => {
+				itSerializes('single instantiation', {
+					in() {
+						function outer(extA) {
+							const f = (0, () => extA),
+								g = f;
+							return {
+								getF: (0, () => f),
+								getG: (0, () => g)
+							};
+						}
+						return outer({extA: 1});
+					},
+					out: `(()=>{
+						const a=((a,b,c)=>(
+								c=b=(0,()=>a),
+								[()=>b,()=>c]
+							))({extA:1});
+						return{getF:a[0],getG:a[1]}
+					})()`,
+					validate({getF, getG}) {
+						expect(getF).toBeFunction();
+						const f = getF();
+						expect(f).toBeFunction();
+						expect(getG()).toBe(f);
+						expect(f()).toEqual({extA: 1});
+					}
+				});
+
+				itSerializes('multiple instantiations', {
+					in({ctx}) {
+						function outer(extA) {
+							const f = (0, () => extA),
+								g = f;
+							return {
+								getF: (0, () => f),
+								getG: (0, () => g)
+							};
+						}
+						const extAs = [{extA1: 1}, {extA2: 2}, {extA3: 3}];
+						ctx.extAs = extAs;
+						return extAs.map(extA => outer(extA));
+					},
+					out: `(()=>{
+						const a=(a,b,c)=>(
+								c=b=(0,()=>a),
+								[()=>b,()=>c]
+							),
+							b=a({extA1:1}),
+							c=a({extA2:2}),
+							d=a({extA3:3});
+						return[{getF:b[0],getG:b[1]},{getF:c[0],getG:c[1]},{getF:d[0],getG:d[1]}]
+					})()`,
+					validate(objs, {ctx: {extAs}}) {
+						expect(objs).toBeArrayOfSize(3);
+						const fns = objs.map(({getF, getG}, index) => {
+							expect(getF).toBeFunction();
+							const f = getF();
+							expect(f).toBeFunction();
+							expect(getG()).toBe(f);
+							expect(f()).toEqual(extAs[index]);
+							return f;
+						});
+
+						expect(objs[0]).not.toBe(objs[1]);
+						expect(objs[0]).not.toBe(objs[2]);
+						expect(objs[0].getF).not.toBe(objs[1].getF);
+						expect(objs[0].getF).not.toBe(objs[2].getF);
+						expect(objs[0].getG).not.toBe(objs[1].getG);
+						expect(objs[0].getG).not.toBe(objs[2].getG);
+						expect(fns[0]).not.toBe(fns[1]);
+						expect(fns[0]).not.toBe(fns[2]);
+					}
+				});
+			});
 		});
 
 		itSerializes('in same block but different scope with circularity (injected)', {
