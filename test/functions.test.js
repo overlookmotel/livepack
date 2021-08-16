@@ -2720,11 +2720,11 @@ describe('Functions', () => {
 						return outer({extA: 1});
 					},
 					out: `
-					((a,b)=>(
-						b=function other(){return a},
-						function inner(){return[a,b]}
-					))({extA:1})
-				`,
+						((a,b)=>(
+							b=function other(){return a},
+							function inner(){return[a,b]}
+						))({extA:1})
+					`,
 					validate(fn) {
 						expect(fn).toBeFunction();
 						const res = fn();
@@ -2747,12 +2747,12 @@ describe('Functions', () => {
 						return extAs.map(extA => outer(extA));
 					},
 					out: `(()=>{
-					const a=(a,b)=>(
-							b=function other(){return a},
-							function inner(){return[a,b]}
-						);
-					return[a({extA1:1}),a({extA2:2}),a({extA3:3})]
-				})()`,
+						const a=(a,b)=>(
+								b=function other(){return a},
+								function inner(){return[a,b]}
+							);
+						return[a({extA1:1}),a({extA2:2}),a({extA3:3})]
+					})()`,
 					validate(arr, {ctx: {extAs}}) {
 						expect(arr).toBeArrayOfSize(3);
 						const others = arr.map((inner, index) => {
