@@ -2872,6 +2872,50 @@ describe('Functions', () => {
 				});
 			});
 
+			itSerializes(
+				'consistently across multiple instantiations where not always accessed (not injected)',
+				{
+					in() {
+						function outer(extA) {
+							function other() { return extA; }
+							return {
+								getOther: (0, () => other),
+								getExt: (0, () => extA)
+							};
+						}
+						const {getOther} = outer({extA1: 1}),
+							{getOther: getOther2} = outer({extA2: 2}),
+							{getExt} = outer({extA3: 3});
+						return {getOther, getOther2, getExt};
+					},
+					out: `(()=>{
+						const a=(a,b)=>(
+								b=function other(){return a},
+								[()=>b,()=>a]
+							);
+						return{
+							getOther:a({extA1:1})[0],
+							getOther2:a({extA2:2})[0],
+							getExt:a({extA3:3})[1]
+						}
+					})()`,
+					validate({getOther, getOther2, getExt}) {
+						expect(getOther).toBeFunction();
+						const other = getOther();
+						expect(other).toBeFunction();
+						expect(other()).toEqual({extA1: 1});
+
+						expect(getOther2).toBeFunction();
+						const other2 = getOther2();
+						expect(other2).toBeFunction();
+						expect(other2()).toEqual({extA2: 2});
+
+						expect(getExt).toBeFunction();
+						expect(getExt()).toEqual({extA3: 3});
+					}
+				}
+			);
+
 			describe(
 				'multiple instantiations where scope var is function defined in scope only sometimes (injected)',
 				() => {
