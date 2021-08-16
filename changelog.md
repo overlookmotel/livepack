@@ -1,5 +1,59 @@
 # Changelog
 
+## 0.5.3
+
+Bug fixes:
+
+* Functions are not scope-internal only if referenced in other scopes
+* Freeze shadowed vars in scope containing `eval()`
+* Register: Include Livepack version in Babel cache keys
+* Register handle files with hashbang
+* `import.meta` is not a variable
+* Babel plugin not include temp var for `super` in const names list
+* Fix error for unexpected global
+
+Performance:
+
+* Move adding block to blocks map out of `createBlock`
+
+Improvements:
+
+* Babel plugin: Throw if run with Babel <7
+
+Refactor:
+
+* Module cache capture global cache at start
+* Register use Babel default file extensions
+* Share `internalIdentifier` fn between Babel plugin and serializer
+* Move init of extra function def properties
+* Rename function definition object property
+* Refactor tracker comment creation
+* Rename var
+
+Dependencies:
+
+* Update dependencies
+
+No code:
+
+* Correct code comments
+* Clarify code comment
+* Code comments
+
+Tests:
+
+* Additional test for scope-internal functions
+* Recreate fixtures for every test [improve]
+* Share support functions between Jest + Mocha tests [refactor]
+* Use `toBeArguments()` [refactor]
+* Fix indentation
+
+Dev:
+
+* `LIVEPACK_DEBUG_BABEL` env [improve]
+* Update dev dependencies
+* Update deep dependencies
+
 ## 0.5.2
 
 Bug fixes:
