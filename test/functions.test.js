@@ -2212,6 +2212,46 @@ describe('Functions', () => {
 		});
 	});
 
+	// Test for https://github.com/overlookmotel/livepack/issues/259
+	itSerializes('nested blocks where some scopes unused', {
+		in() {
+			const extA = {a: 1},
+				extB = {b: 2};
+			function outer(extC) {
+				let getACD, getBCE;
+				{
+					const extD = {d: 4};
+					getACD = (0, () => ({extA, extC, extD}));
+				}
+				{
+					const extE = {e: 5};
+					getBCE = (0, () => ({extB, extC, extE}));
+				}
+				return {getACD, getBCE};
+			}
+			return {
+				getACD: outer({c: 3}).getACD,
+				getBCE: outer({c: 30}).getBCE
+			};
+		},
+		out: `(()=>{
+			const a=((c,d)=>b=>[
+					a=>()=>({extA:c,extC:b,extD:a}),
+					a=>()=>({extB:d,extC:b,extE:a})
+				])({a:1},{b:2});
+			return{
+				getACD:a({c:3})[0]({d:4}),
+				getBCE:a({c:30})[1]({e:5})
+			}
+		})()`,
+		validate({getACD, getBCE}) {
+			expect(getACD).toBeFunction();
+			expect(getACD()).toEqual({extA: {a: 1}, extC: {c: 3}, extD: {d: 4}});
+			expect(getBCE).toBeFunction();
+			expect(getBCE()).toEqual({extB: {b: 2}, extC: {c: 30}, extE: {e: 5}});
+		}
+	});
+
 	describe('including `this`', () => {
 		describe('referencing upper function scope', () => {
 			describe('1 level up', () => {
