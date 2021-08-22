@@ -12,7 +12,8 @@ const escapeRegex = require('lodash/escapeRegExp');
 
 // Imports
 const {
-		itSerializes, itSerializesEqual, createFixturesFunctions, tryCatch
+		itSerializes, itSerializesEqual, createFixturesFunctions, tryCatch,
+		stripSourceMapComment, stripLineBreaks
 	} = require('./support/index.js'),
 	{transpiledFiles} = require('../lib/shared/internal.js');
 
@@ -669,26 +670,25 @@ describe('eval', () => {
 
 				itSerializes('serializes correctly', {
 					in: getInput,
-					strictEnv: false,
 					out: `(()=>{
 						const a={},
-							b=(
+							b=(0,eval)("
 								(extA,extD,extE,module,exports,outer)=>[
 									outer=(0,function(){
 										const extB=2;
 										return()=>{
 											const extC=3;
-											return eval("({extA, extB, extC, extD, extE, typeofExtF: typeof extF, outer, module, exports, this: this, arguments: arguments})")
+											return eval(\\"({extA, extB, extC, extD, extE, typeofExtF: typeof extF, outer, module, exports, this: this, arguments: arguments})\\")
 										}
 									}),
 									(extB,a,b)=>function(){
 										return()=>{
 											const extC=3;
-											return eval("({extA, extB, extC, extD, extE, typeofExtF: typeof extF, outer, module, exports, this: this, arguments: arguments})")
+											return eval(\\"({extA, extB, extC, extD, extE, typeofExtF: typeof extF, outer, module, exports, this: this, arguments: arguments})\\")
 										}
 									}.apply(a,b)
 								]
-							)(1,4,5,a,{}),
+							")(1,4,5,a,{}),
 							c=b[1](
 								2,
 								{x:7},
@@ -788,24 +788,23 @@ describe('eval', () => {
 
 				itSerializes('serializes correctly', {
 					in: getInput,
-					strictEnv: false,
 					out: `(()=>{
 						const a={},
-							b=(
+							b=(0,eval)("
 								(extA,extD,extE,module,exports,outer)=>[
 									outer=(0,function(){
 										const extB=2;
 										return function(){
 											const extC=3;
-											return eval("({extA, extB, extC, extD, extE, typeofExtF: typeof extF, outer, module, exports, this: this, arguments: arguments})")
+											return eval(\\"({extA, extB, extC, extD, extE, typeofExtF: typeof extF, outer, module, exports, this: this, arguments: arguments})\\")
 										}
 									}),
 									extB=>function(){
 										const extC=3;
-										return eval("({extA, extB, extC, extD, extE, typeofExtF: typeof extF, outer, module, exports, this: this, arguments: arguments})")
+										return eval(\\"({extA, extB, extC, extD, extE, typeofExtF: typeof extF, outer, module, exports, this: this, arguments: arguments})\\")
 									}
 								]
-							)(1,4,5,a,{}),
+							")(1,4,5,a,{}),
 							c=b[1](2);
 						a.exports=c;
 						Object.assign(b[0],{isOuter:true});
@@ -899,26 +898,25 @@ describe('eval', () => {
 
 				itSerializes('serializes correctly', {
 					in: getInput,
-					strictEnv: false,
 					out: `(()=>{
 						const a={},
-							b=(
+							b=(0,eval)("
 								(extA,extD,extE,module,exports,outer)=>[
 									outer=(0,function(){
 										const extB=2;
 										return()=>{
 											const extC=3;
-											return eval("() => ({extA, extB, extC, extD, extE, typeofExtF: typeof extF, outer, module, exports, this: this, arguments: arguments})")
+											return eval(\\"() => ({extA, extB, extC, extD, extE, typeofExtF: typeof extF, outer, module, exports, this: this, arguments: arguments})\\")
 										}
 									}),
 									(extB,a,b)=>function(){
 										return()=>{
 											const extC=3;
-											return eval("() => ({extA, extB, extC, extD, extE, typeofExtF: typeof extF, outer, module, exports, this: this, arguments: arguments})")
+											return eval(\\"() => ({extA, extB, extC, extD, extE, typeofExtF: typeof extF, outer, module, exports, this: this, arguments: arguments})\\")
 										}
 									}.apply(a,b)
 								]
-							)(1,4,5,a,{}),
+							")(1,4,5,a,{}),
 							c=b[1](
 								2,
 								{x:7},
@@ -1005,25 +1003,20 @@ describe('eval', () => {
 						module.exports = fns;
 					`),
 					out: `(()=>{
-						const a=((extA,extB)=>[
-								()=>({extA,extB}),
-								extB=>(module,exports,fns)=>eval("({extA, extB, typeofA: typeof a})")
-							])(1,2);
+						const a=(0,eval)("
+								\\"use strict\\";
+								(extA,extB)=>[
+									()=>({extA,extB}),
+									extB=>(module,exports,fns)=>eval(\\"({extA, extB, typeofA: typeof a})\\")
+								]
+							")(1,2);
 						return{getOuterExts:a[0],evalFn:a[1](10)}
 					})()`,
 					validate({getOuterExts, evalFn}) {
 						expect(getOuterExts).toBeFunction();
 						expect(getOuterExts()).toEqual({extA: 1, extB: 2});
 						expect(evalFn).toBeFunction();
-						// This doesn't work correctly due to https://github.com/overlookmotel/livepack/issues/114.
-						// `typeof a` should equal 'undefined', but at present it doesn't.
-						// So test currently just makes sure outer `extB` var has not been renamed to `a`.
-						// TODO Change this to `expect(evalFn()).toEqual({extA: 1, extB: 10, typeofA: 'undefined'})`
-						// once #114 is fixed.
-						const res = evalFn();
-						expect(res.extA).toBe(1);
-						expect(res.extB).toBe(10);
-						expect(res.typeofA).not.toBeNumber();
+						expect(evalFn()).toEqual({extA: 1, extB: 10, typeofA: 'undefined'});
 					}
 				});
 
@@ -1043,25 +1036,20 @@ describe('eval', () => {
 						module.exports = fns;
 					`),
 					out: `(()=>{
-						const a=(extA=>[
-								extB=>(module,exports,fns)=>eval("({extA, extB, typeofA: typeof a})"),
-								a=>()=>({extA,extB:a})
-							])(1);
+						const a=(0,eval)("
+								\\"use strict\\";
+								extA=>[
+									extB=>(module,exports,fns)=>eval(\\"({extA, extB, typeofA: typeof a})\\"),
+									a=>()=>({extA,extB:a})
+								]
+							")(1);
 						return{evalFn:a[0](10),getOuterExts:a[1](2)}
 					})()`,
 					validate({getOuterExts, evalFn}) {
 						expect(getOuterExts).toBeFunction();
 						expect(getOuterExts()).toEqual({extA: 1, extB: 2});
 						expect(evalFn).toBeFunction();
-						// This doesn't work correctly due to https://github.com/overlookmotel/livepack/issues/114.
-						// `typeof a` should equal 'undefined', but at present it doesn't.
-						// So test currently just makes sure outer `extB` var has not been renamed to `a`.
-						// TODO Once #114 is fixed, change this to
-						// `expect(evalFn()).toEqual({extA: 1, extB: 10, typeofA: 'undefined'})`.
-						const res = evalFn();
-						expect(res.extA).toBe(1);
-						expect(res.extB).toBe(10);
-						expect(res.typeofA).not.toBeNumber();
+						expect(evalFn()).toEqual({extA: 1, extB: 10, typeofA: 'undefined'});
 					}
 				});
 
@@ -1085,26 +1073,110 @@ describe('eval', () => {
 						module.exports = fns;
 					`),
 					out: `(()=>{
-						const a=(extA=>extB=>extC=>[
-								()=>({extA,extB,extC}),
-								extB=>(module,exports,fns)=>eval("({extA, extB, extC, typeofA: typeof a})")
-							])(1)(2)(3);
+						const a=(0,eval)("
+								\\"use strict\\";
+								extA=>extB=>extC=>[
+									()=>({extA,extB,extC}),
+									extB=>(module,exports,fns)=>eval(\\"({extA, extB, extC, typeofA: typeof a})\\")
+								]
+							")(1)(2)(3);
 						return{evalFn:a[1](10),getOuterExts:a[0]}
 					})()`,
 					validate({getOuterExts, evalFn}) {
 						expect(getOuterExts).toBeFunction();
 						expect(getOuterExts()).toEqual({extA: 1, extB: 2, extC: 3});
 						expect(evalFn).toBeFunction();
-						// This doesn't work correctly due to https://github.com/overlookmotel/livepack/issues/114.
-						// `typeof a` should equal 'undefined', but at present it doesn't.
-						// So test currently just makes sure outer `extB` var has not been renamed to `a`.
-						// TODO Once #114 is fixed, change this to
-						// `expect(evalFn()).toEqual({extA: 1, extB: 10, extC: 3, typeofA: 'undefined'})`.
+						expect(evalFn()).toEqual({extA: 1, extB: 10, extC: 3, typeofA: 'undefined'});
+					}
+				});
+			});
+
+			describe('prevents Livepack external vars blocking access to globals in eval', () => {
+				itSerializes('where function containing eval has external scope', {
+					in: () => requireFixture(`
+						const ext = {x: 1};
+						module.exports = {
+							console: ext,
+							ext,
+							evalFn: (0, (module, exports) => eval('({console, typeofA: typeof a})'))
+						};
+					`),
+					out: `(()=>{
+						const a={x:1};
+						return{
+							console:a,
+							ext:a,
+							evalFn:(0,eval)("
+								ext=>(module,exports)=>eval(\\"({console, typeofA: typeof a})\\")
+							")(a)
+						}
+					})()`,
+					validate({evalFn, ext, console: ext2}, {isOutput, minify, mangle, inline, outputJs}) {
+						expect(evalFn).toBeFunction();
 						const res = evalFn();
-						expect(res.extA).toBe(1);
-						expect(res.extB).toBe(10);
-						expect(res.extC).toBe(3);
-						expect(res.typeofA).not.toBeNumber();
+						expect(res).toBeObject();
+						expect(res.console).toBe(console);
+						expect(res.typeofA).toBe('undefined');
+						expect(ext).toEqual({x: 1});
+						expect(ext2).toBe(ext);
+
+						// Test top level var naming unaffected by global use inside eval when mangle disabled
+						if (isOutput && minify && !mangle && inline) {
+							expect(stripSourceMapComment(outputJs)).toBe(stripLineBreaks(`
+								(()=>{
+									const console={x:1};
+									return{
+										console,
+										ext:console,
+										evalFn:(0,eval)("
+											ext=>(module,exports)=>eval(\\"({console, typeofA: typeof a})\\")
+										")(console)
+									}
+								})()
+							`));
+						}
+					}
+				});
+
+				itSerializes('where function containing eval has no external scope', {
+					in() {
+						const ext = {x: 1};
+						return {
+							console: ext,
+							ext,
+							evalFn: (0, eval)('() => eval("({console, typeofA: typeof a})")')
+						};
+					},
+					out: `(()=>{
+						const a={x:1};
+						return{
+							console:a,
+							ext:a,
+							evalFn:(0,eval)("()=>eval(\\"({console, typeofA: typeof a})\\")")
+						}
+					})()`,
+					validate({evalFn, ext, console: ext2}, {isOutput, minify, mangle, inline, outputJs}) {
+						expect(evalFn).toBeFunction();
+						const res = evalFn();
+						expect(res).toBeObject();
+						expect(res.console).toBe(console);
+						expect(res.typeofA).toBe('undefined');
+						expect(ext).toEqual({x: 1});
+						expect(ext2).toBe(ext);
+
+						// Test top level var naming unaffected by global use inside eval when mangle disabled
+						if (isOutput && minify && !mangle && inline) {
+							expect(stripSourceMapComment(outputJs)).toBe(stripLineBreaks(`
+								(()=>{
+									const console={x:1};
+									return{
+										console,
+										ext:console,
+										evalFn:(0,eval)("()=>eval(\\"({console, typeofA: typeof a})\\")")
+									}
+								})()
+							`));
+						}
 					}
 				});
 			});
@@ -1402,23 +1474,22 @@ describe('eval', () => {
 
 			itSerializes('serializes correctly', {
 				in: () => input,
-				strictEnv: false,
 				out: `(()=>{
 					const a={},
-						b=(
+						b=(0,eval)("
 							(extA,module,exports,outer)=>[
 								outer=(0,function(){
 									const extB=2;
-									return eval("() => {const extC = 3; return eval(\\"const extD = 4; () => ({extA, extB, extC, extD, outer, module, exports, this: this, arguments: arguments})\\")}")
+									return eval(\\"() => {const extC = 3; return eval(\\\\\\"const extD = 4; () => ({extA, extB, extC, extD, outer, module, exports, this: this, arguments: arguments})\\\\\\")}\\")
 								}),
 								(a,b,extB)=>function(){
 									return()=>{
 										const extC=3;
-										return eval("const extD = 4; () => ({extA, extB, extC, extD, outer, module, exports, this: this, arguments: arguments})")
+										return eval(\\"const extD = 4; () => ({extA, extB, extC, extD, outer, module, exports, this: this, arguments: arguments})\\")
 									}
 								}.apply(a,b)
 							]
-						)(1,a,{}),
+						")(1,a,{}),
 						c=b[1](
 							{x:5},
 							function(){return arguments}(6,7,8),
@@ -1487,7 +1558,7 @@ describe('eval', () => {
 				`);
 			},
 			strictEnv: false,
-			out: '(ext=>()=>eval("ext"))(1)',
+			out: '(0,eval)("ext=>()=>eval(\\"ext\\")")(1)',
 			validate(fn) {
 				expect(fn).toBeFunction();
 				expect(fn()).toBe(1);
@@ -1500,7 +1571,7 @@ describe('eval', () => {
 				return (0, eval)('() => eval("typeof ext")');
 			},
 			strictEnv: false,
-			out: '()=>eval("typeof ext")',
+			out: '(0,eval)("()=>eval(\\"typeof ext\\")")',
 			validate(fn) {
 				expect(fn).toBeFunction();
 				expect(fn()).toBe('undefined');
@@ -1512,7 +1583,7 @@ describe('eval', () => {
 				return (0, eval)('() => eval("[typeof module, typeof exports]")');
 			},
 			strictEnv: false,
-			out: '()=>eval("[typeof module, typeof exports]")',
+			out: '(0,eval)("()=>eval(\\"[typeof module, typeof exports]\\")")',
 			validate(fn) {
 				expect(fn).toBeFunction();
 				expect(fn()).toEqual(['undefined', 'undefined']);

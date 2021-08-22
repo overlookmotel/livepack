@@ -694,7 +694,7 @@ describe('Strict mode', () => {
 							() => eval('package')
 						`),
 						strictEnv: false,
-						out: '(package=>()=>eval("package"))(1)',
+						out: '(0,eval)("package=>()=>eval(\\"package\\")")(1)',
 						validate(fn) {
 							expect(fn).toBeFunction();
 							expect(fn()).toBe(1);
@@ -715,10 +715,12 @@ describe('Strict mode', () => {
 						`),
 						strictEnv: false,
 						out: `(()=>{
-							const a=((package,ext)=>[
-									()=>eval("package"),
-									()=>{"use strict";return ext}
-								])(1,2);
+							const a=(0,eval)("
+									(package,ext)=>[
+										()=>eval(\\"package\\"),
+										()=>{\\"use strict\\";return ext}
+									]
+								")(1,2);
 							return[a[0],a[1]]
 						})()`,
 						validate([evalFn, otherFn]) {
@@ -740,7 +742,7 @@ describe('Strict mode', () => {
 							}
 						`),
 						strictEnv: false,
-						out: '()=>{"use strict";return eval("2")}',
+						out: '(0,eval)("\\"use strict\\";()=>eval(\\"2\\")")',
 						validate(fn) {
 							expect(fn).toBeFunction();
 							expect(fn()).toBe(2);
@@ -761,10 +763,12 @@ describe('Strict mode', () => {
 						`),
 						strictEnv: false,
 						out: `(()=>{
-							const a=((ext,package)=>[
-									()=>{"use strict";return eval("ext")},
-									()=>package
-								])(2,1);
+							const a=(0,eval)("
+									(ext,package)=>[
+										()=>{\\"use strict\\";return eval(\\"ext\\")},
+										()=>package
+									]
+								")(2,1);
 							return[a[0],a[1]]
 						})()`,
 						validate([evalFn, otherFn]) {
@@ -792,7 +796,7 @@ describe('Strict mode', () => {
 						};
 					`),
 					strictEnv: false,
-					out: '(arguments=>()=>{"use strict";return eval("arguments")})(1)',
+					out: '(0,eval)("arguments=>()=>{\\"use strict\\";return eval(\\"arguments\\")}")(1)',
 					validate(fn) {
 						expect(fn).toBeFunction();
 						expect(fn()).toBe(1);
@@ -2009,6 +2013,138 @@ describe('Strict mode', () => {
 					strictEnv: false,
 					out: '()=>{"use strict";return delete Object.prototype}',
 					validate: expectToThrowStrictError
+				});
+			});
+		});
+
+		describe('functions containing direct eval', () => {
+			describe('strict mode retained for function containing eval when it is', () => {
+				itSerializes('strict mode', {
+					in() {
+						return (0, eval)("'use strict'; () => (eval('0'), delete Object.prototype)");
+					},
+					out: '(0,eval)("\\"use strict\\";()=>(eval(\\"0\\"),delete Object.prototype)")',
+					validate: expectToThrowStrictError
+				});
+
+				itSerializes('sloppy mode', {
+					in() {
+						return (0, eval)("() => (eval('0'), delete Object.prototype)");
+					},
+					out: '(0,eval)("()=>(eval(\\"0\\"),delete Object.prototype)")',
+					validate: expectNotToThrowStrictError
+				});
+			});
+
+			describe(
+				'strict mode retained for function in same scope as function containing eval when it is',
+				() => {
+					itSerializes('strict mode', {
+						in() {
+							return (0, eval)(`
+								const ext = 1;
+								[
+									(() => {
+										'use strict';
+										return () => (ext, delete Object.prototype);
+									})(),
+									() => (ext, eval('0'))
+								];
+							`);
+						},
+						out: `(()=>{
+							const a=(0,eval)("
+								ext=>[
+									()=>{\\"use strict\\";return ext,delete Object.prototype},
+									()=>(ext,eval(\\"0\\"))
+								]
+							")(1);
+							return[a[0],a[1]]
+						})()`,
+						validate: ([fn]) => expectToThrowStrictError(fn)
+					});
+
+					itSerializes('sloppy mode', {
+						in() {
+							return (0, eval)(`
+								const ext = 1;
+								[
+									() => (ext, delete Object.prototype),
+									() => (ext, eval('0'))
+								];
+							`);
+						},
+						out: `(()=>{
+							const a=(0,eval)("
+								ext=>[
+									()=>(ext,delete Object.prototype),
+									()=>(ext,eval(\\"0\\"))
+								]
+							")(1);
+							return[a[0],a[1]]
+						})()`,
+						validate: ([fn]) => expectNotToThrowStrictError(fn)
+					});
+				}
+			);
+
+			describe('strict mode of file not affected by strict mode of function containing eval', () => {
+				itSerializes('strict mode', {
+					in() {
+						return (0, eval)(`
+							[
+								() => {
+									'use strict';
+									return delete Object.prototype;
+								},
+								() => {
+									'use strict';
+									return delete Object.prototype;
+								},
+								() => (eval('0'), delete Object.prototype)
+							]
+						`);
+					},
+					strictEnv: false,
+					out: `(()=>{
+						"use strict";
+						return[
+							()=>delete Object.prototype,
+							()=>delete Object.prototype,
+							(0,eval)("()=>(eval(\\"0\\"),delete Object.prototype)")
+						]
+					})()`,
+					validate([fn, fn2, evalFn]) {
+						expectToThrowStrictError(fn);
+						expectToThrowStrictError(fn2);
+						expectNotToThrowStrictError(evalFn);
+					}
+				});
+
+				itSerializes('sloppy mode', {
+					in() {
+						return (0, eval)(`
+							[
+								() => delete Object.prototype,
+								() => delete Object.prototype,
+								() => {
+									'use strict';
+									return eval('0'), delete Object.prototype;
+								}
+							]
+						`);
+					},
+					strictEnv: false,
+					out: `[
+						()=>delete Object.prototype,
+						()=>delete Object.prototype,
+						(0,eval)("\\"use strict\\";()=>(eval(\\"0\\"),delete Object.prototype)")
+					]`,
+					validate([fn, fn2, evalFn]) {
+						expectNotToThrowStrictError(fn);
+						expectNotToThrowStrictError(fn2);
+						expectToThrowStrictError(evalFn);
+					}
 				});
 			});
 		});
