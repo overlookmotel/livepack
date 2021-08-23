@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.5.4
+
+Bug fixes:
+
+* Globals always accessible within eval
+* Create create scope functions only where required
+* Optional member expression property identifier is not a variable
+
+No code:
+
+* Correct code comment
+* Code comment
+
+Dev:
+
+* Debug utilities
+* Update dev dependencies
+
 ## 0.5.3
 
 Bug fixes:
