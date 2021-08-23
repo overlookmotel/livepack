@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.5.5
+
+Bug fixes:
+
+* `eval` only makes external vars mutable if not shadowed locally
+
+Improvements:
+
+* Omit params from scope function where only use of var is const violation
+
+Refactor:
+
+* Replace `for` loop with `.forEach`
+
 ## 0.5.4
 
 Bug fixes:
