@@ -6603,10 +6603,10 @@ describe('Functions', () => {
 			},
 			out: `(()=>{
 				const a=((b,c)=>[
-					()=>{c++,(()=>{const a=0;a=0})()},
-					()=>b,
-					()=>c
-				])(1,2);
+					()=>{b++,(()=>{const a=0;a=0})()},
+					()=>c,
+					()=>b
+				])(2,1);
 				return[a[0],a[1],a[2]]
 			})()`,
 			validate([setA, getA, getB]) {
@@ -6870,14 +6870,14 @@ describe('Functions', () => {
 					const a=((c,d,e,f)=>[
 							a=>f=a,
 							()=>{
-								[c,{set a(a){const b=0;b=0}}.a,e]=Object.defineProperty([4,5,6],1,{
+								[c,{set a(a){const b=0;b=0}}.a,d]=Object.defineProperty([4,5,6],1,{
 									get(){f[4]=true;return 5}
 								})
 							},
-							()=>d,
+							()=>e,
 							()=>c,
-							()=>e
-						])(2,1,3),
+							()=>d
+						])(2,3,1),
 						b=[a[1],a[2],a[3],a[4]];
 					a[0](b);
 					return b
@@ -6972,14 +6972,14 @@ describe('Functions', () => {
 					const a=((c,d,e,f)=>[
 							a=>f=a,
 							()=>{
-								({x:c,y:{set a(a){const b=0;b=0}}.a,z:e}=Object.defineProperty({x:4,y:5,z:6},"y",{
+								({x:c,y:{set a(a){const b=0;b=0}}.a,z:d}=Object.defineProperty({x:4,y:5,z:6},"y",{
 									get(){f[4]=true;return 5}
 								}))
 							},
-							()=>d,
+							()=>e,
 							()=>c,
-							()=>e
-						])(2,1,3),
+							()=>d
+						])(2,3,1),
 						b=[a[1],a[2],a[3],a[4]];
 					a[0](b);
 					return b
@@ -7199,6 +7199,137 @@ describe('Functions', () => {
 					expect(getA()).toBe(1); // Assignment not made
 					expect(arr[2]).toBe(2); // Loop body doesn't execute
 				}
+			});
+		});
+
+		describe('when only reference to var is const violation, omitted from scope function params', () => {
+			describe('leaving no remaining scopes', () => {
+				itSerializes('straight assignment', {
+					in() {
+						const extA = 1; // eslint-disable-line no-unused-vars
+						return () => {
+							extA = 2; // eslint-disable-line no-const-assign
+						};
+					},
+					out: '()=>{2,(()=>{const a=0;a=0})()}',
+					validate(set) {
+						expect(set).toBeFunction();
+						expect(set).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+					}
+				});
+
+				itSerializes('assignment via deconstruction', {
+					in() {
+						const extA = 1; // eslint-disable-line no-unused-vars
+						return () => {
+							[extA] = [2]; // eslint-disable-line no-const-assign
+						};
+					},
+					out: '()=>{[{set a(a){const b=0;b=0}}.a]=[2]}',
+					validate(set) {
+						expect(set).toBeFunction();
+						expect(set).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+					}
+				});
+
+				itSerializes('assignment in for in statement', {
+					in() {
+						const extA = 1; // eslint-disable-line no-unused-vars
+						return () => {
+							for (extA in {x: 1}) ; // eslint-disable-line no-const-assign
+						};
+					},
+					out: '()=>{for({set a(a){const b=0;b=0}}.a in{x:1}){}}',
+					validate(set) {
+						expect(set).toBeFunction();
+						expect(set).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+					}
+				});
+
+				itSerializes('assignment in for of statement', {
+					in() {
+						const extA = 1; // eslint-disable-line no-unused-vars
+						return () => {
+							for (extA of [2]) ; // eslint-disable-line no-const-assign
+						};
+					},
+					out: '()=>{for({set a(a){const b=0;b=0}}.a of[2]){}}',
+					validate(set) {
+						expect(set).toBeFunction();
+						expect(set).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+					}
+				});
+			});
+
+			describe('with other scope vars', () => {
+				itSerializes('in same block', {
+					in() {
+						const extA = 1, // eslint-disable-line no-unused-vars
+							extB = 2;
+						return () => {
+							extA = extB; // eslint-disable-line no-const-assign
+						};
+					},
+					out: '(b=>()=>{b,(()=>{const a=0;a=0})()})(2)',
+					validate(set) {
+						expect(set).toBeFunction();
+						expect(set).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+					}
+				});
+
+				itSerializes('in block above', {
+					in() {
+						const extA = 1; // eslint-disable-line no-unused-vars
+						{
+							const extB = 2;
+							return () => {
+								extA = extB; // eslint-disable-line no-const-assign
+							};
+						}
+					},
+					out: '(b=>()=>{b,(()=>{const a=0;a=0})()})(2)',
+					validate(set) {
+						expect(set).toBeFunction();
+						expect(set).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+					}
+				});
+
+				itSerializes('in block below', {
+					in() {
+						const extB = 2;
+						{
+							const extA = 1; // eslint-disable-line no-unused-vars
+							return () => {
+								extA = extB; // eslint-disable-line no-const-assign
+							};
+						}
+					},
+					out: '(b=>()=>{b,(()=>{const a=0;a=0})()})(2)',
+					validate(set) {
+						expect(set).toBeFunction();
+						expect(set).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+					}
+				});
+
+				itSerializes('in blocks above and below', {
+					in() {
+						const extB = 2;
+						{
+							const extA = 1; // eslint-disable-line no-unused-vars
+							{
+								const extC = 3;
+								return () => {
+									extA = extB + extC; // eslint-disable-line no-const-assign
+								};
+							}
+						}
+					},
+					out: '(c=>b=>()=>{c+b,(()=>{const a=0;a=0})()})(2)(3)',
+					validate(set) {
+						expect(set).toBeFunction();
+						expect(set).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+					}
+				});
 			});
 		});
 	});
