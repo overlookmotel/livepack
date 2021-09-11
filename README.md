@@ -6,6 +6,18 @@
 
 # Serialize live running code to Javascript
 
+## THIS BRANCH
+
+Demo of how code splitting could hoist all imports to entry point files, to reduce server round-trips.
+
+See [Issue #144](https://github.com/overlookmotel/livepack/issues/144).
+
+All split/common chunks export a function which is called with that file's dependencies.
+
+See [hoistImports](./hoistImports) dir for example of [input code](./hoistImports/src) and [output as ESM](./hoistImports/outputEsm).
+
+Also [see here](./hoistImports/outputIife) for an implementation of output as IIFE with module-loader runtime.
+
 ## Introduction
 
 Most bundlers/transpilers convert Javascript code as *text* to some other form of Javascript code, also in text form.
