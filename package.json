@@ -50,7 +50,7 @@
     "@babel/register": "^7.15.3",
     "@babel/traverse": "^7.15.0",
     "@babel/types": "^7.15.0",
-    "babel-jest": "^27.0.6",
+    "babel-jest": "^27.2.0",
     "babel-plugin-dynamic-import-node": "^2.3.3",
     "base32.js": "^0.1.0",
     "convert-source-map": "^1.8.0",
