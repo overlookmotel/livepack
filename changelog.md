@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.6.0
+
+Breaking changes:
+
+* Ignore position of `name` prop on classes
+
+Bug fixes:
+
+* Fix `splitAsync` error message for invalid name
+
+Improvements:
+
+* `splitAsync` avoid data URL import
+
+Dependencies:
+
+* Update dependencies
+
+No code:
+
+* Code comment
+
+Dev:
+
+* Update dev dependencies
+
 ## 0.5.5
 
 Bug fixes:
