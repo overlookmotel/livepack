@@ -35,6 +35,7 @@ module.exports = { // eslint-disable-line jest/no-export
 const DEFAULT_OPTIONS = process.env.LIVEPACK_TEST_QUICK
 	? {minify: true, mangle: true, inline: true}
 	: null;
+const PROFILE_ONLY = process.env.LIVEPACK_TEST_PROFILE;
 
 /**
  * Wrap `itSerializes` to add `.skip()`, `.only()` and `.each()` methods, as with Jest's `it()`.
@@ -77,6 +78,8 @@ function wrapItSerializes(defaultOptions) {
 }
 
 function createRunExpectationFn(callFn) {
+	if (PROFILE_ONLY) return (msg, fn) => { fn(); };
+
 	// Capture stack trace at point of calling `itSerializes`
 	const callErr = new Error();
 	Error.captureStackTrace(callErr, callFn);
@@ -299,6 +302,9 @@ function itSerializes(name, options, defaultOptions, describe, runExpectation) {
 
 			// Serialize value
 			const outputFiles = entries ? serializeEntries(input, opts) : serialize(input, opts);
+
+			// If in profiling mode, don't test output
+			if (PROFILE_ONLY) return;
 
 			// Convert files to object and discard source map files
 			const outputFilesObj = {},
