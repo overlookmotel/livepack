@@ -23,7 +23,7 @@ const NUM_FIXTURES = 5;
 
 // Init
 global.expect = expect;
-require('jest-extended');
+require('jest-extended/all');
 require('./support/expect.js');
 
 const {major, minor} = parseNodeVersion(process.version);
