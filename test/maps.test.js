@@ -105,14 +105,15 @@ describe('Maps', () => {
 			out: `(()=>{
 				const a=Map,
 					b=Object.setPrototypeOf,
-					c=b(
-						class M{
-							constructor(...a){
-								return Reflect.construct(Object.getPrototypeOf(M),a,M)}
-							},a
-						).prototype;
-				b(c,a.prototype);
-				return b(new a,c)
+					c=(b=>b=class M{
+						constructor(...a){
+							return Reflect.construct(Object.getPrototypeOf(b),a,b)
+						}
+					})(),
+					d=c.prototype;
+				b(c,a);
+				b(d,a.prototype);
+				return b(new a,d)
 			})()`,
 			validate(map) {
 				expect(map).toBeInstanceOf(Map);
@@ -132,15 +133,15 @@ describe('Maps', () => {
 			out: `(()=>{
 				const a=Map,
 					b=Object.setPrototypeOf,
-					c=b(
-						class M{
-							constructor(...a){
-								return Reflect.construct(Object.getPrototypeOf(M),a,M)
-							}
-						},a
-					).prototype;
-				b(c,a.prototype);
-				return b(new a([[1,2],[3,4],[5,6]]),c)
+					c=(b=>b=class M{
+						constructor(...a){
+							return Reflect.construct(Object.getPrototypeOf(b),a,b)
+						}
+					})(),
+					d=c.prototype;
+				b(c,a);
+				b(d,a.prototype);
+				return b(new a([[1,2],[3,4],[5,6]]),d)
 			})()`,
 			validate(map) {
 				expect(map).toBeInstanceOf(Map);
@@ -165,19 +166,19 @@ describe('Maps', () => {
 			out: `(()=>{
 				const a=Map,
 					b=Object.setPrototypeOf,
-					c=b(
-						class M{
-							constructor(...a){
-								return Reflect.construct(Object.getPrototypeOf(M),a,M)
-							}
-						},a
-					).prototype,
-					d=b(new a([[1,2]]),c);
-				b(c,a.prototype);
-				d.set(d,3);
-				d.set(4,d);
-				d.set(5,6);
-				return d
+					c=(b=>b=class M{
+						constructor(...a){
+							return Reflect.construct(Object.getPrototypeOf(b),a,b)
+						}
+					})(),
+					d=c.prototype,
+					e=b(new a([[1,2]]),d);
+				b(c,a);
+				b(d,a.prototype);
+				e.set(e,3);
+				e.set(4,e);
+				e.set(5,6);
+				return e
 			})()`,
 			validate(map) {
 				expect(map).toBeInstanceOf(Map);

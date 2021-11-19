@@ -50,13 +50,13 @@ describe('RegExps', () => {
 		out: `(()=>{
 			const a=Object.setPrototypeOf,
 				b=RegExp,
-				c=a(
-					class R{
-						constructor(...a){return Reflect.construct(Object.getPrototypeOf(R),a,R)}
-					},b
-				).prototype;
-			a(c,b.prototype);
-			return a(/^foo$/gu,c)
+				c=(b=>b=class R{
+					constructor(...a){return Reflect.construct(Object.getPrototypeOf(b),a,b)}
+				})(),
+				d=c.prototype;
+			a(c,b);
+			a(d,b.prototype);
+			return a(/^foo$/gu,d)
 		})()`,
 		validate(regex) {
 			expect(regex).toBeInstanceOf(RegExp);
@@ -102,13 +102,13 @@ describe('Dates', () => {
 		out: `(()=>{
 			const a=Date,
 				b=Object.setPrototypeOf,
-				c=b(
-					class D{
-						constructor(...a){return Reflect.construct(Object.getPrototypeOf(D),a,D)}
-					},a
-				).prototype;
-			b(c,a.prototype);
-			return b(new a(1577880000000),c)
+				c=(b=>b=class D{
+					constructor(...a){return Reflect.construct(Object.getPrototypeOf(b),a,b)}
+				})(),
+				d=c.prototype;
+			b(c,a);
+			b(d,a.prototype);
+			return b(new a(1577880000000),d)
 		})()`,
 		validate(date) {
 			expect(date.toISOString()).toBe('2020-01-01T12:00:00.000Z');
@@ -138,13 +138,13 @@ describe('URLs', () => {
 		out: `(()=>{
 			const a=URL,
 				b=Object.setPrototypeOf,
-				c=b(
-					class U{
-						constructor(...a){return Reflect.construct(Object.getPrototypeOf(U),a,U)}
-					},a
-				).prototype;
-			b(c,a.prototype);
-			return b(new a("http://foo.com/path/to/file.html?a=1&b=2"),c)
+				c=(b=>b=class U{
+					constructor(...a){return Reflect.construct(Object.getPrototypeOf(b),a,b)}
+				})(),
+				d=c.prototype;
+			b(c,a);
+			b(d,a.prototype);
+			return b(new a("http://foo.com/path/to/file.html?a=1&b=2"),d)
 		})()`,
 		validate(url) {
 			expect(url).toBeInstanceOf(URL);
@@ -190,13 +190,13 @@ describe('URLSearchParams', () => {
 		out: `(()=>{
 			const a=URLSearchParams,
 				b=Object.setPrototypeOf,
-				c=b(
-					class U{
-						constructor(...a){return Reflect.construct(Object.getPrototypeOf(U),a,U)}
-					},a
-				).prototype;
-			b(c,a.prototype);
-			return b(new a("a=1&b=2"),c)
+				c=(b=>b=class U{
+					constructor(...a){return Reflect.construct(Object.getPrototypeOf(b),a,b)}
+				})(),
+				d=c.prototype;
+			b(c,a);
+			b(d,a.prototype);
+			return b(new a("a=1&b=2"),d)
 		})()`,
 		validate(params) {
 			expect(params).toBeInstanceOf(URLSearchParams);

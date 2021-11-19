@@ -161,6 +161,61 @@ describe('Object methods', () => {
 			}
 		});
 
+		itSerializes('two objects with methods using super in same scope do not have supers confused', {
+			// https://github.com/overlookmotel/livepack/issues/294
+			in() {
+				const obj1 = Object.setPrototypeOf(
+					{foo() { return super.foo(); }},
+					{foo() { return 1; }}
+				);
+
+				const obj2 = Object.setPrototypeOf(
+					{foo() { return super.foo(); }},
+					{foo() { return 2; }}
+				);
+
+				return {obj1, obj2};
+			},
+			out: `(()=>{
+				const a=(a=>[
+						b=>a=b,
+						{
+							foo(){
+								return Reflect.get(Object.getPrototypeOf(a),"foo",this).call(this)
+							}
+						}.foo
+					])(),
+					b=Object,
+					c=b.create,
+					d=b.assign,
+					e=d(
+						c({foo(){return 1}}),
+						{foo:a[1]}
+					),
+					f=(a=>[
+						b=>a=b,
+						{
+							foo(){
+								return Reflect.get(Object.getPrototypeOf(a),"foo",this).call(this)
+							}
+						}.foo
+					])(),
+					g=d(
+						c({foo(){return 2}}),
+						{foo:f[1]}
+					);
+				a[0](e);
+				f[0](g);
+				return{obj1:e,obj2:g}
+			})()`,
+			validate({obj1, obj2}) {
+				expect(obj1).toBeObject();
+				expect(obj1.foo()).toBe(1);
+				expect(obj2).toBeObject();
+				expect(obj2.foo()).toBe(2);
+			}
+		});
+
 		itSerializes('using super with scope vars named same as globals used in transpiled super', {
 			in() {
 				function createObject(Object, Reflect) {
@@ -181,14 +236,14 @@ describe('Object methods', () => {
 			},
 			out: `(()=>{
 				const a=(
-						(a,b,c)=>[
-							a=>c=a,
+						(b,c)=>a=>[
+							b=>a=b,
 							{x(){
-								Reflect.get(Object.getPrototypeOf(c),"x",this).call(this);
-								return[a,b]
+								Reflect.get(Object.getPrototypeOf(a),"x",this).call(this);
+								return[b,c]
 							}}.x
 						]
-					)(1,2),
+					)(1,2)(),
 					b=Object,
 					c=b.assign(
 						b.create(
@@ -207,6 +262,51 @@ describe('Object methods', () => {
 				expect(obj).toBeObject();
 				expect(obj.x()).toEqual([1, 2]);
 				expect(obj.y).toBe(3);
+			}
+		});
+
+		itSerializes('using super and super var shadowed within method', {
+			// NB This test relates to correct functioning of Babel plugin
+			in() {
+				const obj = {
+					x() {
+						super.x();
+						const obj = 1; // eslint-disable-line no-shadow
+						return obj;
+					}
+				};
+				Object.setPrototypeOf(obj, {
+					x() {
+						this.y = 2;
+					}
+				});
+				return obj;
+			},
+			out: `(()=>{
+				const a=(b=>[
+						a=>b=a,
+						{
+							x(){
+								Reflect.get(Object.getPrototypeOf(b),"x",this).call(this);
+								const a=1;
+								return a
+							}
+						}.x
+					])(),
+					b=Object,
+					c=b.assign(
+						b.create({
+							x(){this.y=2}
+						}),
+						{x:a[1]}
+					);
+				a[0](c);
+				return c
+			})()`,
+			validate(obj) {
+				expect(obj).toBeObject();
+				expect(obj.x()).toBe(1);
+				expect(obj.y).toBe(2);
 			}
 		});
 
