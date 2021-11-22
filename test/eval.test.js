@@ -681,12 +681,12 @@ describe('eval', () => {
 											return eval(\\"({extA, extB, extC, extD, extE, typeofExtF: typeof extF, outer, module, exports, this: this, arguments: arguments})\\")
 										}
 									}),
-									(extB,a,b)=>function(){
+									(extB,_a,_b)=>function(){
 										return()=>{
 											const extC=3;
 											return eval(\\"({extA, extB, extC, extD, extE, typeofExtF: typeof extF, outer, module, exports, this: this, arguments: arguments})\\")
 										}
-									}.apply(a,b)
+									}.apply(_a,_b)
 								]
 							")(1,4,5,a,{}),
 							c=b[1](
@@ -909,12 +909,12 @@ describe('eval', () => {
 											return eval(\\"() => ({extA, extB, extC, extD, extE, typeofExtF: typeof extF, outer, module, exports, this: this, arguments: arguments})\\")
 										}
 									}),
-									(extB,a,b)=>function(){
+									(extB,_a,_b)=>function(){
 										return()=>{
 											const extC=3;
 											return eval(\\"() => ({extA, extB, extC, extD, extE, typeofExtF: typeof extF, outer, module, exports, this: this, arguments: arguments})\\")
 										}
-									}.apply(a,b)
+									}.apply(_a,_b)
 								]
 							")(1,4,5,a,{}),
 							c=b[1](
@@ -1482,12 +1482,12 @@ describe('eval', () => {
 									const extB=2;
 									return eval(\\"() => {const extC = 3; return eval(\\\\\\"const extD = 4; () => ({extA, extB, extC, extD, outer, module, exports, this: this, arguments: arguments})\\\\\\")}\\")
 								}),
-								(a,b,extB)=>function(){
+								(_a,_b,extB)=>function(){
 									return()=>{
 										const extC=3;
 										return eval(\\"const extD = 4; () => ({extA, extB, extC, extD, outer, module, exports, this: this, arguments: arguments})\\")
 									}
-								}.apply(a,b)
+								}.apply(_a,_b)
 							]
 						")(1,a,{}),
 						c=b[1](

@@ -105,10 +105,18 @@ describe('createMangledVarNameTransform', () => {
 				expect(transform()).toBe('toString');
 			});
 		});
+
+		it('isPrivate option prefixes names with `_`', () => {
+			expect(transform('x', true)).toBe('_a');
+			expect(transform('y', true)).toBe('_b');
+			expect(transform('y', true)).toBe('_c');
+		});
 	});
 
 	describe('with reserved names', () => {
-		const reserved = new Set(['a', 'b', 'e', 'f', 'g', 'z', 'ae', 'af', 'ag', 'AA', 'Za', 'aaa']);
+		const reserved = new Set([
+			'a', 'b', 'e', 'f', 'g', 'z', 'ae', 'af', 'ag', 'AA', 'Za', 'aaa', '_b', '_d', '_e'
+		]);
 		let transform, useUntil;
 		beforeEach(() => {
 			transform = createMangledVarNameTransform(reserved);
@@ -184,6 +192,12 @@ describe('createMangledVarNameTransform', () => {
 				useUntil('toStrinf');
 				expect(transform()).toBe('toString');
 			});
+		});
+
+		it('isPrivate option prefixes names with `_` and avoids reserved names', () => {
+			expect(transform('x', true)).toBe('_a');
+			expect(transform('y', true)).toBe('_c');
+			expect(transform('y', true)).toBe('_f');
 		});
 	});
 });
@@ -287,10 +301,17 @@ describe('createUnmangledVarNameTransform', () => {
 				expect(transform('__proto__')).toBe('__proto__$0');
 			});
 		});
+
+		it('isPrivate option prefixes names with `_`', () => {
+			expect(transform('x', true)).toBe('_x');
+			expect(transform('y', true)).toBe('_y');
+			expect(transform('y', true)).toBe('_y$0');
+			expect(transform('y', true)).toBe('_y$1');
+		});
 	});
 
 	describe('with reserved names', () => {
-		const reserved = new Set(['a', 'b', 'c$0', 'd$3']);
+		const reserved = new Set(['a', 'b', 'c$0', 'd$3', '_y', '_z$0', '_z$2', '_z$3']);
 		let transform;
 		beforeEach(() => {
 			transform = createUnmangledVarNameTransform(reserved);
@@ -391,6 +412,17 @@ describe('createUnmangledVarNameTransform', () => {
 				expect(transform('__proto__')).toBe('__proto__');
 				expect(transform('__proto__')).toBe('__proto__$0');
 			});
+		});
+
+		it('isPrivate option prefixes names with `_` and avoids reserved names', () => {
+			expect(transform('x', true)).toBe('_x');
+			expect(transform('x', true)).toBe('_x$0');
+			expect(transform('y', true)).toBe('_y$0');
+			expect(transform('y', true)).toBe('_y$1');
+			expect(transform('z', true)).toBe('_z');
+			expect(transform('z', true)).toBe('_z$1');
+			expect(transform('z', true)).toBe('_z$4');
+			expect(transform('z', true)).toBe('_z$5');
 		});
 	});
 });
