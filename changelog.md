@@ -1,5 +1,43 @@
 # Changelog
 
+## 0.6.1
+
+Bug fixes:
+
+* Super var always called `super`
+* Handle `super` in arrow functions
+* Babel plugin preserve implicit class name where uses super
+* Correct binding location of function declarations in sloppy mode
+* Throw error if tracker not called when serializing function
+* Fix source maps in object methods in rare cases
+
+Performance:
+
+* Babel plugin avoid duplicate work recording var usage
+
+Refactor:
+
+* Babel plugin use own state object
+* Record `argNames` as property of function, not scope
+
+Dependencies:
+
+* Update dependencies
+
+No code:
+
+* Correct code comments
+* Code comments
+
+Tests:
+
+* `LIVEPACK_TEST_PROFILE` flag
+
+Dev:
+
+* CI run tests on Node v17
+* Update dev dependencies
+
 ## 0.6.0
 
 Breaking changes:
