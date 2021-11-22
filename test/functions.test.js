@@ -2708,6 +2708,565 @@ describe('Functions', () => {
 		});
 	});
 
+	describe('including `super`', () => {
+		describe('from class prototype method', () => {
+			itSerializes('1 level up', {
+				in() {
+					class S {
+						foo() { // eslint-disable-line class-methods-use-this
+							return 1;
+						}
+					}
+					class C extends S {
+						getFoo() {
+							return () => super.foo();
+						}
+					}
+					return new C().getFoo();
+				},
+				out: `(()=>{
+					const a=(b=>[
+							b=class C{
+								constructor(...a){
+									return Reflect.construct(Object.getPrototypeOf(b),a,b)
+								}
+							},
+							{
+								getFoo(){
+									return()=>Reflect.get(Object.getPrototypeOf(b.prototype),"foo",this).call(this)
+								}
+							}.getFoo,
+							()=>Reflect.get(Object.getPrototypeOf(b.prototype),"foo",this).call(this)
+						])(),
+						b=a[0],
+						c=Object,
+						d=c.setPrototypeOf,
+						e=class S{},
+						f=e.prototype,
+						g=c.defineProperties;
+					g(
+						f,
+						{
+							foo:{
+								value:{foo(){return 1}}.foo,
+								writable:true,
+								configurable:true
+							}
+						}
+					);
+					d(b,e);
+					d(
+						g(
+							b.prototype,
+							{
+								getFoo:{value:a[1],writable:true,configurable:true}
+							}
+						),
+						f
+					);
+					return a[2]
+				})()`,
+				validate(fn) {
+					expect(fn).toBeFunction();
+					expect(fn()).toEqual(1);
+				}
+			});
+
+			itSerializes('2 levels up', {
+				in() {
+					class S {
+						foo() { // eslint-disable-line class-methods-use-this
+							return 1;
+						}
+					}
+					class C extends S {
+						getFoo() {
+							return () => () => super.foo();
+						}
+					}
+					return new C().getFoo()();
+				},
+				out: `(()=>{
+					const a=(b=>[
+							b=class C{
+								constructor(...a){
+									return Reflect.construct(Object.getPrototypeOf(b),a,b)
+								}
+							},
+							{
+								getFoo(){
+									return()=>()=>Reflect.get(Object.getPrototypeOf(b.prototype),"foo",this).call(this)
+								}
+							}.getFoo,
+							()=>Reflect.get(Object.getPrototypeOf(b.prototype),"foo",this).call(this)
+						])(),
+						b=a[0],
+						c=Object,
+						d=c.setPrototypeOf,
+						e=class S{},
+						f=e.prototype,
+						g=c.defineProperties;
+					g(
+						f,
+						{
+							foo:{
+								value:{foo(){return 1}}.foo,
+								writable:true,
+								configurable:true
+							}
+						}
+					);
+					d(b,e);
+					d(
+						g(
+							b.prototype,
+							{
+								getFoo:{value:a[1],writable:true,configurable:true}
+							}
+						),
+						f
+					);
+					return a[2]
+				})()`,
+				validate(fn) {
+					expect(fn).toBeFunction();
+					expect(fn()).toEqual(1);
+				}
+			});
+
+			itSerializes('handles change of prototype', {
+				in() {
+					class S {
+						foo() { // eslint-disable-line class-methods-use-this
+							return 1;
+						}
+					}
+					class C extends S {
+						getFoo() {
+							return () => super.foo();
+						}
+					}
+					return [C, new C().getFoo()];
+				},
+				out: `(()=>{
+					const a=(b=>[
+							b=class C{
+								constructor(...a){
+									return Reflect.construct(Object.getPrototypeOf(b),a,b)
+								}
+							},
+							{
+								getFoo(){
+									return()=>Reflect.get(Object.getPrototypeOf(b.prototype),"foo",this).call(this)
+								}
+							}.getFoo,
+							()=>Reflect.get(Object.getPrototypeOf(b.prototype),"foo",this).call(this)
+						])(),
+						b=Object,
+						c=b.setPrototypeOf,
+						d=class S{},
+						e=d.prototype,
+						f=b.defineProperties,
+						g=a[0];
+					f(
+						e,
+						{
+							foo:{
+								value:{foo(){return 1}}.foo,
+								writable:true,
+								configurable:true
+							}
+						}
+					);
+					c(g,d);
+					c(
+						f(
+							g.prototype,
+							{
+								getFoo:{value:a[1],writable:true,configurable:true}
+							}
+						),
+						e
+					);
+					return[g,a[2]]
+				})()`,
+				validate([C, fn]) {
+					expect(fn).toBeFunction();
+					expect(fn()).toEqual(1);
+					Object.setPrototypeOf(C.prototype, {foo: () => 2});
+					expect(fn()).toEqual(2);
+				}
+			});
+		});
+
+		describe('from class static method', () => {
+			itSerializes('1 level up', {
+				in() {
+					class S {
+						static foo() {
+							return 1;
+						}
+					}
+					class C extends S {
+						static getFoo() {
+							return () => super.foo();
+						}
+					}
+					return C.getFoo();
+				},
+				out: `(()=>{
+					const a=(b=>[
+							b=class C{
+								constructor(...a){
+									return Reflect.construct(Object.getPrototypeOf(b),a,b)
+								}
+							},
+							{
+								getFoo(){
+									return()=>Reflect.get(Object.getPrototypeOf(b),"foo",this).call(this)
+								}
+							}.getFoo,
+							()=>Reflect.get(Object.getPrototypeOf(b),"foo",this).call(this)
+						])(),
+						b=a[0],
+						c=Object,
+						d=c.defineProperties,
+						e=c.setPrototypeOf,
+						f=d(
+							class S{},
+							{
+								foo:{
+									value:{foo(){return 1}}.foo,
+									writable:true,
+									configurable:true
+								}
+							}
+						);
+					e(
+						d(
+							b,
+							{
+								getFoo:{value:a[1],writable:true,configurable:true}
+							}
+						),
+						f
+					);
+					e(b.prototype,f.prototype);
+					return a[2]
+				})()`,
+				validate(fn) {
+					expect(fn).toBeFunction();
+					expect(fn()).toEqual(1);
+				}
+			});
+
+			itSerializes('2 levels up', {
+				in() {
+					class S {
+						static foo() {
+							return 1;
+						}
+					}
+					class C extends S {
+						static getFoo() {
+							return () => () => super.foo();
+						}
+					}
+					return C.getFoo()();
+				},
+				out: `(()=>{
+					const a=(b=>[
+							b=class C{
+								constructor(...a){
+									return Reflect.construct(Object.getPrototypeOf(b),a,b)
+								}
+							},
+							{
+								getFoo(){
+									return()=>()=>Reflect.get(Object.getPrototypeOf(b),"foo",this).call(this)
+								}
+							}.getFoo,
+							()=>Reflect.get(Object.getPrototypeOf(b),"foo",this).call(this)
+						])(),
+						b=a[0],
+						c=Object,
+						d=c.defineProperties,
+						e=c.setPrototypeOf,
+						f=d(
+							class S{},
+							{
+								foo:{
+									value:{foo(){return 1}}.foo,
+									writable:true,
+									configurable:true
+								}
+							}
+						);
+					e(
+						d(
+							b,
+							{
+								getFoo:{value:a[1],writable:true,configurable:true}
+							}
+						),
+						f
+					);
+					e(b.prototype,f.prototype);
+					return a[2]
+				})()`,
+				validate(fn) {
+					expect(fn).toBeFunction();
+					expect(fn()).toEqual(1);
+				}
+			});
+
+			itSerializes('handles change of prototype', {
+				in() {
+					class S {
+						static foo() {
+							return 1;
+						}
+					}
+					class C extends S {
+						static getFoo() {
+							return () => super.foo();
+						}
+					}
+					return [C, C.getFoo()];
+				},
+				out: `(()=>{
+					const a=(b=>[
+							b=class C{
+								constructor(...a){
+									return Reflect.construct(Object.getPrototypeOf(b),a,b)
+								}
+							},
+							{
+								getFoo(){
+									return()=>Reflect.get(Object.getPrototypeOf(b),"foo",this).call(this)
+								}
+							}.getFoo,
+							()=>Reflect.get(Object.getPrototypeOf(b),"foo",this).call(this)
+						])(),
+						b=Object,
+						c=b.defineProperties,
+						d=b.setPrototypeOf,
+						e=c(
+							class S{},
+							{
+								foo:{
+									value:{foo(){return 1}}.foo,
+									writable:true,
+									configurable:true
+								}
+							}
+						),
+						f=a[0];
+					d(
+						c(
+							f,
+							{
+								getFoo:{value:a[1],writable:true,configurable:true}
+							}
+						),
+						e
+					);
+					d(f.prototype,e.prototype);
+					return[f,a[2]]
+				})()`,
+				validate([C, fn]) {
+					expect(fn).toBeFunction();
+					expect(fn()).toEqual(1);
+					Object.setPrototypeOf(C, {foo: () => 2});
+					expect(fn()).toEqual(2);
+				}
+			});
+		});
+
+		describe('from object method', () => {
+			itSerializes('1 level up', {
+				in() {
+					const obj = Object.setPrototypeOf(
+						{
+							getFoo() {
+								return () => super.foo();
+							}
+						},
+						{
+							foo() {
+								return 1;
+							}
+						}
+					);
+					return obj.getFoo();
+				},
+				out: `(()=>{
+					const a=(a=>[
+							b=>a=b,
+							{
+								getFoo(){
+									return()=>Reflect.get(Object.getPrototypeOf(a),"foo",this).call(this)
+								}
+							}.getFoo,
+							()=>Reflect.get(Object.getPrototypeOf(a),"foo",this).call(this)
+						])(),
+						b=Object;
+					a[0](
+						b.assign(
+							b.create({foo(){return 1}}),
+							{getFoo:a[1]}
+						));
+					return a[2]
+				})()`,
+				validate(fn) {
+					expect(fn).toBeFunction();
+					expect(fn()).toEqual(1);
+				}
+			});
+
+			itSerializes('2 levels up', {
+				in() {
+					const obj = Object.setPrototypeOf(
+						{
+							getFoo() {
+								return () => () => super.foo();
+							}
+						},
+						{
+							foo() {
+								return 1;
+							}
+						}
+					);
+					return obj.getFoo()();
+				},
+				out: `(()=>{
+					const a=(a=>[
+							b=>a=b,
+							{
+								getFoo(){
+									return()=>()=>Reflect.get(Object.getPrototypeOf(a),"foo",this).call(this)
+								}
+							}.getFoo,
+							()=>Reflect.get(Object.getPrototypeOf(a),"foo",this).call(this)
+						])(),
+						b=Object;
+					a[0](
+						b.assign(
+							b.create({foo(){return 1}}),
+							{getFoo:a[1]}
+						));
+					return a[2]
+				})()`,
+				validate(fn) {
+					expect(fn).toBeFunction();
+					expect(fn()).toEqual(1);
+				}
+			});
+
+			itSerializes('handles change of prototype', {
+				in() {
+					const obj = Object.setPrototypeOf(
+						{
+							getFoo() {
+								return () => super.foo();
+							}
+						},
+						{
+							foo() {
+								return 1;
+							}
+						}
+					);
+					return [obj, obj.getFoo()];
+				},
+				out: `(()=>{
+					const a=(a=>[
+							b=>a=b,
+							{
+								getFoo(){
+									return()=>Reflect.get(Object.getPrototypeOf(a),"foo",this).call(this)
+								}
+							}.getFoo,
+							()=>Reflect.get(Object.getPrototypeOf(a),"foo",this).call(this)
+						])(),
+						b=Object,
+						c=b.assign(
+							b.create({foo(){return 1}}),
+							{getFoo:a[1]}
+						);
+					a[0](c);
+					return[c,a[2]]
+				})()`,
+				validate([obj, fn]) {
+					expect(fn).toBeFunction();
+					expect(fn()).toEqual(1);
+					Object.setPrototypeOf(obj, {foo: () => 2});
+					expect(fn()).toEqual(2);
+				}
+			});
+		});
+
+		itSerializes('within extends clause of another class', {
+			in() {
+				const obj = Object.setPrototypeOf(
+					{
+						getFoo() {
+							let f;
+							class Y {
+								foo() { // eslint-disable-line class-methods-use-this
+									return 2;
+								}
+
+								static foo() {
+									return 3;
+								}
+							}
+							class X extends (f = (0, () => super.foo()), Y) {} // eslint-disable-line no-unused-vars
+							return f;
+						}
+					},
+					{
+						foo() {
+							return 1;
+						}
+					}
+				);
+				return obj.getFoo();
+			},
+			out: `(()=>{
+				const a=(b=>[
+						a=>b=a,
+						{
+							getFoo(){
+								let a;
+								class Y{
+									foo(){return 2}
+									static foo(){return 3}
+								}
+								class X extends(
+									a=(0,()=>Reflect.get(Object.getPrototypeOf(b),"foo",this).call(this)),Y
+								){}
+								return a
+							}
+						}.getFoo,
+						()=>Reflect.get(Object.getPrototypeOf(b),"foo",this).call(this)
+					])(),
+					b=Object;
+				a[0](
+					b.assign(
+						b.create({foo(){return 1}}),
+						{getFoo:a[1]}
+					));
+				return a[2]
+			})()`,
+			validate(fn) {
+				expect(fn).toBeFunction();
+				expect(fn()).toEqual(1);
+			}
+		});
+	});
+
 	describe('referencing other functions', () => {
 		describe('in scope above (not injected)', () => {
 			itSerializes('single instantiation', {
