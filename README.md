@@ -569,6 +569,7 @@ Livepack can serialize pretty much all Javascript Functions and Objects. However
 * Proxies
 * Error objects
 * WeakRefs + FinalizationRegistrys
+* Class properties defined inline (e.g. `class X { x = 1; }`)
 * Private class methods + properties
 * TypedArrays which share an underlying buffer
 
