@@ -2768,7 +2768,7 @@ describe('Functions', () => {
 				})()`,
 				validate(fn) {
 					expect(fn).toBeFunction();
-					expect(fn()).toEqual(1);
+					expect(fn()).toBe(1);
 				}
 			});
 
@@ -2830,7 +2830,7 @@ describe('Functions', () => {
 				})()`,
 				validate(fn) {
 					expect(fn).toBeFunction();
-					expect(fn()).toEqual(1);
+					expect(fn()).toBe(1);
 				}
 			});
 
@@ -2892,9 +2892,9 @@ describe('Functions', () => {
 				})()`,
 				validate([C, fn]) {
 					expect(fn).toBeFunction();
-					expect(fn()).toEqual(1);
+					expect(fn()).toBe(1);
 					Object.setPrototypeOf(C.prototype, {foo: () => 2});
-					expect(fn()).toEqual(2);
+					expect(fn()).toBe(2);
 				}
 			});
 		});
@@ -2956,7 +2956,7 @@ describe('Functions', () => {
 				})()`,
 				validate(fn) {
 					expect(fn).toBeFunction();
-					expect(fn()).toEqual(1);
+					expect(fn()).toBe(1);
 				}
 			});
 
@@ -3016,7 +3016,7 @@ describe('Functions', () => {
 				})()`,
 				validate(fn) {
 					expect(fn).toBeFunction();
-					expect(fn()).toEqual(1);
+					expect(fn()).toBe(1);
 				}
 			});
 
@@ -3076,9 +3076,9 @@ describe('Functions', () => {
 				})()`,
 				validate([C, fn]) {
 					expect(fn).toBeFunction();
-					expect(fn()).toEqual(1);
+					expect(fn()).toBe(1);
 					Object.setPrototypeOf(C, {foo: () => 2});
-					expect(fn()).toEqual(2);
+					expect(fn()).toBe(2);
 				}
 			});
 		});
@@ -3120,7 +3120,7 @@ describe('Functions', () => {
 				})()`,
 				validate(fn) {
 					expect(fn).toBeFunction();
-					expect(fn()).toEqual(1);
+					expect(fn()).toBe(1);
 				}
 			});
 
@@ -3160,7 +3160,7 @@ describe('Functions', () => {
 				})()`,
 				validate(fn) {
 					expect(fn).toBeFunction();
-					expect(fn()).toEqual(1);
+					expect(fn()).toBe(1);
 				}
 			});
 
@@ -3200,9 +3200,9 @@ describe('Functions', () => {
 				})()`,
 				validate([obj, fn]) {
 					expect(fn).toBeFunction();
-					expect(fn()).toEqual(1);
+					expect(fn()).toBe(1);
 					Object.setPrototypeOf(obj, {foo: () => 2});
-					expect(fn()).toEqual(2);
+					expect(fn()).toBe(2);
 				}
 			});
 		});
