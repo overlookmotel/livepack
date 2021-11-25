@@ -2736,14 +2736,15 @@ describe('Functions', () => {
 									return()=>Reflect.get(Object.getPrototypeOf(b.prototype),"foo",this).call(this)
 								}
 							}.getFoo,
-							()=>Reflect.get(Object.getPrototypeOf(b.prototype),"foo",this).call(this)
+							a=>()=>Reflect.get(Object.getPrototypeOf(b.prototype),"foo",a).call(a)
 						])(),
 						b=a[0],
 						c=Object,
 						d=c.setPrototypeOf,
 						e=class S{},
 						f=e.prototype,
-						g=c.defineProperties;
+						g=c.defineProperties,
+						h=b.prototype;
 					g(
 						f,
 						{
@@ -2757,14 +2758,14 @@ describe('Functions', () => {
 					d(b,e);
 					d(
 						g(
-							b.prototype,
+							h,
 							{
 								getFoo:{value:a[1],writable:true,configurable:true}
 							}
 						),
 						f
 					);
-					return a[2]
+					return a[2](c.create(h))
 				})()`,
 				validate(fn) {
 					expect(fn).toBeFunction();
@@ -2798,14 +2799,15 @@ describe('Functions', () => {
 									return()=>()=>Reflect.get(Object.getPrototypeOf(b.prototype),"foo",this).call(this)
 								}
 							}.getFoo,
-							()=>Reflect.get(Object.getPrototypeOf(b.prototype),"foo",this).call(this)
+							a=>()=>Reflect.get(Object.getPrototypeOf(b.prototype),"foo",a).call(a)
 						])(),
 						b=a[0],
 						c=Object,
 						d=c.setPrototypeOf,
 						e=class S{},
 						f=e.prototype,
-						g=c.defineProperties;
+						g=c.defineProperties,
+						h=b.prototype;
 					g(
 						f,
 						{
@@ -2819,14 +2821,14 @@ describe('Functions', () => {
 					d(b,e);
 					d(
 						g(
-							b.prototype,
+							h,
 							{
 								getFoo:{value:a[1],writable:true,configurable:true}
 							}
 						),
 						f
 					);
-					return a[2]
+					return a[2](c.create(h))
 				})()`,
 				validate(fn) {
 					expect(fn).toBeFunction();
@@ -2860,14 +2862,15 @@ describe('Functions', () => {
 									return()=>Reflect.get(Object.getPrototypeOf(b.prototype),"foo",this).call(this)
 								}
 							}.getFoo,
-							()=>Reflect.get(Object.getPrototypeOf(b.prototype),"foo",this).call(this)
+							a=>()=>Reflect.get(Object.getPrototypeOf(b.prototype),"foo",a).call(a)
 						])(),
 						b=Object,
 						c=b.setPrototypeOf,
 						d=class S{},
 						e=d.prototype,
 						f=b.defineProperties,
-						g=a[0];
+						g=a[0],
+						h=g.prototype;
 					f(
 						e,
 						{
@@ -2881,20 +2884,161 @@ describe('Functions', () => {
 					c(g,d);
 					c(
 						f(
-							g.prototype,
+							h,
 							{
 								getFoo:{value:a[1],writable:true,configurable:true}
 							}
 						),
 						e
 					);
-					return[g,a[2]]
+					return[g,a[2](b.create(h))]
 				})()`,
 				validate([C, fn]) {
 					expect(fn).toBeFunction();
 					expect(fn()).toBe(1);
 					Object.setPrototypeOf(C.prototype, {foo: () => 2});
 					expect(fn()).toBe(2);
+				}
+			});
+
+			itSerializes('with super getter', {
+				in() {
+					class S {
+						get foo() {
+							return this.x * 2;
+						}
+					}
+					class C extends S {
+						get foo() {
+							return this.x * 3;
+						}
+
+						getFoo() {
+							return () => super.foo;
+						}
+					}
+					const c = new C();
+					c.x = 5;
+					return c.getFoo();
+				},
+				out: `(()=>{
+					const a=(b=>[
+							b=class C{
+								constructor(...a){
+									return Reflect.construct(Object.getPrototypeOf(b),a,b)
+								}
+							},
+							{
+								getFoo(){
+									return()=>Reflect.get(Object.getPrototypeOf(b.prototype),"foo",this)
+								}
+							}.getFoo,
+							a=>()=>Reflect.get(Object.getPrototypeOf(b.prototype),"foo",a)
+						])(),
+						b=a[0],
+						c=Object,
+						d=c.setPrototypeOf,
+						e=class S{},
+						f=e.prototype,
+						g=c.defineProperties,
+						h=b.prototype;
+					g(
+						f,
+						{
+							foo:{get:{"get foo"(){return this.x*2}}["get foo"],configurable:true}
+						}
+					);
+					d(b,e);
+					d(
+						g(
+							h,
+							{
+								foo:{get:{"get foo"(){return this.x*3}}["get foo"],configurable:true},
+								getFoo:{value:a[1],writable:true,configurable:true}
+							}
+						),
+						f
+					);
+					return a[2](c.assign(c.create(h),{x:5}))
+				})()`,
+				validate(fn) {
+					expect(fn).toBeFunction();
+					expect(fn()).toBe(10);
+				}
+			});
+
+			itSerializes('with super setter', {
+				in() {
+					class S {
+						set foo(v) {
+							this.x = v * 2;
+						}
+					}
+					class C extends S {
+						set foo(v) {
+							this.x = v * 3;
+						}
+
+						setFoo() {
+							return () => {
+								super.foo = 5;
+							};
+						}
+					}
+					const c = new C();
+					return {fn: c.setFoo(), c};
+				},
+				out: `(()=>{
+					const a=(b=>[
+							b=class C{
+								constructor(...a){
+									return Reflect.construct(Object.getPrototypeOf(b),a,b)
+								}
+							},
+							{
+								setFoo(){
+									return()=>{
+										Reflect.set(Object.getPrototypeOf(b.prototype),"foo",5,this)
+									}
+								}
+							}.setFoo,
+							a=>()=>{
+								Reflect.set(Object.getPrototypeOf(b.prototype),"foo",5,a)
+							}
+						])(),
+						b=a[0],
+						c=Object,
+						d=c.setPrototypeOf,
+						e=class S{},
+						f=e.prototype,
+						g=c.defineProperties,
+						h=b.prototype,
+						i=c.create(h);
+					g(
+						f,
+						{
+							foo:{set:{"set foo"(a){this.x=a*2}}["set foo"],configurable:true}
+						}
+					);
+					d(b,e);
+					d(
+						g(
+							h,
+							{
+								foo:{set:{"set foo"(a){this.x=a*3}}["set foo"],configurable:true},
+								setFoo:{value:a[1],writable:true,configurable:true}
+							}
+						),
+						f
+					);
+					return{fn:a[2](i),c:i}
+				})()`,
+				validate({fn, c}) {
+					expect(fn).toBeFunction();
+					expect(c).toBeObject();
+					expect(c.x).toBeUndefined();
+					fn();
+					expect(c.x).toBe(10);
 				}
 			});
 		});
@@ -2926,7 +3070,7 @@ describe('Functions', () => {
 									return()=>Reflect.get(Object.getPrototypeOf(b),"foo",this).call(this)
 								}
 							}.getFoo,
-							()=>Reflect.get(Object.getPrototypeOf(b),"foo",this).call(this)
+							a=>()=>Reflect.get(Object.getPrototypeOf(b),"foo",a).call(a)
 						])(),
 						b=a[0],
 						c=Object,
@@ -2952,7 +3096,7 @@ describe('Functions', () => {
 						f
 					);
 					e(b.prototype,f.prototype);
-					return a[2]
+					return a[2](b)
 				})()`,
 				validate(fn) {
 					expect(fn).toBeFunction();
@@ -2986,7 +3130,7 @@ describe('Functions', () => {
 									return()=>()=>Reflect.get(Object.getPrototypeOf(b),"foo",this).call(this)
 								}
 							}.getFoo,
-							()=>Reflect.get(Object.getPrototypeOf(b),"foo",this).call(this)
+							a=>()=>Reflect.get(Object.getPrototypeOf(b),"foo",a).call(a)
 						])(),
 						b=a[0],
 						c=Object,
@@ -3012,7 +3156,7 @@ describe('Functions', () => {
 						f
 					);
 					e(b.prototype,f.prototype);
-					return a[2]
+					return a[2](b)
 				})()`,
 				validate(fn) {
 					expect(fn).toBeFunction();
@@ -3046,7 +3190,7 @@ describe('Functions', () => {
 									return()=>Reflect.get(Object.getPrototypeOf(b),"foo",this).call(this)
 								}
 							}.getFoo,
-							()=>Reflect.get(Object.getPrototypeOf(b),"foo",this).call(this)
+							a=>()=>Reflect.get(Object.getPrototypeOf(b),"foo",a).call(a)
 						])(),
 						b=Object,
 						c=b.defineProperties,
@@ -3072,13 +3216,146 @@ describe('Functions', () => {
 						e
 					);
 					d(f.prototype,e.prototype);
-					return[f,a[2]]
+					return[f,a[2](f)]
 				})()`,
 				validate([C, fn]) {
 					expect(fn).toBeFunction();
 					expect(fn()).toBe(1);
 					Object.setPrototypeOf(C, {foo: () => 2});
 					expect(fn()).toBe(2);
+				}
+			});
+
+			itSerializes('with super getter', {
+				in() {
+					class S {
+						static get foo() {
+							return this.x * 2;
+						}
+					}
+					class C extends S {
+						static get foo() {
+							return this.x * 3;
+						}
+
+						static getFoo() {
+							return () => super.foo;
+						}
+					}
+					C.x = 5;
+					return C.getFoo();
+				},
+				out: `(()=>{
+					const a=(b=>[
+							b=class C{
+								constructor(...a){
+									return Reflect.construct(Object.getPrototypeOf(b),a,b)
+								}
+							},
+							{
+								getFoo(){
+									return()=>Reflect.get(Object.getPrototypeOf(b),"foo",this)
+								}
+							}.getFoo,
+							a=>()=>Reflect.get(Object.getPrototypeOf(b),"foo",a)
+						])(),
+						b=a[0],
+						c=Object,
+						d=c.defineProperties,
+						e=c.setPrototypeOf,
+						f=d(
+							class S{},
+							{
+								foo:{get:{"get foo"(){return this.x*2}}["get foo"],configurable:true}
+							}
+						);
+					e(
+						d(
+							b,
+							{
+								foo:{get:{"get foo"(){return this.x*3}}["get foo"],configurable:true},
+								getFoo:{value:a[1],writable:true,configurable:true},
+								x:{value:5,writable:true,enumerable:true,configurable:true}
+							}
+						),
+						f
+					);
+					e(b.prototype,f.prototype);
+					return a[2](b)
+				})()`,
+				validate(fn) {
+					expect(fn).toBeFunction();
+					expect(fn()).toBe(10);
+				}
+			});
+
+			itSerializes('with super setter', {
+				in() {
+					class S {
+						static set foo(v) {
+							this.x = v * 2;
+						}
+					}
+					class C extends S {
+						static set foo(v) {
+							this.x = v * 3;
+						}
+
+						static setFoo() {
+							return () => {
+								super.foo = 5;
+							};
+						}
+					}
+					return {fn: C.setFoo(), C};
+				},
+				out: `(()=>{
+					const a=(b=>[
+							b=class C{
+								constructor(...a){
+									return Reflect.construct(Object.getPrototypeOf(b),a,b)
+								}
+							},
+							{
+								setFoo(){
+									return()=>{
+										Reflect.set(Object.getPrototypeOf(b),"foo",5,this)
+									}
+								}
+							}.setFoo,
+							a=>()=>{
+								Reflect.set(Object.getPrototypeOf(b),"foo",5,a)
+							}
+						])(),
+						b=a[0],
+						c=Object,
+						d=c.defineProperties,
+						e=c.setPrototypeOf,
+						f=d(
+							class S{},
+							{
+								foo:{set:{"set foo"(a){this.x=a*2}}["set foo"],configurable:true}
+							}
+						);
+					e(
+						d(
+							b,
+							{
+								foo:{set:{"set foo"(a){this.x=a*3}}["set foo"],configurable:true},
+								setFoo:{value:a[1],writable:true,configurable:true}
+							}
+						),
+						f
+					);
+					e(b.prototype,f.prototype);
+					return{fn:a[2](b),C:b}
+				})()`,
+				validate({fn, C}) {
+					expect(fn).toBeFunction();
+					expect(C).toBeFunction();
+					expect(C.x).toBeUndefined();
+					fn();
+					expect(C.x).toBe(10);
 				}
 			});
 		});
@@ -3101,22 +3378,22 @@ describe('Functions', () => {
 					return obj.getFoo();
 				},
 				out: `(()=>{
-					const a=(a=>[
-							b=>a=b,
+					const a=(b=>[
+							a=>b=a,
 							{
 								getFoo(){
-									return()=>Reflect.get(Object.getPrototypeOf(a),"foo",this).call(this)
+									return()=>Reflect.get(Object.getPrototypeOf(b),"foo",this).call(this)
 								}
 							}.getFoo,
-							()=>Reflect.get(Object.getPrototypeOf(a),"foo",this).call(this)
+							a=>()=>Reflect.get(Object.getPrototypeOf(b),"foo",a).call(a)
 						])(),
-						b=Object;
-					a[0](
-						b.assign(
+						b=Object,
+						c=b.assign(
 							b.create({foo(){return 1}}),
 							{getFoo:a[1]}
-						));
-					return a[2]
+						);
+					a[0](c);
+					return a[2](c)
 				})()`,
 				validate(fn) {
 					expect(fn).toBeFunction();
@@ -3141,22 +3418,22 @@ describe('Functions', () => {
 					return obj.getFoo()();
 				},
 				out: `(()=>{
-					const a=(a=>[
-							b=>a=b,
+					const a=(b=>[
+							a=>b=a,
 							{
 								getFoo(){
-									return()=>()=>Reflect.get(Object.getPrototypeOf(a),"foo",this).call(this)
+									return()=>()=>Reflect.get(Object.getPrototypeOf(b),"foo",this).call(this)
 								}
 							}.getFoo,
-							()=>Reflect.get(Object.getPrototypeOf(a),"foo",this).call(this)
+							a=>()=>Reflect.get(Object.getPrototypeOf(b),"foo",a).call(a)
 						])(),
-						b=Object;
-					a[0](
-						b.assign(
+						b=Object,
+						c=b.assign(
 							b.create({foo(){return 1}}),
 							{getFoo:a[1]}
-						));
-					return a[2]
+						);
+					a[0](c);
+					return a[2](c)
 				})()`,
 				validate(fn) {
 					expect(fn).toBeFunction();
@@ -3181,14 +3458,14 @@ describe('Functions', () => {
 					return [obj, obj.getFoo()];
 				},
 				out: `(()=>{
-					const a=(a=>[
-							b=>a=b,
+					const a=(b=>[
+							a=>b=a,
 							{
 								getFoo(){
-									return()=>Reflect.get(Object.getPrototypeOf(a),"foo",this).call(this)
+									return()=>Reflect.get(Object.getPrototypeOf(b),"foo",this).call(this)
 								}
 							}.getFoo,
-							()=>Reflect.get(Object.getPrototypeOf(a),"foo",this).call(this)
+							a=>()=>Reflect.get(Object.getPrototypeOf(b),"foo",a).call(a)
 						])(),
 						b=Object,
 						c=b.assign(
@@ -3196,13 +3473,122 @@ describe('Functions', () => {
 							{getFoo:a[1]}
 						);
 					a[0](c);
-					return[c,a[2]]
+					return[c,a[2](c)]
 				})()`,
 				validate([obj, fn]) {
 					expect(fn).toBeFunction();
 					expect(fn()).toBe(1);
 					Object.setPrototypeOf(obj, {foo: () => 2});
 					expect(fn()).toBe(2);
+				}
+			});
+
+			itSerializes('with super getter', {
+				in() {
+					const obj = Object.setPrototypeOf(
+						{
+							get foo() {
+								return this.x * 3;
+							},
+							getFoo() {
+								return () => super.foo;
+							},
+							x: 5
+						},
+						{
+							get foo() {
+								return this.x * 2;
+							}
+						}
+					);
+					return obj.getFoo();
+				},
+				out: `(()=>{
+					const a=(b=>[
+							a=>b=a,
+							{
+								getFoo(){
+									return()=>Reflect.get(Object.getPrototypeOf(b),"foo",this)
+								}
+							}.getFoo,
+							a=>()=>Reflect.get(Object.getPrototypeOf(b),"foo",a)
+						])(),
+						b=Object,
+						c=b.create(
+							b.defineProperties(
+								{},
+								{
+									foo:{get:{"get foo"(){return this.x*2}}["get foo"],enumerable:true,configurable:true}
+								}
+							),
+							{
+								foo:{get:{"get foo"(){return this.x*3}}["get foo"],enumerable:true,configurable:true},
+								getFoo:{value:a[1],writable:true,enumerable:true,configurable:true},
+								x:{value:5,writable:true,enumerable:true,configurable:true}
+							}
+						);
+					a[0](c);
+					return a[2](c)
+				})()`,
+				validate(fn) {
+					expect(fn).toBeFunction();
+					expect(fn()).toBe(10);
+				}
+			});
+
+			itSerializes('with super setter', {
+				in() {
+					const obj = Object.setPrototypeOf(
+						{
+							set foo(v) {
+								this.x = v * 3;
+							},
+							setFoo() {
+								return () => {
+									super.foo = 5;
+								};
+							}
+						},
+						{
+							set foo(v) {
+								this.x = v * 2;
+							}
+						}
+					);
+					return {fn: obj.setFoo(), obj};
+				},
+				out: `(()=>{
+					const a=(b=>[
+							a=>b=a,
+							{
+								setFoo(){
+									return()=>{Reflect.set(Object.getPrototypeOf(b),"foo",5,this)}
+								}
+							}.setFoo,
+							a=>()=>{Reflect.set(Object.getPrototypeOf(b),"foo",5,a)}
+						])(),
+						b=Object,
+						c=b.create(
+							b.defineProperties(
+								{},
+								{
+									foo:{set:{"set foo"(a){this.x=a*2}}["set foo"],enumerable:true,configurable:true}
+								}
+							),
+							{
+								foo:{set:{"set foo"(a){this.x=a*3}}["set foo"],enumerable:true,configurable:true},
+								setFoo:{value:a[1],writable:true,enumerable:true,configurable:true}
+							}
+						);
+					a[0](c);
+					return{fn:a[2](c),obj:c}
+				})()`,
+				validate({fn, obj}) {
+					expect(fn).toBeFunction();
+					expect(obj).toBeObject();
+					expect(obj.x).toBeUndefined();
+					fn();
+					expect(obj.x).toBe(10);
 				}
 			});
 		});
@@ -3250,15 +3636,15 @@ describe('Functions', () => {
 								return a
 							}
 						}.getFoo,
-						()=>Reflect.get(Object.getPrototypeOf(b),"foo",this).call(this)
+						a=>()=>Reflect.get(Object.getPrototypeOf(b),"foo",a).call(a)
 					])(),
-					b=Object;
-				a[0](
-					b.assign(
+					b=Object,
+					c=b.assign(
 						b.create({foo(){return 1}}),
 						{getFoo:a[1]}
-					));
-				return a[2]
+					);
+				a[0](c);
+				return a[2](c)
 			})()`,
 			validate(fn) {
 				expect(fn).toBeFunction();
