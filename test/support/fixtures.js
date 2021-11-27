@@ -14,8 +14,9 @@ const {join: pathJoin, dirname} = require('path'),
 // Constants
 const TESTS_DIR_PATH = pathJoin(__dirname, '../'),
 	TEMP_DIR_PATH = pathJoin(TESTS_DIR_PATH, '_temp'),
-	REGISTER_PATH = pathJoin(__dirname, '../../register.js'),
-	MAIN_PATH = pathJoin(__dirname, '../../index.js'),
+	LOADER_PATH = pathJoin(__dirname, '../../loader.mjs'),
+	MAIN_PATH_ESM = pathJoin(__dirname, '../../es/index.js'),
+	MAIN_PATH_COMMONJS = pathJoin(__dirname, '../../index.js'),
 	DEFAULT_FILENAME = 'index.js';
 
 // Exports
@@ -36,10 +37,13 @@ module.exports = function createFixturesFunctions(testPath) {
 	// Return fixtures functions
 	return {
 		createFixtures: files => createFixtures(tempPath, files),
-		createFixture: code => createFixture(tempPath, code),
+		createFixture: (code, filename) => createFixture(tempPath, code, filename),
 		requireFixtures: files => requireFixtures(tempPath, files),
 		requireFixture: code => requireFixture(tempPath, code),
-		serializeInNewProcess: files => serializeInNewProcess(tempPath, files)
+		importFixtures: files => importFixtures(tempPath, files),
+		serializeInNewProcess: (files, isEsm, loaderOptions) => serializeInNewProcess(
+			tempPath, files, isEsm, loaderOptions
+		)
 	};
 };
 
@@ -76,10 +80,12 @@ function createFixtures(tempPath, files) {
  * Write a single fixture file to temp dir and return path to file.
  * @param {string} tempPath - Temp dir path
  * @param {string} code - File content
+ * @param {string} [filename] - Filename
  * @returns {string} - File path
  */
-function createFixture(tempPath, code) {
-	return createFixtures(tempPath, {[DEFAULT_FILENAME]: code})[DEFAULT_FILENAME];
+function createFixture(tempPath, code, filename) {
+	if (!filename) filename = DEFAULT_FILENAME;
+	return createFixtures(tempPath, {[filename]: code})[filename];
 }
 
 /**
@@ -105,32 +111,81 @@ function requireFixture(tempPath, code) {
 }
 
 /**
- * Serialize fixture files in child process.
+ * Write fixtures files to unique temp dir and `import()` first file.
+ * Return first file's default export.
+ * @param {string} tempPath - Temp dir path
+ * @param {Object} files - Files
+ * @returns {*} - Default export of first file `import()`-ed
+ */
+async function importFixtures(tempPath, files) {
+	const fixturesPaths = createFixtures(tempPath, files);
+	const path = fixturesPaths[Object.keys(fixturesPaths)[0]];
+	return (await import(path)).default;
+}
+
+/**
+ * Serialize fixture files in child process using loader.
+ * `files` can be a string or an object mapping filename to file content.
+ * First file should contain value to serialize on last line.
+ *
  * @param {string} tempPath - Temp dir path
  * @param {Object|string} files - Files (if string, will be used as `index.js` file)
+ * @param {Object} [options] - Options. Aside from `esm` and `promise`, options passed to loader.
+ * @param {boolean} [options.esm] - `true` if entry point is ESM
+ * @param {boolean} [options.promise] - `true` if value is promise to await before serializing
  * @returns {string} - Serialized output
  */
-async function serializeInNewProcess(tempPath, files) {
+async function serializeInNewProcess(tempPath, files, options) {
+	// Conform options
+	let {esm: isEsm, promise: isPromise, ...loaderOptions} = options || {};
+	isEsm = !!isEsm;
+	isPromise = !!isPromise;
+	loaderOptions = {cache: false, ...loaderOptions};
+
+	// Convert string to object
 	if (isString(files)) files = {[DEFAULT_FILENAME]: files};
 
-	files = {
-		'entry.js': [
-			`require(${JSON.stringify(REGISTER_PATH)})({cache: false});`,
-			`const {serialize} = require(${JSON.stringify(MAIN_PATH)});`,
-			`const input = require(${JSON.stringify(`./${Object.keys(files)[0]}`)});`,
-			'console.log(serialize(input));'
-		].join('\n'),
-		...files
-	};
+	// Trim whitespace off start and end of lines and insert serialize code into first file
+	const entryFilename = Object.keys(files)[0];
+	files = Object.fromEntries(Object.entries(files).map(([filename, content]) => {
+		const lines = content.trim().split('\n').map(line => line.trim());
 
-	const path = createFixtures(tempPath, files)['entry.js'];
-	const js = await spawnNode(path);
+		if (filename === entryFilename) {
+			lines.unshift(
+				isEsm
+					? `import {serialize} from ${JSON.stringify(MAIN_PATH_ESM)};`
+					: `const {serialize} = require(${JSON.stringify(MAIN_PATH_COMMONJS)});`
+			);
+			lines[lines.length - 1] = isPromise
+				? `${lines[lines.length - 1]}.then(value => console.log(serialize(value)))`
+				: `console.log(serialize(${lines[lines.length - 1]}))`;
+		}
+
+		return [filename, lines.join('\n')];
+	}));
+
+	// Load entry point file in Node with loader
+	const path = createFixtures(tempPath, files)[entryFilename];
+	const js = await spawnNode(path, loaderOptions);
 	return js.trim();
 }
 
-function spawnNode(path) {
+// Create env for child processes.
+// Remove `JEST_WORKER_ID` so `lib/init/esm.js` does not disable use of `import()` in the child.
+const env = {...process.env};
+delete env.JEST_WORKER_ID;
+
+function spawnNode(path, loaderOptions) {
 	return new Promise((resolve, reject) => {
-		const child = spawn(process.execPath, [path]);
+		const child = spawn(process.execPath, [
+			'--no-warnings', // Prevent warning about use of experimental features
+			'--experimental-import-meta-resolve',
+			'--experimental-top-level-await',
+			'--experimental-loader',
+			`${LOADER_PATH}?${JSON.stringify(loaderOptions)}`,
+			'--experimental-specifier-resolution=node',
+			path
+		], {env});
 
 		let stdout = '',
 			stderr = '';

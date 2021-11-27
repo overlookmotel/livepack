@@ -298,7 +298,8 @@ function itSerializes(name, options, defaultOptions, describe, runExpectation) {
 
 			// Get value
 			const ctx = Object.create(null);
-			const input = inputFn({...opts, ctx});
+			let input = inputFn({...opts, ctx});
+			if (input instanceof Promise) input = await input;
 
 			// Serialize value
 			const outputFiles = entries ? serializeEntries(input, opts) : serialize(input, opts);

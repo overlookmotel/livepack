@@ -8,6 +8,12 @@
       "import": "./es/index.js",
       "require": "./index.js"
     },
+    "./loader": {
+      "import": "./loader.mjs",
+      "require": "./loader.cjs"
+    },
+    "./loader?": "./loader.mjs",
+    "./loader?*": "./loader.mjs?*",
     "./register": {
       "import": "./es/register.js",
       "require": "./register.js"
@@ -23,6 +29,8 @@
   },
   "bin": "lib/cli.js",
   "files": [
+    "loader.mjs",
+    "loader.cjs",
     "babel.js",
     "register.js",
     "jest-transform.js",
@@ -42,7 +50,6 @@
   "dependencies": {
     "@babel/core": "^7.16.0",
     "@babel/generator": "^7.16.0",
-    "@babel/helper-module-transforms": "^7.16.0",
     "@babel/helper-plugin-utils": "^7.14.5",
     "@babel/parser": "^7.16.4",
     "@babel/plugin-transform-modules-commonjs": "^7.16.0",
@@ -95,11 +102,13 @@
     "test": "npm run lint && npm run test-main",
     "lint": "eslint .",
     "lint-fix": "eslint . --fix",
-    "test-main": "npm run test-jest && npm run test-mocha",
+    "test-main": "npm run test-jest && npm run test-load && npm run test-mocha",
     "test-jest": "npm-run-all -c test-jest-main test-cleanup",
     "test-jest-main": "jest",
     "test-mocha": "npm-run-all -c test-mocha-main test-cleanup",
     "test-mocha-main": "mocha ./test/*.mocha.test.js -R progress",
+    "test-load": "npm-run-all -c test-load-main test-cleanup",
+    "test-load-main": "node --no-warnings --experimental-import-meta-resolve --experimental-top-level-await --experimental-loader ./test/support/mochaLoader.mjs --experimental-specifier-resolution=node ./test/support/mocha.js test/*.load.test.js -R progress",
     "test-cleanup": "rm -rf test/_temp",
     "cover": "npm-run-all -c cover-main cover-cleanup",
     "cover-main": "jest --coverage",
