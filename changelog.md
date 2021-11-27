@@ -1,5 +1,41 @@
 # Changelog
 
+## 0.6.2
+
+Bug fixes:
+
+* Fix `super` in arrow functions with getter/setter
+
+Improvements:
+
+* Name temp `this` + `arguments` vars with underscore prefix when within scope of `eval`
+
+Refactor:
+
+* Move code handling `arguments` inside `eval`
+* Remove unnecessary code
+
+Dependencies:
+
+* Update `parse-node-version` dependency
+
+No code:
+
+* Correct code comment
+* Code style
+
+Tests:
+
+* Functions tests assertion style [improve]
+
+Dev:
+
+* Update dev dependencies
+
+Docs:
+
+* Add class properties to list of unsupported features
+
 ## 0.6.1
 
 Bug fixes:
