@@ -4,7 +4,6 @@
 * Tests for `export * from ...`
 * Tests: Load fixtures with loader rather than register
 * Remove need for `--experimental-import-meta-resolve` + `--experimental-top-level-await` flags (see below)
-* Make loader compatible with new loader API in Node v16.12.0
 * Pass `livepack_esm` into eval (both direct and indirect eval)
 * Pass `state.esmImports` and `state.esmExportNames` into eval (direct `eval()` only) - NB Don't need to create temp vars inside eval, can use string literals instead as the resolved URLs are known at time `eval()` is executed
 * Direct `eval()` flag `livepack_esm` as needed (`eval()` may include dynamic import)

@@ -14,6 +14,6 @@ import loaderModule from '../../lib/loader.js';
 
 const mochaRunnerPath = pathJoin(fileURLToPath(import.meta.url), '../mocha.js');
 
-export const {getFormat, transformSource} = loaderModule.createLoader({
+export const {resolve, getFormat, transformSource, load} = loaderModule.createLoader({
 	shouldIgnorePath: path => path === mochaRunnerPath
 });

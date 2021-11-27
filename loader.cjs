@@ -10,7 +10,7 @@ const {createLoader} = require('./lib/loader.js');
 
 // Exports
 
-// Export loader object + `createLoader()` for programmatic use
+// Export loader hooks object + `createLoader()` for programmatic use
 const loader = createLoader();
 loader.createLoader = createLoader;
 module.exports = loader;
