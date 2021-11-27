@@ -257,6 +257,29 @@ describe('Loader', () => {
 		validate: v => expect(v).toEqual({x: 1})
 	});
 
+	itSerializes('`import()` shim calls `.toString()` on specifier only once', {
+		in: () => importFixtures({
+			'index.mjs': `
+				export default (async () => {
+					let counter = 0;
+					const specifier = {
+						toString() {
+							counter++;
+							return './imported.mjs';
+						}
+					};
+					const mod = await import(specifier);
+					return counter;
+				})()
+			`,
+			'imported.mjs': 'export default 1;'
+		}),
+		out: '1',
+		validate(counter) {
+			expect(counter).toBe(1);
+		}
+	});
+
 	describe('allows serializing modules used internally in Livepack', () => {
 		itSerializes('is-it-type', {
 			in: () => require('is-it-type').isType, // eslint-disable-line global-require
