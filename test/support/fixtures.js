@@ -179,8 +179,6 @@ function spawnNode(path, loaderOptions) {
 	return new Promise((resolve, reject) => {
 		const child = spawn(process.execPath, [
 			'--no-warnings', // Prevent warning about use of experimental features
-			'--experimental-import-meta-resolve',
-			'--experimental-top-level-await',
 			'--experimental-loader',
 			`${LOADER_PATH}?${JSON.stringify(loaderOptions)}`,
 			'--experimental-specifier-resolution=node',

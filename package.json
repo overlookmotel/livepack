@@ -108,7 +108,7 @@
     "test-mocha": "npm-run-all -c test-mocha-main test-cleanup",
     "test-mocha-main": "mocha ./test/*.mocha.test.js -R progress",
     "test-load": "npm-run-all -c test-load-main test-cleanup",
-    "test-load-main": "node --no-warnings --experimental-import-meta-resolve --experimental-top-level-await --experimental-loader ./test/support/mochaLoader.mjs --experimental-specifier-resolution=node ./test/support/mocha.js test/*.load.test.js -R progress",
+    "test-load-main": "node --no-warnings --experimental-loader ./test/support/mochaLoader.mjs --experimental-specifier-resolution=node ./test/support/mocha.js test/*.load.test.js -R progress",
     "test-cleanup": "rm -rf test/_temp",
     "cover": "npm-run-all -c cover-main cover-cleanup",
     "cover-main": "jest --coverage",

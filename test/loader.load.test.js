@@ -7,12 +7,19 @@
 
 // Modules
 const {createRequire} = require('module'),
+	parseNodeVersion = require('parse-node-version'),
 	{serialize} = require('livepack');
 
 // Imports
 const {itSerializes, createFixturesFunctions, tryCatch} = require('./support/index.js');
 
 const {importFixtures, createFixture, createFixtures} = createFixturesFunctions(__filename);
+
+const isTopLevelAwaitSupported = (() => {
+	const {major, minor} = parseNodeVersion(process.version);
+	return major > 14 || (major === 14 && minor >= 3);
+})();
+const itSerializesIfTopLevelAwaitSupported = isTopLevelAwaitSupported ? itSerializes : itSerializes.skip;
 
 // Tests
 
@@ -239,7 +246,7 @@ describe('Loader', () => {
 		}
 	});
 
-	itSerializes('ESM supports top-level await', {
+	itSerializesIfTopLevelAwaitSupported('ESM supports top-level await', {
 		in: () => importFixtures({
 			'index.mjs': `
 				const v = {x: await Promise.resolve(1)};
