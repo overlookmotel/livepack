@@ -557,18 +557,22 @@ describe('Classes', () => {
 					}
 					static z() {}
 				},
-				out: `Object.defineProperties(
-					class X{
-						constructor(){this.x=X}
-					},
-					{
-						z:{
-							value:{z(){}}.z,
-							writable:true,
-							configurable:true
+				out: `(()=>{
+					const a=(a=>a=class X{
+						constructor(){this.x=a}
+					})();
+					Object.defineProperties(
+						a,
+						{
+							z:{
+								value:{z(){}}.z,
+								writable:true,
+								configurable:true
+							}
 						}
-					}
-				)`,
+					);
+					return a
+				})()`,
 				validate(Klass) {
 					expect(Klass).toBeFunction();
 					expectClassToHaveOwnPropertyNames(Klass, ['length', 'name', 'prototype', 'z']);
@@ -725,7 +729,7 @@ describe('Classes', () => {
 					X = 1; // eslint-disable-line no-class-assign
 					return Klass;
 				},
-				out: 'class X{constructor(){this.x=X}}',
+				out: '(a=>a=class X{constructor(){this.x=a}})()',
 				validate(Klass) {
 					expect(Klass).toBeFunction();
 					expect(Klass.name).toBe('X');
@@ -746,7 +750,7 @@ describe('Classes', () => {
 						}
 					};
 				},
-				out: 'class X{constructor(){this.x=X}}',
+				out: '(a=>a=class X{constructor(){this.x=a}})()',
 				validate(Klass) {
 					expect(Klass).toBeFunction();
 					expect(Klass.name).toBe('X');
@@ -3261,7 +3265,7 @@ describe('Classes', () => {
 						c=b=class Y{
 							constructor(){
 								const a=Reflect.construct(Object.getPrototypeOf(b),[],b);
-								a.z=Y;
+								a.z=c;
 								return a
 							}
 						},
