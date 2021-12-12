@@ -5860,6 +5860,93 @@ describe('Functions', () => {
 				}
 			});
 
+			describe('referencing own function with assigment', () => {
+				itSerializes('strict mode function assignment throws error', {
+					in() {
+						return function x() {
+							x = 1; // eslint-disable-line no-func-assign
+						};
+					},
+					out: 'function x(){x=1}',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						expect(fn.name).toBe('x');
+						expect(fn).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+					}
+				});
+
+				itSerializes('sloppy mode function assignment silently fails', {
+					// eslint-disable-next-line no-eval
+					in: () => (0, eval)(`
+						(function x() {
+							x = 1;
+							return x;
+						})
+					`),
+					out: 'function x(){x=1;return x}',
+					strictEnv: false,
+					validate(fn) {
+						expect(fn).toBeFunction();
+						expect(fn.name).toBe('x');
+						expect(fn()).toBe(fn);
+					}
+				});
+			});
+
+			/* eslint-disable no-eval */
+			describe('in function containing `eval()`', () => {
+				itSerializes('referencing own function', {
+					in: () => (0, eval)(`
+						(function x() {
+							eval('0');
+							return x;
+						})
+					`),
+					out: '(0,eval)("(function x(){eval(\\"0\\");return x})")',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						expect(fn.name).toBe('x');
+						expect(fn()).toBe(fn);
+					}
+				});
+
+				describe('referencing own function with assigment', () => {
+					itSerializes('strict mode function assignment throws error', {
+						in: () => (0, eval)(`
+							'use strict';
+							(function x() {
+								eval('0');
+								x = 1;
+							})
+						`),
+						out: '(0,eval)("\\"use strict\\";(function x(){eval(\\"0\\");x=1})")',
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn.name).toBe('x');
+							expect(fn).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+						}
+					});
+
+					itSerializes('sloppy mode function assignment silently fails', {
+						in: () => (0, eval)(`
+							(function x() {
+								eval('0');
+								x = 1;
+								return x;
+							})
+						`),
+						out: '(0,eval)("(function x(){eval(\\"0\\");x=1;return x})")',
+						strictEnv: false,
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn.name).toBe('x');
+							expect(fn()).toBe(fn);
+						}
+					});
+				});
+			});
+			/* eslint-enable no-eval */
+
 			describe('with name', () => {
 				describe('changed', () => {
 					itSerializes('simple case', {
@@ -6105,6 +6192,61 @@ describe('Functions', () => {
 					expect(fn()).toBe(1);
 				}
 			});
+
+			// TODO 2nd test here currently fails.
+			// https://github.com/overlookmotel/livepack/issues/328
+			// eslint-disable-next-line jest/no-commented-out-tests
+			/*
+			describe('function containing `eval()`', () => {
+				itSerializes('referencing own function', {
+					// eslint-disable-next-line no-eval
+					in: () => (0, eval)(`
+						function x() {
+							eval('0');
+							return x;
+						}
+						x;
+					`),
+					out: `Object.defineProperties(
+						(0,eval)("x=>x=function(){eval(\\"0\\");return x}")(),
+						{name:{value:"x"}}
+					)`,
+					validate(fn) {
+						expect(fn).toBeFunction();
+						expect(fn.name).toBe('x');
+						expect(fn()).toBe(fn);
+					}
+				});
+
+				itSerializes('referencing own function with assigment', {
+					// eslint-disable-next-line no-eval
+					in: () => (0, eval)(`
+						function x() {
+							eval('0');
+							x = 1;
+							return x;
+						}
+						({x, getX: (0, () => x)})
+					`),
+					out: `(()=>{
+						const a=(0,eval)("x=>[x=function(){eval('0');x=1;return x},()=>x]")();
+						return{
+							x:Object.defineProperties(a[0],{name:{value:"x"}}),
+							getX:a[1]
+						}
+					})()`,
+					validate({x, getX}) {
+						expect(x).toBeFunction();
+						expect(x.name).toBe('x');
+						expect(x).toHaveDescriptorModifiersFor('name', false, false, true);
+						expect(getX).toBeFunction();
+						expect(getX()).toBe(x);
+						expect(x()).toBe(1);
+						expect(getX()).toBe(1);
+					}
+				});
+			});
+			*/
 
 			describe('with name', () => {
 				describe('changed', () => {
