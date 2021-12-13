@@ -593,15 +593,17 @@ describe('Code splitting', () => {
 			});
 
 			itSerializesEntries('class with prototype method', {
+				/* eslint-disable class-methods-use-this */
 				in() {
 					class fn {
-						x() {} // eslint-disable-line class-methods-use-this
+						x() {}
 					}
 					return {
 						one: {fn},
 						two: {fn}
 					};
 				},
+				/* eslint-enable class-methods-use-this */
 				outCjs: {
 					'one.js': 'module.exports={fn:require("./common.WEQMUD7B.js")}',
 					'two.js': 'module.exports={fn:require("./common.WEQMUD7B.js")}',

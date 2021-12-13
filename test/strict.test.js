@@ -25,7 +25,7 @@ describe('Strict mode', () => {
 					};
 				},
 				strictEnv: true,
-				out: '()=>delete Object.prototype',
+				out: '()=>{return delete Object.prototype}',
 				validate: expectToThrowStrictError
 			});
 
@@ -217,7 +217,7 @@ describe('Strict mode', () => {
 				};
 			},
 			strictEnv: true,
-			out: '()=>delete Object.prototype',
+			out: '()=>{return delete Object.prototype}',
 			validate: expectToThrowStrictError
 		});
 
@@ -314,7 +314,7 @@ describe('Strict mode', () => {
 						};
 					},
 					strictEnv: true,
-					out: '(a=>()=>(a,delete Object.prototype))(1)',
+					out: '(a=>()=>{return a,delete Object.prototype})(1)',
 					validate: expectToThrowStrictError
 				});
 			});
@@ -408,10 +408,10 @@ describe('Strict mode', () => {
 					strictEnv: true,
 					out: `(()=>{
 						const a=(b=>[
-								()=>(b,delete Object.prototype),
+								()=>{return b,delete Object.prototype},
 								a=>[
-									()=>(a,delete Object.prototype),
-									()=>(b,a,delete Object.prototype)
+									()=>{return a,delete Object.prototype},
+									()=>{return b,a,delete Object.prototype}
 								]
 							])(1),
 							b=a[1](2);
@@ -742,7 +742,7 @@ describe('Strict mode', () => {
 							}
 						`),
 						strictEnv: false,
-						out: '(0,eval)("\\"use strict\\";()=>eval(\\"2\\")")',
+						out: '(0,eval)("\\"use strict\\";()=>{return eval(\\"2\\")}")',
 						validate(fn) {
 							expect(fn).toBeFunction();
 							expect(fn()).toBe(2);
@@ -1227,8 +1227,8 @@ describe('Strict mode', () => {
 						"use strict";
 						return[
 							class{constructor(){delete Object.prototype}},
-							()=>delete Object.prototype,
-							()=>delete Object.prototype
+							()=>{return delete Object.prototype},
+							()=>{return delete Object.prototype}
 						]
 					})()`,
 					validate([Klass, fn1, fn2]) {
@@ -1282,8 +1282,8 @@ describe('Strict mode', () => {
 					strictEnv: true,
 					out: `[
 						class{constructor(){delete Object.prototype}},
-						()=>delete Object.prototype,
-						()=>delete Object.prototype
+						()=>{return delete Object.prototype},
+						()=>{return delete Object.prototype}
 					]`,
 					validate([Klass, fn1, fn2]) {
 						expectToThrowStrictError(() => new Klass());
@@ -1378,7 +1378,7 @@ describe('Strict mode', () => {
 						out: `(()=>{
 							const a=(a=>[
 								class{constructor(){return a,delete Object.prototype}},
-								()=>(a,delete Object.prototype)
+								()=>{return a,delete Object.prototype}
 							])(1);
 							return[a[0],a[1]]
 						})()`,
@@ -1436,7 +1436,7 @@ describe('Strict mode', () => {
 								"use strict";
 								return[
 									class{constructor(){return a,delete Object.prototype}},
-									()=>(a,delete Object.prototype)
+									()=>{return a,delete Object.prototype}
 								]
 							})(1);
 							return[a[0],a[1]]
@@ -1616,7 +1616,7 @@ describe('Strict mode', () => {
 						};
 					},
 					strictEnv: true,
-					out: '()=>()=>delete Object.prototype',
+					out: '()=>()=>{return delete Object.prototype}',
 					validate(fnOuter) {
 						expect(fnOuter).toBeFunction();
 						const fnInner = fnOuter();
@@ -1636,7 +1636,7 @@ describe('Strict mode', () => {
 						};
 					},
 					strictEnv: true,
-					out: '()=>()=>delete Object.prototype',
+					out: '()=>{return()=>{return delete Object.prototype}}',
 					validate(fnOuter) {
 						expect(fnOuter).toBeFunction();
 						const fnInner = fnOuter();
@@ -1709,7 +1709,7 @@ describe('Strict mode', () => {
 						"use strict";
 						return[
 							()=>delete Object.prototype,
-							()=>delete Object.prototype
+							()=>{return delete Object.prototype}
 						]
 					}
 				]`,
@@ -1766,15 +1766,15 @@ describe('Strict mode', () => {
 					"use strict";
 					return[
 						()=>delete Object.prototype,
-						()=>delete Object.prototype,
+						()=>{return delete Object.prototype},
 						()=>[
 							()=>delete Object.prototype,
-							()=>delete Object.prototype
+							()=>{return delete Object.prototype}
 						],
-						()=>[
+						()=>{return[
 							()=>delete Object.prototype,
-							()=>delete Object.prototype
-						]
+							()=>{return delete Object.prototype}
+						]}
 					]
 				}`,
 				validate(fnOuter) {
@@ -1901,7 +1901,7 @@ describe('Strict mode', () => {
 				};
 			},
 			format: 'esm',
-			out: 'export default(a=>()=>(a,delete Object.prototype))(1)',
+			out: 'export default(a=>()=>{return a,delete Object.prototype})(1)',
 			validate: expectToThrowStrictError
 		});
 
@@ -2109,8 +2109,8 @@ describe('Strict mode', () => {
 					out: `(()=>{
 						"use strict";
 						return[
-							()=>delete Object.prototype,
-							()=>delete Object.prototype,
+							()=>{return delete Object.prototype},
+							()=>{return delete Object.prototype},
 							(0,eval)("()=>(eval(\\"0\\"),delete Object.prototype)")
 						]
 					})()`,
@@ -2138,7 +2138,7 @@ describe('Strict mode', () => {
 					out: `[
 						()=>delete Object.prototype,
 						()=>delete Object.prototype,
-						(0,eval)("\\"use strict\\";()=>(eval(\\"0\\"),delete Object.prototype)")
+						(0,eval)("\\"use strict\\";()=>{return eval(\\"0\\"),delete Object.prototype}")
 					]`,
 					validate([fn, fn2, evalFn]) {
 						expectNotToThrowStrictError(fn);
@@ -2315,9 +2315,9 @@ describe('Strict mode', () => {
 				format: 'js',
 				strictEnv: false,
 				out: {
-					'one.js': '{x:require("./common.ZNM7FYJG.js")}',
-					'two.js': '{y:require("./common.ZNM7FYJG.js")}',
-					'common.ZNM7FYJG.js': '"use strict";module.exports=()=>delete Object.prototype'
+					'one.js': '{x:require("./common.RC44IZMG.js")}',
+					'two.js': '{y:require("./common.RC44IZMG.js")}',
+					'common.RC44IZMG.js': '"use strict";module.exports=()=>{return delete Object.prototype}'
 				},
 				validate
 			});
@@ -2327,9 +2327,9 @@ describe('Strict mode', () => {
 				format: 'js',
 				strictEnv: true,
 				out: {
-					'one.js': '{x:require("./common.ZNM7FYJG.js")}',
-					'two.js': '{y:require("./common.ZNM7FYJG.js")}',
-					'common.ZNM7FYJG.js': '"use strict";module.exports=()=>delete Object.prototype'
+					'one.js': '{x:require("./common.RC44IZMG.js")}',
+					'two.js': '{y:require("./common.RC44IZMG.js")}',
+					'common.RC44IZMG.js': '"use strict";module.exports=()=>{return delete Object.prototype}'
 				},
 				validate
 			});
@@ -2338,9 +2338,9 @@ describe('Strict mode', () => {
 				in: createInput,
 				format: 'cjs',
 				out: {
-					'one.js': 'module.exports={x:require("./common.ZNM7FYJG.js")}',
-					'two.js': 'module.exports={y:require("./common.ZNM7FYJG.js")}',
-					'common.ZNM7FYJG.js': '"use strict";module.exports=()=>delete Object.prototype'
+					'one.js': 'module.exports={x:require("./common.RC44IZMG.js")}',
+					'two.js': 'module.exports={y:require("./common.RC44IZMG.js")}',
+					'common.RC44IZMG.js': '"use strict";module.exports=()=>{return delete Object.prototype}'
 				},
 				validate
 			});
@@ -2349,9 +2349,9 @@ describe('Strict mode', () => {
 				in: createInput,
 				format: 'esm',
 				out: {
-					'one.js': 'import a from"./common.5MGLH46L.js";export default{x:a}',
-					'two.js': 'import a from"./common.5MGLH46L.js";export default{y:a}',
-					'common.5MGLH46L.js': 'export default(0,()=>delete Object.prototype)'
+					'one.js': 'import a from"./common.WOMLCTMC.js";export default{x:a}',
+					'two.js': 'import a from"./common.WOMLCTMC.js";export default{y:a}',
+					'common.WOMLCTMC.js': 'export default(0,()=>{return delete Object.prototype})'
 				},
 				validate
 			});
@@ -2401,16 +2401,16 @@ describe('Strict mode', () => {
 				out: {
 					'one.js': `{
 						strict:(0,()=>{"use strict";return delete Object.prototype}),
-						sharedStrict:require("./common.ZNM7FYJG.js"),
+						sharedStrict:require("./common.RC44IZMG.js"),
 						sharedSloppy:require("./common.XY2LSDIE.js")
 					}`,
 					'two.js': `{
 						sloppy:(0,()=>delete Object.prototype),
-						sharedStrict:require("./common.ZNM7FYJG.js"),
+						sharedStrict:require("./common.RC44IZMG.js"),
 						sharedSloppy:require("./common.XY2LSDIE.js")
 					}`,
-					'three.js': '{sharedStrict:require("./common.ZNM7FYJG.js")}',
-					'common.ZNM7FYJG.js': '"use strict";module.exports=()=>delete Object.prototype',
+					'three.js': '{sharedStrict:require("./common.RC44IZMG.js")}',
+					'common.RC44IZMG.js': '"use strict";module.exports=()=>{return delete Object.prototype}',
 					'common.XY2LSDIE.js': 'module.exports=()=>delete Object.prototype'
 				},
 				validate
@@ -2422,17 +2422,17 @@ describe('Strict mode', () => {
 				strictEnv: true,
 				out: {
 					'one.js': `{
-						strict:(0,()=>delete Object.prototype),
-						sharedStrict:require("./common.ZNM7FYJG.js"),
+						strict:(0,()=>{return delete Object.prototype}),
+						sharedStrict:require("./common.RC44IZMG.js"),
 						sharedSloppy:require("./common.XY2LSDIE.js")
 					}`,
 					'two.js': `{
 						sloppy:(0,eval)("()=>delete Object.prototype"),
-						sharedStrict:require("./common.ZNM7FYJG.js"),
+						sharedStrict:require("./common.RC44IZMG.js"),
 						sharedSloppy:require("./common.XY2LSDIE.js")
 					}`,
-					'three.js': '{sharedStrict:require("./common.ZNM7FYJG.js")}',
-					'common.ZNM7FYJG.js': '"use strict";module.exports=()=>delete Object.prototype',
+					'three.js': '{sharedStrict:require("./common.RC44IZMG.js")}',
+					'common.RC44IZMG.js': '"use strict";module.exports=()=>{return delete Object.prototype}',
 					'common.XY2LSDIE.js': 'module.exports=()=>delete Object.prototype'
 				},
 				validate
@@ -2445,18 +2445,18 @@ describe('Strict mode', () => {
 					'one.js': `
 						"use strict";
 						module.exports={
-							strict:(0,()=>delete Object.prototype),
-							sharedStrict:require("./common.ZNM7FYJG.js"),
+							strict:(0,()=>{return delete Object.prototype}),
+							sharedStrict:require("./common.RC44IZMG.js"),
 							sharedSloppy:require("./common.XY2LSDIE.js")
 						}
 					`,
 					'two.js': `module.exports={
 						sloppy:(0,()=>delete Object.prototype),
-						sharedStrict:require("./common.ZNM7FYJG.js"),
+						sharedStrict:require("./common.RC44IZMG.js"),
 						sharedSloppy:require("./common.XY2LSDIE.js")
 					}`,
-					'three.js': 'module.exports={sharedStrict:require("./common.ZNM7FYJG.js")}',
-					'common.ZNM7FYJG.js': '"use strict";module.exports=()=>delete Object.prototype',
+					'three.js': 'module.exports={sharedStrict:require("./common.RC44IZMG.js")}',
+					'common.RC44IZMG.js': '"use strict";module.exports=()=>{return delete Object.prototype}',
 					'common.XY2LSDIE.js': 'module.exports=()=>delete Object.prototype'
 				},
 				validate
@@ -2467,16 +2467,16 @@ describe('Strict mode', () => {
 				format: 'esm',
 				out: {
 					'one.js': `
-						import a from"./common.5MGLH46L.js";
+						import a from"./common.WOMLCTMC.js";
 						import b from"./common.KTMROI6E.js";
 						export default{
-							strict:(0,()=>delete Object.prototype),
+							strict:(0,()=>{return delete Object.prototype}),
 							sharedStrict:a,
 							sharedSloppy:b
 						}
 					`,
 					'two.js': `
-						import a from"./common.5MGLH46L.js";
+						import a from"./common.WOMLCTMC.js";
 						import b from"./common.KTMROI6E.js";
 						export default{
 							sloppy:(0,eval)("()=>delete Object.prototype"),
@@ -2484,8 +2484,8 @@ describe('Strict mode', () => {
 							sharedSloppy:b
 						}
 					`,
-					'three.js': 'import a from"./common.5MGLH46L.js";export default{sharedStrict:a}',
-					'common.5MGLH46L.js': 'export default(0,()=>delete Object.prototype)',
+					'three.js': 'import a from"./common.WOMLCTMC.js";export default{sharedStrict:a}',
+					'common.WOMLCTMC.js': 'export default(0,()=>{return delete Object.prototype})',
 					'common.KTMROI6E.js': 'export default(0,eval)("()=>delete Object.prototype")'
 				},
 				validate

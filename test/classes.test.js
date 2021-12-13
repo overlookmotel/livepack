@@ -778,7 +778,12 @@ describe('Classes', () => {
 							return Klass;
 						})();
 					`),
-					out: '(0,eval)("X=>X=class X{constructor(){eval(\\"0\\");this.x=X}}")()',
+					// TODO This should be output as a one-liner. No need for `a` to be a separate var.
+					out: `(()=>{
+						const a=(0,eval)("X=>X=(0,class{constructor(){eval(\\"0\\");this.x=X}})")();
+						Object.defineProperties(a,{name:{value:"X",configurable:true}});
+						return a
+					})()`,
 					validate(Klass) {
 						expect(Klass).toBeFunction();
 						expect(Klass.name).toBe('X');
@@ -800,7 +805,12 @@ describe('Classes', () => {
 							}
 						})
 					`),
-					out: '(0,eval)("X=>X=class X{constructor(){eval(\\"0\\");this.x=X}}")()',
+					// TODO This should be output as a one-liner. No need for `a` to be a separate var.
+					out: `(()=>{
+						const a=(0,eval)("X=>X=(0,class{constructor(){eval(\\"0\\");this.x=X}})")();
+						Object.defineProperties(a,{name:{value:"X",configurable:true}});
+						return a
+					})()`,
 					validate(Klass) {
 						expect(Klass).toBeFunction();
 						expect(Klass.name).toBe('X');
@@ -3202,6 +3212,66 @@ describe('Classes', () => {
 			});
 		});
 
+		itSerializes("defined in another class method's computed key", {
+			in() {
+				let Klass;
+				const ext = 1;
+				class X { // eslint-disable-line no-unused-vars
+					[
+					Klass = class extends Object {
+						constructor() {
+							super();
+							this.ext = ext;
+							this.superToString = super.toString;
+						}
+
+						foo() {
+							return [ext, super.toString];
+						}
+					}
+					]() { // eslint-disable-line class-methods-use-this
+						const ext = 2; // eslint-disable-line no-unused-vars, no-shadow
+					}
+				}
+				return Klass;
+			},
+			out: `(()=>{
+				const a=(c=>b=>[
+						b=class Klass{
+							constructor(){
+								const a=Reflect.construct(Object.getPrototypeOf(b),[],b);
+								a.ext=c;
+								a.superToString=Reflect.get(Object.getPrototypeOf(b.prototype),"toString",a);
+								return a
+							}
+						},
+						{
+							foo(){
+								return[c,Reflect.get(Object.getPrototypeOf(b.prototype),"toString",this)]
+							}
+						}.foo
+					])(1)(),
+					b=Object,
+					c=a[0];
+				b.setPrototypeOf(c,b);
+				b.defineProperties(
+					c.prototype,
+					{foo:{value:a[1],writable:true,configurable:true}}
+				);
+				return c
+			})()`,
+			validate(Klass) {
+				expect(Klass).toBeFunction();
+				expect(Klass.name).toBe('Klass');
+				const instance = new Klass();
+				expect(instance.ext).toBe(1);
+				expect(instance.superToString).toBe(Object.prototype.toString);
+				const [ext, superToString] = instance.foo();
+				expect(ext).toBe(1);
+				expect(superToString).toBe(Object.prototype.toString);
+			}
+		});
+
 		// https://github.com/overlookmotel/livepack/issues/294
 		describe('two classes using super in same scope do not have super classes confused', () => {
 			itSerializes('in implicit constructor', {
@@ -3954,9 +4024,9 @@ describe('Classes', () => {
 		describe('class name preserved when gained implicitly', () => {
 			// NB These tests relate to correct functioning of Babel plugin
 			itSerializes('with const definition', {
+				// NB Shadow `C` var inside class ctor so Babel plugin has to create temp var to access `C`
 				in() {
 					class S {}
-					// NB Shadow `C` var inside class ctor so Babel plugin has to create temp var to access `C`
 					const C = class extends S {
 						constructor() {
 							const C = 1; // eslint-disable-line no-unused-vars, no-shadow
@@ -4260,7 +4330,6 @@ describe('Classes', () => {
 		describe('transpiled super treats computed object property names correctly', () => {
 			// These tests are primarily to ensure the Babel plugin works correctly,
 			// rather than the serialization.
-			// Tests for the code at `lib/babel/visitor.js` line 684, where temp var type is 'key'.
 			itSerializes('function call used as object prop key only called once', {
 				in() {
 					const fn = spy(() => 'Y');
@@ -4938,6 +5007,153 @@ describe('Classes', () => {
 					expect(Klass).toHavePrototype(SuperClass);
 					expect(Klass.prototype).toHavePrototype(SuperClass.prototype);
 				}
+			});
+		});
+	});
+
+	// Test Babel plugin correctly calculating trails in constructor or following computed method key
+	describe('class methods containing nested functions', () => {
+		itSerializes('class constructor', {
+			in() {
+				return class {
+					constructor() {
+						function f1() { return 1; }
+						this.fns = [
+							f1,
+							function() { return 2; },
+							() => 3
+						];
+					}
+				};
+			},
+			out: `class{
+				constructor(){
+					function f1(){return 1}
+					this.fns=[f1,function(){return 2},()=>3]
+				}
+			}`,
+			validate(Klass) {
+				expect(Klass).toBeFunction();
+				const {fns} = new Klass();
+				fns.forEach(fn => expect(fn).toBeFunction());
+				expect(fns[0]()).toBe(1);
+				expect(fns[1]()).toBe(2);
+				expect(fns[2]()).toBe(3);
+			}
+		});
+
+		function expectMethodToReturnFunctions(meth) {
+			expect(meth).toBeFunction();
+			const fns = meth();
+			fns.forEach(fn => expect(fn).toBeFunction());
+			expect(fns[0]()).toBe(1);
+			expect(fns[1]()).toBe(2);
+			expect(fns[2]()).toBe(3);
+		}
+
+		describe('prototype method', () => {
+			function validate(fn) {
+				expect(fn).toBeFunction();
+				const Klass = fn();
+				expect(Klass).toBeFunction();
+				expectMethodToReturnFunctions(Klass.prototype.x);
+			}
+
+			itSerializes('with literal key', {
+				in() {
+					return () => class {
+						x() { // eslint-disable-line class-methods-use-this
+							function f1() { return 1; }
+							return [
+								f1,
+								function() { return 2; },
+								() => 3
+							];
+						}
+					};
+				},
+				out: `()=>class{
+					x(){
+						function f1(){return 1}
+						return[f1,function(){return 2},()=>3]
+					}
+				}`,
+				validate
+			});
+
+			itSerializes('with computed key', {
+				in() {
+					return () => class Klass {
+						[(() => 'x')()]() { // eslint-disable-line class-methods-use-this
+							function f1() { return 1; }
+							return [
+								f1,
+								function() { return 2; },
+								() => 3
+							];
+						}
+					};
+				},
+				out: `()=>class Klass{
+					[(()=>"x")()](){
+						function f1(){return 1}
+						return[f1,function(){return 2},()=>3]
+					}
+				}`,
+				validate
+			});
+		});
+
+		describe('static method', () => {
+			function validate(fn) {
+				expect(fn).toBeFunction();
+				const Klass = fn();
+				expect(Klass).toBeFunction();
+				expectMethodToReturnFunctions(Klass.x);
+			}
+
+			itSerializes('with literal key', {
+				in() {
+					return () => class Klass {
+						static x() {
+							function f1() { return 1; }
+							return [
+								f1,
+								function() { return 2; },
+								() => 3
+							];
+						}
+					};
+				},
+				out: `()=>class Klass{
+					static x(){
+						function f1(){return 1}
+						return[f1,function(){return 2},()=>3]
+					}
+				}`,
+				validate
+			});
+
+			itSerializes('with computed key', {
+				in() {
+					return () => class Klass {
+						static [(() => 'x')()]() {
+							function f1() { return 1; }
+							return [
+								f1,
+								function() { return 2; },
+								() => 3
+							];
+						}
+					};
+				},
+				out: `()=>class Klass{
+					static[(()=>"x")()](){
+						function f1(){return 1}
+						return[f1,function(){return 2},()=>3]
+					}
+				}`,
+				validate
 			});
 		});
 	});

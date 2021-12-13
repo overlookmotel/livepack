@@ -349,11 +349,11 @@ describe('Object methods', () => {
 			});
 
 			itSerializes('unwrapped', {
+				// NB 4294967294 is max integer key
 				in: () => ({
 					'0a'() { return this; }, // eslint-disable-line object-shorthand
 					0() { return this; },
 					1() { return this; },
-					// 4294967294 is max integer key
 					4294967294() { return this; },
 					4294967295() { return this; },
 					[Number.MAX_SAFE_INTEGER]() { return this; },
@@ -577,11 +577,11 @@ describe('Object methods', () => {
 
 		itSerializes('with integer keys', {
 			in() {
+				// NB 4294967294 is max integer key
 				const obj = {
 					'0a'() { return this; }, // eslint-disable-line object-shorthand
 					0() { return this; },
 					1() { return this; },
-					// 4294967294 is max integer key
 					4294967294() { return this; },
 					4294967295() { return this; },
 					[Number.MAX_SAFE_INTEGER]() { return this; },
@@ -921,6 +921,65 @@ describe('Object methods', () => {
 				expect(obj.x()).toBe(obj);
 			}
 		});
+	});
+
+	// Test Babel plugin correctly calculating trails following computed method key
+	itSerializes('with computed key and containing nested function', {
+		in() {
+			const ext = 1;
+			return function() {
+				return {
+					[(() => 'x')()]() {
+						return () => ext;
+					}
+				}.x;
+			};
+		},
+		out: '(a=>function(){return{[(()=>"x")()](){return()=>a}}.x})(1)',
+		validate(fn) {
+			expect(fn).toBeFunction();
+			const meth = fn();
+			expect(meth).toBeFunction();
+			expect(meth.name).toBe('x');
+			expect(meth()()).toBe(1);
+		}
+	});
+
+	itSerializes("defined in another method's computed key", {
+		in() {
+			let fn;
+			const ext = 1;
+			const obj = { // eslint-disable-line no-unused-vars
+				[
+				fn = {
+					fn() {
+						return [ext, super.toString];
+					}
+				}.fn
+				]() {
+					const ext = 2; // eslint-disable-line no-unused-vars, no-shadow
+				}
+			};
+			return fn;
+		},
+		out: `(()=>{
+			const a={},
+				b=(b=>a=>({
+					fn(){
+						return[b,Reflect.get(Object.getPrototypeOf(a),"toString",this)]
+					}
+				}).fn
+			)(1)(a);
+			a.fn=b;
+			return b
+		})()`,
+		validate(fn) {
+			expect(fn).toBeFunction();
+			expect(fn.name).toBe('fn');
+			const [ext, superToString] = fn();
+			expect(ext).toBe(1);
+			expect(superToString).toBe(Object.prototype.toString);
+		}
 	});
 
 	describe('directives retained', () => {

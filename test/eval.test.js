@@ -12,10 +12,9 @@ const escapeRegex = require('lodash/escapeRegExp');
 
 // Imports
 const {
-		itSerializes, itSerializesEqual, createFixturesFunctions, tryCatch,
-		stripSourceMapComment, stripLineBreaks
-	} = require('./support/index.js'),
-	{transpiledFiles} = require('../lib/shared/internal.js');
+	itSerializes, itSerializesEqual, createFixturesFunctions, tryCatch,
+	stripSourceMapComment, stripLineBreaks, transpiledFiles
+} = require('./support/index.js');
 
 const {createFixture, requireFixture} = createFixturesFunctions(__filename);
 
@@ -418,9 +417,7 @@ describe('eval', () => {
 				// Check stack trace does not include internal livepack code
 				const stackLines = err.stack.split(/\r?\n/);
 				expect(stackLines[0]).toBe('SyntaxError: Illegal return statement');
-				expect(stackLines[1]).toMatch(
-					new RegExp(`\\s+at \\S+ \\(${escapeRegex(__filename)}:\\d+:\\d+\\)`)
-				);
+				expect(stackLines[1]).toMatch(new RegExp(`\\s+at ${escapeRegex(__filename)}:\\d+:\\d+`));
 			});
 
 			describe('handles internal var name prefixes', () => {
@@ -434,7 +431,7 @@ describe('eval', () => {
 						const fn = require(srcPath);
 
 						// Sanity check: Ensure var used has changed prefix outside eval
-						expect(transpiledFiles[srcPath].code).toInclude(
+						expect(transpiledFiles[srcPath]).toInclude(
 							'const [livepack1_tracker, livepack1_getScopeId] = require("'
 						);
 
@@ -453,7 +450,7 @@ describe('eval', () => {
 						const fn = require(srcPath);
 
 						// Sanity check: Ensure var used has not changed prefix outside eval
-						expect(transpiledFiles[srcPath].code).toInclude(
+						expect(transpiledFiles[srcPath]).toInclude(
 							'const [livepack_tracker, livepack_getScopeId] = require("'
 						);
 
@@ -473,7 +470,7 @@ describe('eval', () => {
 						const fn = require(srcPath);
 
 						// Sanity check: Ensure var used has changed prefix outside eval
-						expect(transpiledFiles[srcPath].code).toInclude(
+						expect(transpiledFiles[srcPath]).toInclude(
 							'const [livepack1_tracker, livepack1_getScopeId] = require("'
 						);
 
@@ -493,7 +490,7 @@ describe('eval', () => {
 						const fn = require(srcPath);
 
 						// Sanity check: Ensure var used has changed prefix outside eval
-						expect(transpiledFiles[srcPath].code).toInclude(
+						expect(transpiledFiles[srcPath]).toInclude(
 							'const [livepack1_tracker, livepack1_getScopeId] = require("'
 						);
 
@@ -1180,6 +1177,19 @@ describe('eval', () => {
 					}
 				});
 			});
+
+			itSerializes('eval expression contains function', {
+				in: () => requireFixture(`
+					module.exports = (module, exports) => eval(
+						(() => '123')()
+					)
+				`),
+				out: '(0,eval)("(module,exports)=>eval((()=>\\"123\\")())")',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					expect(fn()).toBe(123);
+				}
+			});
 		});
 
 		describe('indirect `eval`', () => {
@@ -1366,7 +1376,7 @@ describe('eval', () => {
 					const fn = require(srcPath);
 
 					// Sanity check: Ensure var used has changed prefix outside eval
-					expect(transpiledFiles[srcPath].code).toInclude(
+					expect(transpiledFiles[srcPath]).toInclude(
 						'const [livepack1_tracker, livepack1_getScopeId] = require("'
 					);
 
@@ -1385,7 +1395,7 @@ describe('eval', () => {
 					const fn = require(srcPath);
 
 					// Sanity check: Ensure var used has not changed prefix outside eval
-					expect(transpiledFiles[srcPath].code).toInclude(
+					expect(transpiledFiles[srcPath]).toInclude(
 						'const [livepack_tracker, livepack_getScopeId] = require("'
 					);
 
@@ -1404,7 +1414,7 @@ describe('eval', () => {
 					const fn = require(srcPath);
 
 					// Sanity check: Ensure var used has not changed prefix outside eval
-					expect(transpiledFiles[srcPath].code).toInclude(
+					expect(transpiledFiles[srcPath]).toInclude(
 						'const [livepack_tracker, livepack_getScopeId] = require("'
 					);
 
@@ -1424,7 +1434,7 @@ describe('eval', () => {
 					const fn = require(srcPath);
 
 					// Sanity check: Ensure var used has changed prefix outside eval
-					expect(transpiledFiles[srcPath].code).toInclude(
+					expect(transpiledFiles[srcPath]).toInclude(
 						'const [livepack1_tracker, livepack1_getScopeId] = require("'
 					);
 
@@ -1444,7 +1454,7 @@ describe('eval', () => {
 					const fn = require(srcPath);
 
 					// Sanity check: Ensure var used has changed prefix outside eval
-					expect(transpiledFiles[srcPath].code).toInclude(
+					expect(transpiledFiles[srcPath]).toInclude(
 						'const [livepack1_tracker, livepack1_getScopeId] = require("'
 					);
 

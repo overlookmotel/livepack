@@ -48,7 +48,7 @@ describe('register', () => {
 				"module.exports = require('simple-invariant');"
 			);
 			expect(js).toBe(
-				'(d=>{"use strict";return function invariant(a,b){if(!a){const c=new Error(b||d);Error.captureStackTrace(c,invariant);throw c}}})("Invariant failed")'
+				'(e=>{"use strict";return d=>d=function invariant(a,b){if(!a){const c=new Error(b||e);Error.captureStackTrace(c,d);throw c}}})("Invariant failed")()'
 			);
 		});
 	});

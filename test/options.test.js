@@ -214,10 +214,13 @@ describe('Options', () => {
 
 			describe('does not unwrap', () => {
 				it('named function', () => {
+					// TODO No reason why this couldn't be unwrapped
 					const fn = function fn() {
-						console.log(fn); // eslint-disable-line no-console
+						console.log(1); // eslint-disable-line no-console
 					};
-					expect(serialize(fn, {exec: true, format: 'cjs'})).toBe('(function fn(){console.log(fn)})()');
+					expect(serialize(fn, {exec: true, format: 'cjs'})).toBe(
+						'(function fn(){console.log(1)})()'
+					);
 				});
 
 				it('function with parameters', () => {
