@@ -761,6 +761,58 @@ describe('Classes', () => {
 					expect(Object.getPrototypeOf(instance)).toBe(Klass.prototype);
 				}
 			});
+
+			/* eslint-disable no-eval */
+			describe('when constructor contains `eval()`', () => {
+				itSerializes('class declaration', {
+					in: () => (0, eval)(`
+						class X {
+							constructor() {
+								eval('0');
+								this.x = X;
+							}
+						}
+						(() => {
+							const Klass = X;
+							X = 1;
+							return Klass;
+						})();
+					`),
+					out: '(0,eval)("X=>X=class X{constructor(){eval(\\"0\\");this.x=X}}")()',
+					validate(Klass) {
+						expect(Klass).toBeFunction();
+						expect(Klass.name).toBe('X');
+						const instance = new Klass();
+						expect(instance).toBeObject();
+						expect(instance).toContainAllKeys(['x']);
+						expect(instance.x).toBe(Klass);
+						expect(Object.getPrototypeOf(instance)).toBe(Klass.prototype);
+					}
+				});
+
+				itSerializes('class expression', {
+					in: () => (0, eval)(`
+						const X = 1;
+						(class X {
+							constructor() {
+								eval('0');
+								this.x = X;
+							}
+						})
+					`),
+					out: '(0,eval)("X=>X=class X{constructor(){eval(\\"0\\");this.x=X}}")()',
+					validate(Klass) {
+						expect(Klass).toBeFunction();
+						expect(Klass.name).toBe('X');
+						const instance = new Klass();
+						expect(instance).toBeObject();
+						expect(instance).toContainAllKeys(['x']);
+						expect(instance.x).toBe(Klass);
+						expect(Object.getPrototypeOf(instance)).toBe(Klass.prototype);
+					}
+				});
+			});
+			/* eslint-enable no-eval */
 		});
 
 		describe('in prototype method', () => {
@@ -957,6 +1009,246 @@ describe('Classes', () => {
 					expect(fn.name).toBe('fn');
 					expect(Klass.prototype).toHavePrototype(fn.prototype);
 					expect(fn()).toBe(Klass);
+				}
+			});
+		});
+	});
+
+	describe('assigning to class name throws error', () => {
+		describe('in constructor', () => {
+			itSerializes('class declaration', {
+				in() {
+					class X {
+						constructor() {
+							X = 1; // eslint-disable-line no-class-assign
+						}
+					}
+					return X;
+				},
+				out: 'class X{constructor(){1,(()=>{const a=0;a=0})()}}',
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					expect(Klass.name).toBe('X');
+					expect(() => new Klass()).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+				}
+			});
+
+			itSerializes('class expression', {
+				in() {
+					return class X {
+						constructor() {
+							X = 1; // eslint-disable-line no-class-assign
+						}
+					};
+				},
+				out: 'class X{constructor(){1,(()=>{const a=0;a=0})()}}',
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					expect(Klass.name).toBe('X');
+					expect(() => new Klass()).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+				}
+			});
+
+			/* eslint-disable no-eval */
+			describe('when constructor contains `eval()`', () => {
+				itSerializes('class declaration', {
+					in: () => (0, eval)(`
+						class X {
+							constructor() {
+								eval('0');
+								X = 1;
+							}
+						}
+						X
+					`),
+					out: '(0,eval)("(class X{constructor(){eval(\\"0\\");1,(()=>{const X=0;X=0})()}})")',
+					validate(Klass) {
+						expect(Klass).toBeFunction();
+						expect(Klass.name).toBe('X');
+						expect(() => new Klass()).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+					}
+				});
+
+				itSerializes('class expression', {
+					in: () => (0, eval)(`
+						(class X {
+							constructor() {
+								eval('0');
+								X = 1;
+							}
+						})
+					`),
+					out: '(0,eval)("(class X{constructor(){eval(\\"0\\");1,(()=>{const X=0;X=0})()}})")',
+					validate(Klass) {
+						expect(Klass).toBeFunction();
+						expect(Klass.name).toBe('X');
+						expect(() => new Klass()).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+					}
+				});
+			});
+			/* eslint-enable no-eval */
+		});
+
+		describe('in prototype method', () => {
+			itSerializes('class declaration', {
+				in() {
+					class X {
+						meth() { // eslint-disable-line class-methods-use-this
+							X = 1; // eslint-disable-line no-class-assign
+						}
+					}
+					return X;
+				},
+				out: `(()=>{
+					const a=class X{};
+					Object.defineProperties(
+						a.prototype,
+						{
+							meth:{
+								value:{
+									meth(){
+										1,(()=>{const a=0;a=0})()
+									}
+								}.meth,
+								writable:true,
+								configurable:true
+							}
+						}
+					);
+					return a
+				})()`,
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					expect(Klass.name).toBe('X');
+					expect(() => new Klass().meth()).toThrowWithMessage(
+						TypeError, 'Assignment to constant variable.'
+					);
+				}
+			});
+
+			itSerializes('class expression', {
+				in() {
+					return class X {
+						meth() { // eslint-disable-line class-methods-use-this
+							X = 1; // eslint-disable-line no-class-assign
+						}
+					};
+				},
+				out: `(()=>{
+					const a=class X{};
+					Object.defineProperties(
+						a.prototype,
+						{
+							meth:{
+								value:{
+									meth(){
+										1,(()=>{const a=0;a=0})()
+									}
+								}.meth,
+								writable:true,
+								configurable:true
+							}
+						}
+					);
+					return a
+				})()`,
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					expect(Klass.name).toBe('X');
+					expect(() => new Klass().meth()).toThrowWithMessage(
+						TypeError, 'Assignment to constant variable.'
+					);
+				}
+			});
+		});
+
+		describe('in static method', () => {
+			itSerializes('class declaration', {
+				in() {
+					class X {
+						static meth() {
+							X = 1; // eslint-disable-line no-class-assign
+						}
+					}
+					return X;
+				},
+				out: `Object.defineProperties(
+					class X{},
+					{
+						meth:{
+							value:{
+								meth(){
+									1,(()=>{const a=0;a=0})()
+								}
+							}.meth,
+							writable:true,
+							configurable:true
+						}
+					}
+				)`,
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					expect(Klass.name).toBe('X');
+					expect(Klass.meth).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+				}
+			});
+
+			itSerializes('class declaration', {
+				in() {
+					return class X {
+						static meth() {
+							X = 1; // eslint-disable-line no-class-assign
+						}
+					};
+				},
+				out: `Object.defineProperties(
+					class X{},
+					{
+						meth:{
+							value:{
+								meth(){
+									1,(()=>{const a=0;a=0})()
+								}
+							}.meth,
+							writable:true,
+							configurable:true
+						}
+					}
+				)`,
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					expect(Klass.name).toBe('X');
+					expect(Klass.meth).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+				}
+			});
+		});
+
+		describe('in extends clause', () => {
+			itSerializes('class declaration', {
+				in() {
+					let fn;
+					// eslint-disable-next-line no-class-assign, no-unused-vars
+					class X extends (fn = function() { X = 1; }) {}
+					return fn;
+				},
+				out: 'function fn(){1,(()=>{const a=0;a=0})()}',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					expect(fn).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+				}
+			});
+
+			itSerializes('class expression', {
+				in() {
+					let fn;
+					// eslint-disable-next-line no-undef, no-unused-vars
+					const Klass = class X extends (fn = function() { X = 1; }) {};
+					return fn;
+				},
+				out: 'function fn(){1,(()=>{const a=0;a=0})()}',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					expect(fn).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
 				}
 			});
 		});
