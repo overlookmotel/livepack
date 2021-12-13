@@ -14,7 +14,8 @@ const {join: pathJoin, dirname} = require('path').posix,
 
 // Imports
 const createFixturesFunctions = require('./fixtures.js'),
-	internalSplitPoints = require('../../lib/shared/internal.js').splitPoints;
+	internalSplitPoints = require('../../lib/shared/internal.js').splitPoints,
+	transpiledFiles = require('./transpiledFiles.js');
 
 // Constants
 const FORMAT_NAMES = {js: 'JS', esm: 'ESM', cjs: 'CommonJS'};
@@ -28,7 +29,8 @@ module.exports = { // eslint-disable-line jest/no-export
 	stripSourceMapComment,
 	createFixturesFunctions,
 	tryCatch,
-	resetSplitPoints
+	resetSplitPoints,
+	transpiledFiles
 };
 
 // `LIVEPACK_TEST_QUICK` env runs tests in default options only
@@ -471,7 +473,7 @@ function execFiles(filesObj, fileMappings, format, strictEnv) {
 
 /* eslint-disable no-new-func */
 function execFile(js, require, importFn, format, isStrictMode) {
-	if (format === 'js') js = `return ${js}`;
+	if (format === 'js') js = `return (${js}\n)`; // Brackets in case `js` begins with single-line comment
 	if (isStrictMode) js = `'use strict';${js}`;
 
 	if (format === 'esm') {

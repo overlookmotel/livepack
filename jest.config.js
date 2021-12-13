@@ -18,7 +18,7 @@ module.exports = {
 		'<rootDir>/test/support/expect.js'
 	],
 	transform: {
-		'\\.js$': '<rootDir>/jest-transform.js'
+		'\\.js$': '<rootDir>/test/support/transform.js'
 	},
 	testPathIgnorePatterns: ['/node_modules/', '.mocha.test.js']
 };

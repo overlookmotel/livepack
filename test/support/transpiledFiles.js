@@ -1,12 +1,10 @@
 /* --------------------
  * livepack module
- * Shared symbols
+ * Map to record transpiled files' code to
  * ------------------*/
 
 'use strict';
 
 // Exports
 
-module.exports = {
-	IS_INTERNAL: Symbol('livepack.IS_INTERNAL')
-};
+module.exports = Object.create(null);

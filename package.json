@@ -15,17 +15,12 @@
     "./babel": {
       "import": "./es/babel.js",
       "require": "./babel.js"
-    },
-    "./jest-transform": {
-      "import": "./es/jest-transform.js",
-      "require": "./jest-transform.js"
     }
   },
   "bin": "lib/cli.js",
   "files": [
     "babel.js",
     "register.js",
-    "jest-transform.js",
     "lib/**/*.js",
     "es/**/*.js"
   ],

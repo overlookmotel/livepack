@@ -5597,7 +5597,7 @@ describe('Functions', () => {
 					return (x, y) => [x, y, extA, err];
 				}
 			},
-			out: '((c,d)=>(a,b)=>[a,b,c,d])(456,123)',
+			out: '(d=>c=>(a,b)=>[a,b,c,d])(123)(456)',
 			validate(fn) {
 				expect(fn).toBeFunction();
 				const param1 = {},
@@ -5620,7 +5620,7 @@ describe('Functions', () => {
 					return x => y => [x, y, extA, err];
 				}
 			},
-			out: '((c,d)=>a=>b=>[a,b,c,d])(456,123)',
+			out: '(d=>c=>a=>b=>[a,b,c,d])(123)(456)',
 			validate(fn) {
 				expect(fn).toBeFunction();
 				const param1 = {},
@@ -5836,7 +5836,7 @@ describe('Functions', () => {
 						return x;
 					};
 				},
-				out: 'function x(){return x}',
+				out: '(a=>a=function x(){return a})()',
 				validate(fn) {
 					expect(fn).toBeFunction();
 					expect(fn.name).toBe('x');
@@ -5850,7 +5850,7 @@ describe('Functions', () => {
 						return () => x;
 					};
 				},
-				out: 'function x(){return()=>x}',
+				out: '(a=>a=function x(){return()=>a})()',
 				validate(fn) {
 					expect(fn).toBeFunction();
 					expect(fn.name).toBe('x');
@@ -5867,7 +5867,7 @@ describe('Functions', () => {
 							x = 1; // eslint-disable-line no-func-assign
 						};
 					},
-					out: 'function x(){x=1}',
+					out: 'function x(){1,(()=>{const a=0;a=0})()}',
 					validate(fn) {
 						expect(fn).toBeFunction();
 						expect(fn.name).toBe('x');
@@ -5883,7 +5883,7 @@ describe('Functions', () => {
 							return x;
 						})
 					`),
-					out: 'function x(){x=1;return x}',
+					out: '(a=>a=function x(){1;return a})()',
 					strictEnv: false,
 					validate(fn) {
 						expect(fn).toBeFunction();
@@ -5955,7 +5955,7 @@ describe('Functions', () => {
 							Object.defineProperty(fn, 'name', {value: 'newName'});
 							return fn;
 						},
-						out: 'function newName(){return newName}',
+						out: '(a=>a=function newName(){return a})()',
 						validate(fn) {
 							expect(fn).toBeFunction();
 							expect(fn.name).toBe('newName');
@@ -5971,7 +5971,7 @@ describe('Functions', () => {
 							Object.defineProperty(fn, 'name', {value: 'ext'});
 							return fn;
 						},
-						out: '(a=>function ext(){return[ext,a]})(1)',
+						out: '(b=>a=>a=function ext(){return[a,b]})(1)()',
 						validate(fn) {
 							expect(fn).toBeFunction();
 							expect(fn.name).toBe('ext');
@@ -5992,7 +5992,7 @@ describe('Functions', () => {
 							Object.defineProperty(fn, 'name', {value: 'int'});
 							return fn;
 						},
-						out: 'function int(){const a=1;return[int,a]}',
+						out: '(b=>b=function int(){const a=1;return[b,a]})()',
 						validate(fn) {
 							expect(fn).toBeFunction();
 							expect(fn.name).toBe('int');
@@ -6012,7 +6012,12 @@ describe('Functions', () => {
 							Object.defineProperty(fn, 'name', {value: 'console'});
 							return fn;
 						},
-						out: 'Object.defineProperties(function a(){return[a,console]},{name:{value:"console"}})',
+						// TODO This output should be one-liner - `const a` is not required
+						out: `(()=>{
+							const a=(a=>a=(0,function(){return[a,console]}))();
+							Object.defineProperties(a,{name:{value:"console"}});
+							return a
+						})()`,
 						validate(fn) {
 							expect(fn).toBeFunction();
 							expect(fn.name).toBe('console');
@@ -6033,10 +6038,7 @@ describe('Functions', () => {
 							Object.defineProperty(fn, 'name', {value: 'int'});
 							return fn;
 						},
-						out: `Object.defineProperties(
-							function a(){function int(){return 2}return[a,int]},
-							{name:{value:"int"}}
-						)`,
+						out: '(a=>a=function int(){function int(){return 2}return[a,int]})()',
 						validate(fn) {
 							expect(fn).toBeFunction();
 							expect(fn.name).toBe('int');
@@ -6057,7 +6059,12 @@ describe('Functions', () => {
 							Object.defineProperty(fn, 'name', {value: 'new-name'});
 							return fn;
 						},
-						out: 'Object.defineProperties(function a(){return a},{name:{value:"new-name"}})',
+						// TODO This output should be one-liner - `const a` is not required
+						out: `(()=>{
+							const a=(a=>a=(0,function(){return a}))();
+							Object.defineProperties(a,{name:{value:"new-name"}});
+							return a
+						})()`,
 						validate(fn) {
 							expect(fn).toBeFunction();
 							expect(fn.name).toBe('new-name');
@@ -6072,7 +6079,12 @@ describe('Functions', () => {
 							Object.defineProperty(fn, 'name', {value: {x: 1}});
 							return fn;
 						},
-						out: 'Object.defineProperties(function a(){return a},{name:{value:{x:1}}})',
+						// TODO This output should be one-liner - `const a` is not required
+						out: `(()=>{
+							const a=(a=>a=(0,function(){return a}))();
+							Object.defineProperties(a,{name:{value:{x:1}}});
+							return a
+						})()`,
 						validate(fn) {
 							expect(fn).toBeFunction();
 							expect(fn.name).toEqual({x: 1});
@@ -6088,7 +6100,7 @@ describe('Functions', () => {
 						delete fn.name;
 						return fn;
 					},
-					out: '(()=>{const a=function a(){return a};delete a.name;return a})()',
+					out: '(()=>{const a=(a=>a=(0,function(){return a}))();delete a.name;return a})()',
 					validate(fn) {
 						expect(fn).toBeFunction();
 						expect(fn).not.toHaveOwnProperty('name');
@@ -6104,8 +6116,9 @@ describe('Functions', () => {
 						Object.defineProperty(fn, 'name', {value: 'fn', configurable: true});
 						return fn;
 					},
+					// TODO Output could be a little more compact. No need for `fn` name in `function fn(){}`.
 					out: `(()=>{
-						const a=function fn(){return fn};
+						const a=(a=>a=function fn(){return a})();
 						delete a.name;
 						Object.defineProperties(a,{name:{value:"fn",configurable:true}});
 						return a
@@ -6193,13 +6206,9 @@ describe('Functions', () => {
 				}
 			});
 
-			// TODO 2nd test here currently fails.
-			// https://github.com/overlookmotel/livepack/issues/328
-			// eslint-disable-next-line jest/no-commented-out-tests
-			/*
+			/* eslint-disable no-eval */
 			describe('function containing `eval()`', () => {
 				itSerializes('referencing own function', {
-					// eslint-disable-next-line no-eval
 					in: () => (0, eval)(`
 						function x() {
 							eval('0');
@@ -6207,10 +6216,12 @@ describe('Functions', () => {
 						}
 						x;
 					`),
-					out: `Object.defineProperties(
-						(0,eval)("x=>x=function(){eval(\\"0\\");return x}")(),
-						{name:{value:"x"}}
-					)`,
+					// TODO This should be output as a one-liner. No need for `a` to be a separate var.
+					out: `(()=>{
+						const a=(0,eval)("x=>x=(0,function(){eval(\\"0\\");return x})")();
+						Object.defineProperties(a,{name:{value:"x"}});
+						return a
+					})()`,
 					validate(fn) {
 						expect(fn).toBeFunction();
 						expect(fn.name).toBe('x');
@@ -6219,7 +6230,6 @@ describe('Functions', () => {
 				});
 
 				itSerializes('referencing own function with assigment', {
-					// eslint-disable-next-line no-eval
 					in: () => (0, eval)(`
 						function x() {
 							eval('0');
@@ -6228,10 +6238,13 @@ describe('Functions', () => {
 						}
 						({x, getX: (0, () => x)})
 					`),
+					// TODO This output should be shorter. No need for the var `b`.
 					out: `(()=>{
-						const a=(0,eval)("x=>[x=function(){eval('0');x=1;return x},()=>x]")();
+						const a=(0,eval)("x=>[x=(0,function(){eval(\\"0\\");x=1;return x}),()=>x]")(),
+							b=a[0];
+						Object.defineProperties(b,{name:{value:"x"}});
 						return{
-							x:Object.defineProperties(a[0],{name:{value:"x"}}),
+							x:b,
 							getX:a[1]
 						}
 					})()`,
@@ -6246,7 +6259,7 @@ describe('Functions', () => {
 					}
 				});
 			});
-			*/
+			/* eslint-enable no-eval */
 
 			describe('with name', () => {
 				describe('changed', () => {
@@ -6494,6 +6507,70 @@ describe('Functions', () => {
 				expect(innerFn).toBeFunction();
 				expect(innerFn()).toBe(1);
 			}
+		});
+
+		describe('containing loop with no body block', () => {
+			itSerializes('for', {
+				in() {
+					return () => {
+						const fns = [];
+						for (const x of [1, 11, 21]) fns.push(() => x);
+						return fns;
+					};
+				},
+				out: '()=>{const a=[];for(const b of[1,11,21])a.push(()=>b);return a}',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					const innerFns = fn();
+					expect(innerFns).toBeArrayOfSize(3);
+					innerFns.forEach((innerFn, index) => {
+						expect(innerFn).toBeFunction();
+						expect(innerFn()).toBe(index * 10 + 1);
+					});
+				}
+			});
+
+			itSerializes('while', {
+				in() {
+					return () => {
+						const fns = [];
+						let x = -9;
+						while ((x += 10) < 30) fns.push((y => () => y)(x)); // eslint-disable-line no-cond-assign
+						return fns;
+					};
+				},
+				out: '()=>{const a=[];let b=-9;while((b+=10)<30)a.push((c=>()=>c)(b));return a}',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					const innerFns = fn();
+					expect(innerFns).toBeArrayOfSize(3);
+					innerFns.forEach((innerFn, index) => {
+						expect(innerFn).toBeFunction();
+						expect(innerFn()).toBe(index * 10 + 1);
+					});
+				}
+			});
+
+			itSerializes('do while', {
+				in() {
+					return () => {
+						const fns = [];
+						let x = 1;
+						do fns.push((y => () => y)(x)); while ((x += 10) < 30); // eslint-disable-line no-cond-assign
+						return fns;
+					};
+				},
+				out: '()=>{const a=[];let b=1;do a.push((c=>()=>c)(b));while((b+=10)<30);return a}',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					const innerFns = fn();
+					expect(innerFns).toBeArrayOfSize(3);
+					innerFns.forEach((innerFn, index) => {
+						expect(innerFn).toBeFunction();
+						expect(innerFn()).toBe(index * 10 + 1);
+					});
+				}
+			});
 		});
 	});
 
@@ -8326,7 +8403,7 @@ describe('Functions', () => {
 							for (extA in {x: 1}) ; // eslint-disable-line no-const-assign
 						};
 					},
-					out: '()=>{for({set a(a){const b=0;b=0}}.a in{x:1}){}}',
+					out: '()=>{for({set a(a){const b=0;b=0}}.a in{x:1});}',
 					validate(set) {
 						expect(set).toBeFunction();
 						expect(set).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
@@ -8340,7 +8417,7 @@ describe('Functions', () => {
 							for (extA of [2]) ; // eslint-disable-line no-const-assign
 						};
 					},
-					out: '()=>{for({set a(a){const b=0;b=0}}.a of[2]){}}',
+					out: '()=>{for({set a(a){const b=0;b=0}}.a of[2]);}',
 					validate(set) {
 						expect(set).toBeFunction();
 						expect(set).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
