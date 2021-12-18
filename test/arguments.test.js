@@ -853,34 +853,72 @@ describe('Functions including `arguments`', () => {
 	});
 
 	describe('referencing var in upper scope', () => {
-		itSerializes('from 1 level up', {
-			in() {
-				const arguments = {args: 1}; // eslint-disable-line no-shadow-restricted-names
-				return () => arguments;
-			},
-			out: '(a=>()=>a)({args:1})',
-			validate(fn) {
-				expect(fn).toBeFunction();
-				const res = fn();
-				expect(res).not.toBeArguments();
-				expect(res).toEqual({args: 1});
-			}
+		describe('variable', () => {
+			itSerializes('from 1 level up', {
+				in() {
+					const arguments = {args: 1}; // eslint-disable-line no-shadow-restricted-names
+					return () => arguments;
+				},
+				out: '(a=>()=>a)({args:1})',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					const res = fn();
+					expect(res).not.toBeArguments();
+					expect(res).toEqual({args: 1});
+				}
+			});
+
+			itSerializes('from 2 levels up', {
+				in() {
+					const arguments = {args: 1}; // eslint-disable-line no-shadow-restricted-names
+					return () => () => arguments;
+				},
+				out: '(a=>()=>()=>a)({args:1})',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					const fn2 = fn();
+					expect(fn2).toBeFunction();
+					const res = fn2();
+					expect(res).not.toBeArguments();
+					expect(res).toEqual({args: 1});
+				}
+			});
 		});
 
-		itSerializes('from 2 levels up', {
-			in() {
-				const arguments = {args: 1}; // eslint-disable-line no-shadow-restricted-names
-				return () => () => arguments;
-			},
-			out: '(a=>()=>()=>a)({args:1})',
-			validate(fn) {
-				expect(fn).toBeFunction();
-				const fn2 = fn();
-				expect(fn2).toBeFunction();
-				const res = fn2();
-				expect(res).not.toBeArguments();
-				expect(res).toEqual({args: 1});
-			}
+		describe('function parameter', () => {
+			itSerializes('from 1 level up', {
+				in() {
+					function outer(arguments) { // eslint-disable-line no-shadow-restricted-names
+						return () => arguments;
+					}
+					return outer({args: 1});
+				},
+				out: '(a=>()=>a)({args:1})',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					const res = fn();
+					expect(res).not.toBeArguments();
+					expect(res).toEqual({args: 1});
+				}
+			});
+
+			itSerializes('from 2 levels up', {
+				in() {
+					function outer(arguments) { // eslint-disable-line no-shadow-restricted-names
+						return () => () => arguments;
+					}
+					return outer({args: 1});
+				},
+				out: '(a=>()=>()=>a)({args:1})',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					const fn2 = fn();
+					expect(fn2).toBeFunction();
+					const res = fn2();
+					expect(res).not.toBeArguments();
+					expect(res).toEqual({args: 1});
+				}
+			});
 		});
 	});
 
