@@ -303,7 +303,7 @@ describe('Arguments object', () => {
 	});
 });
 
-describe('functions including `arguments`', () => {
+describe('Functions including `arguments`', () => {
 	describe('referencing upper function scope', () => {
 		describe('1 level up', () => {
 			itSerializes('single instantiation', {
