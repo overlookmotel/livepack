@@ -40,7 +40,7 @@
     "url": "https://github.com/overlookmotel/livepack/issues"
   },
   "dependencies": {
-    "@babel/core": "^7.16.0",
+    "@babel/core": "^7.16.7",
     "@babel/generator": "^7.16.0",
     "@babel/helper-module-transforms": "^7.16.0",
     "@babel/helper-plugin-utils": "^7.14.5",
