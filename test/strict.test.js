@@ -2205,12 +2205,12 @@ describe('Strict mode', () => {
 				strictEnv: false,
 				out: `Object.create(
 					(()=>{
-						const a={};
-						const{prepareStackTrace:b}=Error;
-						Error.prepareStackTrace=(c,d)=>d;
-						Error.captureStackTrace(a);
-						const e=a.stack[0].constructor;
-						Error.prepareStackTrace=b;
+						const c={};
+						const{prepareStackTrace:d}=Error;
+						Error.prepareStackTrace=(a,b)=>b;
+						Error.captureStackTrace(c);
+						const e=c.stack[0].constructor;
+						Error.prepareStackTrace=d;
 						return e
 					})().prototype
 				)`,
@@ -2274,12 +2274,12 @@ describe('Strict mode', () => {
 				strictEnv: true,
 				out: `Object.create(
 					(()=>{
-						const a={};
-						const{prepareStackTrace:b}=Error;
-						Error.prepareStackTrace=(c,d)=>d;
-						Error.captureStackTrace(a);
-						const e=a.stack[0].constructor;
-						Error.prepareStackTrace=b;
+						const c={};
+						const{prepareStackTrace:d}=Error;
+						Error.prepareStackTrace=(a,b)=>b;
+						Error.captureStackTrace(c);
+						const e=c.stack[0].constructor;
+						Error.prepareStackTrace=d;
 						return e
 					})().prototype
 				)`,
