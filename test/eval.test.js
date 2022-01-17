@@ -1492,7 +1492,7 @@ describe('eval', () => {
 									const extB=2;
 									return eval(\\"() => {const extC = 3; return eval(\\\\\\"const extD = 4; () => ({extA, extB, extC, extD, outer, module, exports, this: this, arguments: arguments})\\\\\\")}\\")
 								}),
-								(_a,_b,extB)=>function(){
+								(extB,_a,_b)=>function(){
 									return()=>{
 										const extC=3;
 										return eval(\\"const extD = 4; () => ({extA, extB, extC, extD, outer, module, exports, this: this, arguments: arguments})\\")
@@ -1501,9 +1501,9 @@ describe('eval', () => {
 							]
 						")(1,a,{}),
 						c=b[1](
+							2,
 							{x:5},
-							function(){return arguments}(6,7,8),
-							2
+							function(){return arguments}(6,7,8)
 						);
 					a.exports=c;
 					Object.assign(b[0],{isOuter:true});

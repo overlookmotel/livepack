@@ -962,4 +962,96 @@ describe('Functions including `arguments`', () => {
 			}
 		});
 	});
+
+	describe('assignment to `arguments`', () => {
+		describe('works in sloppy mode', () => {
+			itSerializes('when `arguments` is function arguments', {
+				in() {
+					function f() {
+						return [
+							() => arguments,
+							(v) => {
+								arguments = v;
+							}
+						];
+					}
+					return f(1, 2, 3);
+				},
+				out: `(()=>{
+					const a=(b=>[
+						()=>b,
+						a=>{b=a}
+					])(function(){return arguments}(1,2,3));
+					return[a[0],a[1]]
+				})()`,
+				validate([getArguments, setArguments]) {
+					expect(getArguments).toBeFunction();
+					expect(setArguments).toBeFunction();
+					const args = getArguments();
+					expect(args).toBeArguments();
+					expect(args).toHaveLength(3);
+					expect([...args]).toEqual([1, 2, 3]);
+					setArguments(4);
+					expect(getArguments()).toBe(4);
+				}
+			});
+
+			itSerializes('when `arguments` is a variable', {
+				in: () => { // eslint-disable-line object-shorthand
+					let arguments = 1; // eslint-disable-line no-shadow-restricted-names
+					return [
+						() => arguments,
+						(v) => {
+							arguments = v;
+						}
+					];
+				},
+				out: `(()=>{
+					const a=(b=>[
+						()=>b,
+						a=>{b=a}
+					])(1);
+					return[a[0],a[1]]
+				})()`,
+				validate([getArguments, setArguments]) {
+					expect(getArguments).toBeFunction();
+					expect(setArguments).toBeFunction();
+					expect(getArguments()).toBe(1);
+					setArguments(2);
+					expect(getArguments()).toBe(2);
+				}
+			});
+		});
+
+		// These tests ensure validity of Livepack's assumption that assigning to `arguments`
+		// in strict mode is a SyntaxError.
+		// Such functions cannot be serialized as they can never be created in the first place.
+		describe('is syntax error in strict mode', () => {
+			/* eslint-disable no-eval */
+			it('when is strict mode function arguments', () => {
+				function f() {
+					'use strict'; // eslint-disable-line lines-around-directive
+					return eval('() => {arguments = 1;}');
+				}
+				expect(f).toThrowWithMessage(SyntaxError, 'Unexpected eval or arguments in strict mode');
+			});
+
+			it('when is sloppy mode function arguments assigned to in strict mode', () => {
+				function f() {
+					return eval("() => {'use strict'; arguments = 1;}");
+				}
+				expect(f).toThrowWithMessage(SyntaxError, 'Unexpected eval or arguments in strict mode');
+			});
+
+			it('when is sloppy mode variable assigned to in strict mode', () => {
+				const f = () => {
+					// eslint-disable-next-line no-unused-vars, prefer-const, no-shadow-restricted-names
+					let arguments = 1;
+					return eval("() => {'use strict'; arguments = 1;}");
+				};
+				expect(f).toThrowWithMessage(SyntaxError, 'Unexpected eval or arguments in strict mode');
+			});
+			/* eslint-enable no-eval */
+		});
+	});
 });

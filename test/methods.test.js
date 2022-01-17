@@ -816,15 +816,17 @@ describe('Object methods', () => {
 			});
 
 			itSerializes('assignment part of another expression', {
-				// `temp` var is to check temp var created by livepack doesn't clash with existing var name
+				// `key` + `value` vars are to check temp vars created by Livepack
+				// don't clash with existing vars
 				in: () => Object.setPrototypeOf(
 					{
 						get foo() {
 							return super.foo * 2;
 						},
 						set foo(v) {
-							const temp = 'foo';
-							this.y = super[temp] = v * 5;
+							const key = 'f',
+								value = 'oo';
+							this.y = super[key + value] = v * 5;
 						}
 					},
 					{
@@ -844,8 +846,8 @@ describe('Object methods', () => {
 									return Reflect.get(Object.getPrototypeOf(d),"foo",this)*2
 								}}["get foo"],
 								{"set foo"(a){
-									const b="foo";
-									this.y=((b,c)=>(Reflect.set(Object.getPrototypeOf(d),b,c,this),c))(b,a*5)
+									const b="f",c="oo";
+									this.y=((b,c)=>(Reflect.set(Object.getPrototypeOf(d),b,c,this),c))(b+c,a*5)
 								}}["set foo"]
 							]
 						)(),

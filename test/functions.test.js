@@ -5910,6 +5910,23 @@ describe('Functions', () => {
 					}
 				});
 
+				itSerializes('referencing upper function', {
+					in: () => (0, eval)(`
+						(function x() {
+							eval('0');
+							return () => x;
+						})
+					`),
+					out: '(0,eval)("(function x(){eval(\\"0\\");return()=>x})")',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						expect(fn.name).toBe('x');
+						const innerFn = fn();
+						expect(innerFn).toBeFunction();
+						expect(innerFn()).toBe(fn);
+					}
+				});
+
 				describe('referencing own function with assigment', () => {
 					itSerializes('strict mode function assignment throws error', {
 						in: () => (0, eval)(`
@@ -6509,6 +6526,46 @@ describe('Functions', () => {
 			}
 		});
 
+		describe('referencing other internal functions', () => {
+			itSerializes('function declaration', {
+				in() {
+					return () => {
+						function fn() {
+							return [fn, () => fn];
+						}
+						return [fn, () => fn];
+					};
+				},
+				out: '()=>{function fn(){return[fn,()=>fn]}return[fn,()=>fn]}',
+				validate(outerFn) {
+					expect(outerFn).toBeFunction();
+					const [fn, getFn] = outerFn();
+					expect(fn).toBeFunction();
+					expect(getFn()).toBe(fn);
+					const [fn2, getFn2] = fn();
+					expect(fn2).toBe(fn);
+					expect(getFn2()).toBe(fn);
+				}
+			});
+
+			itSerializes('function expression', {
+				in() {
+					return () => function fn() {
+						return [fn, () => fn];
+					};
+				},
+				out: '()=>function fn(){return[fn,()=>fn]}',
+				validate(outerFn) {
+					expect(outerFn).toBeFunction();
+					const fn = outerFn();
+					expect(fn).toBeFunction();
+					const [fn2, getFn] = fn();
+					expect(fn2).toBe(fn);
+					expect(getFn()).toBe(fn);
+				}
+			});
+		});
+
 		describe('containing loop with no body block', () => {
 			itSerializes('for', {
 				in() {
@@ -6518,7 +6575,7 @@ describe('Functions', () => {
 						return fns;
 					};
 				},
-				out: '()=>{const a=[];for(const b of[1,11,21])a.push(()=>b);return a}',
+				out: '()=>{const b=[];for(const a of[1,11,21])b.push(()=>a);return b}',
 				validate(fn) {
 					expect(fn).toBeFunction();
 					const innerFns = fn();
@@ -6539,7 +6596,7 @@ describe('Functions', () => {
 						return fns;
 					};
 				},
-				out: '()=>{const a=[];let b=-9;while((b+=10)<30)a.push((c=>()=>c)(b));return a}',
+				out: '()=>{const b=[];let c=-9;while((c+=10)<30)b.push((a=>()=>a)(c));return b}',
 				validate(fn) {
 					expect(fn).toBeFunction();
 					const innerFns = fn();
@@ -6560,7 +6617,7 @@ describe('Functions', () => {
 						return fns;
 					};
 				},
-				out: '()=>{const a=[];let b=1;do a.push((c=>()=>c)(b));while((b+=10)<30);return a}',
+				out: '()=>{const b=[];let c=1;do b.push((a=>()=>a)(c));while((c+=10)<30);return b}',
 				validate(fn) {
 					expect(fn).toBeFunction();
 					const innerFns = fn();
@@ -8492,6 +8549,616 @@ describe('Functions', () => {
 					validate(set) {
 						expect(set).toBeFunction();
 						expect(set).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+					}
+				});
+			});
+		});
+
+		itSerializes('in nested function', {
+			in() {
+				const extA = 1;
+				let extB = 2;
+				return [
+					() => () => {
+						extA = extB++; // eslint-disable-line no-const-assign
+					},
+					() => extA,
+					() => extB
+				];
+			},
+			out: `(()=>{
+				const a=((b,c)=>[
+					()=>()=>{b++,(()=>{const a=0;a=0})()},
+					()=>c,
+					()=>b
+				])(2,1);
+				return[a[0],a[1],a[2]]
+			})()`,
+			validate([getSetA, getA, getB]) {
+				expect(getSetA).toBeFunction();
+				const setA = getSetA();
+				expect(setA).toBeFunction();
+				expect(setA).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+				expect(getA()).toBe(1); // Assignment not made
+				expect(getB()).toBe(3); // Side effect executed
+			}
+		});
+
+		itSerializes('chained const violations', {
+			in() {
+				const extA = 1,
+					extB = 2;
+				let extC = 3;
+				return [
+					() => {
+						extA = extB = extC++; // eslint-disable-line no-const-assign
+					},
+					() => extA,
+					() => extB,
+					() => extC
+				];
+			},
+			out: `(()=>{
+				const a=((c,d,e)=>[
+					()=>{(c++,(()=>{const a=0;a=0})()),(()=>{const b=0;b=0})()},
+					()=>d,
+					()=>e,
+					()=>c
+				])(3,1,2);
+				return[a[0],a[1],a[2],a[3]]
+			})()`,
+			validate([set, getA, getB, getC]) {
+				expect(set).toBeFunction();
+				expect(set).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+				expect(getA()).toBe(1); // Assignment not made
+				expect(getB()).toBe(2); // Assignment not made
+				expect(getC()).toBe(4); // Side effect executed
+			}
+		});
+
+		describe('interacting with transpiled `super`', () => {
+			describe('`super()`', () => {
+				itSerializes('const set as `super()`', {
+					in() {
+						const extA = 1;
+						let extB;
+						class SuperKlass {
+							constructor() {
+								extB = 2;
+							}
+						}
+						return [
+							class extends SuperKlass {
+								constructor() {
+									extA = super(); // eslint-disable-line no-const-assign
+								}
+							},
+							() => extA,
+							() => extB
+						];
+					},
+					out: `(()=>{
+						const a=Object.setPrototypeOf,
+							b=((a,b)=>[
+								class SuperKlass{
+									constructor(){
+										b=2
+									}
+								},
+								()=>a,
+								()=>b
+							])(1),
+							c=b[0],
+							d=(
+								c=>c=(0,class{
+									constructor(){
+										let a;
+										a=Reflect.construct(Object.getPrototypeOf(c),[],c),(()=>{const b=0;b=0})();
+										return a
+									}
+								})
+							)();
+						a(d,c);
+						a(d.prototype,c.prototype);
+						return[d,b[1],b[2]]
+					})()`,
+					validate([Klass, getExtA, getExtB]) {
+						expect(Klass).toBeFunction();
+						expect(() => new Klass()).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+						expect(getExtA()).toBe(1); // `ext` not set
+						expect(getExtB()).toBe(2); // `SuperKlass` constructor called
+					}
+				});
+
+				itSerializes('`super()` called with const violation', {
+					in() {
+						const extA = 1;
+						let extB;
+						class SuperKlass {
+							constructor() {
+								extB = 2;
+							}
+						}
+						return [
+							class extends SuperKlass {
+								constructor() {
+									super(extA = 3); // eslint-disable-line no-const-assign
+								}
+							},
+							() => extA,
+							() => extB
+						];
+					},
+					out: `(()=>{
+						const a=Object.setPrototypeOf,
+							b=((a,b)=>[
+								class SuperKlass{
+									constructor(){
+										b=2
+									}
+								},
+								()=>a,
+								()=>b
+							])(1),
+							c=b[0],
+							d=(
+								b=>b=(0,class{
+									constructor(){
+										return Reflect.construct(Object.getPrototypeOf(b),[(3,(()=>{const a=0;a=0})())],b)
+									}
+								})
+							)();
+						a(d,c);
+						a(d.prototype,c.prototype);
+						return[d,b[1],b[2]]
+					})()`,
+					validate([Klass, getExtA, getExtB]) {
+						expect(Klass).toBeFunction();
+						expect(() => new Klass()).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+						expect(getExtA()).toBe(1); // `ext` not set
+						expect(getExtB()).toBeUndefined(); // `SuperKlass` constructor not called
+					}
+				});
+			});
+
+			describe('`super` prop', () => {
+				itSerializes('const set as `super` property', {
+					in() {
+						const ext = 1;
+						return [
+							Object.setPrototypeOf(
+								{
+									f() {
+										ext = super.x; // eslint-disable-line no-const-assign
+									}
+								},
+								{
+									get x() { // eslint-disable-line getter-return
+										this.y = 2;
+									}
+								}
+							),
+							() => ext
+						];
+					},
+					out: `(()=>{
+						const a=(b=>[
+								a=>b=a,
+								{
+									f(){
+										Reflect.get(Object.getPrototypeOf(b),"x",this),(()=>{const a=0;a=0})()
+									}
+								}.f
+							])(),
+							b=Object,
+							c=b.assign(
+								b.create(
+									b.defineProperties(
+										{},
+										{
+											x:{
+												get:{"get x"(){this.y=2}}["get x"],
+												enumerable:true,
+												configurable:true
+											}
+										}
+									)
+								),
+								{
+									f:a[1]
+								}
+							);
+						a[0](c);
+						return[c,(a=>()=>a)(1)]
+					})()`,
+					validate([obj, getExt]) {
+						expect(obj).toBeObject();
+						expect(obj.y).toBeUndefined();
+						expect(() => obj.f()).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+						expect(obj.y).toBe(2); // `x` getter called
+						expect(getExt()).toBe(1); // `ext` not set
+					}
+				});
+
+				itSerializes('set as const', {
+					in() {
+						const ext = 1;
+						return [
+							Object.setPrototypeOf(
+								{
+									f() {
+										super.x = ext = 2; // eslint-disable-line no-const-assign
+									}
+								},
+								{
+									set x(v) {
+										this.y = v;
+									}
+								}
+							),
+							() => ext
+						];
+					},
+					out: `(()=>{
+						const a=(b=>[
+								a=>b=a,
+								{
+									f(){
+										Reflect.set(Object.getPrototypeOf(b),"x",(2,(()=>{const a=0;a=0})()),this)
+									}
+								}.f
+							])(),
+							b=Object,
+							c=b.assign(
+								b.create(
+									b.defineProperties(
+										{},
+										{
+											x:{
+												set:{"set x"(a){this.y=a}}["set x"],
+												enumerable:true,
+												configurable:true
+											}
+										}
+									)
+								),
+								{f:a[1]}
+							);
+						a[0](c);
+						return[c,(a=>()=>a)(1)]
+					})()`,
+					validate([obj, getExt]) {
+						expect(obj).toBeObject();
+						expect(obj.y).toBeUndefined();
+						expect(() => obj.f()).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+						expect(obj.y).toBeUndefined(); // `x` setter not called
+						expect(getExt()).toBe(1); // `ext` not set
+					}
+				});
+
+				itSerializes('const violation in `super` property key', {
+					in() {
+						const ext = 'x';
+						return [
+							Object.setPrototypeOf(
+								{
+									f() {
+										super[ext = 1] = 2; // eslint-disable-line no-const-assign
+									}
+								},
+								{
+									set x(v) {
+										this.y = v;
+									}
+								}
+							),
+							() => ext
+						];
+					},
+					out: `(()=>{
+						const a=(b=>[
+								a=>b=a,
+								{
+									f(){
+										Reflect.set(Object.getPrototypeOf(b),(1,(()=>{const a=0;a=0})()),2,this)
+									}
+								}.f
+							])(),
+							b=Object,
+							c=b.assign(
+								b.create(
+									b.defineProperties(
+										{},
+										{
+											x:{
+												set:{"set x"(a){this.y=a}}["set x"],
+												enumerable:true,
+												configurable:true
+											}
+										}
+									)
+								),
+								{f:a[1]}
+							);
+						a[0](c);
+						return[c,(a=>()=>a)("x")]
+					})()`,
+					validate([obj, getExt]) {
+						expect(obj).toBeObject();
+						expect(obj.y).toBeUndefined();
+						expect(() => obj.f()).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+						expect(obj.y).toBeUndefined(); // `x` setter not called
+						expect(getExt()).toBe('x'); // `ext` not set
+					}
+				});
+			});
+
+			describe('`super` prop call', () => {
+				itSerializes('const set as `super` prop call', {
+					in() {
+						const ext = 1;
+						return [
+							Object.setPrototypeOf(
+								{
+									f() {
+										ext = super.x(2); // eslint-disable-line no-const-assign
+									}
+								},
+								{
+									x(v) {
+										this.y = v;
+									}
+								}
+							),
+							() => ext
+						];
+					},
+					out: `(()=>{
+						const a=(b=>[
+								a=>b=a,
+								{
+									f(){
+										Reflect.get(Object.getPrototypeOf(b),"x",this).call(this,2),(()=>{const a=0;a=0})()
+									}
+								}.f
+							])(),
+							b=Object,
+							c=b.assign(
+								b.create({
+									x(a){this.y=a}
+								}),
+								{
+									f:a[1]
+								}
+							);
+						a[0](c);
+						return[c,(a=>()=>a)(1)]
+					})()`,
+					validate([obj, getExt]) {
+						expect(obj).toBeObject();
+						expect(obj.y).toBeUndefined();
+						expect(() => obj.f()).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+						expect(obj.y).toBe(2); // `x()` called
+						expect(getExt()).toBe(1); // `ext` not set
+					}
+				});
+
+				itSerializes('`super` prop call with const violation argument', {
+					in() {
+						const ext = 1;
+						return [
+							Object.setPrototypeOf(
+								{
+									f() {
+										super.x(ext = 2); // eslint-disable-line no-const-assign
+									}
+								},
+								{
+									x(v) {
+										this.y = v;
+									}
+								}
+							),
+							() => ext
+						];
+					},
+					out: `(()=>{
+						const a=(b=>[
+								a=>b=a,
+								{
+									f(){
+										Reflect.get(Object.getPrototypeOf(b),"x",this).call(this,(2,(()=>{const a=0;a=0})()))
+									}
+								}.f
+							])(),
+							b=Object,
+							c=b.assign(
+								b.create({
+									x(a){this.y=a}
+								}),
+								{
+									f:a[1]
+								}
+							);
+						a[0](c);
+						return[c,(a=>()=>a)(1)]
+					})()`,
+					validate([obj, getExt]) {
+						expect(obj).toBeObject();
+						expect(obj.y).toBeUndefined();
+						expect(() => obj.f()).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+						expect(obj.y).toBeUndefined(); // `x()` not called
+						expect(getExt()).toBe(1); // `ext` not set
+					}
+				});
+			});
+		});
+
+		describe('inside serialized function are not altered', () => {
+			describe('const var', () => {
+				itSerializes('directly within function', {
+					in() {
+						return () => {
+							const x = 1;
+							x = 2; // eslint-disable-line no-const-assign, no-unused-vars
+						};
+					},
+					out: '()=>{const a=1;a=2}',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						expect(fn).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+					}
+				});
+
+				itSerializes('within nested function 1 deep', {
+					in() {
+						return () => {
+							const x = 1; // eslint-disable-line no-unused-vars
+							return () => { x = 2; }; // eslint-disable-line no-const-assign
+						};
+					},
+					out: '()=>{const a=1;return()=>{a=2}}',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						const innerFn = fn();
+						expect(innerFn).toBeFunction();
+						expect(innerFn).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+					}
+				});
+
+				itSerializes('within nested function 2 deep', {
+					in() {
+						return () => {
+							const x = 1; // eslint-disable-line no-unused-vars
+							return () => () => { x = 2; }; // eslint-disable-line no-const-assign
+						};
+					},
+					out: '()=>{const a=1;return()=>()=>{a=2}}',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						const innerFn = fn();
+						expect(innerFn).toBeFunction();
+						const innerFn2 = innerFn();
+						expect(innerFn2).toBeFunction();
+						expect(innerFn2).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+					}
+				});
+			});
+
+			describe('function expression name', () => {
+				itSerializes('directly within function', {
+					in() {
+						return () => function f() {
+							f = 1; // eslint-disable-line no-func-assign
+						};
+					},
+					out: '()=>function f(){f=1}',
+					validate(getFn) {
+						expect(getFn).toBeFunction();
+						const fn = getFn();
+						expect(fn).toBeFunction();
+						expect(fn).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+					}
+				});
+
+				itSerializes('within nested function 1 deep', {
+					in() {
+						return () => function f() {
+							return () => { f = 1; }; // eslint-disable-line no-func-assign
+						};
+					},
+					out: '()=>function f(){return()=>{f=1}}',
+					validate(getFn) {
+						expect(getFn).toBeFunction();
+						const fn = getFn();
+						expect(fn).toBeFunction();
+						const innerFn = fn();
+						expect(innerFn).toBeFunction();
+						expect(innerFn).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+					}
+				});
+
+				itSerializes('within nested function 2 deep', {
+					in() {
+						return () => function f() {
+							return () => () => { f = 1; }; // eslint-disable-line no-func-assign
+						};
+					},
+					out: '()=>function f(){return()=>()=>{f=1}}',
+					validate(getFn) {
+						expect(getFn).toBeFunction();
+						const fn = getFn();
+						expect(fn).toBeFunction();
+						const innerFn = fn();
+						expect(innerFn).toBeFunction();
+						const innerFn2 = innerFn();
+						expect(innerFn2).toBeFunction();
+						expect(innerFn2).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+					}
+				});
+			});
+
+			describe('class name', () => {
+				itSerializes('directly within class method', {
+					in() {
+						return () => class X {
+							foo() { // eslint-disable-line class-methods-use-this
+								X = 1; // eslint-disable-line no-class-assign
+							}
+						};
+					},
+					out: '()=>class X{foo(){X=1}}',
+					validate(getKlass) {
+						expect(getKlass).toBeFunction();
+						const Klass = getKlass();
+						expect(Klass).toBeFunction();
+						const fn = new Klass().foo;
+						expect(fn).toBeFunction();
+						expect(fn).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+					}
+				});
+
+				itSerializes('within nested function 1 deep', {
+					in() {
+						return () => class X {
+							foo() { // eslint-disable-line class-methods-use-this
+								return () => { X = 1; }; // eslint-disable-line no-class-assign
+							}
+						};
+					},
+					out: '()=>class X{foo(){return()=>{X=1}}}',
+					validate(getKlass) {
+						expect(getKlass).toBeFunction();
+						const Klass = getKlass();
+						expect(Klass).toBeFunction();
+						const fn = new Klass().foo;
+						expect(fn).toBeFunction();
+						const innerFn = fn();
+						expect(innerFn).toBeFunction();
+						expect(innerFn).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+					}
+				});
+
+				itSerializes('within nested function 2 deep', {
+					in() {
+						return () => class X {
+							foo() { // eslint-disable-line class-methods-use-this
+								return () => () => { X = 1; }; // eslint-disable-line no-class-assign
+							}
+						};
+					},
+					out: '()=>class X{foo(){return()=>()=>{X=1}}}',
+					validate(getKlass) {
+						expect(getKlass).toBeFunction();
+						const Klass = getKlass();
+						expect(Klass).toBeFunction();
+						const fn = new Klass().foo;
+						expect(fn).toBeFunction();
+						const innerFn = fn();
+						expect(innerFn).toBeFunction();
+						const innerFn2 = innerFn();
+						expect(innerFn2).toBeFunction();
+						expect(innerFn2).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
 					}
 				});
 			});
