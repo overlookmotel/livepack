@@ -210,6 +210,25 @@ describe('Options', () => {
 					});
 					expect(serialize(fn, {exec: true, format: 'cjs'})).toBe('const a="foo";console.log(a)');
 				});
+
+				it('removes final semicolon when minify option used if not required', () => {
+					const fn = (0, function() {
+						const f = () => {};
+						f();
+					});
+					expect(serialize(fn, {exec: true, format: 'cjs', minify: true})).toBe(
+						'const a=()=>{};a()'
+					);
+				});
+
+				it('preserves final semicolon when minify option used if required', () => {
+					const fn = (0, function() {
+						if (true) ; // eslint-disable-line no-constant-condition
+					});
+					expect(serialize(fn, {exec: true, format: 'cjs', minify: true})).toBe(
+						'if(true);'
+					);
+				});
 			});
 
 			describe('does not unwrap', () => {
