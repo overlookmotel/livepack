@@ -8114,6 +8114,122 @@ describe('Functions', () => {
 				}
 			});
 
+			describe('array deconstruction with default', () => {
+				itSerializes('where default is evaluated', {
+					in() {
+						const extA = 1;
+						let extB = 2,
+							extC = 3;
+						const arr = [
+							() => {
+								// eslint-disable-next-line no-const-assign
+								[extB, extA = (() => { arr[5] = true; })(), extC] = Object.defineProperty(
+									[4, undefined, 6],
+									1,
+									{
+										get() {
+											arr[4] = true;
+											return undefined;
+										}
+									}
+								);
+							},
+							() => extA,
+							() => extB,
+							() => extC
+						];
+						return arr;
+					},
+					out: `(()=>{
+						const a=((d,e,f,g)=>[
+								a=>g=a,
+								()=>{
+									[
+										d,
+										(b=>({set a(a){a===void 0&&b();const c=0;c=0}}))(()=>(()=>{g[5]=true})()).a,
+										e
+									]=Object.defineProperty([4,undefined,6],1,{
+										get(){g[4]=true;return undefined}
+									})
+								},
+								()=>f,
+								()=>d,
+								()=>e
+							])(2,3,1),
+							b=[a[1],a[2],a[3],a[4]];
+						a[0](b);
+						return b
+					})()`,
+					validate(arr) {
+						const [setA, getA, getB, getC] = arr;
+						expect(setA).toBeFunction();
+						expect(setA).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+						expect(getA()).toBe(1); // Assignment not made
+						expect(getB()).toBe(4); // Prior assignment was made
+						expect(getC()).toBe(3); // Later assignment not made
+						expect(arr[4]).toBeTrue(); // Getter executed
+						expect(arr[5]).toBeTrue(); // Default evaluated
+					}
+				});
+
+				itSerializes('where default is not evaluated', {
+					in() {
+						const extA = 1;
+						let extB = 2,
+							extC = 3;
+						const arr = [
+							() => {
+								// eslint-disable-next-line no-const-assign
+								[extB, extA = (() => { arr[5] = true; })(), extC] = Object.defineProperty(
+									[4, 5, 6],
+									1,
+									{
+										get() {
+											arr[4] = true;
+											return 5;
+										}
+									}
+								);
+							},
+							() => extA,
+							() => extB,
+							() => extC
+						];
+						return arr;
+					},
+					out: `(()=>{
+						const a=((d,e,f,g)=>[
+								a=>g=a,
+								()=>{
+									[
+										d,
+										(b=>({set a(a){a===void 0&&b();const c=0;c=0}}))(()=>(()=>{g[5]=true})()).a,
+										e
+									]=Object.defineProperty([4,5,6],1,{
+										get(){g[4]=true;return 5}
+									})
+								},
+								()=>f,
+								()=>d,
+								()=>e
+							])(2,3,1),
+							b=[a[1],a[2],a[3],a[4]];
+						a[0](b);
+						return b
+					})()`,
+					validate(arr) {
+						const [setA, getA, getB, getC] = arr;
+						expect(setA).toBeFunction();
+						expect(setA).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+						expect(getA()).toBe(1); // Assignment not made
+						expect(getB()).toBe(4); // Prior assignment was made
+						expect(getC()).toBe(3); // Later assignment not made
+						expect(arr[4]).toBeTrue(); // Getter executed
+						expect(arr[5]).toBeUndefined(); // Default not evaluated
+					}
+				});
+			});
+
 			itSerializes('array rest deconstruction', {
 				in() {
 					const extA = 1;
@@ -8214,6 +8330,122 @@ describe('Functions', () => {
 					expect(getC()).toBe(3); // Later assignment not made
 					expect(arr[4]).toBeTrue(); // Getter executed
 				}
+			});
+
+			describe('object deconstruction with default', () => {
+				itSerializes('where default is evaluated', {
+					in() {
+						const extA = 1;
+						let extB = 2,
+							extC = 3;
+						const arr = [
+							() => {
+								// eslint-disable-next-line no-const-assign
+								({x: extB, y: extA = (() => { arr[5] = true; })(), z: extC} = Object.defineProperty(
+									{x: 4, y: undefined, z: 6},
+									'y',
+									{
+										get() {
+											arr[4] = true;
+											return undefined;
+										}
+									}
+								));
+							},
+							() => extA,
+							() => extB,
+							() => extC
+						];
+						return arr;
+					},
+					out: `(()=>{
+						const a=((d,e,f,g)=>[
+								a=>g=a,
+								()=>{
+									({
+										x:d,
+										y:(b=>({set a(a){a===void 0&&b();const c=0;c=0}}))(()=>(()=>{g[5]=true})()).a,
+										z:e
+									}=Object.defineProperty({x:4,y:undefined,z:6},"y",{
+										get(){g[4]=true;return undefined}
+									}))
+								},
+								()=>f,
+								()=>d,
+								()=>e
+							])(2,3,1),
+							b=[a[1],a[2],a[3],a[4]];
+						a[0](b);
+						return b
+					})()`,
+					validate(arr) {
+						const [setA, getA, getB, getC] = arr;
+						expect(setA).toBeFunction();
+						expect(setA).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+						expect(getA()).toBe(1); // Assignment not made
+						expect(getB()).toBe(4); // Prior assignment was made
+						expect(getC()).toBe(3); // Later assignment not made
+						expect(arr[4]).toBeTrue(); // Getter executed
+						expect(arr[5]).toBeTrue(); // Default evaluated
+					}
+				});
+
+				itSerializes('where default is not evaluated', {
+					in() {
+						const extA = 1;
+						let extB = 2,
+							extC = 3;
+						const arr = [
+							() => {
+								// eslint-disable-next-line no-const-assign
+								({x: extB, y: extA = (() => { arr[5] = true; })(), z: extC} = Object.defineProperty(
+									{x: 4, y: 5, z: 6},
+									'y',
+									{
+										get() {
+											arr[4] = true;
+											return 5;
+										}
+									}
+								));
+							},
+							() => extA,
+							() => extB,
+							() => extC
+						];
+						return arr;
+					},
+					out: `(()=>{
+						const a=((d,e,f,g)=>[
+								a=>g=a,
+								()=>{
+									({
+										x:d,
+										y:(b=>({set a(a){a===void 0&&b();const c=0;c=0}}))(()=>(()=>{g[5]=true})()).a,
+										z:e
+									}=Object.defineProperty({x:4,y:5,z:6},"y",{
+										get(){g[4]=true;return 5}
+									}))
+								},
+								()=>f,
+								()=>d,
+								()=>e
+							])(2,3,1),
+							b=[a[1],a[2],a[3],a[4]];
+						a[0](b);
+						return b
+					})()`,
+					validate(arr) {
+						const [setA, getA, getB, getC] = arr;
+						expect(setA).toBeFunction();
+						expect(setA).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+						expect(getA()).toBe(1); // Assignment not made
+						expect(getB()).toBe(4); // Prior assignment was made
+						expect(getC()).toBe(3); // Later assignment not made
+						expect(arr[4]).toBeTrue(); // Getter executed
+						expect(arr[5]).toBeUndefined(); // Default not evaluated
+					}
+				});
 			});
 
 			itSerializes('object rest deconstruction', {
