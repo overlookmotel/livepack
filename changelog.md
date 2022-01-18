@@ -1,5 +1,53 @@
 # Changelog
 
+## 0.6.3
+
+Bug fixes:
+
+* Reset tracker callback after failure to extract function vars
+* Retain final semicolon in unwrapped function with `exec` + `minify` options where required
+* Babel plugin do not lose source location when removing directives
+
+Improvements:
+
+* Class name accessed in constructor is external var
+
+Performance:
+
+* Babel plugin record function ASTs
+* Move work of parsing functions into Babel plugin
+* Babel plugin `eval` record each scope var only once
+* Babel plugin: Speed up serializing function ASTs
+
+Refactor:
+
+* Babel plugin store scopes etc in function info getter functions
+* Babel plugin don't convert directives to double quotes
+* Reorder `wrapFunctionWithProperties` args
+* Rename var
+* Code style
+
+Dependencies:
+
+* Update dependencies
+
+No code:
+
+* Correct code comment
+* Add JSDoc comment
+* Code comment
+
+Tests:
+
+* Tests for self-assigning functions [improve]
+* Tests for assignment to class name inside class [improve]
+* Tests for `arguments` as function param
+* Capitalize test name
+
+Dev:
+
+* Update dev dependencies
+
 ## 0.6.2
 
 Bug fixes:
