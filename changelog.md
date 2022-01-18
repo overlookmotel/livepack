@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.4
+
+Dependencies:
+
+* Move `babel-jest` to dev dependencies
+
 ## 0.6.3
 
 Bug fixes:
