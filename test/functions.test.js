@@ -13,7 +13,7 @@ const {
 	itSerializes, createFixturesFunctions, stripSourceMapComment, stripLineBreaks
 } = require('./support/index.js');
 
-const {requireFixtures} = createFixturesFunctions(__filename);
+const {requireFixtures, createFixtures} = createFixturesFunctions(__filename);
 
 // Tests
 
@@ -9707,5 +9707,21 @@ describe('Functions', () => {
 				}
 			})
 		);
+	});
+
+	itSerializes('`*/` in filename does not disrupt functioning', {
+		in() {
+			const path = createFixtures({
+				'foo*/index.js': 'const ext = 1; module.exports = () => ext;'
+			})['foo*/index.js'];
+			expect(path).toInclude('*/');
+			return require(path); // eslint-disable-line global-require, import/no-dynamic-require
+		},
+		out: '(a=>()=>a)(1)',
+		strictEnv: false,
+		validate(fn) {
+			expect(fn).toBeFunction();
+			expect(fn()).toBe(1);
+		}
 	});
 });
