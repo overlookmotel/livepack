@@ -5828,6 +5828,54 @@ describe('Functions', () => {
 		});
 	});
 
+	describe('referencing var created in `switch` statement', () => {
+		itSerializes('1 level up', {
+			in() {
+				const ext = 1;
+				let fn;
+				/* eslint-disable indent */
+				switch (ext) { // eslint-disable-line default-case
+					case 1:
+						const ext = 2; // eslint-disable-line no-case-declarations, no-shadow
+						fn = (0, () => ext);
+				}
+				/* eslint-enable indent */
+				return [fn, () => ext];
+			},
+			out: '[(a=>()=>a)(2),(a=>()=>a)(1)]',
+			validate([getInnerExt, getOuterExt]) {
+				expect(getInnerExt).toBeFunction();
+				expect(getOuterExt).toBeFunction();
+				expect(getInnerExt()).toBe(2);
+				expect(getOuterExt()).toBe(1);
+			}
+		});
+
+		itSerializes('2 levels up', {
+			in() {
+				const ext = 1;
+				let fn;
+				/* eslint-disable indent */
+				switch (ext) { // eslint-disable-line default-case
+					case 1:
+						const ext = 2; // eslint-disable-line no-case-declarations, no-shadow
+						fn = (0, () => () => ext);
+				}
+				/* eslint-enable indent */
+				return [fn, () => ext];
+			},
+			out: '[(a=>()=>()=>a)(2),(a=>()=>a)(1)]',
+			validate([getInnerExtGetter, getOuterExt]) {
+				expect(getInnerExtGetter).toBeFunction();
+				expect(getOuterExt).toBeFunction();
+				const getInnerExt = getInnerExtGetter();
+				expect(getInnerExt).toBeFunction();
+				expect(getInnerExt()).toBe(2);
+				expect(getOuterExt()).toBe(1);
+			}
+		});
+	});
+
 	describe('self-referencing functions', () => {
 		describe('function expression', () => {
 			itSerializes('referencing own function', {
