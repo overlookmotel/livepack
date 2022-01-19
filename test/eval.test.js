@@ -678,8 +678,8 @@ describe('eval', () => {
 											return eval(\\"({extA, extB, extC, extD, extE, typeofExtF: typeof extF, outer, module, exports, this: this, arguments: arguments})\\")
 										}
 									}),
-									(extB,_a,_b)=>function(){
-										return()=>{
+									(_a,_b)=>function(){
+										return extB=>()=>{
 											const extC=3;
 											return eval(\\"({extA, extB, extC, extD, extE, typeofExtF: typeof extF, outer, module, exports, this: this, arguments: arguments})\\")
 										}
@@ -687,12 +687,11 @@ describe('eval', () => {
 								]
 							")(1,4,5,a,{}),
 							c=b[1](
-								2,
 								{x:7},
 								function(){
 									return arguments
 								}(8,9,10)
-							);
+							)(2);
 						a.exports=c;
 						Object.assign(b[0],{isOuter:true});
 						return c
@@ -906,8 +905,8 @@ describe('eval', () => {
 											return eval(\\"() => ({extA, extB, extC, extD, extE, typeofExtF: typeof extF, outer, module, exports, this: this, arguments: arguments})\\")
 										}
 									}),
-									(extB,_a,_b)=>function(){
-										return()=>{
+									(_a,_b)=>function(){
+										return extB=>()=>{
 											const extC=3;
 											return eval(\\"() => ({extA, extB, extC, extD, extE, typeofExtF: typeof extF, outer, module, exports, this: this, arguments: arguments})\\")
 										}
@@ -915,12 +914,11 @@ describe('eval', () => {
 								]
 							")(1,4,5,a,{}),
 							c=b[1](
-								2,
 								{x:7},
 								function(){
 									return arguments
 								}(8,9,10)
-							);
+							)(2);
 						a.exports=c;
 						Object.assign(b[0],{isOuter:true});
 						return c
@@ -1492,8 +1490,8 @@ describe('eval', () => {
 									const extB=2;
 									return eval(\\"() => {const extC = 3; return eval(\\\\\\"const extD = 4; () => ({extA, extB, extC, extD, outer, module, exports, this: this, arguments: arguments})\\\\\\")}\\")
 								}),
-								(extB,_a,_b)=>function(){
-									return()=>{
+								(_a,_b)=>function(){
+									return extB=>()=>{
 										const extC=3;
 										return eval(\\"const extD = 4; () => ({extA, extB, extC, extD, outer, module, exports, this: this, arguments: arguments})\\")
 									}
@@ -1501,10 +1499,9 @@ describe('eval', () => {
 							]
 						")(1,a,{}),
 						c=b[1](
-							2,
 							{x:5},
 							function(){return arguments}(6,7,8)
-						);
+						)(2);
 					a.exports=c;
 					Object.assign(b[0],{isOuter:true});
 					return c

@@ -728,7 +728,7 @@ describe('Functions', () => {
 				inject(extD);
 				return fn;
 			},
-			out: '(g=>(c,d,e,f)=>function(a,b){return[a,b,this,g,c,d,e,f]})({extA:1})({extB:2},{extC:3},{extD:4},{extE:5})',
+			out: '(g=>(e,f)=>(c,d)=>function(a,b){return[a,b,this,g,e,f,c,d]})({extA:1})({extB:2},{extC:3})({extD:4},{extE:5})',
 			validate(fn) {
 				expect(fn).toBeFunction();
 				const param1 = {},
@@ -772,11 +772,11 @@ describe('Functions', () => {
 				});
 			},
 			out: `(()=>{
-				const a=(g=>(c,d,e,f)=>function(a,b){return[a,b,this,g,c,d,e,f]})({extA:1});
+				const a=(g=>(e,f)=>(c,d)=>function(a,b){return[a,b,this,g,e,f,c,d]})({extA:1});
 				return[
-					a({extB1:11},{extC1:12},{extD1:13},{extE:5}),
-					a({extB2:21},{extC2:22},{extD2:23},{extE:5}),
-					a({extB3:31},{extC3:32},{extD3:33},{extE:5})
+					a({extB1:11},{extC1:12})({extD1:13},{extE:5}),
+					a({extB2:21},{extC2:22})({extD2:23},{extE:5}),
+					a({extB3:31},{extC3:32})({extD3:33},{extE:5})
 				]
 			})()`,
 			validate(arr, {ctx: {exts}}) {
@@ -3756,9 +3756,10 @@ describe('Functions', () => {
 
 			itSerializes('another var in different scope in same block', {
 				in() {
-					function outer(g) {
+					function outer(otherF) {
 						const ext = {ext: 1},
-							f = (0, () => ext);
+							f = (0, () => ext),
+							g = otherF;
 						return {
 							f,
 							getF: (0, () => f),
@@ -3798,11 +3799,9 @@ describe('Functions', () => {
 			describe('consistently (not injected)', () => {
 				itSerializes('single instantiation', {
 					in() {
-						function outer(extA) {
-							function other() { return extA; }
-							return function inner() { return [extA, other]; };
-						}
-						return outer({extA: 1});
+						const extA = {extA: 1};
+						function other() { return extA; }
+						return function inner() { return [extA, other]; };
 					},
 					out: `
 						((a,b)=>(
@@ -3823,7 +3822,8 @@ describe('Functions', () => {
 
 				itSerializes('multiple instantiations', {
 					in({ctx}) {
-						function outer(extA) {
+						function outer(ext) {
+							const extA = ext;
 							function other() { return extA; }
 							return function inner() { return [extA, other]; };
 						}
@@ -3861,7 +3861,8 @@ describe('Functions', () => {
 				'consistently across multiple instantiations where not always accessed (not injected)',
 				{
 					in() {
-						function outer(extA) {
+						function outer(ext) {
+							const extA = ext;
 							function other() { return extA; }
 							return {
 								getOther: (0, () => other),
@@ -3906,7 +3907,8 @@ describe('Functions', () => {
 				() => {
 					itSerializes('and other times another value', {
 						in() {
-							function outer(ext) {
+							function outer(obj) {
+								const ext = obj;
 								const other = ext.extA === 1
 									? function other() { return ext; }
 									: {extB: 3};
@@ -3942,7 +3944,8 @@ describe('Functions', () => {
 
 					itSerializes('and other times undefined', {
 						in() {
-							function outer(ext) {
+							function outer(obj) {
+								const ext = obj;
 								const other = ext.extA === 1
 									? function other() { return ext; }
 									: undefined;
@@ -3982,12 +3985,10 @@ describe('Functions', () => {
 				describe('simple props', () => {
 					itSerializes('single instantiation', {
 						in() {
-							function outer(extA) {
-								function other() { return extA; }
-								other.x = 1;
-								return function inner() { return [extA, other]; };
-							}
-							return outer({extA: 1});
+							const extA = {extA: 1};
+							function other() { return extA; }
+							other.x = 1;
+							return function inner() { return [extA, other]; };
 						},
 						out: `(()=>{
 							const a=(
@@ -4013,7 +4014,8 @@ describe('Functions', () => {
 
 					itSerializes('multiple instantiations', {
 						in({ctx}) {
-							function outer(extA, index) {
+							function outer(ext, index) {
+								const extA = ext;
 								function other() { return extA; }
 								other.index = index;
 								return function inner() { return [extA, other]; };
@@ -4059,12 +4061,10 @@ describe('Functions', () => {
 				describe('props requiring descriptor', () => {
 					itSerializes('single instantiation', {
 						in() {
-							function outer(extA) {
-								function other() { return extA; }
-								Object.defineProperty(other, 'x', {value: 1});
-								return function inner() { return [extA, other]; };
-							}
-							return outer({extA: 1});
+							const extA = {extA: 1};
+							function other() { return extA; }
+							Object.defineProperty(other, 'x', {value: 1});
+							return function inner() { return [extA, other]; };
 						},
 						out: `(()=>{
 							const a=(
@@ -4091,7 +4091,8 @@ describe('Functions', () => {
 
 					itSerializes('multiple instantiations', {
 						in({ctx}) {
-							function outer(extA, index) {
+							function outer(ext, index) {
+								const extA = ext;
 								function other() { return extA; }
 								Object.defineProperty(other, 'index', {value: index});
 								return function inner() { return [extA, other]; };
@@ -4138,12 +4139,10 @@ describe('Functions', () => {
 				describe('circular props', () => {
 					itSerializes('single instantiation', {
 						in() {
-							function outer(extA) {
-								function other() { return extA; }
-								other.other = other;
-								return function inner() { return [extA, other]; };
-							}
-							return outer({extA: 1});
+							const extA = {extA: 1};
+							function other() { return extA; }
+							other.other = other;
+							return function inner() { return [extA, other]; };
 						},
 						out: `(()=>{
 							const a=(
@@ -4170,7 +4169,8 @@ describe('Functions', () => {
 
 					itSerializes('multiple instantiations', {
 						in({ctx}) {
-							function outer(extA) {
+							function outer(ext) {
+								const extA = ext;
 								function other() { return extA; }
 								other.other = other;
 								return function inner() { return [extA, other]; };
@@ -4221,12 +4221,10 @@ describe('Functions', () => {
 				() => {
 					itSerializes('single instantiation', {
 						in() {
-							function outer(extA) {
-								function other() { return extA; }
-								other.prototype.x = 1;
-								return function inner() { return [extA, other]; };
-							}
-							return outer({extA: 1});
+							const extA = {extA: 1};
+							function other() { return extA; }
+							other.prototype.x = 1;
+							return function inner() { return [extA, other]; };
 						},
 						out: `(()=>{
 							const a=(
@@ -4252,7 +4250,8 @@ describe('Functions', () => {
 
 					itSerializes('multiple instantiations', {
 						in({ctx}) {
-							function outer(extA, index) {
+							function outer(ext, index) {
+								const extA = ext;
 								function other() { return extA; }
 								other.prototype.index = index;
 								return function inner() { return [extA, other]; };
@@ -4300,12 +4299,10 @@ describe('Functions', () => {
 			describe('with vars referenced by within 1 function', () => {
 				itSerializes('single instantiation', {
 					in() {
-						function outer(extA) {
-							const f = (0, () => extA),
-								g = f;
-							return () => [f, g];
-						}
-						return outer({extA: 1});
+						const extA = {extA: 1};
+						const f = (0, () => extA),
+							g = f;
+						return () => [f, g];
 					},
 					out: `
 						((a,b,c)=>(
@@ -4326,7 +4323,8 @@ describe('Functions', () => {
 
 				itSerializes('multiple instantiations', {
 					in({ctx}) {
-						function outer(extA) {
+						function outer(ext) {
+							const extA = ext;
 							const f = (0, () => extA),
 								g = f;
 							return () => [f, g];
@@ -4366,15 +4364,13 @@ describe('Functions', () => {
 			describe('with vars referenced by multiple functions', () => {
 				itSerializes('single instantiation', {
 					in() {
-						function outer(extA) {
-							const f = (0, () => extA),
-								g = f;
-							return {
-								getF: (0, () => f),
-								getG: (0, () => g)
-							};
-						}
-						return outer({extA: 1});
+						const extA = {extA: 1};
+						const f = (0, () => extA),
+							g = f;
+						return {
+							getF: (0, () => f),
+							getG: (0, () => g)
+						};
 					},
 					out: `(()=>{
 						const a=((a,b,c)=>(
@@ -4394,7 +4390,8 @@ describe('Functions', () => {
 
 				itSerializes('multiple instantiations', {
 					in({ctx}) {
-						function outer(extA) {
+						function outer(ext) {
+							const extA = ext;
 							const f = (0, () => extA),
 								g = f;
 							return {
@@ -4443,8 +4440,9 @@ describe('Functions', () => {
 		itSerializes('in same block but different scope with circularity (injected)', {
 			in() {
 				function outer(ext) {
-					let other = (0, () => ext);
-					const inner = (0, () => [ext, other]);
+					const extA = ext;
+					let other = (0, () => extA);
+					const inner = (0, () => [extA, other]);
 					const setOther = v => other = v; // eslint-disable-line no-return-assign
 					return [inner, other, setOther];
 				}
@@ -4490,15 +4488,13 @@ describe('Functions', () => {
 		describe('in nested scope (injected)', () => {
 			itSerializes('single instantiation', {
 				in() {
-					function outer(extA) {
-						let other;
-						if (true) { // eslint-disable-line no-constant-condition
-							const extB = extA;
-							other = (0, () => [extA, extB]);
-						}
-						return function inner() { return [extA, other]; };
+					const extA = {extA: 1};
+					let other;
+					if (true) { // eslint-disable-line no-constant-condition
+						const extB = extA;
+						other = (0, () => [extA, extB]);
 					}
-					return outer({extA: 1});
+					return function inner() { return [extA, other]; };
 				},
 				out: `(()=>{
 					const a={extA:1},
@@ -4529,7 +4525,8 @@ describe('Functions', () => {
 
 			itSerializes('multiple instantiations', {
 				in({ctx}) {
-					function outer(extA) {
+					function outer(ext) {
+						const extA = ext;
 						let other;
 						if (true) { // eslint-disable-line no-constant-condition
 							const extB = extA;
@@ -4584,12 +4581,10 @@ describe('Functions', () => {
 		describe('circular references between functions (neither injected)', () => {
 			itSerializes('single instantiation', {
 				in() {
-					function outer(extA) {
-						function inner1() { return [extA, inner2]; }
-						function inner2() { return [extA, inner1]; }
-						return inner1;
-					}
-					return outer({extA: 1});
+					const extA = {extA: 1};
+					function inner1() { return [extA, inner2]; }
+					function inner2() { return [extA, inner1]; }
+					return inner1;
 				},
 				out: `
 					((a,b,c)=>(
@@ -4624,11 +4619,11 @@ describe('Functions', () => {
 					return extAs.map(extA => outer(extA));
 				},
 				out: `(()=>{
-					const a=(a,b,c)=>(
-							b=function inner2(){return[a,c]},
-							c=function inner1(){return[a,b]}
+					const a=c=>(a,b)=>(
+							a=function inner2(){return[c,b]},
+							b=function inner1(){return[c,a]}
 						);
-					return[a({extA1:1}),a({extA2:2}),a({extA3:3})]
+					return[a({extA1:1})(),a({extA2:2})(),a({extA3:3})()]
 				})()`,
 				validate(arr, {ctx: {extAs}}) {
 					expect(arr).toBeArrayOfSize(3);
