@@ -170,7 +170,7 @@ module.exports = (async () => {
 
 #### Config file
 
-You can set options in a `livepack.config.json` file rather than on command line. Config file can be in `.json` or `.js` format in root dir of the app. If `.js`, must be CommonJS.
+You can set options in a `livepack.config.json` file rather than on command line. Config file can be in `.json` or `.js` format, in root dir of the app. If `.js`, must be CommonJS.
 
 ```json
 // livepack.config.json
@@ -205,7 +205,7 @@ You can set options in a `livepack.config.json` file rather than on command line
 * Array of file paths - outputs will be named same as the inputs
 * Object mapping output names to input paths
 
-```json
+```
 input: "src/index.js"
 input: ["src/index.js", "src/other.js"]
 input: {"index": "src/index.js", "another": "src/other.js"}
