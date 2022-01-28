@@ -1,5 +1,39 @@
 # Changelog
 
+## 0.6.5
+
+Bug fixes:
+
+* Handle functions within function params
+* Preserve const violations in assignment patterns
+* Escape file path in tracker comments
+* Handle vars defined within `switch` statement
+
+Performance:
+
+* Faster lookup of parent node
+
+Refactor:
+
+* Separate scoping blocks for function params and body
+* Split Babel plugin visitor into multiple files
+* Babel plugin do not enter blocks which cannot hold vars
+* Babel plugin split method enter visitor
+* Babel plugin `containsUseStrictDirective` receives AST node not path
+* Babel plugin reduce property lookups
+* Babel plugin export `super` visitor function directly
+* Babel plugin re-order visitors
+* Move `setAddFrom` util to shared functions
+
+No code:
+
+* Fix line breaks
+* Correct code comments
+
+Docs:
+
+* Fix formatting in README
+
 ## 0.6.4
 
 Dependencies:
