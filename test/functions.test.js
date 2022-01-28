@@ -6674,6 +6674,658 @@ describe('Functions', () => {
 		});
 	});
 
+	describe("defined in another function's params", () => {
+		// These tests cover serialization, but also the transforms to functions made by Babel plugin
+		// for functions with complex params where initializing params moved into function body
+		describe('can be serialized when defined in', () => {
+			itSerializes('param default', {
+				in() {
+					const outer = (fn = (0, () => 1)) => fn;
+					return outer();
+				},
+				out: '()=>1',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					expect(fn.name).toBe('');
+					expect(fn()).toBe(1);
+				}
+			});
+
+			itSerializes('deconstruction object key', {
+				in() {
+					let f;
+					const outer = ({[f = (0, () => 1)]: x}) => x;
+					outer({});
+					return f;
+				},
+				out: '()=>1',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					expect(fn.name).toBe('');
+					expect(fn()).toBe(1);
+				}
+			});
+		});
+
+		describe('has name preserved when defined as', () => {
+			itSerializes('param default', {
+				in() {
+					const outer = (fn = () => 1) => fn;
+					return outer();
+				},
+				out: 'Object.defineProperties(()=>1,{name:{value:"fn"}})',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					expect(fn.name).toBe('fn');
+					expect(fn()).toBe(1);
+				}
+			});
+
+			itSerializes('deconstruction object key', {
+				in() {
+					let fn;
+					const outer = ({[fn = () => 1]: x}) => x;
+					outer({});
+					return fn;
+				},
+				out: 'Object.defineProperties(()=>1,{name:{value:"fn"}})',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					expect(fn.name).toBe('fn');
+					expect(fn()).toBe(1);
+				}
+			});
+		});
+
+		describe('can access', () => {
+			describe('external var', () => {
+				itSerializes('no clashing vars', {
+					in() {
+						const ext = 1;
+						const outer = (fn = (0, () => ext)) => fn;
+						return outer();
+					},
+					out: '(a=>()=>a)(1)',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						expect(fn()).toBe(1);
+					}
+				});
+
+				itSerializes('when shadowed by another var in function body', {
+					in() {
+						const ext = 1;
+						const outer = (getOuter = (0, () => ext)) => {
+							const ext = 2; // eslint-disable-line no-shadow
+							return {getOuter, getInner: (0, () => ext)};
+						};
+						return outer();
+					},
+					out: '{getOuter:(a=>()=>a)(1),getInner:(a=>()=>a)(2)}',
+					validate({getOuter, getInner}) {
+						expect(getOuter).toBeFunction();
+						expect(getInner).toBeFunction();
+						expect(getOuter()).toBe(1);
+						expect(getInner()).toBe(2);
+					}
+				});
+			});
+
+			describe('another param', () => {
+				itSerializes('no clashing vars', {
+					in() {
+						const outer = (x, fn = (0, () => x)) => fn;
+						return outer(1);
+					},
+					out: '(a=>()=>a)(1)',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						expect(fn()).toBe(1);
+					}
+				});
+
+				itSerializes('when shadowed by a `var` in function body', {
+					in() {
+						const outer = (x, fn = (0, () => x)) => { // eslint-disable-line block-scoped-var
+							var x = 2; // eslint-disable-line no-var, no-redeclare
+							return fn;
+						};
+						return outer(1);
+					},
+					out: '(a=>()=>a)(1)',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						expect(fn()).toBe(1);
+					}
+				});
+
+				itSerializes('when shadowed by a function declaration in function body', {
+					in() {
+						const outer = (x, fn = (0, () => x)) => {
+							function x() {} // eslint-disable-line no-redeclare
+							return fn;
+						};
+						return outer(1);
+					},
+					out: '(a=>()=>a)(1)',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						expect(fn()).toBe(1);
+					}
+				});
+			});
+
+			describe('outer function name', () => {
+				itSerializes('no clashing vars', {
+					in() {
+						function outer(fn = (0, () => outer)) {
+							return fn;
+						}
+						return outer();
+					},
+					out: '(b=>(b=function outer(a=(0,()=>b)){return a},()=>b))()',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						const outerFn = fn();
+						expect(outerFn).toBeFunction();
+						expect(outerFn.name).toBe('outer');
+					}
+				});
+
+				itSerializes('when shadowed by another var in function body', {
+					in() {
+						function outer(getOuter = (0, () => outer)) {
+							const outer = 1; // eslint-disable-line no-shadow
+							return {getOuter, getInner: (0, () => outer)};
+						}
+						return outer();
+					},
+					out: `{
+						getOuter:(
+							c=>(
+								c=function outer(b=(0,()=>c)){const a=1;return{getOuter:b,getInner:(0,()=>a)}},
+								()=>c
+							)
+						)(),
+						getInner:(a=>()=>a)(1)
+					}`,
+					validate({getOuter, getInner}) {
+						expect(getOuter).toBeFunction();
+						expect(getInner).toBeFunction();
+						const outerFn = getOuter();
+						expect(outerFn).toBeFunction();
+						expect(outerFn.name).toBe('outer');
+						expect(getInner()).toBe(1);
+					}
+				});
+			});
+		});
+
+		itSerializes('can be serialized if later param throws error', {
+			in() {
+				let fn;
+				const outer = (x, y = (fn = (0, () => x)), z = null()) => [x, y, z];
+				expect(() => outer(1)).toThrowWithMessage(TypeError, 'null is not a function');
+				return fn;
+			},
+			out: '(a=>()=>a)(1)',
+			validate(fn) {
+				expect(fn).toBeFunction();
+				expect(fn()).toBe(1);
+			}
+		});
+	});
+
+	describe('function param and var in function are independent vars', () => {
+		describe('`var` statement', () => {
+			describe('when no init to `var` statement and', () => {
+				itSerializes('param left as initial value', {
+					in() {
+						// eslint-disable-next-line block-scoped-var
+						const outerFn = (x, getOuter = (0, () => x), setOuter = (0, (v) => { x = v; })) => {
+							var x; // eslint-disable-line no-var, no-redeclare
+							return {
+								getOuter,
+								setOuter,
+								getInner: (0, () => x),
+								setInner: (0, (v) => { x = v; })
+							};
+						};
+						return outerFn(1);
+					},
+					out: `(()=>{
+						const a=(b=>[()=>b,a=>{b=a}])(1),
+							b=(b=>[()=>b,a=>{b=a}])(1);
+						return{getOuter:a[0],setOuter:a[1],getInner:b[0],setInner:b[1]}
+					})()`,
+					validate({getOuter, setOuter, getInner, setInner}) {
+						expect(getOuter()).toBe(1);
+						expect(getInner()).toBe(1); // Inner value initialized as value of param
+						setOuter(2);
+						expect(getOuter()).toBe(2);
+						expect(getInner()).toBe(1);
+						setInner(3);
+						expect(getOuter()).toBe(2);
+						expect(getInner()).toBe(3);
+					}
+				});
+
+				itSerializes('param set as default', {
+					in() {
+						// eslint-disable-next-line block-scoped-var
+						const outerFn = (x = 1, getOuter = (0, () => x), setOuter = (0, (v) => { x = v; })) => {
+							var x; // eslint-disable-line no-var, no-redeclare
+							return {
+								getOuter,
+								setOuter,
+								getInner: (0, () => x),
+								setInner: (0, (v) => { x = v; })
+							};
+						};
+						return outerFn();
+					},
+					out: `(()=>{
+						const a=(b=>[()=>b,a=>{b=a}])(1),
+							b=(b=>[()=>b,a=>{b=a}])(1);
+						return{getOuter:a[0],setOuter:a[1],getInner:b[0],setInner:b[1]}
+					})()`,
+					validate({getOuter, setOuter, getInner, setInner}) {
+						expect(getOuter()).toBe(1);
+						expect(getInner()).toBe(1); // Inner value initialized as value of param default
+						setOuter(2);
+						expect(getOuter()).toBe(2);
+						expect(getInner()).toBe(1);
+						setInner(3);
+						expect(getOuter()).toBe(2);
+						expect(getInner()).toBe(3);
+					}
+				});
+
+				itSerializes('param set later in params', {
+					in() {
+						// eslint-disable-next-line block-scoped-var
+						const outerFn = (x, getOuter = (0, () => x), setOuter = (x = 1, (v) => { x = v; })) => {
+							var x; // eslint-disable-line no-var, no-redeclare
+							return {
+								getOuter,
+								setOuter,
+								getInner: (0, () => x),
+								setInner: (0, (v) => { x = v; })
+							};
+						};
+						return outerFn();
+					},
+					out: `(()=>{
+						const a=(b=>[()=>b,a=>{b=a}])(1),
+							b=(b=>[()=>b,a=>{b=a}])(1);
+						return{getOuter:a[0],setOuter:a[1],getInner:b[0],setInner:b[1]}
+					})()`,
+					validate({getOuter, setOuter, getInner, setInner}) {
+						expect(getOuter()).toBe(1);
+						expect(getInner()).toBe(1); // Inner value initialized as value of param upon exiting params
+						setOuter(2);
+						expect(getOuter()).toBe(2);
+						expect(getInner()).toBe(1);
+						setInner(3);
+						expect(getOuter()).toBe(2);
+						expect(getInner()).toBe(3);
+					}
+				});
+			});
+
+			itSerializes('when `var` statement has init value', {
+				in() {
+					// eslint-disable-next-line block-scoped-var
+					const outerFn = (x, getOuter = (0, () => x), setOuter = (0, (v) => { x = v; })) => {
+						var x = 2; // eslint-disable-line no-var, no-redeclare
+						return {
+							getOuter,
+							setOuter,
+							getInner: (0, () => x),
+							setInner: (0, (v) => { x = v; })
+						};
+					};
+					return outerFn(1);
+				},
+				out: `(()=>{
+					const a=(b=>[()=>b,a=>{b=a}])(1),
+						b=(b=>[()=>b,a=>{b=a}])(2);
+					return{getOuter:a[0],setOuter:a[1],getInner:b[0],setInner:b[1]}
+				})()`,
+				validate({getOuter, setOuter, getInner, setInner}) {
+					expect(getOuter()).toBe(1);
+					expect(getInner()).toBe(2);
+					setOuter(3);
+					expect(getOuter()).toBe(3);
+					expect(getInner()).toBe(2);
+					setInner(4);
+					expect(getOuter()).toBe(3);
+					expect(getInner()).toBe(4);
+				}
+			});
+		});
+
+		describe('function declaration', () => {
+			itSerializes('param left as initial value', {
+				in() {
+					const outerFn = (x, getOuter = (0, () => x), setOuter = (0, (v) => { x = v; })) => {
+						return {
+							getOuter,
+							setOuter,
+							getInner: (0, () => x),
+							setInner: (0, (v) => { x = v; })
+						};
+						function x() {} // eslint-disable-line no-redeclare
+					};
+					return outerFn(1);
+				},
+				out: `(()=>{
+					const a=(b=>[()=>b,a=>{b=a}])(1),
+						b=(b=>[()=>b,a=>{b=a}])(function x(){});
+					return{getOuter:a[0],setOuter:a[1],getInner:b[0],setInner:b[1]}
+				})()`,
+				validate({getOuter, setOuter, getInner, setInner}) {
+					expect(getOuter()).toBe(1);
+					expect(getInner()).toBeFunction();
+					expect(getInner().name).toBe('x');
+					setOuter(2);
+					expect(getOuter()).toBe(2);
+					expect(getInner()).toBeFunction();
+					setInner(3);
+					expect(getOuter()).toBe(2);
+					expect(getInner()).toBe(3);
+				}
+			});
+
+			itSerializes('param set as default', {
+				in() {
+					const outerFn = (x = 1, getOuter = (0, () => x), setOuter = (0, (v) => { x = v; })) => {
+						return {
+							getOuter,
+							setOuter,
+							getInner: (0, () => x),
+							setInner: (0, (v) => { x = v; })
+						};
+						function x() {} // eslint-disable-line no-redeclare
+					};
+					return outerFn();
+				},
+				out: `(()=>{
+					const a=(b=>[()=>b,a=>{b=a}])(1),
+						b=(b=>[()=>b,a=>{b=a}])(function x(){});
+					return{getOuter:a[0],setOuter:a[1],getInner:b[0],setInner:b[1]}
+				})()`,
+				validate({getOuter, setOuter, getInner, setInner}) {
+					expect(getOuter()).toBe(1);
+					expect(getInner()).toBeFunction();
+					expect(getInner().name).toBe('x');
+					setOuter(2);
+					expect(getOuter()).toBe(2);
+					expect(getInner()).toBeFunction();
+					setInner(3);
+					expect(getOuter()).toBe(2);
+					expect(getInner()).toBe(3);
+				}
+			});
+
+			itSerializes('param set later in params', {
+				in() {
+					const outerFn = (x, getOuter = (0, () => x), setOuter = (x = 1, (v) => { x = v; })) => {
+						return {
+							getOuter,
+							setOuter,
+							getInner: (0, () => x),
+							setInner: (0, (v) => { x = v; })
+						};
+						function x() {} // eslint-disable-line no-redeclare
+					};
+					return outerFn();
+				},
+				out: `(()=>{
+					const a=(b=>[()=>b,a=>{b=a}])(1),
+						b=(b=>[()=>b,a=>{b=a}])(function x(){});
+					return{getOuter:a[0],setOuter:a[1],getInner:b[0],setInner:b[1]}
+				})()`,
+				validate({getOuter, setOuter, getInner, setInner}) {
+					expect(getOuter()).toBe(1);
+					expect(getInner()).toBeFunction();
+					expect(getInner().name).toBe('x');
+					setOuter(2);
+					expect(getOuter()).toBe(2);
+					expect(getInner()).toBeFunction();
+					setInner(3);
+					expect(getOuter()).toBe(2);
+					expect(getInner()).toBe(3);
+				}
+			});
+		});
+
+		describe('var in function body has value of param before `var` statement', () => {
+			// These tests for transform made in Babel plugin
+			itSerializes('when function has no complex params', {
+				in() {
+					return (x) => {
+						const xBefore = x;
+						var x = 2; // eslint-disable-line no-var, no-redeclare
+						return [xBefore, x];
+					};
+				},
+				out: 'a=>{const b=a;var a=2;return[b,a]}',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					const [xBefore, xAfter] = fn(1);
+					expect(xBefore).toBe(1);
+					expect(xAfter).toBe(2);
+				}
+			});
+
+			itSerializes('when function param has default', {
+				in() {
+					return (x = 1) => { // eslint-disable-line block-scoped-var
+						const xBefore = x;
+						var x = 2; // eslint-disable-line no-var, no-redeclare
+						return [xBefore, x];
+					};
+				},
+				out: '(a=1)=>{const b=a;var a=2;return[b,a]}',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					const [xBefore, xAfter] = fn();
+					expect(xBefore).toBe(1);
+					expect(xAfter).toBe(2);
+				}
+			});
+		});
+	});
+
+	describe('interaction between function declaration and var in same function is maintained', () => {
+		// These tests for transform made in Babel plugin which moves param definitions into function body
+		// if function has complex params
+		describe('when var statement first', () => {
+			itSerializes('with no initializer', {
+				in() {
+					const x = 1;
+					return (y = x) => { // eslint-disable-line no-unused-vars
+						const xBefore = x; // eslint-disable-line no-use-before-define
+						var x; // eslint-disable-line no-var, no-shadow
+						function x() {} // eslint-disable-line no-redeclare
+						return [xBefore, x];
+					};
+				},
+				out: '(c=>(a=c)=>{const b=x;var x;function x(){}return[b,x]})(1)',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					const [xBefore, xAfter] = fn();
+					expect(xBefore).toBeFunction();
+					expect(xBefore.name).toBe('x');
+					expect(xAfter).toBe(xBefore);
+				}
+			});
+
+			itSerializes('with initializer', {
+				in() {
+					const x = 1;
+					return (y = x) => { // eslint-disable-line no-unused-vars
+						const xBefore = x; // eslint-disable-line no-use-before-define
+						var x = 2; // eslint-disable-line no-var, no-shadow
+						function x() {} // eslint-disable-line no-redeclare
+						return [xBefore, x];
+					};
+				},
+				out: '(c=>(a=c)=>{const b=x;var x=2;function x(){}return[b,x]})(1)',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					const [xBefore, xAfter] = fn();
+					expect(xBefore).toBeFunction();
+					expect(xBefore.name).toBe('x');
+					expect(xAfter).toBe(2);
+				}
+			});
+		});
+
+		describe('when function declaration first', () => {
+			itSerializes('with no initializer in `var` statement', {
+				in() {
+					const x = 1;
+					return (y = x) => { // eslint-disable-line no-unused-vars
+						const xBefore = x;
+						function x() {} // eslint-disable-line no-shadow
+						var x; // eslint-disable-line no-var, vars-on-top, no-redeclare
+						return [xBefore, x];
+					};
+				},
+				out: '(c=>(a=c)=>{const b=x;function x(){}var x;return[b,x]})(1)',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					const [xBefore, xAfter] = fn();
+					expect(xBefore).toBeFunction();
+					expect(xBefore.name).toBe('x');
+					expect(xAfter).toBe(xBefore);
+				}
+			});
+
+			itSerializes('with initializer in `var` statement', {
+				in() {
+					const x = 1;
+					return (y = x) => { // eslint-disable-line no-unused-vars
+						const xBefore = x;
+						function x() {} // eslint-disable-line no-shadow
+						var x = 2; // eslint-disable-line no-var, vars-on-top, no-redeclare
+						return [xBefore, x];
+					};
+				},
+				out: '(c=>(a=c)=>{const b=x;function x(){}var x=2;return[b,x]})(1)',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					const [xBefore, xAfter] = fn();
+					expect(xBefore).toBeFunction();
+					expect(xBefore.name).toBe('x');
+					expect(xAfter).toBe(2);
+				}
+			});
+		});
+	});
+
+	describe('interaction between multiple `var` statements in same function is maintained', () => {
+		// These tests for transform made in Babel plugin which moves param definitions into function body
+		// if function has complex params
+		itSerializes('first `var` statement with no initializer', {
+			in() {
+				const x = 1;
+				/* eslint-disable no-var, vars-on-top, no-redeclare, no-use-before-define, block-scoped-var */
+				return (y = x) => { // eslint-disable-line no-unused-vars
+					const xValues = [x];
+					var x; // eslint-disable-line no-shadow
+					xValues.push(x);
+					var x = 2;
+					xValues.push(x);
+					{ // eslint-disable-line no-lone-blocks
+						var x = 3;
+					}
+					xValues.push(x);
+					var x;
+					xValues.push(x);
+					return xValues;
+				};
+				/* eslint-enable no-var, vars-on-top, no-redeclare, no-use-before-define, block-scoped-var */
+			},
+			out: `(d=>(a=d)=>{
+				const b=[c];
+				var c;
+				b.push(c);
+				var c=2;
+				b.push(c);
+				{var c=3}
+				b.push(c);
+				var c;
+				b.push(c);
+				return b
+			})(1)`,
+			validate(fn) {
+				expect(fn).toBeFunction();
+				expect(fn()).toEqual([undefined, undefined, 2, 3, 3]);
+			}
+		});
+
+		itSerializes('first `var` statement with initializer', {
+			in() {
+				const x = 1;
+				/* eslint-disable no-var, vars-on-top, no-redeclare, no-use-before-define, block-scoped-var */
+				return (y = x) => { // eslint-disable-line no-unused-vars
+					const xValues = [x];
+					var x = 2; // eslint-disable-line no-shadow
+					xValues.push(x);
+					var x = 3;
+					xValues.push(x);
+					{ // eslint-disable-line no-lone-blocks
+						var x = 4;
+					}
+					xValues.push(x);
+					var x;
+					xValues.push(x);
+					return xValues;
+				};
+				/* eslint-enable no-var, vars-on-top, no-redeclare, no-use-before-define, block-scoped-var */
+			},
+			out: `(d=>(a=d)=>{
+				const b=[c];
+				var c=2;
+				b.push(c);
+				var c=3;
+				b.push(c);
+				{var c=4}
+				b.push(c);
+				var c;
+				b.push(c);
+				return b
+			})(1)`,
+			validate(fn) {
+				expect(fn).toBeFunction();
+				expect(fn()).toEqual([undefined, 2, 3, 4, 4]);
+			}
+		});
+	});
+
+	itSerializes('params and `arguments` remain unlinked in sloppy mode function with complex params', {
+		in() {
+			// eslint-disable-next-line no-eval
+			return (0, eval)(`(function(x = 1) {
+				arguments[0] = 2;
+				x = 3;
+				return [x, arguments];
+			})`);
+		},
+		strictEnv: false,
+		out: 'function(a=1){arguments[0]=2;a=3;return[a,arguments]}',
+		validate(fn) {
+			expect(fn).toBeFunction();
+			const [x, args] = fn();
+			expect(x).toBe(3);
+			expect(args).toBeArguments();
+			expect(args[0]).toBe(2);
+		}
+	});
+
 	describe('bound functions', () => {
 		describe('no circular references (no injection)', () => {
 			itSerializes('single instantiation', {
@@ -9697,6 +10349,39 @@ describe('Functions', () => {
 				};
 			}
 		);
+	});
+
+	// eslint-disable-next-line jest/lowercase-name
+	describe('Babel plugin preserves temporal dead zone violations in function params in', () => {
+		describe('param default', () => {
+			it('no external var', () => {
+				const fn = (x = y, y) => [x, y]; // eslint-disable-line no-use-before-define
+				expect(fn).toThrowWithMessage(ReferenceError, "Cannot access 'y' before initialization");
+			});
+
+			it('with external var', () => {
+				const y = 1; // eslint-disable-line no-unused-vars
+				const fn = (x = y, y) => [x, y]; // eslint-disable-line no-use-before-define, no-shadow
+				expect(fn).toThrowWithMessage(ReferenceError, "Cannot access 'y' before initialization");
+			});
+		});
+
+		describe('deconstruction object key', () => {
+			it('no external var', () => {
+				const fn = ({[y]: x}, y) => [x, y]; // eslint-disable-line no-use-before-define
+				expect(() => fn({})).toThrowWithMessage(
+					ReferenceError, "Cannot access 'y' before initialization"
+				);
+			});
+
+			it('with external var', () => {
+				const y = 1; // eslint-disable-line no-unused-vars
+				const fn = ({[y]: x}, y) => [x, y]; // eslint-disable-line no-use-before-define, no-shadow
+				expect(() => fn({})).toThrowWithMessage(
+					ReferenceError, "Cannot access 'y' before initialization"
+				);
+			});
+		});
 	});
 
 	describe('serializing function does not cause side effects', () => {
