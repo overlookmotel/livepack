@@ -163,9 +163,6 @@ module.exports = (async () => {
 | `--source-maps` / `-s` | Output source maps. `--source-maps inline` for inline source maps. | Disabled |
 | `--no-exec` | Output a file which exports the input rather than executes it. | Exec enabled |
 | `--stats` | Output stats file.<br />Provide filename or `true` for `livepack-stats.json`. | Disabled |
-| `--babel-config` | By default, Livepack ignores any `babel.config.js` files. Set this option to `pre` to transform code with Babel before running and serializing it. | Disabled |
-| `--babelrc` | By default, Livepack ignores any `.babelrc` files. Set this option to `pre` to transform code with Babel before running and serializing it. Follows `babel-config` option by default. | Disabled |
-| `--babel-config-file` | Path to Babel config file (optional) | (none) |
 | `--no-babel-cache` | Disable Babel's cache | Cache enabled |
 
 #### Config file
@@ -192,9 +189,6 @@ You can set options in a `livepack.config.json` file rather than on command line
   "sourceMaps": true,
   "exec": true,
   "stats": false,
-  "babelConfig": false,
-  "babelrc": false,
-  "babelConfigFile": null,
   "babelCache": true
 }
 ```
@@ -263,8 +257,6 @@ require('livepack/register')( {
 |-|-|-|-|
 | `esm` | `boolean` | Set to `true` if codebase being serialized contains ECMAScript modules (`import x from 'x'`) | `false` |
 | `jsx` | `boolean` | Set to `true` if codebase being serialized contains JSX | `false` |
-| `configFile` | `boolean` or `string` | Babel config file (optional). If a `string`, should be path to Babel config file. | `false` |
-| `babelrc` | `boolean` | If `true`, code will be transpiled with Babel `.babelrc` files while loading | `true` if `configFile` option set, otherwise `false` |
 | `cache` | `boolean` | If `true`, Babel cache is used to speed up Livepack | `true` |
 
 These options correspond to CLI options, but sometimes named slightly differently.
