@@ -43,7 +43,7 @@
     "@babel/plugin-transform-modules-commonjs": "^7.16.8",
     "@babel/plugin-transform-react-jsx": "^7.16.7",
     "@babel/register": "^7.16.9",
-    "@babel/traverse": "^7.16.8",
+    "@babel/traverse": "^7.17.0",
     "@babel/types": "^7.16.8",
     "babel-plugin-dynamic-import-node": "^2.3.3",
     "base32.js": "^0.1.0",
