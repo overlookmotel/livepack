@@ -414,7 +414,7 @@ describe('eval', () => {
 				expect(err).toBeInstanceOf(SyntaxError);
 				expect(err.message).toBe('Illegal return statement');
 
-				// Check stack trace does not include internal livepack code
+				// Check stack trace does not include internal Livepack code
 				const stackLines = err.stack.split(/\r?\n/);
 				expect(stackLines[0]).toBe('SyntaxError: Illegal return statement');
 				expect(stackLines[1]).toMatch(new RegExp(`\\s+at ${escapeRegex(__filename)}:\\d+:\\d+`));

@@ -7675,7 +7675,7 @@ describe('Functions', () => {
 			}
 		});
 
-		itSerializes('with function names added by livepack', {
+		itSerializes('with function names added by Livepack', {
 			in() {
 				let a = function() { return a; };
 				const fn = a;
@@ -7693,7 +7693,7 @@ describe('Functions', () => {
 			}
 		});
 
-		itSerializes('with globals with function names added by livepack', {
+		itSerializes('with globals with function names added by Livepack', {
 			in() {
 				// eslint-disable-next-line object-shorthand
 				return {console: function() { return console; }}.console;
