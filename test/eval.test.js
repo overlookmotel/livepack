@@ -670,7 +670,7 @@ describe('eval', () => {
 					out: `(()=>{
 						const a={},
 							b=(0,eval)("
-								(extA,extD,extE,module,exports,outer)=>[
+								(module,exports)=>(extA,extD,extE,outer)=>[
 									outer=(0,function(){
 										const extB=2;
 										return()=>{
@@ -685,7 +685,7 @@ describe('eval', () => {
 										}
 									}.apply(_a,_b)
 								]
-							")(1,4,5,a,{}),
+							")(a,{})(1,4,5),
 							c=b[1](
 								{x:7},
 								function(){
@@ -787,7 +787,7 @@ describe('eval', () => {
 					out: `(()=>{
 						const a={},
 							b=(0,eval)("
-								(extA,extD,extE,module,exports,outer)=>[
+								(module,exports)=>(extA,extD,extE,outer)=>[
 									outer=(0,function(){
 										const extB=2;
 										return function(){
@@ -800,7 +800,7 @@ describe('eval', () => {
 										return eval(\\"({extA, extB, extC, extD, extE, typeofExtF: typeof extF, outer, module, exports, this: this, arguments: arguments})\\")
 									}
 								]
-							")(1,4,5,a,{}),
+							")(a,{})(1,4,5),
 							c=b[1](2);
 						a.exports=c;
 						Object.assign(b[0],{isOuter:true});
@@ -897,7 +897,7 @@ describe('eval', () => {
 					out: `(()=>{
 						const a={},
 							b=(0,eval)("
-								(extA,extD,extE,module,exports,outer)=>[
+								(module,exports)=>(extA,extD,extE,outer)=>[
 									outer=(0,function(){
 										const extB=2;
 										return()=>{
@@ -912,7 +912,7 @@ describe('eval', () => {
 										}
 									}.apply(_a,_b)
 								]
-							")(1,4,5,a,{}),
+							")(a,{})(1,4,5),
 							c=b[1](
 								{x:7},
 								function(){
@@ -993,7 +993,9 @@ describe('eval', () => {
 						const fns = {getOuterExts: (0, () => ({extA, extB}))};
 						{
 							const extB = 10;
-							fns.evalFn = (module, exports, fns) => eval('({extA, extB, typeofA: typeof a})');
+							fns.evalFn = function(module, exports, fns) {
+								return eval('({extA, extB, typeofA: typeof a})');
+							};
 						}
 						module.exports = fns;
 					`),
@@ -1002,7 +1004,9 @@ describe('eval', () => {
 								\\"use strict\\";
 								(extA,extB)=>[
 									()=>({extA,extB}),
-									extB=>(module,exports,fns)=>eval(\\"({extA, extB, typeofA: typeof a})\\")
+									extB=>function(module,exports,fns){
+										return eval(\\"({extA, extB, typeofA: typeof a})\\")
+									}
 								]
 							")(1,2);
 						return{getOuterExts:a[0],evalFn:a[1](10)}
@@ -1024,7 +1028,9 @@ describe('eval', () => {
 							const extB = 2;
 							{
 								const extB = 10;
-								fns.evalFn = (module, exports, fns) => eval('({extA, extB, typeofA: typeof a})');
+								fns.evalFn = function(module, exports, fns) {
+									return eval('({extA, extB, typeofA: typeof a})');
+								};
 							}
 							fns.getOuterExts = () => ({extA, extB});
 						}
@@ -1034,7 +1040,9 @@ describe('eval', () => {
 						const a=(0,eval)("
 								\\"use strict\\";
 								extA=>[
-									extB=>(module,exports,fns)=>eval(\\"({extA, extB, typeofA: typeof a})\\"),
+									extB=>function(module,exports,fns){
+										return eval(\\"({extA, extB, typeofA: typeof a})\\")
+									},
 									a=>()=>({extA,extB:a})
 								]
 							")(1);
@@ -1059,7 +1067,9 @@ describe('eval', () => {
 								const extC = 3;
 								{
 									const extB = 10;
-									fns.evalFn = (module, exports, fns) => eval('({extA, extB, extC, typeofA: typeof a})');
+									fns.evalFn = function(module, exports, fns) {
+										return eval('({extA, extB, extC, typeofA: typeof a})');
+									};
 								}
 								// This function inserts outer extB block into scope chain below inner extB
 								fns.getOuterExts = () => ({extA, extB, extC});
@@ -1072,7 +1082,9 @@ describe('eval', () => {
 								\\"use strict\\";
 								extA=>extB=>extC=>[
 									()=>({extA,extB,extC}),
-									extB=>(module,exports,fns)=>eval(\\"({extA, extB, extC, typeofA: typeof a})\\")
+									extB=>function(module,exports,fns){
+										return eval(\\"({extA, extB, extC, typeofA: typeof a})\\")
+									}
 								]
 							")(1)(2)(3);
 						return{evalFn:a[1](10),getOuterExts:a[0]}
@@ -1093,7 +1105,9 @@ describe('eval', () => {
 						module.exports = {
 							console: ext,
 							ext,
-							evalFn: (0, (module, exports) => eval('({console, typeofA: typeof a})'))
+							evalFn: (0, function(module, exports) {
+								return eval('({console, typeofA: typeof a})');
+							})
 						};
 					`),
 					out: `(()=>{
@@ -1102,7 +1116,7 @@ describe('eval', () => {
 							console:a,
 							ext:a,
 							evalFn:(0,eval)("
-								ext=>(module,exports)=>eval(\\"({console, typeofA: typeof a})\\")
+								ext=>function(module,exports){return eval(\\"({console, typeofA: typeof a})\\")}
 							")(a)
 						}
 					})()`,
@@ -1124,7 +1138,9 @@ describe('eval', () => {
 										console,
 										ext:console,
 										evalFn:(0,eval)("
-											ext=>(module,exports)=>eval(\\"({console, typeofA: typeof a})\\")
+											ext=>function(module,exports){
+												return eval(\\"({console, typeofA: typeof a})\\")
+											}
 										")(console)
 									}
 								})()
@@ -1178,11 +1194,11 @@ describe('eval', () => {
 
 			itSerializes('eval expression contains function', {
 				in: () => requireFixture(`
-					module.exports = (module, exports) => eval(
-						(() => '123')()
-					)
+					module.exports = function(module, exports) {
+						return eval((() => '123')());
+					};
 				`),
-				out: '(0,eval)("(module,exports)=>eval((()=>\\"123\\")())")',
+				out: '(0,eval)("(function(module,exports){return eval((()=>\\"123\\")())})")',
 				validate(fn) {
 					expect(fn).toBeFunction();
 					expect(fn()).toBe(123);
@@ -1485,7 +1501,7 @@ describe('eval', () => {
 				out: `(()=>{
 					const a={},
 						b=(0,eval)("
-							(extA,module,exports,outer)=>[
+							(module,exports)=>(extA,outer)=>[
 								outer=(0,function(){
 									const extB=2;
 									return eval(\\"() => {const extC = 3; return eval(\\\\\\"const extD = 4; () => ({extA, extB, extC, extD, outer, module, exports, this: this, arguments: arguments})\\\\\\")}\\")
@@ -1497,7 +1513,7 @@ describe('eval', () => {
 									}
 								}.apply(_a,_b)
 							]
-						")(1,a,{}),
+						")(a,{})(1),
 						c=b[1](
 							{x:5},
 							function(){return arguments}(6,7,8)

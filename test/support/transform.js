@@ -2,53 +2,38 @@
  * livepack module
  * Jest transform
  *
- * `babel-jest`, shimmed to:
- * 1. Use Livpack Babel plugin to transform files
- * 2. Record files' code (after transform by Babel plugin) so tests can test output of Babel plugin
- * See: https://jestjs.io/docs/en/tutorial-react#custom-transformers
+ * 1. Instrument code
+ * 2. Record files' code (after instrumentation) so tests can test instrumentation
+ * See: https://jestjs.io/docs/code-transformation
  * ------------------*/
 
 'use strict';
 
 // Modules
-const pathSep = require('path').sep,
-	babelJest = require('babel-jest').default;
+const pathSep = require('path').sep;
 
 // Imports
-const babelPlugin = require('../../babel.js'),
+const {instrumentCodeImpl} = require('../../lib/instrument/instrument.js'),
 	{isInternalPath} = require('../../lib/shared/functions.js');
 
 // Constants
 const TESTS_SUPPORT_DIR_PATH = `${__dirname}${pathSep}`,
-	TRANSPILED_FILES_PATH = `${TESTS_SUPPORT_DIR_PATH}transpiledFiles.js`,
-	SOURCE_MAP_SPLIT_REGEX = /^([\s\S]+?)(\n\/\/# sourceMappingURL=(?:[^\n]+))?$/;
+	TRANSPILED_FILES_PATH = `${TESTS_SUPPORT_DIR_PATH}transpiledFiles.js`;
 
 // Exports
 
-const transformer = babelJest.createTransformer({
-	ignore: [],
-	configFile: false,
-	babelrc: false,
-	sourceType: 'script',
-	plugins: [babelPlugin],
-	generatorOpts: {retainLines: true, compact: false}
-});
+module.exports = {process};
 
-const {process} = transformer;
-transformer.process = function(src, filename, config, transformOptions) {
-	// Do not transform Livepack internals or tests support files
-	if (isInternalPath(filename) || filename.startsWith(TESTS_SUPPORT_DIR_PATH)) return src;
+function process(code, filename) {
+	// Do not instrument Livepack internals or tests support files
+	if (isInternalPath(filename) || filename.startsWith(TESTS_SUPPORT_DIR_PATH)) return code;
 
-	// Call original `babel-jest` `process()` method
-	const out = process.call(this, src, filename, config, transformOptions);
+	// Instrument code
+	const res = instrumentCodeImpl(code, filename, false, true, false, false, true, undefined, true);
+	code = res.code;
 
-	// Inject `require('livepack/test/support/transpiledFiles.js')[__filename] = '<code>';`
-	// into code of files before the source map comment
-	const [, codeBody, sourceMapComment = ''] = out.code.match(SOURCE_MAP_SPLIT_REGEX);
-	out.code = codeBody // eslint-disable-line prefer-template
-		+ `\nrequire(${JSON.stringify(TRANSPILED_FILES_PATH)})[__filename] = ${JSON.stringify(codeBody)};`
-		+ sourceMapComment;
-	return out;
-};
+	// Add `require('livepack/test/support/transpiledFiles.js')[__filename] = '<code>';` to end of code
+	code += `\nrequire(${JSON.stringify(TRANSPILED_FILES_PATH)})[__filename] = ${JSON.stringify(code)};`;
 
-module.exports = transformer;
+	return {code, map: res.map};
+}

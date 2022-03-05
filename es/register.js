@@ -4,7 +4,7 @@
  * ------------------*/
 
 // Imports
-import register from '../lib/register.js';
+import register from '../lib/register/index.js';
 
 const {revert} = register;
 

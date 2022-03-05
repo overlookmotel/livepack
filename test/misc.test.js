@@ -31,15 +31,15 @@ describe('Internal vars created by Babel plugin do not interfere with code', () 
 
 	itSerializes('`scopeId`', {
 		in() {
-			return () => ext && typeof livepack_scopeId_1; // eslint-disable-line camelcase
+			return () => ext && typeof livepack_scopeId_2; // eslint-disable-line camelcase
 		},
-		out: '(a=>()=>a&&typeof livepack_scopeId_1)({})',
+		out: '(a=>()=>a&&typeof livepack_scopeId_2)({})',
 		validate(fn) {
 			// Check the temp var name which Babel transform creates matches the one being tested for
 			// NB code for this file is injected into `files` in babel transform
 			// (see `test/support/transform.js`)
 			expect(transpiledFiles[__filename])
-				.toMatch(/const( )livepack1_scopeId_1 = livepack1_getScopeId\(\);/);
+				.toMatch(/const( )livepack1_scopeId_2 = livepack1_getScopeId\(\);/);
 
 			expect(fn()).toBe('undefined');
 		}
@@ -47,7 +47,7 @@ describe('Internal vars created by Babel plugin do not interfere with code', () 
 
 	itSerializes('`temp`', {
 		in: () => Object.setPrototypeOf(
-			{x() { return super.x(typeof livepack_temp_22); }}, // eslint-disable-line camelcase
+			{x() { return super.x(typeof livepack_temp_21); }}, // eslint-disable-line camelcase
 			{x(v) { return v; }}
 		),
 		out: `(()=>{
@@ -56,7 +56,7 @@ describe('Internal vars created by Babel plugin do not interfere with code', () 
 						b=>a=b,
 						{
 							x(){
-								return Reflect.get(Object.getPrototypeOf(a),"x",this).call(this,typeof livepack_temp_22)
+								return Reflect.get(Object.getPrototypeOf(a),"x",this).call(this,typeof livepack_temp_21)
 							}
 						}.x
 					]
@@ -73,7 +73,7 @@ describe('Internal vars created by Babel plugin do not interfere with code', () 
 			// Check the temp var name which Babel transform creates matches the one being tested for
 			// NB code for this file is injected into `files` in babel transform
 			// (see `test/support/transform.js`)
-			expect(transpiledFiles[__filename]).toMatch(/Object.setPrototypeOf\(livepack1_temp_22 =/);
+			expect(transpiledFiles[__filename]).toMatch(/Object.setPrototypeOf\(livepack1_temp_21 =/);
 
 			expect(obj.x()).toBe('undefined');
 		}

@@ -1,10 +1,10 @@
 /* --------------------
  * livepack module
- * Register CommonJS entry point
+ * Instrument code CommonJS entry point
  * ------------------*/
 
 'use strict';
 
 // Exports
 
-module.exports = require('./lib/register/index.js');
+module.exports = require('./lib/instrument/index.js');

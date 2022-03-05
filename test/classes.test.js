@@ -3748,21 +3748,21 @@ describe('Classes', () => {
 						b=>[
 							b=class Y{
 								constructor(){
-									const a=Reflect.construct(Object.getPrototypeOf(c),[],c);
-									a.z=b;
+									const a=Reflect.construct(Object.getPrototypeOf(b),[],b);
+									a.z=c;
 									return a
 								}
 							},
 							{
 								bar(){
-									Reflect.get(Object.getPrototypeOf(c),"bar",this).call(this);
-									return b
+									Reflect.get(Object.getPrototypeOf(b),"bar",this).call(this);
+									return c
 								}
 							}.bar,
 							{
 								foo(){
-									Reflect.get(Object.getPrototypeOf(c.prototype),"foo",this).call(this);
-									return b
+									Reflect.get(Object.getPrototypeOf(b.prototype),"foo",this).call(this);
+									return c
 								}
 							}.foo
 						]
@@ -5046,7 +5046,7 @@ describe('Classes', () => {
 						}
 					};
 				},
-				out: '()=>class{constructor(c){this.x=c}foo(a){this.x=a}static bar(b){this.z=b}}',
+				out: '()=>class{constructor(a){this.x=a}foo(b){this.x=b}static bar(c){this.z=c}}',
 				validate(fn) {
 					expect(fn).toBeFunction();
 					const Klass = fn();
@@ -5099,9 +5099,9 @@ describe('Classes', () => {
 					};
 				},
 				out: `d=>class extends d{
-					constructor(c){super(c*2)}
-					foo(a){super.foo(a*2)}
-					static bar(b){super.bar(b*2)}
+					constructor(a){super(a*2)}
+					foo(b){super.foo(b*2)}
+					static bar(c){super.bar(c*2)}
 				}`,
 				validate(fn) {
 					expect(fn).toBeFunction();

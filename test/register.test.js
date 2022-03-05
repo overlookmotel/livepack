@@ -6,7 +6,8 @@
 'use strict';
 
 // Modules
-const Module = require('module');
+const Module = require('module'),
+	pathSep = require('path').sep;
 
 // Imports
 const {createFixturesFunctions} = require('./support/index.js');
@@ -51,38 +52,30 @@ describe('register', () => {
 				'(e=>{"use strict";return d=>d=function invariant(a,b){if(!a){const c=new Error(b||e);Error.captureStackTrace(c,d);throw c}}})("Invariant failed")()'
 			);
 		});
+
+		it('source-map', async () => {
+			const js = await serializeInNewProcess(
+				"module.exports = require('source-map');"
+			);
+			expect(js).toStartWith('(()=>{const a=(');
+		});
+
+		it('convert-source-map', async () => {
+			const js = await serializeInNewProcess(
+				'module.exports = require(\'convert-source-map\');'
+			);
+			expect(js).toStartWith('(()=>{"use strict";const a=(');
+		});
 	});
 
 	describe('allows serializing modules used internally in Babel', () => {
-		const babelRegisterPath = require.resolve('@babel/register'),
-			babelCorePath = resolveFrom('@babel/core', babelRegisterPath),
-			babelTypesPath = resolveFrom('@babel/types', babelCorePath);
-
 		it('to-fast-properties', async () => {
-			const path = resolveFrom('to-fast-properties', babelTypesPath);
+			const path = resolveFrom('to-fast-properties', require.resolve('@babel/types'));
 
 			const js = await serializeInNewProcess(
 				`module.exports = require(${JSON.stringify(path)});`
 			);
 			expect(js).toStartWith('(()=>{const a=((c,d)=>{');
-		});
-
-		it('convert-source-map', async () => {
-			const path = resolveFrom('convert-source-map', babelCorePath);
-
-			const js = await serializeInNewProcess(
-				`module.exports = require(${JSON.stringify(path)});`
-			);
-			expect(js).toStartWith('(()=>{"use strict";const a=(');
-		});
-
-		it('source-map', async () => {
-			const path = resolveFrom('source-map', babelCorePath);
-
-			const js = await serializeInNewProcess(
-				`module.exports = require(${JSON.stringify(path)});`
-			);
-			expect(js).toStartWith('(()=>{const a=function urlGenerate(a){');
 		});
 	});
 
@@ -91,13 +84,15 @@ describe('register', () => {
 			'index.js': [
 				"require('./other.js');",
 				"const {retrieveSourceMap} = require('source-map-support');",
-				"module.exports = retrieveSourceMap(require.resolve('./other.js'));"
+				"const path = require.resolve('./other.js');",
+				'module.exports = {path, map: retrieveSourceMap(path).map};'
 			].join('\n'),
 			'other.js': 'module.exports = function foo() {};'
 		});
 
-		const {map} = (0, eval)(`(${js})`); // eslint-disable-line no-eval
-		expect(map.sources).toEqual(['other.js']);
+		const {path, map} = (0, eval)(`(${js})`); // eslint-disable-line no-eval
+		expect(path.endsWith(`${pathSep}other.js`)).toBeTrue();
+		expect(map.sources).toEqual([path]);
 		expect(map.names).toEqual(['module', 'exports', 'foo']);
 		expect(map.sourcesContent).toEqual(['module.exports = function foo() {};']);
 	});

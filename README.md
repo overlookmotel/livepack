@@ -222,7 +222,7 @@ There are two parts to the programmatic API.
 
 #### Require hook
 
-Livepack instruments the code as it runs, by patching NodeJS's `require()` function. It uses [@babel/register](https://babeljs.io/docs/en/babel-register) internally. This instrumentation is what allows Livepack to capture the value of variables in closures.
+Livepack instruments the code as it runs, by patching NodeJS's `require()` function. This instrumentation is what allows Livepack to capture the value of variables in closures.
 
 Your app must have an entry point which registers the require hook, and then `require()`s the app itself.
 

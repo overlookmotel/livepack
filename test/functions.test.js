@@ -15,6 +15,12 @@ const {
 
 const {requireFixtures, createFixtures} = createFixturesFunctions(__filename);
 
+// Set prototype of `module.exports` to `Object.prototype`. Necessary for the test for a function
+// containing global `this`. Jest creates `module.exports` in another execution context,
+// so prototype of `export` object is a *different* `Object.prototype`.
+// This is just an artefact of the testing environment - does not affect real code.
+Object.setPrototypeOf(module.exports, Object.prototype);
+
 // Tests
 
 const describeIfNode16 = parseNodeVersion(process.version).major >= 16 ? describe : describe.skip;
@@ -2698,13 +2704,32 @@ describe('Functions', () => {
 			}
 		});
 
-		itSerializes('referencing global scope', {
-			in: () => () => this, // eslint-disable-line no-invalid-this
-			out: '()=>this',
-			validate(fn) {
-				expect(fn).toBeFunction();
-				fn(); // Can't test for return value due to how serialized code is evaluated
-			}
+		describe('referencing global scope', () => {
+			itSerializes('in CommonJS context', {
+				in: () => () => [this, exports], // eslint-disable-line no-invalid-this, node/exports-style
+				out: '(()=>{const a={};return((a,b)=>()=>[a,b])(a,a)})()',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					const [_this, _exports] = fn();
+					expect(_this).toBeObject();
+					expect(_this).toBe(_exports);
+				}
+			});
+
+			/*
+			// TODO Uncomment once https://github.com/overlookmotel/livepack/issues/353 resolved
+			itSerializes('in script context', {
+				in: () => (0, eval)('() => [this, globalThis]'), // eslint-disable-line no-eval
+				out: '(a=>()=>[a,globalThis])(globalThis)',
+				strictEnv: false,
+				validate(fn) {
+					expect(fn).toBeFunction();
+					const [_this, _globalThis] = fn();
+					expect(_this).toBeObject();
+					expect(_this).toBe(_globalThis);
+				}
+			});
+			*/
 		});
 	});
 
@@ -5453,8 +5478,8 @@ describe('Functions', () => {
 				out: `(()=>{
 					const a={extA:1},b={extB:2};
 					return(
-						(e,f,g,h)=>(a=e,b=f,c=g,d=h)=>[a,b,c,d]
-					)(a,b,{ctx:3},function(){return arguments}(a,b))
+						(e,f,g,h)=>(a=f,b=g,c=e,d=h)=>[a,b,c,d]
+					)({ctx:3},a,b,function(){return arguments}(a,b))
 				})()`,
 				validate(fn) {
 					expect(fn).toBeFunction();
