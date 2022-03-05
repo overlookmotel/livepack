@@ -12,10 +12,6 @@
       "import": "./es/register.js",
       "require": "./register.js"
     },
-    "./babel": {
-      "import": "./es/babel.js",
-      "require": "./babel.js"
-    },
     "./instrument": {
       "import": "./es/instrument.js",
       "require": "./instrument.js"
@@ -23,7 +19,6 @@
   },
   "bin": "lib/cli.js",
   "files": [
-    "babel.js",
     "register.js",
     "instrument.js",
     "lib/**/*.js",
@@ -43,7 +38,6 @@
     "@babel/core": "^7.16.12",
     "@babel/generator": "^7.16.8",
     "@babel/helper-module-transforms": "^7.16.7",
-    "@babel/helper-plugin-utils": "^7.16.7",
     "@babel/parser": "^7.16.12",
     "@babel/plugin-transform-modules-commonjs": "^7.16.8",
     "@babel/plugin-transform-react-jsx": "^7.16.7",
