@@ -4,7 +4,7 @@
  * ------------------*/
 
 // Imports
-import methods from '../lib/index.js';
+import methods from '../index.js';
 
 const {serialize, serializeEntries, split, splitAsync} = methods;
 
