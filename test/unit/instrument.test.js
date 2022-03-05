@@ -114,6 +114,7 @@ const ignoredNodeTypes = new Set([
 	// ECMA proposals not adopted yet
 	'ArgumentPlaceholder',
 	'BindExpression',
+	'ClassAccessorProperty',
 	'DecimalLiteral',
 	'Decorator',
 	'DoExpression',
