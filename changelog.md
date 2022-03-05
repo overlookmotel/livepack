@@ -1,5 +1,45 @@
 # Changelog
 
+## 0.7.0
+
+Breaking changes:
+
+* Remove register options `babelConfig` + `babelrc`
+* Remove Babel plugin
+
+Bug fixes:
+
+* Private name identifier is not a variable
+
+Improvements:
+
+* Shimmed `eval` check for actual error after failure to parse code
+
+Performance:
+
+* Faster `traverseAll` implementation
+
+Refactor:
+
+* Code instrumentation re-implementation
+* Add `len` arg to `getProp` etc
+* Move `getProp` etc to shared functions
+* Move `traverseAll` to shared functions
+* Move functions out of shared folder
+* Code style
+
+Dependencies:
+
+* Update dependencies
+
+No code:
+
+* Code comments
+
+Dev:
+
+* Update dev dependencies
+
 ## 0.6.5
 
 Bug fixes:
