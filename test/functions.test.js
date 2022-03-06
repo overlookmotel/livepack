@@ -24,6 +24,7 @@ Object.setPrototypeOf(module.exports, Object.prototype);
 // Tests
 
 const describeIfNode16 = parseNodeVersion(process.version).major >= 16 ? describe : describe.skip;
+const spy = jest.fn;
 
 describe('Functions', () => {
 	describe('without scope', () => {
@@ -10321,6 +10322,18 @@ describe('Functions', () => {
 				// Rest parameter
 				['(...x) => [x]', 0, [1, 2, 3], [[1, 2, 3]]],
 				['(x, y, ...z) => [x, y, z]', 2, [1, 2, 3, 4, 5], [1, 2, [3, 4, 5]]],
+				[
+					'(x = 10, y, ...z) => [x, y, z]',
+					0,
+					[1, 2, 3, 4, 5], [1, 2, [3, 4, 5]],
+					[undefined, 2, 3, 4, 5], [10, 2, [3, 4, 5]]
+				],
+				[
+					'(x = 10, y, ...z) => { return [x, y, z] }',
+					0,
+					[1, 2, 3, 4, 5], [1, 2, [3, 4, 5]],
+					[undefined, 2, 3, 4, 5], [10, 2, [3, 4, 5]]
+				],
 				['(...[x]) => [x]', 0, [1, 2, 3], [1]],
 				[
 					'(...[x = 1]) => [x]',
@@ -10328,6 +10341,7 @@ describe('Functions', () => {
 					[], [1],
 					[2], [2]
 				],
+				['(...[, , x, , y]) => [x, y]', 0, [1, 2, 3, 4, 5], [3, 5]],
 				['(...{1: x, length: y}) => [x, y]', 0, [1, 2, 33], [2, 3]],
 				['(...{...x}) => [x]', 0, [1, 2, 3], [{0: 1, 1: 2, 2: 3}]],
 
@@ -10350,7 +10364,10 @@ describe('Functions', () => {
 			(fnStr, len, ...callAndReturns) => {
 				// Add reference to external var `ext` return value to ensure function is called when serializing
 				// `x => [x]` -> `ext => x => (ext, [x])`
-				const fnStrWithExtAdded = `ext => ${fnStr.replace(/=> (.+?)$/, (_, ret) => `=> (ext, ${ret})`)}`;
+				const fnStrWithExtAdded = `ext => ${fnStr.replace(
+					/=> (.+?)$/,
+					(_, ret) => (ret[0] === '{' ? `=> {ext; ${ret.slice(1)}` : `=> (ext, ${ret})`)
+				)}`;
 
 				return {
 					in: () => (0, eval)(fnStrWithExtAdded), // eslint-disable-line no-eval
@@ -10453,6 +10470,37 @@ describe('Functions', () => {
 				}
 			})
 		);
+	});
+
+	describe('generator functions evaluate complex params when called', () => {
+		// These tests are to make sure changes made to functions with complex params in instrumentation
+		// does not alter behavior
+		itSerializes('generator function', {
+			in() {
+				return function*(x, y = x()) {}; // eslint-disable-line no-unused-vars, no-empty-function
+			},
+			out: 'function*(a,b=a()){}',
+			validate(fn) {
+				expect(fn).toBeFunction();
+				const s = spy();
+				fn(s);
+				expect(s).toHaveBeenCalledTimes(1);
+			}
+		});
+
+		itSerializes('async generator function', {
+			in() {
+				return async function*(x, y = x()) {}; // eslint-disable-line no-unused-vars, no-empty-function
+			},
+			out: 'async function*(a,b=a()){}',
+			async validate(fn) {
+				expect(fn).toBeFunction();
+				const s = spy();
+				const p = fn(s);
+				expect(s).toHaveBeenCalledTimes(1);
+				await p;
+			}
+		});
 	});
 
 	itSerializes('`*/` in filename does not disrupt functioning', {
