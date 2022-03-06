@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.7.1
+
+Bug fixes:
+
+* Do not move complex params into function body
+* ESM entry point import from CommonJS entry point
+
+Refactor:
+
+* Attach `eval` internal methods to `tracker` for each file
+* Separate method for extracting scope vars from functions
+* Tracker store result in object instead of callback
+* Simplify extracting scope from functions
+* Refactor and add comments to code handling `eval`
+
+No code:
+
+* Code comment
+
+Tests:
+
+* Avoid use of direct `eval()` [refactor]
+
 ## 0.7.0
 
 Breaking changes:
