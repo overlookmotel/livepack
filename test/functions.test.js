@@ -10278,7 +10278,6 @@ describe('Functions', () => {
 	});
 
 	describe('placement of tracker does not disrupt normal functioning', () => {
-		const ext = 100; // eslint-disable-line no-unused-vars
 		itSerializes.each(
 			[
 				// Simple parameters
@@ -10350,12 +10349,14 @@ describe('Functions', () => {
 			'%s',
 			(fnStr, len, ...callAndReturns) => {
 				// Add reference to external var `ext` return value to ensure function is called when serializing
-				// `x => [x]` -> `x => (ext, [x])`
-				const fnStrWithExtAdded = fnStr.replace(/=> (.+?)$/, (_, ret) => `=> (ext, ${ret})`);
+				// `x => [x]` -> `ext => x => (ext, [x])`
+				const fnStrWithExtAdded = `ext => ${fnStr.replace(/=> (.+?)$/, (_, ret) => `=> (ext, ${ret})`)}`;
 
 				return {
-					in: () => eval(`(${fnStrWithExtAdded})`), // eslint-disable-line no-eval
-					validate(fn, {isOutput, outputJs, minify, mangle, inline}) {
+					in: () => (0, eval)(fnStrWithExtAdded), // eslint-disable-line no-eval
+					strictEnv: false,
+					validate(wrapperFn, {isOutput, outputJs, minify, mangle, inline}) {
+						const fn = wrapperFn();
 						expect(fn).toBeFunction();
 						expect(fn).toHaveLength(len);
 
@@ -10366,9 +10367,7 @@ describe('Functions', () => {
 						}
 
 						if (isOutput && minify && !mangle && inline) {
-							expect(stripLineBreaks(outputJs)).toBe(
-								`(ext=>${fnStrWithExtAdded.replace(/ /g, '')})(100)`
-							);
+							expect(stripLineBreaks(outputJs)).toBe(fnStrWithExtAdded.replace(/ /g, ''));
 						}
 					}
 				};
@@ -10443,20 +10442,14 @@ describe('Functions', () => {
 			].map(fnStr => [fnStr]),
 			'%s',
 			fnStr => ({
-				in({ctx}) {
-					ctx.sideEffect = false;
-					function mutate() { // eslint-disable-line no-unused-vars
-						ctx.sideEffect = true;
-					}
-
-					return eval(`(${fnStr})`); // eslint-disable-line no-eval
+				in() {
+					return (0, eval)(`mutate => ${fnStr}`); // eslint-disable-line no-eval
 				},
-				validate(fn, {isOutput, outputJs, ctx: {sideEffect}}) {
+				validate(wrapperFn) {
+					const mutate = spy();
+					const fn = wrapperFn(mutate);
 					expect(fn).toBeFunction();
-					expect(sideEffect).toBeFalse();
-
-					// Sanity check: `mutate()` was captured in scope
-					if (isOutput) expect(outputJs).toMatch(/\{\s*sideEffect:\s*false\s*\}/);
+					expect(mutate).not.toHaveBeenCalled();
 				}
 			})
 		);
