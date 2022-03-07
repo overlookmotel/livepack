@@ -6644,7 +6644,7 @@ describe('Functions', () => {
 						return fns;
 					};
 				},
-				out: '()=>{const b=[];for(const a of[1,11,21])b.push(()=>a);return b}',
+				out: '()=>{const a=[];for(const b of[1,11,21])a.push(()=>b);return a}',
 				validate(fn) {
 					expect(fn).toBeFunction();
 					const innerFns = fn();
@@ -6665,7 +6665,7 @@ describe('Functions', () => {
 						return fns;
 					};
 				},
-				out: '()=>{const b=[];let c=-9;while((c+=10)<30)b.push((a=>()=>a)(c));return b}',
+				out: '()=>{const a=[];let b=-9;while((b+=10)<30)a.push((c=>()=>c)(b));return a}',
 				validate(fn) {
 					expect(fn).toBeFunction();
 					const innerFns = fn();
@@ -6686,7 +6686,7 @@ describe('Functions', () => {
 						return fns;
 					};
 				},
-				out: '()=>{const b=[];let c=1;do b.push((a=>()=>a)(c));while((c+=10)<30);return b}',
+				out: '()=>{const a=[];let b=1;do a.push((c=>()=>c)(b));while((b+=10)<30);return a}',
 				validate(fn) {
 					expect(fn).toBeFunction();
 					const innerFns = fn();
@@ -6869,7 +6869,7 @@ describe('Functions', () => {
 					out: `{
 						getOuter:(
 							c=>(
-								c=function outer(b=(0,()=>c)){const a=1;return{getOuter:b,getInner:(0,()=>a)}},
+								c=function outer(a=(0,()=>c)){const b=1;return{getOuter:a,getInner:(0,()=>b)}},
 								()=>c
 							)
 						)(),
