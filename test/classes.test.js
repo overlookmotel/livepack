@@ -5098,10 +5098,10 @@ describe('Classes', () => {
 						}
 					};
 				},
-				out: `d=>class extends d{
-					constructor(a){super(a*2)}
-					foo(b){super.foo(b*2)}
-					static bar(c){super.bar(c*2)}
+				out: `a=>class extends a{
+					constructor(b){super(b*2)}
+					foo(c){super.foo(c*2)}
+					static bar(d){super.bar(d*2)}
 				}`,
 				validate(fn) {
 					expect(fn).toBeFunction();
