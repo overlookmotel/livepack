@@ -1584,9 +1584,9 @@ describe('Strict mode', () => {
 				},
 				strictEnv: false,
 				out: `()=>{
-					let a;
-					const{method:b}={
-						[(a=()=>{
+					let innerFn;
+					const{method:a}={
+						[(innerFn=()=>{
 							"use strict";
 							return delete Object.prototype
 						},"method")](){
@@ -1594,7 +1594,7 @@ describe('Strict mode', () => {
 							return delete Object.prototype
 						}
 					};
-					return[b,a]
+					return[a,innerFn]
 				}`,
 				validate(fn) {
 					expect(fn).toBeFunction();
@@ -1658,7 +1658,7 @@ describe('Strict mode', () => {
 						};
 					},
 					strictEnv: false,
-					out: 'function(a=()=>{"use strict"}){return()=>{"use strict";return delete Object.prototype}}',
+					out: 'function(x=()=>{"use strict"}){return()=>{"use strict";return delete Object.prototype}}',
 					validate(fnOuter) {
 						expect(fnOuter).toBeFunction();
 						const fnInner = fnOuter();

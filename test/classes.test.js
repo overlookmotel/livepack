@@ -2031,10 +2031,10 @@ describe('Classes', () => {
 						},
 						c=(c=>c=class Y{
 							constructor(){
-								const a=1;
-								const b=Reflect.construct(Object.getPrototypeOf(c),[a],c);
-								b.y=2;
-								return b
+								const b=1;
+								const a=Reflect.construct(Object.getPrototypeOf(c),[b],c);
+								a.y=2;
+								return a
 							}
 						})();
 					a(c,b);
@@ -2089,14 +2089,14 @@ describe('Classes', () => {
 								}
 							},
 							c=(c=>c=class Y{
-								constructor(a){
-									let b;
-									if(a){
-										b=Reflect.construct(Object.getPrototypeOf(c),[a],c)
+								constructor(b){
+									let a;
+									if(b){
+										a=Reflect.construct(Object.getPrototypeOf(c),[b],c)
 									}else{
-										b=Reflect.construct(Object.getPrototypeOf(c),[1],c)
+										a=Reflect.construct(Object.getPrototypeOf(c),[1],c)
 									}
-									return b
+									return a
 								}
 							})();
 						a(c,b);
@@ -2214,15 +2214,15 @@ describe('Classes', () => {
 								}
 							},
 							c=(c=>c=class Y{
-								constructor(a){
-									let b;
-									if(a){
-										b=Reflect.construct(Object.getPrototypeOf(c),[a],c);
-										return b
+								constructor(b){
+									let a;
+									if(b){
+										a=Reflect.construct(Object.getPrototypeOf(c),[b],c);
+										return a
 									}
-									b=Reflect.construct(Object.getPrototypeOf(c),[1],c);
-									a=2;
-									return b
+									a=Reflect.construct(Object.getPrototypeOf(c),[1],c);
+									b=2;
+									return a
 								}
 							})();
 						a(c,b);
@@ -3867,10 +3867,10 @@ describe('Classes', () => {
 					const a=(c=>[
 							c=class Y{
 								constructor(){
-									const a=4;
-									const b=Reflect.construct(Object.getPrototypeOf(c),[],c);
-									b.z=a;
-									return b
+									const b=4;
+									const a=Reflect.construct(Object.getPrototypeOf(c),[],c);
+									a.z=b;
+									return a
 								}
 							},
 							{
@@ -3971,10 +3971,10 @@ describe('Classes', () => {
 					const a=(c=>[
 							c=class Y{
 								constructor(){
-									const a=4;
-									const b=Reflect.construct(Object.getPrototypeOf(c),[],c);
-									b.z=a;
-									return b
+									const b=4;
+									const a=Reflect.construct(Object.getPrototypeOf(c),[],c);
+									a.z=b;
+									return a
 								}
 							},
 							{
@@ -4076,10 +4076,10 @@ describe('Classes', () => {
 					const a=(c=>[
 							c=class Y{
 								constructor(){
-									const a=4;
-									const b=Reflect.construct(Object.getPrototypeOf(c),[],c);
-									b.z=a;
-									return b
+									const b=4;
+									const a=Reflect.construct(Object.getPrototypeOf(c),[],c);
+									a.z=b;
+									return a
 								}
 							},
 							{
@@ -4571,294 +4571,484 @@ describe('Classes', () => {
 			: ['length', 'name', 'prototype'];
 		const anonClassPropNames = anonClassHasNameProp ? namedClassPropNames : ['length', 'prototype'];
 
-		itSerializes('unnamed class as object property', {
-			in: () => ({a: (0, class {})}),
-			out: '{a:(0,class{})}',
-			validate(obj) {
-				expect(obj).toBeObject();
-				expect(obj).toContainAllKeys(['a']);
-				const Klass = obj.a;
-				expect(Klass).toBeFunction();
-				expect(Klass.name).toBe('');
-				expect(Klass).toHaveOwnPropertyNames(anonClassPropNames);
-				if (anonClassHasNameProp) {
+		describe('class exported directly', () => {
+			itSerializes('unnamed class as object property', {
+				in: () => ({a: (0, class {})}),
+				out: '{a:(0,class{})}',
+				validate(obj) {
+					expect(obj).toBeObject();
+					expect(obj).toContainAllKeys(['a']);
+					const Klass = obj.a;
+					expect(Klass).toBeFunction();
+					expect(Klass.name).toBe('');
+					expect(Klass).toHaveOwnPropertyNames(anonClassPropNames);
+					if (anonClassHasNameProp) {
+						expect(Klass).toHaveDescriptorModifiersFor('name', false, false, true);
+					}
+				}
+			});
+
+			itSerializes('named class as default export', {
+				in() {
+					return class X {};
+				},
+				format: 'esm',
+				out: 'export default class X{}',
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					expect(Klass.name).toBe('X');
+					expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
 					expect(Klass).toHaveDescriptorModifiersFor('name', false, false, true);
 				}
-			}
-		});
+			});
 
-		itSerializes('named class as default export', {
-			in() {
-				return class X {};
-			},
-			format: 'esm',
-			out: 'export default class X{}',
-			validate(Klass) {
-				expect(Klass).toBeFunction();
-				expect(Klass.name).toBe('X');
-				expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
-				expect(Klass).toHaveDescriptorModifiersFor('name', false, false, true);
-			}
-		});
+			itSerializes('unnamed class as default export', {
+				in() {
+					return class {};
+				},
+				format: 'esm',
+				out: 'export default(0,class{})',
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					expect(Klass.name).toBe('');
+					expect(Klass).toHaveOwnPropertyNames(anonClassPropNames);
+					if (anonClassHasNameProp) {
+						expect(Klass).toHaveDescriptorModifiersFor('name', false, false, true);
+					}
+				}
+			});
 
-		itSerializes('unnamed class as default export', {
-			in() {
-				return class {};
-			},
-			format: 'esm',
-			out: 'export default(0,class{})',
-			validate(Klass) {
-				expect(Klass).toBeFunction();
-				expect(Klass.name).toBe('');
-				expect(Klass).toHaveOwnPropertyNames(anonClassPropNames);
-				if (anonClassHasNameProp) {
+			itSerializes('not valid JS identifier', {
+				in: () => ({'0a': class {}}['0a']),
+				out: 'Object.defineProperties(class{},{name:{value:"0a",configurable:true}})',
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					expect(Klass.name).toBe('0a');
+					expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
 					expect(Klass).toHaveDescriptorModifiersFor('name', false, false, true);
 				}
-			}
-		});
+			});
 
-		itSerializes('not valid JS identifier', {
-			in: () => ({'0a': class {}}['0a']),
-			out: 'Object.defineProperties(class{},{name:{value:"0a",configurable:true}})',
-			validate(Klass) {
-				expect(Klass).toBeFunction();
-				expect(Klass.name).toBe('0a');
-				expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
-				expect(Klass).toHaveDescriptorModifiersFor('name', false, false, true);
-			}
-		});
-
-		itSerializes('reserved word', {
-			in: () => ({export: class {}}.export),
-			out: 'Object.defineProperties(class{},{name:{value:"export",configurable:true}})',
-			validate(Klass) {
-				expect(Klass).toBeFunction();
-				expect(Klass.name).toBe('export');
-				expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
-				expect(Klass).toHaveDescriptorModifiersFor('name', false, false, true);
-			}
-		});
-
-		itSerializes('arguments', {
-			in: () => ({arguments: class {}}.arguments),
-			out: 'Object.defineProperties(class{},{name:{value:"arguments",configurable:true}})',
-			validate(Klass) {
-				expect(Klass).toBeFunction();
-				expect(Klass.name).toBe('arguments');
-				expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
-				expect(Klass).toHaveDescriptorModifiersFor('name', false, false, true);
-			}
-		});
-
-		itSerializes('eval', {
-			in: () => ({eval: class {}}.eval),
-			out: 'Object.defineProperties(class{},{name:{value:"eval",configurable:true}})',
-			validate(Klass) {
-				expect(Klass).toBeFunction();
-				expect(Klass.name).toBe('eval');
-				expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
-				expect(Klass).toHaveDescriptorModifiersFor('name', false, false, true);
-			}
-		});
-
-		itSerializes('not valid JS identifier with static method', {
-			in: () => ({'0a': class {static foo() {}}}['0a']),
-			out: `Object.defineProperties(
-				class{},
-				{
-					name:{value:"0a",configurable:true},
-					foo:{value:{foo(){}}.foo,writable:true,configurable:true}
+			itSerializes('reserved word', {
+				in: () => ({export: class {}}.export),
+				out: 'Object.defineProperties(class{},{name:{value:"export",configurable:true}})',
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					expect(Klass.name).toBe('export');
+					expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
+					expect(Klass).toHaveDescriptorModifiersFor('name', false, false, true);
 				}
-			)`,
-			validate(Klass, {isOutput}) {
-				expect(Klass).toBeFunction();
-				expect(Klass.name).toBe('0a');
-				expect(Klass).toHaveOwnPropertyNames(
-					(!classHasNamePropLast && anonClassHasNameProp)
-						? ['length', 'name', 'prototype', 'foo']
-						: isOutput
-							? ['length', 'prototype', 'name', 'foo']
-							: ['length', 'prototype', 'foo', 'name']
-				);
-				expect(Klass).toHaveDescriptorModifiersFor('name', false, false, true);
-			}
-		});
+			});
 
-		itSerializes('name prop deleted', {
-			// NB Livepack cannot detect that `name` was deleted in versions of Node
-			// where anonymous classes have no `name` prop
-			in() {
-				class C {}
-				delete C.name;
-				return C;
-			},
-			out: anonClassHasNameProp
-				? '(()=>{const a=(0,class{});delete a.name;return a})()'
-				: 'class{}',
-			validate(Klass) {
-				expect(Klass).toBeFunction();
-				expect(Klass.name).toBe('');
-				expect(Klass).toHaveOwnPropertyNames(['length', 'prototype']);
-			}
-		});
+			itSerializes('arguments', {
+				in: () => ({arguments: class {}}.arguments),
+				out: 'Object.defineProperties(class{},{name:{value:"arguments",configurable:true}})',
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					expect(Klass.name).toBe('arguments');
+					expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
+					expect(Klass).toHaveDescriptorModifiersFor('name', false, false, true);
+				}
+			});
 
-		itSerializes('name prop deleted and redefined', {
-			// NB Livepack cannot detect that `name` was deleted and redefined in versions of Node
-			// where `name` prop is last
-			in() {
-				class C {}
-				delete C.name;
-				Object.defineProperty(C, 'name', {value: 'D', configurable: true});
-				return C;
-			},
-			out: classHasNamePropLast
-				? 'class D{}'
-				: `(()=>{
+			itSerializes('eval', {
+				in: () => ({eval: class {}}.eval),
+				out: 'Object.defineProperties(class{},{name:{value:"eval",configurable:true}})',
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					expect(Klass.name).toBe('eval');
+					expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
+					expect(Klass).toHaveDescriptorModifiersFor('name', false, false, true);
+				}
+			});
+
+			itSerializes('not valid JS identifier with static method', {
+				in: () => ({'0a': class {static foo() {}}}['0a']),
+				out: `Object.defineProperties(
+					class{},
+					{
+						name:{value:"0a",configurable:true},
+						foo:{value:{foo(){}}.foo,writable:true,configurable:true}
+					}
+				)`,
+				validate(Klass, {isOutput}) {
+					expect(Klass).toBeFunction();
+					expect(Klass.name).toBe('0a');
+					expect(Klass).toHaveOwnPropertyNames(
+						(!classHasNamePropLast && anonClassHasNameProp)
+							? ['length', 'name', 'prototype', 'foo']
+							: isOutput
+								? ['length', 'prototype', 'name', 'foo']
+								: ['length', 'prototype', 'foo', 'name']
+					);
+					expect(Klass).toHaveDescriptorModifiersFor('name', false, false, true);
+				}
+			});
+
+			itSerializes('name prop deleted', {
+				// NB Livepack cannot detect that `name` was deleted in versions of Node
+				// where anonymous classes have no `name` prop
+				in() {
+					class C {}
+					delete C.name;
+					return C;
+				},
+				out: anonClassHasNameProp
+					? '(()=>{const a=(0,class{});delete a.name;return a})()'
+					: 'class{}',
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					expect(Klass.name).toBe('');
+					expect(Klass).toHaveOwnPropertyNames(['length', 'prototype']);
+				}
+			});
+
+			itSerializes('name prop deleted and redefined', {
+				// NB Livepack cannot detect that `name` was deleted and redefined in versions of Node
+				// where `name` prop is last
+				in() {
+					class C {}
+					delete C.name;
+					Object.defineProperty(C, 'name', {value: 'D', configurable: true});
+					return C;
+				},
+				out: classHasNamePropLast
+					? 'class D{}'
+					: `(()=>{
 					const a=class D{};
 					delete a.name;
 					Object.defineProperties(a,{name:{value:"D",configurable:true}});
 					return a
 				})()`,
-			validate(Klass) {
-				expect(Klass).toBeFunction();
-				expect(Klass.name).toBe('D');
-				expect(Klass).toHaveOwnPropertyNames(['length', 'prototype', 'name']);
-				expect(Klass).toHaveDescriptorModifiersFor('name', false, false, true);
-			}
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					expect(Klass.name).toBe('D');
+					expect(Klass).toHaveOwnPropertyNames(['length', 'prototype', 'name']);
+					expect(Klass).toHaveDescriptorModifiersFor('name', false, false, true);
+				}
+			});
+
+			describe('name prop descriptor changed', () => {
+				describe('named class', () => {
+					itSerializes('name prop descriptor `writable` changed', {
+						in() {
+							class C {}
+							Object.defineProperty(C, 'name', {writable: true});
+							return C;
+						},
+						out: 'Object.defineProperties(class C{},{name:{writable:true}})',
+						validate(Klass) {
+							expect(Klass).toBeFunction();
+							expect(Klass.name).toBe('C');
+							expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
+							expect(Klass).toHaveDescriptorModifiersFor('name', true, false, true);
+						}
+					});
+
+					itSerializes('name prop descriptor `enumerable` changed', {
+						in() {
+							class C {}
+							Object.defineProperty(C, 'name', {enumerable: true});
+							return C;
+						},
+						out: 'Object.defineProperties(class C{},{name:{enumerable:true}})',
+						validate(Klass) {
+							expect(Klass).toBeFunction();
+							expect(Klass.name).toBe('C');
+							expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
+							expect(Klass).toHaveDescriptorModifiersFor('name', false, true, true);
+						}
+					});
+
+					itSerializes('name prop descriptor `configurable` changed', {
+						in() {
+							class C {}
+							Object.defineProperty(C, 'name', {configurable: false});
+							return C;
+						},
+						out: 'Object.defineProperties(class C{},{name:{configurable:false}})',
+						validate(Klass) {
+							expect(Klass).toBeFunction();
+							expect(Klass.name).toBe('C');
+							expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
+							expect(Klass).toHaveDescriptorModifiersFor('name', false, false, false);
+						}
+					});
+				});
+
+				describe('unnamed class', () => {
+					itSerializes('name prop descriptor `writable` changed', {
+						in() {
+							const C = (0, class {});
+							Object.defineProperty(C, 'name', {value: '', writable: true, configurable: true});
+							return C;
+						},
+						out: 'Object.defineProperties(class{},{name:{value:"",writable:true,configurable:true}})',
+						validate(Klass) {
+							expect(Klass).toBeFunction();
+							expect(Klass.name).toBe('');
+							expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
+							expect(Klass).toHaveDescriptorModifiersFor('name', true, false, true);
+						}
+					});
+
+					itSerializes('name prop descriptor `enumerable` changed', {
+						in() {
+							const C = (0, class {});
+							Object.defineProperty(C, 'name', {value: '', enumerable: true, configurable: true});
+							return C;
+						},
+						out: 'Object.defineProperties(class{},{name:{value:"",enumerable:true,configurable:true}})',
+						validate(Klass) {
+							expect(Klass).toBeFunction();
+							expect(Klass.name).toBe('');
+							expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
+							expect(Klass).toHaveDescriptorModifiersFor('name', false, true, true);
+						}
+					});
+
+					itSerializes('name prop descriptor `configurable` changed', {
+						in() {
+							const C = (0, class {});
+							Object.defineProperty(C, 'name', {value: '', configurable: false});
+							return C;
+						},
+						out: 'Object.defineProperties(class{},{name:{value:"",configurable:false}})',
+						validate(Klass) {
+							expect(Klass).toBeFunction();
+							expect(Klass.name).toBe('');
+							expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
+							expect(Klass).toHaveDescriptorModifiersFor('name', false, false, false);
+						}
+					});
+
+					itSerializes('name prop as getter+setter', {
+						in() {
+							const C = (0, class {});
+							Object.defineProperty(C, 'name', {
+								get() {
+									return this._name || 'C';
+								},
+								set(newName) {
+									this._name = newName;
+								},
+								configurable: true
+							});
+							return C;
+						},
+						out: `Object.defineProperties(
+							class{},
+							{
+								name:{
+									get(){return this._name||"C"},
+									set(a){this._name=a},
+									configurable:true
+								}
+							}
+						)`,
+						validate(Klass) {
+							expect(Klass).toBeFunction();
+							expect(Klass.name).toBe('C');
+							expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
+							const descriptor = Object.getOwnPropertyDescriptor(Klass, 'name');
+							expect(descriptor).toHaveOwnPropertyNames(['get', 'set', 'enumerable', 'configurable']);
+							expect(descriptor.get).toBeFunction();
+							expect(descriptor.set).toBeFunction();
+							expect(Klass).toHaveDescriptorModifiersFor('name', undefined, false, true);
+							Klass.name = 'D';
+							expect(Klass).toHaveOwnPropertyNames([...namedClassPropNames, '_name']);
+							expect(Klass._name).toBe('D');
+							expect(Klass.name).toBe('D');
+						}
+					});
+				});
+			});
 		});
 
-		describe('name prop descriptor changed', () => {
-			describe('named class', () => {
-				itSerializes('name prop descriptor `writable` changed', {
+		describe('class nested in exported function and name gained implicitly from', () => {
+			function validate(outerFn) {
+				expect(outerFn).toBeFunction();
+				const Klass = outerFn();
+				expect(Klass).toBeFunction();
+				expect(Klass.name).toBe('x');
+			}
+
+			itSerializes('variable declaration', {
+				in() {
+					return () => {
+						const x = class {};
+						return x;
+					};
+				},
+				out: '()=>{const x=class{};return x}',
+				validate
+			});
+
+			describe('assignment', () => {
+				itSerializes('to local var', {
 					in() {
-						class C {}
-						Object.defineProperty(C, 'name', {writable: true});
-						return C;
+						return () => {
+							let x;
+							x = class {}; // eslint-disable-line prefer-const
+							return x;
+						};
 					},
-					out: 'Object.defineProperties(class C{},{name:{writable:true}})',
-					validate(Klass) {
-						expect(Klass).toBeFunction();
-						expect(Klass.name).toBe('C');
-						expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
-						expect(Klass).toHaveDescriptorModifiersFor('name', true, false, true);
-					}
+					out: '()=>{let x;x=class{};return x}',
+					validate
 				});
 
-				itSerializes('name prop descriptor `enumerable` changed', {
+				itSerializes('to local function param', {
 					in() {
-						class C {}
-						Object.defineProperty(C, 'name', {enumerable: true});
-						return C;
+						return x => x = class {}; // eslint-disable-line no-return-assign, no-unused-vars
 					},
-					out: 'Object.defineProperties(class C{},{name:{enumerable:true}})',
-					validate(Klass) {
-						expect(Klass).toBeFunction();
-						expect(Klass.name).toBe('C');
-						expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
-						expect(Klass).toHaveDescriptorModifiersFor('name', false, true, true);
-					}
+					out: 'x=>x=class{}',
+					validate
 				});
 
-				itSerializes('name prop descriptor `configurable` changed', {
+				itSerializes('to var in block above within exported function', {
 					in() {
-						class C {}
-						Object.defineProperty(C, 'name', {configurable: false});
-						return C;
+						return () => {
+							let x;
+							const get = () => {
+								if (true) { // eslint-disable-line no-constant-condition
+									x = class {};
+								}
+							};
+							get();
+							return x;
+						};
 					},
-					out: 'Object.defineProperties(class C{},{name:{configurable:false}})',
-					validate(Klass) {
-						expect(Klass).toBeFunction();
-						expect(Klass.name).toBe('C');
-						expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
-						expect(Klass).toHaveDescriptorModifiersFor('name', false, false, false);
-					}
+					out: '()=>{let x;const get=()=>{if(true){x=class{}}};get();return x}',
+					validate
+				});
+
+				itSerializes('to function param in block above within exported function', {
+					in() {
+						return x => (() => {
+							if (true) { // eslint-disable-line no-constant-condition
+								x = class {};
+							}
+							return x;
+						})();
+					},
+					out: 'x=>(()=>{if(true){x=class{}}return x})()',
+					validate
+				});
+
+				itSerializes('to var in block above external to exported function', {
+					in() {
+						let x;
+						return () => {
+							const get = () => {
+								if (true) { // eslint-disable-line no-constant-condition
+									x = class {};
+								}
+							};
+							get();
+							return x;
+						};
+					},
+					out: '(x=>()=>{const get=()=>{if(true){x=class{}}};get();return x})()',
+					validate
+				});
+
+				itSerializes('to function param in block above external to exported function', {
+					in() {
+						function get(x) {
+							return () => {
+								if (true) { // eslint-disable-line no-constant-condition
+									x = class {};
+								}
+								return x;
+							};
+						}
+						return get();
+					},
+					out: '(x=>()=>{if(true){x=class{}}return a})()',
+					validate
 				});
 			});
 
-			describe('unnamed class', () => {
-				itSerializes('name prop descriptor `writable` changed', {
+			describe('default assignment', () => {
+				itSerializes('in var declaration', {
 					in() {
-						const C = (0, class {});
-						Object.defineProperty(C, 'name', {value: '', writable: true, configurable: true});
-						return C;
+						return () => {
+							const [x = class {}] = [];
+							return x;
+						};
 					},
-					out: 'Object.defineProperties(class{},{name:{value:"",writable:true,configurable:true}})',
-					validate(Klass) {
-						expect(Klass).toBeFunction();
-						expect(Klass.name).toBe('');
-						expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
-						expect(Klass).toHaveDescriptorModifiersFor('name', true, false, true);
-					}
+					out: '()=>{const[x=class{}]=[];return x}',
+					validate
 				});
 
-				itSerializes('name prop descriptor `enumerable` changed', {
+				itSerializes('to local var', {
 					in() {
-						const C = (0, class {});
-						Object.defineProperty(C, 'name', {value: '', enumerable: true, configurable: true});
-						return C;
+						return () => {
+							let x;
+							[x = class {}] = []; // eslint-disable-line prefer-const
+							return x;
+						};
 					},
-					out: 'Object.defineProperties(class{},{name:{value:"",enumerable:true,configurable:true}})',
-					validate(Klass) {
-						expect(Klass).toBeFunction();
-						expect(Klass.name).toBe('');
-						expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
-						expect(Klass).toHaveDescriptorModifiersFor('name', false, true, true);
-					}
+					out: '()=>{let x;[x=class{}]=[];return x}',
+					validate
 				});
 
-				itSerializes('name prop descriptor `configurable` changed', {
+				itSerializes('to var in block above within exported function', {
 					in() {
-						const C = (0, class {});
-						Object.defineProperty(C, 'name', {value: '', configurable: false});
-						return C;
+						return () => {
+							let x;
+							const get = () => {
+								if (true) { // eslint-disable-line no-constant-condition
+									[x = class {}] = [];
+								}
+							};
+							get();
+							return x;
+						};
 					},
-					out: 'Object.defineProperties(class{},{name:{value:"",configurable:false}})',
-					validate(Klass) {
-						expect(Klass).toBeFunction();
-						expect(Klass.name).toBe('');
-						expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
-						expect(Klass).toHaveDescriptorModifiersFor('name', false, false, false);
-					}
+					out: '()=>{let x;const get=()=>{if(true){[x=class{}]=[]}};get();return x}',
+					validate
 				});
 
-				itSerializes('name prop as getter+setter', {
+				itSerializes('to function param within exported function', {
 					in() {
-						const C = (0, class {});
-						Object.defineProperty(C, 'name', {
-							get() {
-								return this._name || 'C';
-							},
-							set(newName) {
-								this._name = newName;
-							},
-							configurable: true
-						});
-						return C;
+						return (x = class {}) => x;
 					},
-					out: `Object.defineProperties(
-						class{},
-						{
-							name:{
-								get(){return this._name||"C"},
-								set(a){this._name=a},
-								configurable:true
-							}
+					out: '(x=class{})=>x',
+					validate
+				});
+
+				itSerializes('to var in block above external to exported function', {
+					in() {
+						let x;
+						return () => {
+							const get = () => {
+								if (true) { // eslint-disable-line no-constant-condition
+									[x = class {}] = [];
+								}
+							};
+							get();
+							return x;
+						};
+					},
+					out: '(x=>()=>{const get=()=>{if(true){[x=class{}]=[]}};get();return x})()',
+					validate
+				});
+
+				itSerializes('to function param in block above external to exported function', {
+					in() {
+						function get(x) {
+							return () => {
+								if (true) { // eslint-disable-line no-constant-condition
+									[x = class {}] = [];
+								}
+								return x;
+							};
 						}
-					)`,
-					validate(Klass) {
-						expect(Klass).toBeFunction();
-						expect(Klass.name).toBe('C');
-						expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
-						const descriptor = Object.getOwnPropertyDescriptor(Klass, 'name');
-						expect(descriptor).toHaveOwnPropertyNames(['get', 'set', 'enumerable', 'configurable']);
-						expect(descriptor.get).toBeFunction();
-						expect(descriptor.set).toBeFunction();
-						expect(Klass).toHaveDescriptorModifiersFor('name', undefined, false, true);
-						Klass.name = 'D';
-						expect(Klass).toHaveOwnPropertyNames([...namedClassPropNames, '_name']);
-						expect(Klass._name).toBe('D');
-						expect(Klass.name).toBe('D');
-					}
+						return get();
+					},
+					out: '(x=>()=>{if(true){[x=class{}]=[]}return x})()',
+					validate
 				});
 			});
 		});

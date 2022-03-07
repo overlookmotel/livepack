@@ -5574,7 +5574,7 @@ describe('Functions', () => {
 				in() {
 					return (x = () => 1, y = () => 2) => [x, y];
 				},
-				out: '(a=()=>1,b=()=>2)=>[a,b]',
+				out: '(x=()=>1,y=()=>2)=>[x,y]',
 				validate(fn) {
 					expect(fn).toBeFunction();
 					const param1 = {};
@@ -5593,7 +5593,7 @@ describe('Functions', () => {
 						return [x, y];
 					};
 				},
-				out: 'function(a=()=>1,b=()=>2){return[a,b]}',
+				out: 'function(x=()=>1,y=()=>2){return[x,y]}',
 				validate(fn) {
 					expect(fn).toBeFunction();
 					const param1 = {};
@@ -7841,173 +7841,396 @@ describe('Functions', () => {
 	});
 
 	describe('maintain name where', () => {
-		itSerializes('unnamed function as object property', {
-			in: () => ({a: (0, function() {})}),
-			out: '{a:(0,function(){})}',
-			validate(obj) {
-				expect(obj).toBeObject();
-				expect(obj).toContainAllKeys(['a']);
-				const fn = obj.a;
-				expect(fn).toBeFunction();
-				expect(fn.name).toBe('');
-			}
-		});
+		describe('function exported directly', () => {
+			itSerializes('unnamed function as object property', {
+				in: () => ({a: (0, function() {})}),
+				out: '{a:(0,function(){})}',
+				validate(obj) {
+					expect(obj).toBeObject();
+					expect(obj).toContainAllKeys(['a']);
+					const fn = obj.a;
+					expect(fn).toBeFunction();
+					expect(fn.name).toBe('');
+				}
+			});
 
-		itSerializes('named function as default export', {
-			in() {
-				return function f() {};
-			},
-			format: 'esm',
-			out: 'export default function f(){}',
-			validate(fn) {
-				expect(fn).toBeFunction();
-				expect(fn.name).toBe('f');
-			}
-		});
-
-		itSerializes('unnamed function as default export', {
-			in() {
-				return function() {};
-			},
-			format: 'esm',
-			out: 'export default(0,function(){})',
-			validate(fn) {
-				expect(fn).toBeFunction();
-				expect(fn.name).toBe('');
-			}
-		});
-
-		itSerializes('not valid JS identifier', {
-			in: () => ({'0a': function() {}}['0a']),
-			out: 'Object.defineProperties(function(){},{name:{value:"0a"}})',
-			validate(fn) {
-				expect(
-					Object.getOwnPropertyNames(fn).filter(key => key !== 'arguments' && key !== 'caller')
-				).toEqual(['length', 'name', 'prototype']);
-				expect(fn.name).toBe('0a');
-				expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
-			}
-		});
-
-		itSerializes('reserved word', {
-			in: () => ({export: function() {}}.export), // eslint-disable-line object-shorthand
-			out: 'Object.defineProperties(function(){},{name:{value:"export"}})',
-			validate(fn) {
-				expect(
-					Object.getOwnPropertyNames(fn).filter(key => key !== 'arguments' && key !== 'caller')
-				).toEqual(['length', 'name', 'prototype']);
-				expect(fn.name).toBe('export');
-				expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
-			}
-		});
-
-		itSerializes('arguments', {
-			in: () => ({arguments: function() {}}.arguments), // eslint-disable-line object-shorthand
-			out: 'Object.defineProperties(function(){},{name:{value:"arguments"}})',
-			validate(fn) {
-				expect(
-					Object.getOwnPropertyNames(fn).filter(key => key !== 'arguments' && key !== 'caller')
-				).toEqual(['length', 'name', 'prototype']);
-				expect(fn.name).toBe('arguments');
-				expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
-			}
-		});
-
-		itSerializes('eval', {
-			in: () => ({eval: function() {}}.eval), // eslint-disable-line object-shorthand
-			out: 'Object.defineProperties(function(){},{name:{value:"eval"}})',
-			validate(fn) {
-				expect(
-					Object.getOwnPropertyNames(fn).filter(key => key !== 'arguments' && key !== 'caller')
-				).toEqual(['length', 'name', 'prototype']);
-				expect(fn.name).toBe('eval');
-				expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
-			}
-		});
-
-		describe('descriptor altered', () => {
-			itSerializes('value altered', {
+			itSerializes('named function as default export', {
 				in() {
-					function fn() {}
-					Object.defineProperty(fn, 'name', {value: 'foo'});
-					return fn;
+					return function f() {};
 				},
-				out: 'function foo(){}',
+				format: 'esm',
+				out: 'export default function f(){}',
 				validate(fn) {
-					expect(fn.name).toBe('foo');
+					expect(fn).toBeFunction();
+					expect(fn.name).toBe('f');
+				}
+			});
+
+			itSerializes('unnamed function as default export', {
+				in() {
+					return function() {};
+				},
+				format: 'esm',
+				out: 'export default(0,function(){})',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					expect(fn.name).toBe('');
+				}
+			});
+
+			itSerializes('not valid JS identifier', {
+				in: () => ({'0a': function() {}}['0a']),
+				out: 'Object.defineProperties(function(){},{name:{value:"0a"}})',
+				validate(fn) {
+					expect(
+						Object.getOwnPropertyNames(fn).filter(key => key !== 'arguments' && key !== 'caller')
+					).toEqual(['length', 'name', 'prototype']);
+					expect(fn.name).toBe('0a');
 					expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
 				}
 			});
 
-			itSerializes('getter', {
-				in() {
-					function fn() {}
-					// eslint-disable-next-line object-shorthand
-					Object.defineProperty(fn, 'name', {get: function() { return 'foo'; }});
-					return fn;
-				},
-				out: 'Object.defineProperties(function(){},{name:{get:function get(){return"foo"}}})',
+			itSerializes('reserved word', {
+				in: () => ({export: function() {}}.export), // eslint-disable-line object-shorthand
+				out: 'Object.defineProperties(function(){},{name:{value:"export"}})',
 				validate(fn) {
-					expect(fn.name).toBe('foo');
-					expect(Object.getOwnPropertyDescriptor(fn, 'name')).toEqual({
-						get: expect.any(Function), set: undefined, enumerable: false, configurable: true
-					});
+					expect(
+						Object.getOwnPropertyNames(fn).filter(key => key !== 'arguments' && key !== 'caller')
+					).toEqual(['length', 'name', 'prototype']);
+					expect(fn.name).toBe('export');
+					expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
 				}
 			});
 
-			describe('properties altered', () => {
-				itSerializes.each( // eslint-disable-next-line no-bitwise
-					[0, 1, 2, 3, 4, 5, 6, 7].map(n => [!(n & 4), !(n & 2), !(n & 1)]),
-					'{writable: %p, enumerable: %p, configurable: %p}',
-					(writable, enumerable, configurable) => ({
-						in() {
-							function fn() {}
-							Object.defineProperty(fn, 'name', {value: 'fn', writable, enumerable, configurable});
-							return fn;
-						},
-						validate(fn) {
-							expect(fn).toBeFunction();
-							expect(fn.name).toBe('fn');
-							expect(fn).toHaveDescriptorModifiersFor('name', writable, enumerable, configurable);
-						}
-					})
-				);
+			itSerializes('arguments', {
+				in: () => ({arguments: function() {}}.arguments), // eslint-disable-line object-shorthand
+				out: 'Object.defineProperties(function(){},{name:{value:"arguments"}})',
+				validate(fn) {
+					expect(
+						Object.getOwnPropertyNames(fn).filter(key => key !== 'arguments' && key !== 'caller')
+					).toEqual(['length', 'name', 'prototype']);
+					expect(fn.name).toBe('arguments');
+					expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
+				}
+			});
+
+			itSerializes('eval', {
+				in: () => ({eval: function() {}}.eval), // eslint-disable-line object-shorthand
+				out: 'Object.defineProperties(function(){},{name:{value:"eval"}})',
+				validate(fn) {
+					expect(
+						Object.getOwnPropertyNames(fn).filter(key => key !== 'arguments' && key !== 'caller')
+					).toEqual(['length', 'name', 'prototype']);
+					expect(fn.name).toBe('eval');
+					expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
+				}
+			});
+
+			describe('descriptor altered', () => {
+				itSerializes('value altered', {
+					in() {
+						function fn() {}
+						Object.defineProperty(fn, 'name', {value: 'foo'});
+						return fn;
+					},
+					out: 'function foo(){}',
+					validate(fn) {
+						expect(fn.name).toBe('foo');
+						expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
+					}
+				});
+
+				itSerializes('getter', {
+					in() {
+						function fn() {}
+						// eslint-disable-next-line object-shorthand
+						Object.defineProperty(fn, 'name', {get: function() { return 'foo'; }});
+						return fn;
+					},
+					out: 'Object.defineProperties(function(){},{name:{get:function get(){return"foo"}}})',
+					validate(fn) {
+						expect(fn.name).toBe('foo');
+						expect(Object.getOwnPropertyDescriptor(fn, 'name')).toEqual({
+							get: expect.any(Function), set: undefined, enumerable: false, configurable: true
+						});
+					}
+				});
+
+				describe('properties altered', () => {
+					itSerializes.each( // eslint-disable-next-line no-bitwise
+						[0, 1, 2, 3, 4, 5, 6, 7].map(n => [!(n & 4), !(n & 2), !(n & 1)]),
+						'{writable: %p, enumerable: %p, configurable: %p}',
+						(writable, enumerable, configurable) => ({
+							in() {
+								function fn() {}
+								Object.defineProperty(fn, 'name', {value: 'fn', writable, enumerable, configurable});
+								return fn;
+							},
+							validate(fn) {
+								expect(fn).toBeFunction();
+								expect(fn.name).toBe('fn');
+								expect(fn).toHaveDescriptorModifiersFor('name', writable, enumerable, configurable);
+							}
+						})
+					);
+				});
+			});
+
+			itSerializes('deleted', {
+				in() {
+					function fn() {}
+					delete fn.name;
+					return fn;
+				},
+				out: '(()=>{const a=(0,function(){});delete a.name;return a})()',
+				validate(fn) {
+					expect(fn.name).toBe('');
+					expect(fn).not.toHaveOwnProperty('name');
+				}
+			});
+
+			itSerializes('deleted and redefined (i.e. property order changed)', {
+				in() {
+					function fn() {}
+					delete fn.name;
+					Object.defineProperty(fn, 'name', {value: 'fn', configurable: true});
+					return fn;
+				},
+				out: `(()=>{
+					const a=function fn(){};
+					delete a.name;
+					Object.defineProperties(a,{name:{value:"fn",configurable:true}});
+					return a
+				})()`,
+				validate(fn) {
+					expect(
+						Object.getOwnPropertyNames(fn).filter(key => key !== 'arguments' && key !== 'caller')
+					).toEqual(['length', 'prototype', 'name']);
+					expect(fn.name).toBe('fn');
+					expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
+				}
 			});
 		});
 
-		itSerializes('deleted', {
-			in() {
-				function fn() {}
-				delete fn.name;
-				return fn;
-			},
-			out: '(()=>{const a=(0,function(){});delete a.name;return a})()',
-			validate(fn) {
-				expect(fn.name).toBe('');
-				expect(fn).not.toHaveOwnProperty('name');
+		describe('function nested in exported function and name gained implicitly from', () => {
+			function validate(outerFn) {
+				expect(outerFn).toBeFunction();
+				const fn = outerFn();
+				expect(fn).toBeFunction();
+				expect(fn.name).toBe('x');
+				expect(fn()).toBe(fn);
 			}
-		});
 
-		itSerializes('deleted and redefined (i.e. property order changed)', {
-			in() {
-				function fn() {}
-				delete fn.name;
-				Object.defineProperty(fn, 'name', {value: 'fn', configurable: true});
-				return fn;
-			},
-			out: `(()=>{
-				const a=function fn(){};
-				delete a.name;
-				Object.defineProperties(a,{name:{value:"fn",configurable:true}});
-				return a
-			})()`,
-			validate(fn) {
-				expect(
-					Object.getOwnPropertyNames(fn).filter(key => key !== 'arguments' && key !== 'caller')
-				).toEqual(['length', 'prototype', 'name']);
-				expect(fn.name).toBe('fn');
-				expect(fn).toHaveDescriptorModifiersFor('name', false, false, true);
-			}
+			describe('variable declaration', () => {
+				itSerializes('arrow function', {
+					in() {
+						return () => {
+							const x = () => x;
+							return x;
+						};
+					},
+					out: '()=>{const x=()=>x;return x}',
+					validate
+				});
+
+				itSerializes('function expression', {
+					in() {
+						return () => {
+							const x = function() {
+								return x;
+							};
+							return x;
+						};
+					},
+					out: '()=>{const x=function(){return x};return x}',
+					validate
+				});
+			});
+
+			describe('assignment', () => {
+				itSerializes('to local var', {
+					in() {
+						return () => {
+							let x;
+							x = () => x; // eslint-disable-line prefer-const
+							return x;
+						};
+					},
+					out: '()=>{let x;x=()=>x;return x}',
+					validate
+				});
+
+				itSerializes('to local function param', {
+					in() {
+						return x => x = () => x; // eslint-disable-line no-return-assign
+					},
+					out: 'x=>x=()=>x',
+					validate
+				});
+
+				itSerializes('to var in block above within exported function', {
+					in() {
+						return () => {
+							let x;
+							const get = () => {
+								if (true) { // eslint-disable-line no-constant-condition
+									x = () => x;
+								}
+							};
+							get();
+							return x;
+						};
+					},
+					out: '()=>{let x;const get=()=>{if(true){x=()=>x}};get();return x}',
+					validate
+				});
+
+				itSerializes('to function param in block above within exported function', {
+					in() {
+						return x => (() => {
+							if (true) { // eslint-disable-line no-constant-condition
+								x = () => x;
+							}
+							return x;
+						})();
+					},
+					out: 'x=>(()=>{if(true){x=()=>x}return x})()',
+					validate
+				});
+
+				itSerializes('to var in block above external to exported function', {
+					in() {
+						let x;
+						return () => {
+							const get = () => {
+								if (true) { // eslint-disable-line no-constant-condition
+									x = () => x;
+								}
+							};
+							get();
+							return x;
+						};
+					},
+					out: '(x=>()=>{const get=()=>{if(true){x=()=>x}};get();return x})()',
+					validate
+				});
+
+				itSerializes('to function param in block above external to exported function', {
+					in() {
+						function get(x) {
+							return () => {
+								if (true) { // eslint-disable-line no-constant-condition
+									x = () => x;
+								}
+								return x;
+							};
+						}
+						return get();
+					},
+					out: '(x=>()=>{if(true){x=()=>x}return a})()',
+					validate
+				});
+			});
+
+			describe('default assignment', () => {
+				itSerializes('in var declaration', {
+					in() {
+						return () => {
+							const [x = () => x] = [];
+							return x;
+						};
+					},
+					out: '()=>{const[x=()=>x]=[];return x}',
+					validate
+				});
+
+				itSerializes('to local var', {
+					in() {
+						return () => {
+							let x;
+							[x = () => x] = []; // eslint-disable-line prefer-const
+							return x;
+						};
+					},
+					out: '()=>{let x;[x=()=>x]=[];return x}',
+					validate
+				});
+
+				itSerializes('to var in block above within exported function', {
+					in() {
+						return () => {
+							let x;
+							const get = () => {
+								if (true) { // eslint-disable-line no-constant-condition
+									[x = () => x] = [];
+								}
+							};
+							get();
+							return x;
+						};
+					},
+					out: '()=>{let x;const get=()=>{if(true){[x=()=>x]=[]}};get();return x}',
+					validate
+				});
+
+				itSerializes('to function param within exported function', {
+					in() {
+						return (x = () => x) => x;
+					},
+					out: '(x=()=>x)=>x',
+					validate
+				});
+
+				itSerializes('to var in block above external to exported function', {
+					in() {
+						let x;
+						return () => {
+							const get = () => {
+								if (true) { // eslint-disable-line no-constant-condition
+									[x = () => x] = [];
+								}
+							};
+							get();
+							return x;
+						};
+					},
+					out: '(x=>()=>{const get=()=>{if(true){[x=()=>x]=[]}};get();return x})()',
+					validate
+				});
+
+				itSerializes('to function param in block above external to exported function', {
+					in() {
+						function get(x) {
+							return () => {
+								if (true) { // eslint-disable-line no-constant-condition
+									[x = () => x] = [];
+								}
+								return x;
+							};
+						}
+						return get();
+					},
+					out: '(x=>()=>{if(true){[x=()=>x]=[]}return x})()',
+					validate
+				});
+
+				// TODO More tests like this
+				itSerializes(
+					'assignment to var with function in another unserialized function does not freeze var name',
+					{
+						in() {
+							let x = 1;
+							const setX = () => x = () => {}; // eslint-disable-line no-return-assign, no-unused-vars
+							return () => x;
+						},
+						out: '(a=>()=>a)(1)',
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn()).toBe(1);
+						}
+					}
+				);
+			});
 		});
 	});
 

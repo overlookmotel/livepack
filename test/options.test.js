@@ -217,7 +217,7 @@ describe('Options', () => {
 						f();
 					});
 					expect(serialize(fn, {exec: true, format: 'cjs', minify: true})).toBe(
-						'const a=()=>{};a()'
+						'const f=()=>{};f()'
 					);
 				});
 
