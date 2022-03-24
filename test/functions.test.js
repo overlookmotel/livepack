@@ -7772,7 +7772,8 @@ describe('Functions', () => {
 			in() {
 				const x = {}; // eslint-disable-line no-unused-vars
 				return () => {
-					x: for (let i = 0; i < 3; i++) { // eslint-disable-line no-labels, no-label-var
+					// eslint-disable-next-line no-labels, no-label-var, no-unreachable-loop
+					x: for (let i = 0; i < 3; i++) {
 						break x; // eslint-disable-line no-labels, no-extra-label
 					}
 				};
@@ -10392,17 +10393,18 @@ describe('Functions', () => {
 		);
 	});
 
-	// eslint-disable-next-line jest/lowercase-name
+	// eslint-disable-next-line jest/prefer-lowercase-title
 	describe('Babel plugin preserves temporal dead zone violations in function params in', () => {
 		describe('param default', () => {
 			it('no external var', () => {
-				const fn = (x = y, y) => [x, y]; // eslint-disable-line no-use-before-define
+				const fn = (x = y, y) => [x, y]; // eslint-disable-line no-use-before-define, default-param-last
 				expect(fn).toThrowWithMessage(ReferenceError, "Cannot access 'y' before initialization");
 			});
 
 			it('with external var', () => {
 				const y = 1; // eslint-disable-line no-unused-vars
-				const fn = (x = y, y) => [x, y]; // eslint-disable-line no-use-before-define, no-shadow
+				// eslint-disable-next-line no-use-before-define, no-shadow, default-param-last
+				const fn = (x = y, y) => [x, y];
 				expect(fn).toThrowWithMessage(ReferenceError, "Cannot access 'y' before initialization");
 			});
 		});

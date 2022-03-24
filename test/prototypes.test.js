@@ -1600,7 +1600,7 @@ describe('Prototypes', () => {
 				});
 			});
 
-			describe('Array', () => { // eslint-disable-line jest/lowercase-name
+			describe('Array', () => { // eslint-disable-line jest/prefer-lowercase-title
 				describe('and', () => {
 					itSerializes('function has no other props', {
 						in() {

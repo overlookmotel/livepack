@@ -271,7 +271,7 @@ function itSerializes(name, options, defaultOptions, describe, runExpectation) {
 
 	// Run test function with all options
 	if (describe) {
-		describe(name, defineTests); // eslint-disable-line jest/valid-describe, jest/valid-title
+		describe(name, defineTests); // eslint-disable-line jest/valid-describe-callback, jest/valid-title
 	} else {
 		defineTests();
 	}

@@ -57,7 +57,7 @@ describe('numbers', () => {
 		itSerializesEqual('-123.0001', {in: () => -123.0001, out: '-123.0001'});
 	});
 
-	describe('Infinity', () => { // eslint-disable-line jest/lowercase-name
+	describe('Infinity', () => { // eslint-disable-line jest/prefer-lowercase-title
 		itSerializesEqual('serializes correctly', {in: () => 1 / 0, out: 'Infinity'});
 
 		itSerializesEqual('treated as a global var', {
@@ -75,7 +75,7 @@ describe('numbers', () => {
 		});
 	});
 
-	describe('NaN', () => { // eslint-disable-line jest/lowercase-name
+	describe('NaN', () => { // eslint-disable-line jest/prefer-lowercase-title
 		itSerializesEqual('serializes correctly', {in: () => undefined * 1, out: 'NaN'});
 
 		itSerializesEqual('treated as a global var', {

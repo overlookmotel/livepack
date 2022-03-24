@@ -1331,12 +1331,14 @@ describe('Strict mode', () => {
 							return [
 								class X {
 									constructor() {
-										return x, delete Object.prototype; // eslint-disable-line no-sequences
+										// eslint-disable-next-line no-sequences, no-constructor-return
+										return x, delete Object.prototype;
 									}
 								},
 								class Y {
 									constructor() {
-										return x, delete Object.prototype; // eslint-disable-line no-sequences
+										// eslint-disable-next-line no-sequences, no-constructor-return
+										return x, delete Object.prototype;
 									}
 								}
 							];
@@ -1365,7 +1367,8 @@ describe('Strict mode', () => {
 							return [
 								class {
 									constructor() {
-										return x, delete Object.prototype; // eslint-disable-line no-sequences
+										// eslint-disable-next-line no-sequences, no-constructor-return
+										return x, delete Object.prototype;
 									}
 								},
 								() => {
@@ -1391,7 +1394,7 @@ describe('Strict mode', () => {
 					itSerializes('if function sloppy, wraps scope function in sloppy eval', {
 						in() {
 							const x = 1;
-							/* eslint-disable no-sequences */
+							/* eslint-disable no-sequences, no-constructor-return */
 							return [
 								class {
 									constructor() {
@@ -1400,7 +1403,7 @@ describe('Strict mode', () => {
 								},
 								() => (x, delete Object.prototype)
 							];
-							/* eslint-enable no-sequences */
+							/* eslint-enable no-sequences, no-constructor-return */
 						},
 						strictEnv: true,
 						out: `(()=>{
@@ -1421,7 +1424,8 @@ describe('Strict mode', () => {
 							return [
 								class {
 									constructor() {
-										return x, delete Object.prototype; // eslint-disable-line no-sequences
+										// eslint-disable-next-line no-sequences, no-constructor-return
+										return x, delete Object.prototype;
 									}
 								},
 								() => {
@@ -1453,7 +1457,8 @@ describe('Strict mode', () => {
 							return [
 								class {
 									constructor() {
-										return x, delete Object.prototype; // eslint-disable-line no-sequences
+										// eslint-disable-next-line no-sequences, no-constructor-return
+										return x, delete Object.prototype;
 									}
 								},
 								() => (x, delete Object.prototype) // eslint-disable-line no-sequences
@@ -1797,7 +1802,7 @@ describe('Strict mode', () => {
 		});
 	});
 
-	describe('CommonJS format', () => { // eslint-disable-line jest/lowercase-name
+	describe('CommonJS format', () => { // eslint-disable-line jest/prefer-lowercase-title
 		itSerializes('strict function adds top-level directive', {
 			in() {
 				return () => {
@@ -1858,7 +1863,7 @@ describe('Strict mode', () => {
 		});
 	});
 
-	describe('ESM format', () => { // eslint-disable-line jest/lowercase-name
+	describe('ESM format', () => { // eslint-disable-line jest/prefer-lowercase-title
 		itSerializes('strict function removes directive', {
 			in() {
 				return () => {

@@ -1810,7 +1810,7 @@ describe('Classes', () => {
 					}
 					return class Y extends X {
 						constructor() {
-							return super(); // eslint-disable-line constructor-super
+							return super(); // eslint-disable-line constructor-super, no-constructor-return
 						}
 					};
 				},
@@ -2141,7 +2141,7 @@ describe('Classes', () => {
 						return class Y extends X {
 							constructor() {
 								super(1);
-								return this;
+								return this; // eslint-disable-line no-constructor-return
 								super(); // eslint-disable-line no-unreachable
 								super();
 							}
@@ -2199,7 +2199,7 @@ describe('Classes', () => {
 							constructor(x) {
 								if (x) {
 									super(x);
-									return this;
+									return this; // eslint-disable-line no-constructor-return
 								}
 								super(1);
 								x = 2;
@@ -3337,7 +3337,7 @@ describe('Classes', () => {
 				let Klass;
 				const ext = 1;
 				class X { // eslint-disable-line no-unused-vars
-					[
+					[ // eslint-disable-line class-methods-use-this, computed-property-spacing
 					Klass = class extends Object {
 						constructor() {
 							super();
@@ -3349,7 +3349,7 @@ describe('Classes', () => {
 							return [ext, super.toString];
 						}
 					}
-					]() { // eslint-disable-line class-methods-use-this
+					]() {
 						const ext = 2; // eslint-disable-line no-unused-vars, no-shadow
 					}
 				}
