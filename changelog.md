@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.7.2
+
+Bug fixes:
+
+* Preserve comments attached to removed 'use strict' directives
+
+Dependencies:
+
+* Update dependencies
+
+Dev:
+
+* Fix lint errors
+* Update dev dependencies
+
+Docs:
+
+* Update license year
+
 ## 0.7.1
 
 Bug fixes:
