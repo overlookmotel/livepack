@@ -809,7 +809,7 @@ describe('Object methods', () => {
 				validate(obj) {
 					expect(obj).toBeObject();
 					expect(obj).toHaveOwnPropertyNames(['foo']);
-					expect(obj.foo).toEqual(2);
+					expect(obj.foo).toBe(2);
 					obj.foo = 1;
 					expect(obj.x).toBe(15);
 				}
@@ -876,7 +876,7 @@ describe('Object methods', () => {
 				validate(obj) {
 					expect(obj).toBeObject();
 					expect(obj).toHaveOwnPropertyNames(['foo']);
-					expect(obj.foo).toEqual(2);
+					expect(obj.foo).toBe(2);
 					obj.foo = 1;
 					expect(obj.x).toBe(15);
 					expect(obj.y).toBe(5);

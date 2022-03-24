@@ -252,7 +252,7 @@ describe('Boxed Numbers', () => {
 		validate(num) {
 			expect(typeof num).toBe('object');
 			expect(num).toHavePrototype(Number.prototype);
-			expect(Number(num)).toBe(NaN);
+			expect(Number(num)).toBeNaN();
 		}
 	});
 

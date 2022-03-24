@@ -3822,10 +3822,10 @@ describe('Classes', () => {
 				expect(Klass.bar()).toBe(Klass);
 				expect(Klass.y).toBe(1);
 				const instance = new Klass();
-				expect(instance.x).toEqual(1);
+				expect(instance.x).toBe(1);
 				expect(instance.z).toBe(Klass);
 				expect(instance.foo()).toEqual(Klass);
-				expect(instance.y).toEqual(1);
+				expect(instance.y).toBe(1);
 			}
 		});
 
@@ -3929,10 +3929,10 @@ describe('Classes', () => {
 					expect(Klass.bar()).toBe(6);
 					expect(Klass.y).toBe(3);
 					const instance = new Klass();
-					expect(instance.x).toEqual(1);
+					expect(instance.x).toBe(1);
 					expect(instance.z).toBe(4);
 					expect(instance.foo()).toBe(5);
-					expect(instance.y).toEqual(2);
+					expect(instance.y).toBe(2);
 				}
 			});
 
@@ -4033,10 +4033,10 @@ describe('Classes', () => {
 					expect(Klass.bar()).toBe(6);
 					expect(Klass.y).toBe(3);
 					const instance = new Klass();
-					expect(instance.x).toEqual(1);
+					expect(instance.x).toBe(1);
 					expect(instance.z).toBe(4);
 					expect(instance.foo()).toBe(5);
-					expect(instance.y).toEqual(2);
+					expect(instance.y).toBe(2);
 				}
 			});
 
@@ -4138,10 +4138,10 @@ describe('Classes', () => {
 					expect(Klass.bar()).toBe(6);
 					expect(Klass.y).toBe(3);
 					const instance = new Klass();
-					expect(instance.x).toEqual(1);
+					expect(instance.x).toBe(1);
 					expect(instance.z).toBe(4);
 					expect(instance.foo()).toBe(5);
-					expect(instance.y).toEqual(2);
+					expect(instance.y).toBe(2);
 				}
 			});
 		});
@@ -4445,10 +4445,10 @@ describe('Classes', () => {
 				expect(Klass.bar()).toEqual([4, 5]);
 				expect(Klass.y).toBe(3);
 				const instance = new Klass();
-				expect(instance.x).toEqual(1);
+				expect(instance.x).toBe(1);
 				expect(instance.z).toEqual([4, 5]);
 				expect(instance.foo()).toEqual([4, 5]);
-				expect(instance.y).toEqual(2);
+				expect(instance.y).toBe(2);
 			}
 		});
 

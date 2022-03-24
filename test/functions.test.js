@@ -3674,7 +3674,7 @@ describe('Functions', () => {
 			})()`,
 			validate(fn) {
 				expect(fn).toBeFunction();
-				expect(fn()).toEqual(1);
+				expect(fn()).toBe(1);
 			}
 		});
 	});
@@ -5627,8 +5627,8 @@ describe('Functions', () => {
 				expect(res).toBeArrayOfSize(4);
 				expect(res[0]).toBe(param1);
 				expect(res[1]).toBe(param2);
-				expect(res[2]).toEqual(456);
-				expect(res[3]).toEqual(123);
+				expect(res[2]).toBe(456);
+				expect(res[3]).toBe(123);
 			}
 		});
 
@@ -5650,8 +5650,8 @@ describe('Functions', () => {
 				expect(res).toBeArrayOfSize(4);
 				expect(res[0]).toBe(param1);
 				expect(res[1]).toBe(param2);
-				expect(res[2]).toEqual(456);
-				expect(res[3]).toEqual(123);
+				expect(res[2]).toBe(456);
+				expect(res[3]).toBe(123);
 			}
 		});
 	});
@@ -8330,7 +8330,7 @@ describe('Functions', () => {
 					})()`,
 					validate(fn) {
 						expect(fn).toBeFunction();
-						expect(fn()).toEqual(2);
+						expect(fn()).toBe(2);
 						expect(
 							Object.getOwnPropertyNames(fn)
 								.filter(n => !['length', 'name', 'prototype', 'arguments', 'caller'].includes(n))
@@ -8406,7 +8406,7 @@ describe('Functions', () => {
 					})()`,
 					validate(fn) {
 						expect(fn).toBeFunction();
-						expect(fn()).toEqual(2);
+						expect(fn()).toBe(2);
 						expect(
 							Object.getOwnPropertyNames(fn)
 								.filter(n => !['length', 'name', 'prototype', 'arguments', 'caller'].includes(n))
