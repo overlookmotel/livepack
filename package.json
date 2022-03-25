@@ -65,7 +65,7 @@
   "devDependencies": {
     "@babel/plugin-transform-arrow-functions": "^7.16.7",
     "@babel/plugin-transform-strict-mode": "^7.16.7",
-    "@overlookmotel/eslint-config": "^10.0.1",
+    "@overlookmotel/eslint-config": "^10.0.2",
     "@overlookmotel/eslint-config-jest": "^6.0.1",
     "@overlookmotel/eslint-config-node": "^4.0.2",
     "eslint": "^8.11.0",
