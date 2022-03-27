@@ -5854,13 +5854,11 @@ describe('Functions', () => {
 			in() {
 				const ext = 1;
 				let fn;
-				/* eslint-disable indent */
 				switch (ext) { // eslint-disable-line default-case
 					case 1:
 						const ext = 2; // eslint-disable-line no-case-declarations, no-shadow
 						fn = (0, () => ext);
 				}
-				/* eslint-enable indent */
 				return [fn, () => ext];
 			},
 			out: '[(a=>()=>a)(2),(a=>()=>a)(1)]',
@@ -5876,13 +5874,11 @@ describe('Functions', () => {
 			in() {
 				const ext = 1;
 				let fn;
-				/* eslint-disable indent */
 				switch (ext) { // eslint-disable-line default-case
 					case 1:
 						const ext = 2; // eslint-disable-line no-case-declarations, no-shadow
 						fn = (0, () => () => ext);
 				}
-				/* eslint-enable indent */
 				return [fn, () => ext];
 			},
 			out: '[(a=>()=>()=>a)(2),(a=>()=>a)(1)]',
