@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.7.3
+
+Bug fixes:
+
+* Instrument: Catch clause `param` is optional
+
+Performance:
+
+* Instrument: Use `switch` + function calls consistent args
+
+Refactor
+
+* Simplify handling scope vars
+* Simplify code adding implicit `this` to functions with `super`
+* Shorten code
+* Avoid negative var name
+* Rename variable
+
+Dev:
+
+* Update dev dependencies
+
 ## 0.7.2
 
 Bug fixes:
