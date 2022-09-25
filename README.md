@@ -506,9 +506,9 @@ For example, you can dynamically create functions to be async imported.
 
 ```js
 const people = [
-  { firstName: 'Harrison', lastName: 'Ford', loadsMoreData: { /* ... */ } },
-  { firstName: 'Marlon', lastName: 'Brando', loadsMoreData: { /* ... */ } },
-  { firstName: 'Peewee', lastName: 'Herman', loadsMoreData: { /* ... */ } }
+  { firstName: 'Harrison', lastName: 'Ford', lotsMoreData: { /* ... */ } },
+  { firstName: 'Marlon', lastName: 'Brando', lotsMoreData: { /* ... */ } },
+  { firstName: 'Peewee', lastName: 'Herman', lotsMoreData: { /* ... */ } }
 ];
 
 const lazyComponents = people.map(
