@@ -365,7 +365,7 @@ Code splitting works differently in Livepack from other bundlers.
 
 Livepack pays no attention to what files code originates in, and *splits the output at the level of values, rather than at the level of files*.
 
-This produces an optimal split of the app, where each entry point only includes exactly the code it needs, and nothing more. It's more efficient than Livepack or Rollup's file-level code splitting.
+This produces an optimal split of the app, where each entry point only includes exactly the code it needs, and nothing more. It's more efficient than Webpack or Rollup's file-level code splitting.
 
 Any values shared between entry points are placed in common chunks. By default, these are named `common.XXXXXXXX.js`, where `XXXXXXXX` is a hash of the file's content.
 
