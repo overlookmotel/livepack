@@ -10,7 +10,7 @@ Performance:
 
 * Instrument: Use `switch` + function calls consistent args
 
-Refactor
+Refactor:
 
 * Simplify handling scope vars
 * Simplify code adding implicit `this` to functions with `super`
