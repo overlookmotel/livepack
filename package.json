@@ -45,7 +45,7 @@
     "@babel/types": "^7.17.0",
     "babel-plugin-dynamic-import-node": "^2.3.3",
     "base32.js": "^0.1.0",
-    "convert-source-map": "^1.8.0",
+    "convert-source-map": "^2.0.0",
     "find-cache-dir": "^3.3.2",
     "find-up": "^5.0.0",
     "fs-extra": "^10.0.1",
