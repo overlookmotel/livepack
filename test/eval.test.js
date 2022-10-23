@@ -417,7 +417,7 @@ describe('eval', () => {
 				// Check stack trace does not include internal Livepack code
 				const stackLines = err.stack.split(/\r?\n/);
 				expect(stackLines[0]).toBe('SyntaxError: Illegal return statement');
-				expect(stackLines[1]).toMatch(new RegExp(`\\s+at ${escapeRegex(__filename)}:\\d+:\\d+`));
+				expect(stackLines[1]).toMatch(new RegExp(`\\s+at eval \\(${escapeRegex(__filename)}:\\d+:\\d+\\)`));
 			});
 
 			describe('handles internal var name prefixes', () => {

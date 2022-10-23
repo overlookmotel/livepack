@@ -12,7 +12,7 @@ require('../lib/init/index.js'); // livepack/lib/init
 
 const {splitAsync} = require('../index.js'), // livepack
 	{isModuleNamespaceObject} = require('util').types,
-	expect = require('expect');
+	expect = require('expect').default;
 
 // Imports
 const {createFixturesFunctions, resetSplitPoints} = require('./support/index.js');

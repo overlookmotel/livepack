@@ -26,7 +26,7 @@ module.exports = {process};
 
 function process(code, filename) {
 	// Do not instrument Livepack internals or tests support files
-	if (isInternalPath(filename) || filename.startsWith(TESTS_SUPPORT_DIR_PATH)) return code;
+	if (isInternalPath(filename) || filename.startsWith(TESTS_SUPPORT_DIR_PATH)) return {code};
 
 	// Instrument code
 	const res = instrumentCodeImpl(code, filename, false, true, false, false, true, undefined, true);
