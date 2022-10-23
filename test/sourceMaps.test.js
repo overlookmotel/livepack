@@ -27,8 +27,9 @@ describe('Source maps', () => {
 		expect(out).toMatch(/^1\n\/\/# sourceMappingURL=data:application\/json;charset=utf-8;base64,.+$/);
 		expect(sourceMapFromComment(out).toObject()).toEqual({
 			version: 3,
-			sources: [],
 			names: [],
+			sources: [],
+			sourcesContent: [],
 			mappings: ''
 		});
 	});
@@ -52,8 +53,9 @@ describe('Source maps', () => {
 		const map = JSON.parse(out[1].content);
 		expect(map).toEqual({
 			version: 3,
-			sources: [],
 			names: [],
+			sources: [],
+			sourcesContent: [],
 			mappings: ''
 		});
 	});
@@ -82,10 +84,10 @@ describe('Source maps', () => {
 		const map = JSON.parse(out[1].content);
 		expect(map).toEqual({
 			version: 3,
-			sources: [srcPath],
 			names: [],
-			mappings: expect.stringMatching(/./),
-			sourcesContent: [code]
+			sources: [srcPath],
+			sourcesContent: [code],
+			mappings: expect.stringMatching(/./)
 		});
 	});
 
@@ -174,7 +176,6 @@ describe('Source maps', () => {
 				'"use strict";',
 				'',
 				"const message = 'foo';",
-				'',
 				'module.exports = function () {',
 				'  throw new Error(message);',
 				'};',
@@ -237,7 +238,6 @@ describe('Source maps', () => {
 				'"use strict";',
 				'',
 				"const message = 'foo';",
-				'',
 				'module.exports = function () {',
 				'  throw new Error(message);',
 				'};',

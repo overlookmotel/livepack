@@ -42,7 +42,7 @@ describe('Options', () => {
 					type: 'source map',
 					name: null,
 					filename: 'index.js.map',
-					content: '{"version":3,"sources":[],"names":[],"mappings":""}'
+					content: '{"version":3,"names":[],"sources":[],"sourcesContent":[],"mappings":""}'
 				}
 			]);
 		});
@@ -59,7 +59,7 @@ describe('Options', () => {
 					type: 'source map',
 					name: null,
 					filename: 'index.js.map',
-					content: '{"version":3,"sources":[],"names":[],"mappings":""}'
+					content: '{"version":3,"names":[],"sources":[],"sourcesContent":[],"mappings":""}'
 				}
 			]);
 		});
@@ -76,7 +76,7 @@ describe('Options', () => {
 					type: 'source map',
 					name: null,
 					filename: 'index.cjs.map',
-					content: '{"version":3,"sources":[],"names":[],"mappings":""}'
+					content: '{"version":3,"names":[],"sources":[],"sourcesContent":[],"mappings":""}'
 				}
 			]);
 		});
@@ -93,7 +93,7 @@ describe('Options', () => {
 					type: 'source map',
 					name: null,
 					filename: 'index.mjs.map',
-					content: '{"version":3,"sources":[],"names":[],"mappings":""}'
+					content: '{"version":3,"names":[],"sources":[],"sourcesContent":[],"mappings":""}'
 				}
 			]);
 		});
@@ -112,7 +112,7 @@ describe('Options', () => {
 					type: 'source map',
 					name: null,
 					filename: 'index.js.map',
-					content: '{"version":3,"sources":[],"names":[],"mappings":""}'
+					content: '{"version":3,"names":[],"sources":[],"sourcesContent":[],"mappings":""}'
 				}
 			]);
 		});
@@ -129,7 +129,7 @@ describe('Options', () => {
 					type: 'source map',
 					name: null,
 					filename: 'index.js.map',
-					content: '{"version":3,"sources":[],"names":[],"mappings":""}'
+					content: '{"version":3,"names":[],"sources":[],"sourcesContent":[],"mappings":""}'
 				}
 			]);
 		});
@@ -146,7 +146,7 @@ describe('Options', () => {
 					type: 'source map',
 					name: null,
 					filename: 'index.js.m',
-					content: '{"version":3,"sources":[],"names":[],"mappings":""}'
+					content: '{"version":3,"names":[],"sources":[],"sourcesContent":[],"mappings":""}'
 				}
 			]);
 		});
@@ -163,7 +163,7 @@ describe('Options', () => {
 					type: 'source map',
 					name: null,
 					filename: 'index.mjs.m',
-					content: '{"version":3,"sources":[],"names":[],"mappings":""}'
+					content: '{"version":3,"names":[],"sources":[],"sourcesContent":[],"mappings":""}'
 				}
 			]);
 		});
@@ -379,7 +379,7 @@ describe('Options', () => {
 					type: 'source map',
 					name: null,
 					filename: 'index.js.map',
-					content: expect.stringMatching(/\{"version":3,"sources":\[/)
+					content: expect.stringMatching(/\{"version":3,"names":\[/)
 				});
 			});
 		});
