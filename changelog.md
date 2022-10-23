@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.7.4
+
+Minor:
+
+* Drop support for Node v17
+* Drop support for Node v12
+
+Dependencies:
+
+* Update `convert-source-map` dependency
+* Update dependencies
+
+No code:
+
+* Fix code comment typo
+
+Dev:
+
+* CI run tests on Node v18 + v19
+* Update dev dependencies
+
+Docs:
+
+* Clarify lazy loading example
+* Fix typo in README
+* Fix changelog formatting
+
 ## 0.7.3
 
 Bug fixes:
