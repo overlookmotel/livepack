@@ -99,7 +99,7 @@
     "cover-cleanup": "rm -rf coverage"
   },
   "engines": {
-    "node": ">=12"
+    "node": ">=14"
   },
   "readmeFilename": "README.md",
   "license": "MIT"

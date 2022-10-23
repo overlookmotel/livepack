@@ -12,8 +12,7 @@ require('../lib/init/index.js'); // livepack/lib/init
 
 const {splitAsync} = require('../index.js'), // livepack
 	{isModuleNamespaceObject} = require('util').types,
-	expect = require('expect'),
-	parseNodeVersion = require('parse-node-version');
+	expect = require('expect');
 
 // Imports
 const {createFixturesFunctions, resetSplitPoints} = require('./support/index.js');
@@ -25,9 +24,6 @@ const NUM_FIXTURES = 5;
 global.expect = expect;
 require('jest-extended/all');
 require('./support/expect.js');
-
-const {major, minor} = parseNodeVersion(process.version);
-const importIsSupported = major >= 14 || (major === 13 && minor >= 2) || (major === 12 && minor >= 17);
 
 // Create fixtures
 const {createFixtures} = createFixturesFunctions(__filename);
@@ -50,11 +46,10 @@ describe('splitAsync', () => {
 			const importFn = splitAsync(val);
 			return {val, importFn};
 		},
-		false,
-		!importIsSupported
+		false
 	);
 
-	(importIsSupported ? describe : describe.skip)('behaves same as `() => import()`', () => {
+	describe('behaves same as `() => import()`', () => {
 		runTests(
 			(val, index) => {
 				const path = fixturesPaths[index || 0];
@@ -62,15 +57,12 @@ describe('splitAsync', () => {
 				const importFn = (0, () => import(path));
 				return {val, importFn};
 			},
-			true,
-			false
+			true
 		);
 	});
 });
 
-function runTests(createImport, isNativeImport, skipTestsRelyingOnImport) {
-	const itIfSupported = skipTestsRelyingOnImport ? it.skip : it;
-
+function runTests(createImport, isNativeImport) {
 	describe('1 call', () => {
 		let val, importFn, mod;
 		beforeEach(async () => {
@@ -123,8 +115,8 @@ function runTests(createImport, isNativeImport, skipTestsRelyingOnImport) {
 				expect(mod).toBeObject();
 			});
 
-			itIfSupported('module namespace object', () => {
-				expect(isModuleNamespaceObject(mod)).toBeTrue(); // eslint-disable-line jest/no-standalone-expect
+			it('module namespace object', () => {
+				expect(isModuleNamespaceObject(mod)).toBeTrue();
 			});
 
 			it('with only default and [Symbol.toStringTag] properties', () => {
@@ -164,8 +156,8 @@ function runTests(createImport, isNativeImport, skipTestsRelyingOnImport) {
 				expect(Object.isFrozen(mod)).toBeFalse();
 			});
 
-			itIfSupported('default property cannot be written to', () => {
-				expect(() => { // eslint-disable-line jest/no-standalone-expect
+			it('default property cannot be written to', () => {
+				expect(() => {
 					mod.default = 1;
 				}).toThrow(
 					new Error("Cannot assign to read only property 'default' of object '[object Module]'")

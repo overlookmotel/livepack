@@ -5,9 +5,6 @@
 
 'use strict';
 
-// Modules
-const parseNodeVersion = require('parse-node-version');
-
 // Imports
 const {itSerializes, itSerializesEqual} = require('./support/index.js');
 
@@ -190,9 +187,7 @@ describe('Sets', () => {
 	});
 });
 
-const describeIfNode14 = parseNodeVersion(process.version).major >= 14 ? describe : describe.skip;
-
-describeIfNode14('WeakSets', () => {
+describe('WeakSets', () => {
 	itSerializes('empty', {
 		in: () => new WeakSet(),
 		out: 'new WeakSet',
