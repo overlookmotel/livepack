@@ -23,7 +23,10 @@ Object.setPrototypeOf(module.exports, Object.prototype);
 
 // Tests
 
-const describeIfNode16 = parseNodeVersion(process.version).major >= 16 ? describe : describe.skip;
+const {major, minor} = parseNodeVersion(process.version),
+	describeIfNode16 = major >= 16 ? describe : describe.skip,
+	isNode16Point11OrHigher = major > 16 || (major === 16 && minor >= 11),
+	itSerializesIfNode16Point11 = isNode16Point11OrHigher ? itSerializes : itSerializes.skip;
 const spy = jest.fn;
 
 describe('Functions', () => {
@@ -2714,6 +2717,695 @@ describe('Functions', () => {
 					const [_this, _globalThis] = fn();
 					expect(_this).toBeObject();
 					expect(_this).toBe(_globalThis);
+				}
+			});
+			*/
+		});
+	});
+
+	describe('including `new.target`', () => {
+		describe('referencing upper function scope', () => {
+			describe('1 level up', () => {
+				itSerializes('single instantiation', {
+					in() {
+						function outer() {
+							return () => new.target;
+						}
+						// eslint-disable-next-line prefer-arrow-callback
+						return Reflect.construct(outer, [], function() { return 1; });
+					},
+					out: '(a=>()=>a)(function(){return 1})',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						const target = fn();
+						expect(target).toBeFunction();
+						expect(target()).toBe(1);
+					}
+				});
+
+				itSerializes('multiple instantiations', {
+					in() {
+						function outer() {
+							return () => new.target;
+						}
+						// eslint-disable-next-line prefer-arrow-callback
+						return [1, 2, 3].map(n => Reflect.construct(outer, [], function() { return n; }));
+					},
+					out: `(()=>{
+						const a=a=>()=>a,
+							b=a=>function(){return a};
+						return[a(b(1)),a(b(2)),a(b(3))]
+					})()`,
+					validate(arr) {
+						expect(arr).toBeArrayOfSize(3);
+						arr.forEach((fn, index) => {
+							expect(fn).toBeFunction();
+							const target = fn();
+							expect(target).toBeFunction();
+							expect(target()).toEqual(index + 1);
+						});
+					}
+				});
+
+				describe('with clashing var names', () => {
+					itSerializes('outer params', {
+						in() {
+							function outer(newTarget, newTarget$0) {
+								return () => [new.target, newTarget, newTarget$0];
+							}
+							// eslint-disable-next-line prefer-arrow-callback
+							return Reflect.construct(outer, [{extA: 2}, {extB: 3}], function() { return 1; });
+						},
+						out: '((a,b,c)=>()=>[a,b,c])(function(){return 1},{extA:2},{extB:3})',
+						validate(fn) {
+							expect(fn).toBeFunction();
+							const res = fn();
+							expect(res[0]).toBeFunction();
+							expect(res[0]()).toBe(1);
+							expect(res[1]).toEqual({extA: 2});
+							expect(res[2]).toEqual({extB: 3});
+						}
+					});
+
+					itSerializes('inner params', {
+						in() {
+							function outer() {
+								return (newTarget, newTarget$0) => [new.target, newTarget, newTarget$0];
+							}
+							// eslint-disable-next-line prefer-arrow-callback
+							return Reflect.construct(outer, [], function() { return 1; });
+						},
+						out: '(c=>(a,b)=>[c,a,b])(function(){return 1})',
+						validate(fn) {
+							expect(fn).toBeFunction();
+							const param1 = {},
+								param2 = {};
+							const res = fn(param1, param2);
+							expect(res[0]).toBeFunction();
+							expect(res[0]()).toBe(1);
+							expect(res[1]).toBe(param1);
+							expect(res[2]).toBe(param2);
+						}
+					});
+
+					itSerializes('outer and inner params', {
+						in() {
+							function outer(newTarget) {
+								return newTarget$0 => [new.target, newTarget, newTarget$0];
+							}
+							// eslint-disable-next-line prefer-arrow-callback
+							return Reflect.construct(outer, [{extA: 2}], function() { return 1; });
+						},
+						out: '((b,c)=>a=>[b,c,a])(function(){return 1},{extA:2})',
+						validate(fn) {
+							expect(fn).toBeFunction();
+							const param = {};
+							const res = fn(param);
+							expect(res[0]).toBeFunction();
+							expect(res[0]()).toBe(1);
+							expect(res[1]).toEqual({extA: 2});
+							expect(res[2]).toBe(param);
+						}
+					});
+				});
+			});
+
+			describe('2 levels up', () => {
+				itSerializes('single instantiation', {
+					in() {
+						function outer() {
+							return extA => () => [new.target, extA];
+						}
+						// eslint-disable-next-line prefer-arrow-callback
+						return Reflect.construct(outer, [], function() { return 1; })({extA: 2});
+					},
+					out: '(b=>a=>()=>[b,a])(function(){return 1})({extA:2})',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						const res = fn();
+						expect(res[0]).toBeFunction();
+						expect(res[0]()).toBe(1);
+						expect(res[1]).toEqual({extA: 2});
+					}
+				});
+
+				itSerializes('multiple instantiations', {
+					in({ctx}) {
+						function outer() {
+							return extA => () => [new.target, extA];
+						}
+						const exts = [
+							{n: 10, extA: {extA1: 11}},
+							{n: 20, extA: {extA2: 21}},
+							{n: 30, extA: {extA3: 31}}
+						];
+						ctx.exts = exts;
+						return exts.map(
+							// eslint-disable-next-line prefer-arrow-callback
+							({n, extA}) => Reflect.construct(outer, [], function() { return n; })(extA)
+						);
+					},
+					out: `(()=>{
+						const a=b=>a=>()=>[b,a],
+							b=a=>function(){return a};
+							return[
+								a(b(10))({extA1:11}),
+								a(b(20))({extA2:21}),
+								a(b(30))({extA3:31})
+							]
+					})()`,
+					validate(arr, {ctx: {exts}}) {
+						expect(arr).toBeArrayOfSize(3);
+						arr.forEach((fn, index) => {
+							expect(fn).toBeFunction();
+							const res = fn();
+							const {n, extA} = exts[index];
+							expect(res[0]).toBeFunction();
+							expect(res[0]()).toBe(n);
+							expect(res[1]).toEqual(extA);
+						});
+					}
+				});
+			});
+
+			describe('3 levels up', () => {
+				itSerializes('single instantiation', {
+					in() {
+						function outer() {
+							return extA => extB => () => [new.target, extA, extB];
+						}
+						// eslint-disable-next-line prefer-arrow-callback
+						return Reflect.construct(outer, [], function() { return 1; })({extA: 2})({extB: 3});
+					},
+					out: '(c=>b=>a=>()=>[c,b,a])(function(){return 1})({extA:2})({extB:3})',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						const res = fn();
+						expect(res[0]).toBeFunction();
+						expect(res[0]()).toBe(1);
+						expect(res[1]).toEqual({extA: 2});
+						expect(res[2]).toEqual({extB: 3});
+					}
+				});
+
+				itSerializes('multiple instantiations', {
+					in({ctx}) {
+						function outer() {
+							return extA => extB => () => [new.target, extA, extB];
+						}
+						const exts = [
+							{n: 10, extA: {extA1: 11}, extB: {extB1: 12}},
+							{n: 20, extA: {extA2: 21}, extB: {extB2: 22}},
+							{n: 30, extA: {extA3: 31}, extB: {extB3: 32}}
+						];
+						ctx.exts = exts;
+						return exts.map(
+							// eslint-disable-next-line prefer-arrow-callback
+							({n, extA, extB}) => Reflect.construct(outer, [], function() { return n; })(extA)(extB)
+						);
+					},
+					out: `(()=>{
+						const a=c=>b=>a=>()=>[c,b,a],
+							b=a=>function(){return a};
+						return[
+							a(b(10))({extA1:11})({extB1:12}),
+							a(b(20))({extA2:21})({extB2:22}),
+							a(b(30))({extA3:31})({extB3:32})
+						]
+					})()`,
+					validate(arr, {ctx: {exts}}) {
+						expect(arr).toBeArrayOfSize(3);
+						arr.forEach((fn, index) => {
+							expect(fn).toBeFunction();
+							const res = fn();
+							const {n, extA, extB} = exts[index];
+							expect(res[0]).toBeFunction();
+							expect(res[0]()).toBe(n);
+							expect(res[1]).toEqual(extA);
+							expect(res[2]).toEqual(extB);
+						});
+					}
+				});
+			});
+
+			itSerializes('from object method', {
+				in() {
+					function Outer() {
+						return {
+							foo() {
+								return () => new.target;
+							}
+						};
+					}
+					return new Outer().foo();
+				},
+				out: '(a=>()=>a)()',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					expect(fn()).toBeUndefined();
+				}
+			});
+
+			describe('from class', () => {
+				itSerializes('in class constructor', {
+					in() {
+						class C {
+							constructor() {
+								this.fn = () => new.target;
+							}
+						}
+						// eslint-disable-next-line prefer-arrow-callback
+						return Reflect.construct(C, [], function() { return 1; }).fn;
+					},
+					out: '(a=>()=>a)(function(){return 1})',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						const target = fn();
+						expect(target).toBeFunction();
+						expect(target()).toBe(1);
+					}
+				});
+
+				itSerializes('in class prototype method', {
+					in() {
+						function Outer() {
+							return class C {
+								foo() { // eslint-disable-line class-methods-use-this
+									return () => new.target;
+								}
+							};
+						}
+						const C = new Outer();
+						return new C().foo();
+					},
+					out: '(a=>()=>a)()',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						expect(fn()).toBeUndefined();
+					}
+				});
+
+				itSerializes('in class static method', {
+					in() {
+						function Outer() {
+							return class C {
+								static foo() {
+									return () => new.target;
+								}
+							};
+						}
+						return new Outer().foo();
+					},
+					out: '(a=>()=>a)()',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						expect(fn()).toBeUndefined();
+					}
+				});
+
+				itSerializes('in class prototype property', {
+					in() {
+						function Outer() {
+							return class C {
+								foo = (0, () => new.target);
+							};
+						}
+						const C = new Outer();
+						return new C().foo;
+					},
+					out: '(a=>()=>a)()',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						expect(fn()).toBeUndefined();
+					}
+				});
+
+				itSerializes('in class static property', {
+					in() {
+						function Outer() {
+							return class C {
+								static foo = (0, () => new.target);
+							};
+						}
+						return new Outer().foo;
+					},
+					out: '(a=>()=>a)()',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						expect(fn()).toBeUndefined();
+					}
+				});
+
+				itSerializesIfNode16Point11('in class static block', {
+					// Using eval here as otherwise syntax error on Node < 16.11.0
+					// eslint-disable-next-line no-eval
+					in: () => eval(`
+						function Outer() {
+							let fn;
+							class C { // eslint-disable-line no-unused-vars
+								static {
+									fn = (0, () => new.target);
+								}
+							}
+							return fn;
+						}
+						new Outer();
+					`),
+					out: '(a=>()=>a)()',
+					validate(fn) {
+						/* eslint-disable jest/no-standalone-expect */
+						expect(fn).toBeFunction();
+						expect(fn()).toBeUndefined();
+						/* eslint-enable jest/no-standalone-expect */
+					}
+				});
+
+				itSerializes('in class prototype method key', {
+					in() {
+						function outer() {
+							let fn;
+							class C { // eslint-disable-line no-unused-vars
+								[fn = (0, () => new.target)]() {} // eslint-disable-line class-methods-use-this
+							}
+							return fn;
+						}
+						// eslint-disable-next-line prefer-arrow-callback
+						return Reflect.construct(outer, [], function() { return 1; });
+					},
+					out: '(a=>()=>a)(function(){return 1})',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						const target = fn();
+						expect(target).toBeFunction();
+						expect(target()).toBe(1);
+					}
+				});
+
+				itSerializes('in class static method key', {
+					in() {
+						function outer() {
+							let fn;
+							class C { // eslint-disable-line no-unused-vars
+								static [fn = (0, () => new.target)]() {}
+							}
+							return fn;
+						}
+						// eslint-disable-next-line prefer-arrow-callback
+						return Reflect.construct(outer, [], function() { return 1; });
+					},
+					out: '(a=>()=>a)(function(){return 1})',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						const target = fn();
+						expect(target).toBeFunction();
+						expect(target()).toBe(1);
+					}
+				});
+
+				itSerializes('in class prototype property key', {
+					in() {
+						function outer() {
+							let fn;
+							class C { // eslint-disable-line no-unused-vars
+								[fn = (0, () => new.target)] = 1;
+							}
+							return fn;
+						}
+						// eslint-disable-next-line prefer-arrow-callback
+						return Reflect.construct(outer, [], function() { return 1; });
+					},
+					out: '(a=>()=>a)(function(){return 1})',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						const target = fn();
+						expect(target).toBeFunction();
+						expect(target()).toBe(1);
+					}
+				});
+
+				itSerializes('in class static property key', {
+					in() {
+						function outer() {
+							let fn;
+							class C { // eslint-disable-line no-unused-vars
+								static [fn = (0, () => new.target)] = 1;
+							}
+							return fn;
+						}
+						// eslint-disable-next-line prefer-arrow-callback
+						return Reflect.construct(outer, [], function() { return 1; });
+					},
+					out: '(a=>()=>a)(function(){return 1})',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						const target = fn();
+						expect(target).toBeFunction();
+						expect(target()).toBe(1);
+					}
+				});
+			});
+		});
+
+		describe('referencing local scope', () => {
+			itSerializes('in exported function', {
+				in() {
+					return function() { return new.target; };
+				},
+				out: 'function(){return new.target}',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					expect(fn()).toBeUndefined();
+					expect(new fn()).toBe(fn); // eslint-disable-line new-cap
+				}
+			});
+
+			describe('in function nested inside exported function', () => {
+				describe('when outer function is', () => {
+					itSerializes('function declaration', {
+						in() {
+							function outer() {
+								return function() { return new.target; };
+							}
+							return outer;
+						},
+						out: 'function outer(){return function(){return new.target}}',
+						validate(outer) {
+							expect(outer).toBeFunction();
+							const fn = outer();
+							expect(fn).toBeFunction();
+							expect(fn()).toBeUndefined();
+							expect(new fn()).toBe(fn); // eslint-disable-line new-cap
+						}
+					});
+
+					itSerializes('function expression', {
+						in() {
+							return function() {
+								return function() { return new.target; };
+							};
+						},
+						out: 'function(){return function(){return new.target}}',
+						validate(outer) {
+							expect(outer).toBeFunction();
+							const fn = outer();
+							expect(fn).toBeFunction();
+							expect(fn()).toBeUndefined();
+							expect(new fn()).toBe(fn); // eslint-disable-line new-cap
+						}
+					});
+
+					itSerializes('arrow function', {
+						in() {
+							return () => function() { return new.target; };
+						},
+						out: '()=>function(){return new.target}',
+						validate(outer) {
+							expect(outer).toBeFunction();
+							const fn = outer();
+							expect(fn).toBeFunction();
+							expect(fn()).toBeUndefined();
+							expect(new fn()).toBe(fn); // eslint-disable-line new-cap
+						}
+					});
+				});
+
+				describe('referencing exported function scope', () => {
+					itSerializes('from 1 level up', {
+						in() {
+							return function() {
+								return () => new.target;
+							};
+						},
+						out: 'function(){return()=>new.target}',
+						validate(outer) {
+							expect(outer).toBeFunction();
+							const fn = new outer(); // eslint-disable-line new-cap
+							expect(fn).toBeFunction();
+							expect(fn()).toBe(outer);
+						}
+					});
+
+					itSerializes('from 2 levels up', {
+						in() {
+							return function() {
+								return () => () => new.target;
+							};
+						},
+						out: 'function(){return()=>()=>new.target}',
+						validate(outer) {
+							expect(outer).toBeFunction();
+							const middle = new outer(); // eslint-disable-line new-cap
+							expect(middle).toBeFunction();
+							const inner = middle();
+							expect(inner).toBeFunction();
+							expect(inner()).toBe(outer);
+						}
+					});
+				});
+
+				describe('referencing nested function scope', () => {
+					describe('when outer function is', () => {
+						describe('function declaration', () => {
+							itSerializes('from 1 level up', {
+								in() {
+									function outer() {
+										return function() {
+											return () => new.target;
+										};
+									}
+									return outer;
+								},
+								out: 'function outer(){return function(){return()=>new.target}}',
+								validate(outer) {
+									expect(outer).toBeFunction();
+									const middle = outer();
+									expect(middle).toBeFunction();
+									const inner = new middle(); // eslint-disable-line new-cap
+									expect(inner).toBeFunction();
+									expect(inner()).toBe(middle);
+								}
+							});
+
+							itSerializes('from 2 levels up', {
+								in() {
+									function outer() {
+										return function() {
+											return () => () => new.target;
+										};
+									}
+									return outer;
+								},
+								out: 'function outer(){return function(){return()=>()=>new.target}}',
+								validate(outer) {
+									expect(outer).toBeFunction();
+									const middle = outer();
+									expect(middle).toBeFunction();
+									const middle2 = new middle(); // eslint-disable-line new-cap
+									expect(middle2).toBeFunction();
+									const inner = middle2();
+									expect(inner).toBeFunction();
+									expect(inner()).toBe(middle);
+								}
+							});
+						});
+
+						describe('function expression', () => {
+							itSerializes('from 1 level up', {
+								in() {
+									return function() {
+										return function() {
+											return () => new.target;
+										};
+									};
+								},
+								out: 'function(){return function(){return()=>new.target}}',
+								validate(outer) {
+									expect(outer).toBeFunction();
+									const middle = outer();
+									expect(middle).toBeFunction();
+									const inner = new middle(); // eslint-disable-line new-cap
+									expect(inner).toBeFunction();
+									expect(inner()).toBe(middle);
+								}
+							});
+
+							itSerializes('from 2 levels up', {
+								in() {
+									return function() {
+										return function() {
+											return () => () => new.target;
+										};
+									};
+								},
+								out: 'function(){return function(){return()=>()=>new.target}}',
+								validate(outer) {
+									expect(outer).toBeFunction();
+									const middle = outer();
+									expect(middle).toBeFunction();
+									const middle2 = new middle(); // eslint-disable-line new-cap
+									expect(middle2).toBeFunction();
+									const inner = middle2();
+									expect(inner).toBeFunction();
+									expect(inner()).toBe(middle);
+								}
+							});
+						});
+
+						describe('arrow function', () => {
+							itSerializes('from 1 level up', {
+								in() {
+									return () => (
+										function() {
+											return () => new.target;
+										}
+									);
+								},
+								out: '()=>function(){return()=>new.target}',
+								validate(outer) {
+									expect(outer).toBeFunction();
+									const middle = outer();
+									expect(middle).toBeFunction();
+									const inner = new middle(); // eslint-disable-line new-cap
+									expect(inner).toBeFunction();
+									expect(inner()).toBe(middle);
+								}
+							});
+
+							itSerializes('from 2 levels up', {
+								in() {
+									return () => (
+										function() {
+											return () => () => new.target;
+										}
+									);
+								},
+								out: '()=>function(){return()=>()=>new.target}',
+								validate(outer) {
+									expect(outer).toBeFunction();
+									const middle = outer();
+									expect(middle).toBeFunction();
+									const middle2 = new middle(); // eslint-disable-line new-cap
+									expect(middle2).toBeFunction();
+									const inner = middle2();
+									expect(inner).toBeFunction();
+									expect(inner()).toBe(middle);
+								}
+							});
+						});
+					});
+				});
+			});
+		});
+
+		describe('referencing global scope', () => {
+			/*
+			// TODO Uncomment once https://github.com/overlookmotel/livepack/issues/446 resolved
+			itSerializes('in CommonJS context', {
+				in: () => () => new.target,
+				out: '(a=>()=>a)()',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					expect(fn()).toBeUndefined();
 				}
 			});
 			*/
