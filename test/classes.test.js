@@ -3830,7 +3830,7 @@ describe('Classes', () => {
 		});
 
 		describe('var used in transpiled super shadowed by local var with same name', () => {
-			// NB These tests relate to correct functioning of Babel plugin
+			// NB These tests relate to correct functioning of instrumentation
 			itSerializes('class declaration name', {
 				in() {
 					class X {
@@ -4147,9 +4147,9 @@ describe('Classes', () => {
 		});
 
 		describe('class name preserved when gained implicitly', () => {
-			// NB These tests relate to correct functioning of Babel plugin
+			// NB These tests relate to correct functioning of instrumentation
 			itSerializes('with const definition', {
-				// NB Shadow `C` var inside class ctor so Babel plugin has to create temp var to access `C`
+				// NB Shadow `C` var inside class ctor so instrumentation has to create temp var to access `C`
 				in() {
 					class S {}
 					const C = class extends S {
@@ -4453,7 +4453,7 @@ describe('Classes', () => {
 		});
 
 		describe('transpiled super treats computed object property names correctly', () => {
-			// These tests are primarily to ensure the Babel plugin works correctly,
+			// These tests are primarily to ensure the instrumentation works correctly,
 			// rather than the serialization.
 			itSerializes('function call used as object prop key only called once', {
 				in() {
@@ -5136,7 +5136,7 @@ describe('Classes', () => {
 		});
 	});
 
-	// Test Babel plugin correctly calculating trails in constructor or following computed method key
+	// Test instrumentation correctly calculating trails in constructor or following computed method key
 	describe('class methods containing nested functions', () => {
 		itSerializes('class constructor', {
 			in() {

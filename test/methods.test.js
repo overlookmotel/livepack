@@ -266,7 +266,7 @@ describe('Object methods', () => {
 		});
 
 		itSerializes('using super and super var shadowed within method', {
-			// NB This test relates to correct functioning of Babel plugin
+			// NB This test relates to correct functioning of instrumentation
 			in() {
 				const obj = {
 					x() {
@@ -925,7 +925,7 @@ describe('Object methods', () => {
 		});
 	});
 
-	// Test Babel plugin correctly calculating trails following computed method key
+	// Test instrumentation correctly calculating trails following computed method key
 	itSerializes('with computed key and containing nested function', {
 		in() {
 			const ext = 1;

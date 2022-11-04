@@ -6697,7 +6697,7 @@ describe('Functions', () => {
 	});
 
 	describe("defined in another function's params", () => {
-		// These tests cover serialization, but also the transforms to functions made by Babel plugin
+		// These tests cover serialization, but also the transforms to functions made by instrumentation
 		// for functions with complex params where initializing params moved into function body
 		describe('can be serialized when defined in', () => {
 			itSerializes('param default', {
@@ -7123,7 +7123,7 @@ describe('Functions', () => {
 		});
 
 		describe('var in function body has value of param before `var` statement', () => {
-			// These tests for transform made in Babel plugin
+			// These tests for transform made in instrumentation
 			itSerializes('when function has no complex params', {
 				in() {
 					return (x) => {
@@ -7161,7 +7161,7 @@ describe('Functions', () => {
 	});
 
 	describe('interaction between function declaration and var in same function is maintained', () => {
-		// These tests for transform made in Babel plugin which moves param definitions into function body
+		// These tests for transform made in instrumentation which moves param definitions into function body
 		// if function has complex params
 		describe('when var statement first', () => {
 			itSerializes('with no initializer', {
@@ -7249,7 +7249,7 @@ describe('Functions', () => {
 	});
 
 	describe('interaction between multiple `var` statements in same function is maintained', () => {
-		// These tests for transform made in Babel plugin which moves param definitions into function body
+		// These tests for transform made in instrumentation which moves param definitions into function body
 		// if function has complex params
 		itSerializes('first `var` statement with no initializer', {
 			in() {
@@ -10389,8 +10389,7 @@ describe('Functions', () => {
 		);
 	});
 
-	// eslint-disable-next-line jest/prefer-lowercase-title
-	describe('Babel plugin preserves temporal dead zone violations in function params in', () => {
+	describe('instrumentation preserves temporal dead zone violations in function params in', () => {
 		describe('param default', () => {
 			it('no external var', () => {
 				const fn = (x = y, y) => [x, y]; // eslint-disable-line no-use-before-define, default-param-last
