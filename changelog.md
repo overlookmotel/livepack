@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.7.5
+
+Bug fixes:
+
+* Handle `new.target` in functions
+* Instrument: Fix insertion of tracker comments
+
+Dependencies:
+
+* Update dependencies
+
+No code:
+
+* Update code comments
+* Correct typo in code comment
+
+Tests:
+
+* `LIVEPACK_DEBUG_REGISTER` env [improve]
+* Remove duplicate test
+
+Dev:
+
+* Update dev dependencies
+
 ## 0.7.4
 
 Minor:
