@@ -2691,20 +2691,6 @@ describe('Functions', () => {
 			});
 		});
 
-		itSerializes('referencing own context', {
-			in() {
-				return function() {
-					return this; // eslint-disable-line no-invalid-this
-				};
-			},
-			out: 'function(){return this}',
-			validate(fn) {
-				expect(fn).toBeFunction();
-				const ctx = {ctx: 1};
-				expect(fn.call(ctx)).toBe(ctx);
-			}
-		});
-
 		describe('referencing global scope', () => {
 			itSerializes('in CommonJS context', {
 				in: () => () => [this, exports], // eslint-disable-line no-invalid-this, node/exports-style
