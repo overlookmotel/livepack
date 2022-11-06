@@ -3282,6 +3282,46 @@ describe('Code splitting', () => {
 					}
 				});
 
+				itSerializesEntries('unnamed split with hash in directory path', {
+					in() {
+						const obj1 = {};
+						const obj2 = {};
+						obj1.importObj2 = splitAsync(obj2);
+						obj2.importObj1 = splitAsync(obj1);
+						return {one: obj1};
+					},
+					splitChunkName: '[hash]/[name]',
+					outCjs: {
+						'one.js': 'module.exports=require("./NXW5XSB3/split.js")',
+						'DKSCUCE3/split.js': 'module.exports={importObj1:(0,()=>import("../NXW5XSB3/split.js"))}',
+						'NXW5XSB3/split.js': 'module.exports={importObj2:(0,()=>import("../DKSCUCE3/split.js"))}'
+					},
+					outEsm: {
+						'one.js': 'import a from"./NNN5CGYT/split.js";export default a',
+						'AIJCM24V/split.js': 'export default{importObj1:(0,()=>import("../NNN5CGYT/split.js"))}',
+						'NNN5CGYT/split.js': 'export default{importObj2:(0,()=>import("../AIJCM24V/split.js"))}'
+					},
+					outJs: {
+						'one.js': 'require("./NXW5XSB3/split.js")',
+						'DKSCUCE3/split.js': 'module.exports={importObj1:(0,()=>import("../NXW5XSB3/split.js"))}',
+						'NXW5XSB3/split.js': 'module.exports={importObj2:(0,()=>import("../DKSCUCE3/split.js"))}'
+					},
+					async validate({one: obj1}) {
+						expect(obj1).toBeObject();
+						expect(obj1).toHaveOwnPropertyNames(['importObj2']);
+						const {importObj2} = obj1;
+						expect(importObj2).toBeFunction();
+						const mod2 = await expectToResolveToModule(importObj2());
+						const obj2 = mod2.default;
+						expect(obj2).toBeObject();
+						expect(obj2).toHaveOwnPropertyNames(['importObj1']);
+						const {importObj1} = obj2;
+						expect(importObj1).toBeFunction();
+						const mod1 = await expectToResolveToModule(importObj1());
+						expect(mod1.default).toBe(obj1);
+					}
+				});
+
 				itSerializesEntries('named split with no hash', {
 					in() {
 						const obj1 = {};
