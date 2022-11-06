@@ -146,6 +146,38 @@ describe('eval', () => {
 						}
 					});
 				});
+
+				describe('`new.target`', () => {
+					itSerializes('from enclosing function', {
+						in() {
+							function outer() {
+								return eval('new.target');
+							}
+							// eslint-disable-next-line prefer-arrow-callback
+							return Reflect.construct(outer, [], function() { return 1; });
+						},
+						out: 'function(){return 1}',
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn()).toBe(1);
+						}
+					});
+
+					itSerializes('from within arrow functions', {
+						in() {
+							function outer() {
+								return () => () => eval('new.target');
+							}
+							// eslint-disable-next-line prefer-arrow-callback
+							return Reflect.construct(outer, [], function() { return 1; })()();
+						},
+						out: 'function(){return 1}',
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn()).toBe(1);
+						}
+					});
+				});
 			});
 
 			describe('functions', () => {
@@ -292,6 +324,57 @@ describe('eval', () => {
 							expect(args).toHaveLength(2);
 							expect(args[0]).toBe(arg1);
 							expect(args[1]).toBe(arg2);
+						}
+					});
+				});
+
+				describe('returning `new.target`', () => {
+					itSerializes('from enclosing function', {
+						in() {
+							function outer() {
+								return eval('() => new.target');
+							}
+							// eslint-disable-next-line prefer-arrow-callback
+							return Reflect.construct(outer, [], function() { return 1; });
+						},
+						out: '(a=>()=>a)(function(){return 1})',
+						validate(fn) {
+							expect(fn).toBeFunction();
+							const inner = fn();
+							expect(inner).toBeFunction();
+							expect(inner()).toBe(1);
+						}
+					});
+
+					itSerializes('from within arrow functions', {
+						in() {
+							function outer() {
+								return () => () => eval('() => new.target');
+							}
+							// eslint-disable-next-line prefer-arrow-callback
+							return Reflect.construct(outer, [], function() { return 1; })()();
+						},
+						out: '(a=>()=>a)(function(){return 1})',
+						validate(fn) {
+							expect(fn).toBeFunction();
+							const inner = fn();
+							expect(inner).toBeFunction();
+							expect(inner()).toBe(1);
+						}
+					});
+
+					itSerializes('from within function inside eval', {
+						in() {
+							function outer() {
+								return eval('(function() { return new.target; })');
+							}
+							return outer();
+						},
+						out: 'function(){return new.target}',
+						validate(fn) {
+							expect(fn).toBeFunction();
+							const ctor = function() { return 1; };
+							expect(Reflect.construct(fn, [], ctor)).toBe(ctor);
 						}
 					});
 				});

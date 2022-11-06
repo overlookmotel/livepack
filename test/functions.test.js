@@ -13,7 +13,7 @@ const {
 	itSerializes, createFixturesFunctions, stripSourceMapComment, stripLineBreaks
 } = require('./support/index.js');
 
-const {requireFixtures, createFixtures} = createFixturesFunctions(__filename);
+const {requireFixtures, requireFixture, createFixtures} = createFixturesFunctions(__filename);
 
 // Set prototype of `module.exports` to `Object.prototype`. Necessary for the test for a function
 // containing global `this`. Jest creates `module.exports` in another execution context,
@@ -3398,17 +3398,15 @@ describe('Functions', () => {
 		});
 
 		describe('referencing global scope', () => {
-			/*
-			// TODO Uncomment once https://github.com/overlookmotel/livepack/issues/446 resolved
 			itSerializes('in CommonJS context', {
-				in: () => () => new.target,
+				// Using a fixture because ESLint can't parse this file if included inline
+				in: () => requireFixture("'use strict'; module.exports = () => new.target;"),
 				out: '(a=>()=>a)()',
 				validate(fn) {
 					expect(fn).toBeFunction();
 					expect(fn()).toBeUndefined();
 				}
 			});
-			*/
 		});
 	});
 
