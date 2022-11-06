@@ -486,10 +486,68 @@ describe('eval', () => {
 				*/
 			});
 
-			itSerializesEqual('multi-statement eval', {
-				in: () => eval('const a = 123; a;'),
-				out: '123',
-				validate: num => expect(num).toBe(123)
+			describe('multi-statement eval', () => {
+				describe('with no prefix change', () => {
+					itSerializesEqual('with expression as last statement', {
+						in: () => eval('const a = 123; a;'),
+						out: '123',
+						validate: num => expect(num).toBe(123)
+					});
+
+					itSerializesEqual('with statement as last statement', {
+						in: () => eval('const a = 123; if (true) { a; } else { false; }'),
+						out: '123',
+						validate: num => expect(num).toBe(123)
+					});
+				});
+
+				describe('with prefix change', () => {
+					itSerializes('with expression as last statement', {
+						in() {
+							const srcPath = createFixture(`
+								'use strict';
+								const livepack_tracker = 123;
+								module.exports = eval('let ext = 456; () => [livepack_tracker, ext];');
+							`);
+							const fn = require(srcPath);
+
+							// Sanity check: Ensure var used has changed prefix outside eval
+							expect(transpiledFiles[srcPath]).toInclude(
+								'const [livepack1_tracker, livepack1_getScopeId] = require("'
+							);
+
+							return fn;
+						},
+						out: '(b=>a=>()=>[b,a])(123)(456)',
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn()).toEqual([123, 456]);
+						}
+					});
+
+					itSerializes('with statement as last statement', {
+						in() {
+							const srcPath = createFixture(`
+								'use strict';
+								const livepack_tracker = 123;
+								module.exports = eval('let ext = 456; if (true) { () => [livepack_tracker, ext]; } else { false; }');
+							`);
+							const fn = require(srcPath);
+
+							// Sanity check: Ensure var used has changed prefix outside eval
+							expect(transpiledFiles[srcPath]).toInclude(
+								'const [livepack1_tracker, livepack1_getScopeId] = require("'
+							);
+
+							return fn;
+						},
+						out: '(b=>a=>()=>[b,a])(123)(456)',
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn()).toEqual([123, 456]);
+						}
+					});
+				});
 			});
 
 			it('throws if invalid eval code', () => {
@@ -714,6 +772,20 @@ describe('eval', () => {
 						expect(fn).toBeFunction();
 						if (isOutput) expect(fn()[0]).not.toBe(1);
 					}
+				});
+			});
+
+			describe('multi-statement eval', () => {
+				itSerializesEqual('with expression as last statement', {
+					in: () => (0, eval)('const a = 123; a;'),
+					out: '123',
+					validate: num => expect(num).toBe(123)
+				});
+
+				itSerializesEqual('with statement as last statement', {
+					in: () => (0, eval)('const a = 123; if (true) { a; } else { false; }'),
+					out: '123',
+					validate: num => expect(num).toBe(123)
 				});
 			});
 		});
