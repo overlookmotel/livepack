@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.7.6
+
+Bug fixes:
+
+* Handle `new.target` in CommonJS and eval
+* Maintain return value of `eval` where statements
+
+Performance:
+
+* More efficient filename placeholder replacement
+
+No code:
+
+* Add JSDoc comments for serialize options
+
 ## 0.7.5
 
 Bug fixes:
