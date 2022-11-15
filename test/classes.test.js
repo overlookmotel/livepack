@@ -4342,6 +4342,32 @@ describe('Classes', () => {
 				}
 			});
 			/* eslint-enable jest/no-standalone-expect */
+
+			itSerializes('with = assignment pattern', {
+				in() {
+					class S {}
+					let {
+						C = class extends S {} // eslint-disable-line prefer-const
+					} = {};
+					return C;
+				},
+				out: `(()=>{
+					const a=Object.setPrototypeOf,
+						b=class S{},
+						c=(b=>b=class C{
+							constructor(...a){
+								return Reflect.construct(Object.getPrototypeOf(b),a,b)
+							}
+						})();
+					a(c,b);
+					a(c.prototype,b.prototype);
+					return c
+				})()`,
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					expect(Klass.name).toBe('C');
+				}
+			});
 		});
 
 		itSerializes('globals used in transpiled super do not clash with upper scope vars', {
