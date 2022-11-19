@@ -19,7 +19,7 @@ const {instrumentCodeImpl} = require('../../lib/instrument/instrument.js'),
 // Constants
 const TESTS_SUPPORT_DIR_PATH = `${__dirname}${pathSep}`,
 	TRANSPILED_FILES_PATH = `${TESTS_SUPPORT_DIR_PATH}transpiledFiles.js`,
-	DEBUG = !!process.env.LIVEPACK_DEBUG_REGISTER;
+	DEBUG = !!process.env.LIVEPACK_DEBUG_INSTRUMENT;
 
 // Exports
 
