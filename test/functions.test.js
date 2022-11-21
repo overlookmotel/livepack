@@ -3049,7 +3049,8 @@ describe('Functions', () => {
 				itSerializesIfNode16Point11('in class static block', {
 					// Using eval here as otherwise syntax error on Node < 16.11.0
 					// eslint-disable-next-line no-eval
-					in: () => eval(`
+					in: () => (0, eval)(`
+						'use strict';
 						function Outer() {
 							let fn;
 							class C { // eslint-disable-line no-unused-vars
@@ -6958,6 +6959,7 @@ describe('Functions', () => {
 			describe('function containing `eval()`', () => {
 				itSerializes('referencing own function', {
 					in: () => (0, eval)(`
+						'use strict';
 						function x() {
 							eval('0');
 							return x;
@@ -6966,7 +6968,7 @@ describe('Functions', () => {
 					`),
 					// TODO This should be output as a one-liner. No need for `a` to be a separate var.
 					out: `(()=>{
-						const a=(0,eval)("x=>x=(0,function(){eval(\\"0\\");return x})")();
+						const a=(0,eval)("\\"use strict\\";x=>x=(0,function(){eval(\\"0\\");return x})")();
 						Object.defineProperties(a,{name:{value:"x"}});
 						return a
 					})()`,
@@ -6979,6 +6981,7 @@ describe('Functions', () => {
 
 				itSerializes('referencing own function with assigment', {
 					in: () => (0, eval)(`
+						'use strict';
 						function x() {
 							eval('0');
 							x = 1;
@@ -6988,7 +6991,9 @@ describe('Functions', () => {
 					`),
 					// TODO This output should be shorter. No need for the var `b`.
 					out: `(()=>{
-						const a=(0,eval)("x=>[x=(0,function(){eval(\\"0\\");x=1;return x}),()=>x]")(),
+						const a=(0,eval)(
+								"\\"use strict\\";x=>[x=(0,function(){eval(\\"0\\");x=1;return x}),()=>x]"
+							)(),
 							b=a[0];
 						Object.defineProperties(b,{name:{value:"x"}});
 						return{
