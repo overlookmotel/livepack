@@ -7,17 +7,12 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js 16
-      uses: actions/setup-node@v2
+    - uses: actions/checkout@v3
+    - name: Use Node.js 18
+      uses: actions/setup-node@v3
       with:
-        node-version: 16
-    - name: Cache NPM
-      uses: actions/cache@v2
-      with:
-        path: ~/.npm
-        key: ${{ runner.OS }}-npm-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: ${{ runner.os }}-npm-
+        node-version: 18
+        cache: 'npm'
     - run: npm ci
     - run: npm run lint
 
@@ -29,17 +24,12 @@ jobs:
         node-version: [19, 18, 16, 14]
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
-    - name: Cache NPM
-      uses: actions/cache@v2
-      with:
-        path: ~/.npm
-        key: ${{ runner.OS }}-npm-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: ${{ runner.os }}-npm-
+        cache: 'npm'
     - run: npm i -g npm@latest
     - run: npm ci
     - run: npm run test-main
@@ -47,17 +37,12 @@ jobs:
   coverage:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js 16
-      uses: actions/setup-node@v2
+    - uses: actions/checkout@v3
+    - name: Use Node.js 18
+      uses: actions/setup-node@v3
       with:
-        node-version: 16
-    - name: Cache NPM
-      uses: actions/cache@v2
-      with:
-        path: ~/.npm
-        key: ${{ runner.OS }}-npm-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: ${{ runner.os }}-npm-
+        node-version: 18
+        cache: 'npm'
     - run: npm ci
     - run: npm run cover-main
     - name: Send report to Coveralls
