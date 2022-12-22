@@ -14,7 +14,8 @@ const {join: pathJoin, dirname} = require('path').posix,
 
 // Imports
 const createFixturesFunctions = require('./fixtures.js'),
-	internalSplitPoints = require('../../lib/shared/internal.js').splitPoints,
+	{splitPoints: internalSplitPoints, globals} = require('../../lib/shared/internal.js'),
+	{COMMON_JS_MODULE} = require('../../lib/shared/constants.js'),
 	transpiledFiles = require('./transpiledFiles.js');
 
 // Constants
@@ -29,7 +30,6 @@ module.exports = { // eslint-disable-line jest/no-export
 	stripSourceMapComment,
 	createFixturesFunctions,
 	tryCatch,
-	resetSplitPoints,
 	transpiledFiles
 };
 
@@ -38,6 +38,24 @@ const DEFAULT_OPTIONS = process.env.LIVEPACK_TEST_QUICK
 	? {minify: true, mangle: true, inline: true}
 	: null;
 const PROFILE_ONLY = process.env.LIVEPACK_TEST_PROFILE;
+
+// Hook to clean up internal state after each test
+const commonJsModules = [];
+globals.set = (value, props) => {
+	if (props.type === COMMON_JS_MODULE) commonJsModules.push(value);
+	return Map.prototype.set.call(globals, value, props);
+};
+
+afterEach(() => {
+	// Clear split points
+	internalSplitPoints.clear();
+
+	// Clear `module` instances from globals
+	for (const value of commonJsModules) {
+		globals.delete(value);
+	}
+	commonJsModules.length = 0;
+});
 
 /**
  * Wrap `itSerializes` to add `.skip()`, `.only()` and `.each()` methods, as with Jest's `it()`.
@@ -537,15 +555,4 @@ function tryCatch(fn) { // eslint-disable-line consistent-return
 	} catch (err) {
 		return err;
 	}
-}
-
-/**
- * Clear set of splits.
- * Intended to be called with `afterEach()` to keep each test isolated.
- * Splits are stored globally.
- * Tests should still pass without this, but they run slower.
- * @returns {undefined}
- */
-function resetSplitPoints() {
-	internalSplitPoints.clear();
 }

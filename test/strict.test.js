@@ -6,7 +6,7 @@
 /* eslint-disable strict, lines-around-directive */
 
 // Imports
-const {itSerializes, resetSplitPoints} = require('./support/index.js');
+const {itSerializes} = require('./support/index.js');
 
 // Tests
 
@@ -2296,8 +2296,6 @@ describe('Strict mode', () => {
 	});
 
 	describe('with code-splitting', () => {
-		afterEach(resetSplitPoints);
-
 		describe('determines strict mode in common files from format', () => {
 			function createInput() {
 				const shared = (0, () => {

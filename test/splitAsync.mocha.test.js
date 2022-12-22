@@ -15,7 +15,7 @@ const {splitAsync} = require('../index.js'), // livepack
 	expect = require('expect').default;
 
 // Imports
-const {createFixturesFunctions, resetSplitPoints} = require('./support/index.js');
+const {createFixturesFunctions} = require('./support/index.js');
 
 // Constants
 const NUM_FIXTURES = 5;
@@ -38,8 +38,6 @@ const fixturesPaths = Object.values(createFixtures(fixtureFiles));
 // Tests
 
 describe('splitAsync', () => {
-	afterEach(resetSplitPoints);
-
 	runTests(
 		(val, index) => {
 			if (!val) val = {x: index || 0};

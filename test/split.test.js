@@ -11,9 +11,7 @@ const {join: pathJoin, basename} = require('path'),
 	mapValues = require('lodash/mapValues');
 
 // Imports
-const {
-	itSerializes, stripSourceMapComment, stripLineBreaks, resetSplitPoints
-} = require('./support/index.js');
+const {itSerializes, stripSourceMapComment, stripLineBreaks} = require('./support/index.js');
 
 // Tests
 
@@ -2267,8 +2265,6 @@ describe('Code splitting', () => {
 	});
 
 	describe('split', () => {
-		afterEach(resetSplitPoints);
-
 		describe('splits value into separate file', () => {
 			itSerializesEntriesEqual('with no name argument', {
 				in() {
@@ -2691,8 +2687,6 @@ describe('Code splitting', () => {
 	});
 
 	describe('splitAsync', () => {
-		afterEach(resetSplitPoints);
-
 		describe('splits value into separate file and imports it', () => {
 			itSerializesEntries('with no name argument', {
 				in: () => ({
@@ -3774,8 +3768,6 @@ describe('Code splitting', () => {
 	});
 
 	describe('source maps use correct relative paths', () => {
-		afterEach(resetSplitPoints);
-
 		const testFilename = basename(__filename);
 		describe('with no slashes in names', () => {
 			it('output in same dir as source', () => {
