@@ -1638,7 +1638,7 @@ describe('eval', () => {
 			// `Object.setPrototypeOf` necessary because Jest creates `module.exports` in another
 			// execution context, so prototype of `export` object is a *different* `Object.prototype`.
 			// This is just an artefact of the testing environment - does not affect real code.
-			const input = requireFixture(`
+			const getInput = () => requireFixture(`
 				Object.setPrototypeOf(exports, Object.prototype);
 
 				const extA = 1;
@@ -1652,7 +1652,7 @@ describe('eval', () => {
 			`);
 
 			itSerializes('serializes correctly', {
-				in: () => input,
+				in: getInput,
 				out: `(()=>{
 					const a={},
 						b=(0,eval)("
@@ -1684,22 +1684,22 @@ describe('eval', () => {
 			});
 
 			itSerializes('can access vars from internal scope', {
-				in: () => input,
+				in: getInput,
 				validate: fn => expect(fn()().extD).toBe(4)
 			});
 
 			itSerializes('can access vars from internal scope of outer `eval()`', {
-				in: () => input,
+				in: getInput,
 				validate: fn => expect(fn()().extC).toBe(3)
 			});
 
 			itSerializes('can access vars from immediate upper scope', {
-				in: () => input,
+				in: getInput,
 				validate: fn => expect(fn()().extB).toBe(2)
 			});
 
 			itSerializes('can access vars from further upper scope', {
-				in: () => input,
+				in: getInput,
 				validate(fn) {
 					const res = fn()();
 					expect(res.extA).toBe(1);
@@ -1709,12 +1709,12 @@ describe('eval', () => {
 			});
 
 			itSerializes('can access `this` from external context', {
-				in: () => input,
+				in: getInput,
 				validate: fn => expect(fn()().this).toEqual({x: 5})
 			});
 
 			itSerializes('can access `arguments` from external context', {
-				in: () => input,
+				in: getInput,
 				validate(fn) {
 					const args = fn()().arguments;
 					expect(args).toBeArguments();
