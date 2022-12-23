@@ -605,6 +605,42 @@ describe('eval', () => {
 				});
 			});
 
+			describe('can define vars named same as CommonJS vars', () => {
+				itSerializes('const', {
+					in: () => eval('const module = 1, exports = 2, require = 3; () => [module, exports, require]'),
+					out: '((a,b,c)=>()=>[a,b,c])(1,2,3)',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						expect(fn()).toEqual([1, 2, 3]);
+					}
+				});
+
+				itSerializes('let', {
+					in: () => eval('let module = 1, exports = 2, require = 3; () => [module, exports, require]'),
+					out: '((a,b,c)=>()=>[a,b,c])(1,2,3)',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						expect(fn()).toEqual([1, 2, 3]);
+					}
+				});
+
+				itSerializes('class declaration', {
+					in: () => eval(`
+						class module {}
+						class exports {}
+						class require {}
+						() => [module, exports, require]
+					`),
+					out: '((a,b,c)=>()=>[a,b,c])(class module{},class exports{},class require{})',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						const classes = fn();
+						expect(classes).toBeArrayOfSize(3);
+						classes.forEach(klass => expect(klass).toBeFunction());
+					}
+				});
+			});
+
 			describe('handles internal var name prefixes', () => {
 				itSerializes('altered external to eval', {
 					in: `
