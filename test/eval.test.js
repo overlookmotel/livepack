@@ -8,7 +8,8 @@
 'use strict';
 
 // Modules
-const escapeRegex = require('lodash/escapeRegExp');
+const {serialize} = require('livepack'),
+	escapeRegex = require('lodash/escapeRegExp');
 
 // Imports
 const {
@@ -588,6 +589,20 @@ describe('eval', () => {
 				const stackLines = err.stack.split(/\r?\n/);
 				expect(stackLines[0]).toBe('SyntaxError: Illegal return statement');
 				expect(stackLines[1]).toMatch(new RegExp(`\\s+at fn \\(${escapeRegex(__filename)}:\\d+:\\d+\\)`));
+			});
+
+			describe('cannot serialize function referring to `require`', () => {
+				it('directly', () => {
+					const fn = eval('() => require');
+					expect(() => serialize(fn))
+						.toThrowWithMessage(Error, `Cannot serialize \`require\` or \`import\` (in ${__filename})`);
+				});
+
+				it("via CommonJS wrapper function's `arguments`", () => {
+					const fn = eval('() => arguments');
+					expect(() => serialize(fn))
+						.toThrowWithMessage(Error, `Cannot serialize \`require\` or \`import\` (in ${__filename})`);
+				});
 			});
 
 			describe('handles internal var name prefixes', () => {
