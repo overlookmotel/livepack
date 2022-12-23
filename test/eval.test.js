@@ -550,6 +550,52 @@ describe('eval', () => {
 				});
 			});
 
+			describe('called with', () => {
+				// Tests instrumentation does not change behavior
+				itSerializes('spread element acts as indirect eval', {
+					in() {
+						const x = 123; // eslint-disable-line no-unused-vars
+						return eval(...['() => x']);
+					},
+					strictEnv: false,
+					out: '()=>x',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						try {
+							const globalX = {};
+							global.x = globalX;
+							expect(fn()).toBe(globalX);
+						} finally {
+							delete global.x;
+						}
+					}
+				});
+
+				itSerializes('multiple arguments acts as direct eval', {
+					in() {
+						const x = 123; // eslint-disable-line no-unused-vars
+						return eval('() => x', 456, 789);
+					},
+					out: '(a=>()=>a)(123)',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						expect(fn()).toBe(123);
+					}
+				});
+
+				itSerializes('multiple arguments with spread acts as direct eval', {
+					in() {
+						const x = 123; // eslint-disable-line no-unused-vars
+						return eval('() => x', ...[456, 789]);
+					},
+					out: '(a=>()=>a)(123)',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						expect(fn()).toBe(123);
+					}
+				});
+			});
+
 			it('throws if invalid eval code', () => {
 				const err = tryCatch(() => eval('return 123;'));
 				expect(err).toBeInstanceOf(SyntaxError);
