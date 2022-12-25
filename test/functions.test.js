@@ -9,11 +9,7 @@
 const parseNodeVersion = require('parse-node-version');
 
 // Imports
-const {
-	itSerializes, createFixturesFunctions, stripSourceMapComment, stripLineBreaks
-} = require('./support/index.js');
-
-const {requireFixtures, requireFixture, createFixtures} = createFixturesFunctions(__filename);
+const {itSerializes, stripSourceMapComment, stripLineBreaks} = require('./support/index.js');
 
 // Set prototype of `module.exports` to `Object.prototype`. Necessary for the test for a function
 // containing global `this`. Jest creates `module.exports` in another execution context,
@@ -3400,7 +3396,7 @@ describe('Functions', () => {
 		describe('referencing global scope', () => {
 			itSerializes('in CommonJS context', {
 				// Using a fixture because ESLint can't parse this file if included inline
-				in: () => requireFixture("'use strict'; module.exports = () => new.target;"),
+				in: "'use strict'; module.exports = () => new.target;",
 				out: '(a=>()=>a)()',
 				validate(fn) {
 					expect(fn).toBeFunction();
@@ -8459,41 +8455,39 @@ describe('Functions', () => {
 	});
 
 	itSerializes('distinguish scopes and functions with same block IDs from different files', {
-		in() {
-			return requireFixtures({
-				'index.js': `
-					'use strict';
-					const inner1 = require('./1.js'),
-						{inner2, inner3} = require('./2.js');
-					module.exports = {inner1, inner2, inner3};
-				`,
-				'1.js': `
-					'use strict';
-					const extA = {extA1: 1};
-					function outer(extB) {
-						return () => [extA, extB];
-					}
-					module.exports = outer({extB1: 2});
-				`,
-				'2.js': `
-					'use strict';
-					const inner3 = require('./3.js');
-					const extA = {extA2: 3};
-					function outer(extB) {
-						return () => [extA, extB];
-					}
-					const inner2 = outer({extB2: 4});
-					module.exports = {inner2, inner3};
-				`,
-				'3.js': `
-					'use strict';
-					const extA = {extA3: 5};
-					function outer(extB) {
-						return () => [extA, extB];
-					}
-					module.exports = outer({extB3: 6});
-				`
-			});
+		in: {
+			'index.js': `
+				'use strict';
+				const inner1 = require('./1.js'),
+					{inner2, inner3} = require('./2.js');
+				module.exports = {inner1, inner2, inner3};
+			`,
+			'1.js': `
+				'use strict';
+				const extA = {extA1: 1};
+				function outer(extB) {
+					return () => [extA, extB];
+				}
+				module.exports = outer({extB1: 2});
+			`,
+			'2.js': `
+				'use strict';
+				const inner3 = require('./3.js');
+				const extA = {extA2: 3};
+				function outer(extB) {
+					return () => [extA, extB];
+				}
+				const inner2 = outer({extB2: 4});
+				module.exports = {inner2, inner3};
+			`,
+			'3.js': `
+				'use strict';
+				const extA = {extA3: 5};
+				function outer(extB) {
+					return () => [extA, extB];
+				}
+				module.exports = outer({extB3: 6});
+			`
 		},
 		out: `{
 			inner1:(b=>a=>()=>[b,a])({extA1:1})({extB1:2}),
@@ -11177,18 +11171,16 @@ describe('Functions', () => {
 	});
 
 	itSerializes('`*/` in filename does not disrupt functioning', {
-		in() {
-			const path = createFixtures({
-				'foo*/index.js': 'const ext = 1; module.exports = () => ext;'
-			})['foo*/index.js'];
-			expect(path).toInclude('*/');
-			return require(path); // eslint-disable-line global-require, import/no-dynamic-require
+		in: {
+			'foo*/index.js': 'const ext = 1; module.exports = () => ext;'
 		},
 		out: '(a=>()=>a)(1)',
 		strictEnv: false,
-		validate(fn) {
+		validate(fn, {fixturePath}) {
 			expect(fn).toBeFunction();
 			expect(fn()).toBe(1);
+
+			expect(fixturePath).toInclude('*/');
 		}
 	});
 });

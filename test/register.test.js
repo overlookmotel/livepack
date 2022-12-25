@@ -10,9 +10,7 @@ const Module = require('module'),
 	pathSep = require('path').sep;
 
 // Imports
-const {createFixturesFunctions} = require('./support/index.js');
-
-const {serializeInNewProcess} = createFixturesFunctions(__filename);
+const {serializeInNewProcess} = require('./support/index.js');
 
 // Tests
 

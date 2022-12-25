@@ -1,15 +1,18 @@
 /* --------------------
  * livepack
- * Function to create fixtures from inline definitions
+ * Tests fixtures functions
  * ------------------*/
 
 'use strict';
 
 // Modules
 const {join: pathJoin, dirname} = require('path'),
-	{writeFileSync, mkdirsSync} = require('fs-extra'),
+	{writeFileSync, mkdirsSync, rmSync} = require('fs-extra'),
 	{spawn} = require('child_process'),
 	{isString} = require('is-it-type');
+
+// Imports
+const transpiledFiles = require('./transpiledFiles.js');
 
 // Constants
 const TESTS_DIR_PATH = pathJoin(__dirname, '../'),
@@ -20,52 +23,35 @@ const TESTS_DIR_PATH = pathJoin(__dirname, '../'),
 
 // Exports
 
+module.exports = {createFixtures, cleanupFixtures, withFixtures, serializeInNewProcess};
+
+// `fixturesPath` will be unique for each test file
+const fixturesPath = pathJoin(TEMP_DIR_PATH, require.main.filename.slice(TESTS_DIR_PATH.length));
 let fixtureNum = 0;
 
 /**
- * Create fixtures functions for use in a test file.
- * Takes test file's path as argument and creates a temp dir path which is unique for this test file.
- * This ensures that fixtures paths do not clash when test files are run in parallel.
- * @param {string} testPath - Path to test file
- * @returns {Object} - Fixtures functions
- */
-module.exports = function createFixturesFunctions(testPath) {
-	// Create temp dir path, incorporating test file's filename
-	const tempPath = pathJoin(TEMP_DIR_PATH, testPath.slice(TESTS_DIR_PATH.length));
-
-	// Return fixtures functions
-	return {
-		createFixtures: files => createFixtures(tempPath, files),
-		createFixture: code => createFixture(tempPath, code),
-		requireFixtures: files => requireFixtures(tempPath, files),
-		requireFixture: code => requireFixture(tempPath, code),
-		serializeInNewProcess: files => serializeInNewProcess(tempPath, files)
-	};
-};
-
-/**
  * Write fixtures files to unique temp dir.
- * `files` is a Object of form `{'index.js': 'content of index.js'}`.
- * Returns Object mapping filenames to paths
- * e.g. `{'index.js': '/path/to/livepack/test/_temp/testName/0/index.js'}`
+ * `files` is a Object of form `{'index.js': 'content of index.js'}`
+ * or a string containing content of a single file.
+ * Returns array of full file paths.
  *
- * @param {string} tempPath - Temp dir path
- * @param {Object} files - Files
- * @returns {Object} - Mapping of names to full paths
+ * @param {Object|string} files - Object mapping filenames to file content, or single file content string
+ * @returns {Array<string>} - Array of full file paths
  */
-function createFixtures(tempPath, files) {
+function createFixtures(files) {
 	// Create unique temp path
-	tempPath = pathJoin(tempPath, `${fixtureNum++}`);
+	const fixturePath = pathJoin(fixturesPath, `${fixtureNum++}`);
 
 	// Write files to temp dir
-	const paths = Object.create(null);
+	files = conformFiles(files);
+	const paths = [];
 	for (const filename of Object.keys(files)) {
-		const filePath = pathJoin(tempPath, filename);
+		const path = pathJoin(fixturePath, filename);
 
-		mkdirsSync(dirname(filePath));
-		writeFileSync(filePath, files[filename]);
+		mkdirsSync(dirname(path));
+		writeFileSync(path, files[filename]);
 
-		paths[filename] = filePath;
+		paths.push(path);
 	}
 
 	// Return file paths
@@ -73,45 +59,75 @@ function createFixtures(tempPath, files) {
 }
 
 /**
- * Write a single fixture file to temp dir and return path to file.
- * @param {string} tempPath - Temp dir path
- * @param {string} code - File content
- * @returns {string} - File path
+ * Cleanup fixtures.
+ * Delete files from disc, delete from `transpiledFiles`.
+ * @param {Array<string>} paths - Array of fixture file paths
+ * @returns {undefined}
  */
-function createFixture(tempPath, code) {
-	return createFixtures(tempPath, {[DEFAULT_FILENAME]: code})[DEFAULT_FILENAME];
+function cleanupFixtures(paths) {
+	for (const path of paths) {
+		rmSync(path);
+		delete transpiledFiles[path];
+	}
 }
 
 /**
- * Write fixtures files to unique temp dir and `require()` first file.
- * @param {string} tempPath - Temp dir path
- * @param {Object} files - Files
- * @returns {*} - Result of `require()`-ing first file
+ * Run a function with fixtures.
+ *
+ * Write fixtures files to disc and `require()` first file.
+ * Pass that input to function provided, along with info `{fixturePath, fixturePaths, transpiled}`:
+ *   - `path` is the path to first fixture file on disc
+ *   - `paths` is an array of paths to fixtures files
+ *   - `transpiled` is the content of first file after instrumentation
+ * Then clean up fixtures after provided function returns.
+ * If provided function returns a Promise, promise is awaited before cleanup.
+ *
+ * @param {Object|string} files - Object mapping filenames to file content, or single file content string
+ * @param {Function} fn - Function to run with fixtures
+ * @returns {*} - Return value of passed-in function
+ * @throws {*} - If `require()`-ing fixture throws, or passed-in function throws
  */
-function requireFixtures(tempPath, files) {
-	const fixturesPaths = createFixtures(tempPath, files);
-	const path = fixturesPaths[Object.keys(fixturesPaths)[0]];
-	return require(path); // eslint-disable-line global-require, import/no-dynamic-require
-}
+function withFixtures(files, fn) {
+	// Create fixtures
+	const paths = createFixtures(files);
+	const cleanup = () => cleanupFixtures(paths);
 
-/**
- * Write a single fixture file to temp dir and `require()` it.
- * @param {string} tempPath - Temp dir path
- * @param {string} code - File content
- * @returns {*} - Result of `require()`-ing file
- */
-function requireFixture(tempPath, code) {
-	return requireFixtures(tempPath, {[DEFAULT_FILENAME]: code});
+	try {
+		// `require()` first fixture file
+		const path = paths[0];
+		const input = require(path); // eslint-disable-line global-require, import/no-dynamic-require
+
+		// Call test function
+		const res = fn(input, {path, paths, transpiled: transpiledFiles[path]});
+
+		if (res instanceof Promise) {
+			return res.then(
+				(value) => {
+					cleanup();
+					return value;
+				},
+				(err) => {
+					cleanup();
+					throw err;
+				}
+			);
+		}
+
+		cleanup();
+		return res;
+	} catch (err) {
+		cleanup();
+		throw err;
+	}
 }
 
 /**
  * Serialize fixture files in child process.
- * @param {string} tempPath - Temp dir path
  * @param {Object|string} files - Files (if string, will be used as `index.js` file)
  * @returns {string} - Serialized output
  */
-async function serializeInNewProcess(tempPath, files) {
-	if (isString(files)) files = {[DEFAULT_FILENAME]: files};
+async function serializeInNewProcess(files) {
+	files = conformFiles(files);
 
 	files = {
 		'entry.js': [
@@ -123,7 +139,7 @@ async function serializeInNewProcess(tempPath, files) {
 		...files
 	};
 
-	const path = createFixtures(tempPath, files)['entry.js'];
+	const path = createFixtures(files)[0];
 	const js = await spawnNode(path);
 	return js.trim();
 }
@@ -145,4 +161,13 @@ function spawnNode(path) {
 			}
 		});
 	});
+}
+
+/**
+ * Conform `files` to an object mapping filename to file content
+ * @param {Object|string} files - Object mapping filenames to file content, or single file content string
+ * @returns {Object} - Object mapping filenames to file content
+ */
+function conformFiles(files) {
+	return isString(files) ? {[DEFAULT_FILENAME]: files} : files;
 }

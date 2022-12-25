@@ -6,17 +6,13 @@
 'use strict';
 
 // Imports
-const {
-	itSerializes, itSerializesEqual, createFixturesFunctions, stripLineBreaks
-} = require('./support/index.js');
-
-const {requireFixture, requireFixtures} = createFixturesFunctions(__filename);
+const {itSerializes, itSerializesEqual, stripLineBreaks} = require('./support/index.js');
 
 // Tests
 
 describe('`module`', () => {
 	itSerializes('exported directly', {
-		in: () => requireFixture('module.exports = module;'),
+		in: 'module.exports = module;',
 		out: '(()=>{const a={};a.exports=a;return a})()',
 		validate(mod, {isOutput}) {
 			expect(mod).toBeObject();
@@ -26,14 +22,14 @@ describe('`module`', () => {
 	});
 
 	itSerializes('from another module', {
-		in: () => requireFixtures({
+		in: {
 			'index.js': `
 				'use strict';
 				const otherModule = require('./other.js');
 				module.exports = () => otherModule;
 			`,
 			'other.js': 'module.exports = module;'
-		}),
+		},
 		out: '(()=>{const a={};a.exports=a;return(a=>()=>a)(a)})()',
 		validate(fn, {isOutput}) {
 			expect(fn).toBeFunction();
@@ -46,7 +42,7 @@ describe('`module`', () => {
 	});
 
 	itSerializes('in scope of function', {
-		in: () => requireFixture("'use strict';module.exports = () => module;"),
+		in: "'use strict';module.exports = () => module;",
 		out: '(()=>{const a={},b=(a=>()=>a)(a);a.exports=b;return b})()',
 		validate(fn, {isOutput}) {
 			expect(fn).toBeFunction();
@@ -58,11 +54,11 @@ describe('`module`', () => {
 	});
 
 	itSerializes('var reassigned', {
-		in: () => requireFixture(`
+		in: `
 			'use strict';
 			module.exports = () => module;
 			module = 123;
-		`),
+		`,
 		out: '(a=>()=>a)(123)',
 		validate(fn) {
 			expect(fn).toBeFunction();
@@ -73,16 +69,16 @@ describe('`module`', () => {
 
 describe('`exports`', () => {
 	itSerializes('is resolved correctly in scope of function', {
-		in: () => requireFixture(
-			// `Object.setPrototypeOf` necessary because Jest creates `module.exports` in another
-			// execution context, so prototype of `export` object is a *different* `Object.prototype`.
-			// This is just an artefact of the testing environment - does not affect real code.
-			`'use strict';
+		// `Object.setPrototypeOf` necessary because Jest creates `module.exports` in another
+		// execution context, so prototype of `export` object is a *different* `Object.prototype`.
+		// This is just an artefact of the testing environment - does not affect real code.
+		in: `
+			'use strict';
 			Object.setPrototypeOf(exports, Object.prototype);
 			exports.x = () => {
 				exports.y = 123;
-			};`
-		),
+			};
+		`,
 		out: '(()=>{const a=(a=>[b=>a=b,()=>{a.y=123}])(),b={x:a[1]};a[0](b);return b})()',
 		validate(exp, {isInput}) {
 			expect(exp).toBeObject();
