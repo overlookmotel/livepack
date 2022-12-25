@@ -19,7 +19,7 @@ describe('Internal vars created by instrumentation do not interfere with code', 
 		out: '()=>typeof livepack_tracker',
 		validate(fn) {
 			// Check the temp var name which Babel transform creates matches the one being tested for
-			// NB code for this file is injected into `files` in babel transform
+			// NB code for this file is injected into `transpiledFiles` in babel transform
 			// (see `test/support/transform.js`)
 			expect(transpiledFiles[__filename]).toMatch(
 				/const \[livepack1_tracker, livepack1_getScopeId\] = require\("/
@@ -36,7 +36,7 @@ describe('Internal vars created by instrumentation do not interfere with code', 
 		out: '(a=>()=>a&&typeof livepack_scopeId_2)({})',
 		validate(fn) {
 			// Check the temp var name which Babel transform creates matches the one being tested for
-			// NB code for this file is injected into `files` in babel transform
+			// NB code for this file is injected into `transpiledFiles` in babel transform
 			// (see `test/support/transform.js`)
 			expect(transpiledFiles[__filename])
 				.toMatch(/const( )livepack1_scopeId_2 = livepack1_getScopeId\(\);/);
@@ -71,7 +71,7 @@ describe('Internal vars created by instrumentation do not interfere with code', 
 		})()`,
 		validate(obj) {
 			// Check the temp var name which Babel transform creates matches the one being tested for
-			// NB code for this file is injected into `files` in babel transform
+			// NB code for this file is injected into `transpiledFiles` in babel transform
 			// (see `test/support/transform.js`)
 			expect(transpiledFiles[__filename]).toMatch(/Object.setPrototypeOf\(livepack1_temp_21 =/);
 
