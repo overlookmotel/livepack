@@ -3,7 +3,7 @@
  * Tests for `eval`
  * ------------------*/
 
-/* eslint-disable no-eval, global-require, import/no-dynamic-require */
+/* eslint-disable no-eval */
 
 'use strict';
 
@@ -12,11 +12,8 @@ const escapeRegex = require('lodash/escapeRegExp');
 
 // Imports
 const {
-	itSerializes, itSerializesEqual, createFixturesFunctions, tryCatch,
-	stripSourceMapComment, stripLineBreaks, transpiledFiles
+	itSerializes, itSerializesEqual, tryCatch, stripSourceMapComment, stripLineBreaks
 } = require('./support/index.js');
-
-const {createFixture, requireFixture} = createFixturesFunctions(__filename);
 
 // Tests
 
@@ -468,14 +465,14 @@ describe('eval', () => {
 					});
 
 					itSerializes('at top level', {
-						in: () => requireFixture(`
+						in: `
 							let fn;
 							const ext = {x: 1};
 							const obj = {
 								[fn = eval('() => ext')]() {}
 							};
 							module.exports = fn;
-						`),
+						`,
 						out: '(a=>()=>a)({x:1})',
 						validate(fn) {
 							expect(fn).toBeFunction();
@@ -503,48 +500,34 @@ describe('eval', () => {
 
 				describe('with prefix change', () => {
 					itSerializes('with expression as last statement', {
-						in() {
-							const srcPath = createFixture(`
-								'use strict';
-								const livepack_tracker = 123;
-								module.exports = eval('let ext = 456; () => [livepack_tracker, ext];');
-							`);
-							const fn = require(srcPath);
-
-							// Sanity check: Ensure var used has changed prefix outside eval
-							expect(transpiledFiles[srcPath]).toInclude(
-								'const [livepack1_tracker, livepack1_getScopeId] = require("'
-							);
-
-							return fn;
-						},
+						in: `
+							'use strict';
+							const livepack_tracker = 123;
+							module.exports = eval('let ext = 456; () => [livepack_tracker, ext];');
+						`,
 						out: '(b=>a=>()=>[b,a])(123)(456)',
-						validate(fn) {
+						validate(fn, {transpiled}) {
 							expect(fn).toBeFunction();
 							expect(fn()).toEqual([123, 456]);
+
+							// Sanity check: Ensure var used has changed prefix outside eval
+							expect(transpiled).toInclude('const [livepack1_tracker, livepack1_getScopeId] = require(');
 						}
 					});
 
 					itSerializes('with statement as last statement', {
-						in() {
-							const srcPath = createFixture(`
-								'use strict';
-								const livepack_tracker = 123;
-								module.exports = eval('let ext = 456; if (true) { () => [livepack_tracker, ext]; } else { false; }');
-							`);
-							const fn = require(srcPath);
-
-							// Sanity check: Ensure var used has changed prefix outside eval
-							expect(transpiledFiles[srcPath]).toInclude(
-								'const [livepack1_tracker, livepack1_getScopeId] = require("'
-							);
-
-							return fn;
-						},
+						in: `
+							'use strict';
+							const livepack_tracker = 123;
+							module.exports = eval('let ext = 456; if (true) { () => [livepack_tracker, ext]; } else { false; }');
+						`,
 						out: '(b=>a=>()=>[b,a])(123)(456)',
-						validate(fn) {
+						validate(fn, {transpiled}) {
 							expect(fn).toBeFunction();
 							expect(fn()).toEqual([123, 456]);
+
+							// Sanity check: Ensure var used has changed prefix outside eval
+							expect(transpiled).toInclude('const [livepack1_tracker, livepack1_getScopeId] = require(');
 						}
 					});
 				});
@@ -609,82 +592,62 @@ describe('eval', () => {
 
 			describe('handles internal var name prefixes', () => {
 				itSerializes('altered external to eval', {
-					in() {
-						const srcPath = createFixture(`
-							'use strict';
-							const livepack_tracker = 1;
-							module.exports = eval('() => livepack_tracker');
-						`);
-						const fn = require(srcPath);
+					in: `
+						'use strict';
+						const livepack_tracker = 1;
+						module.exports = eval('() => livepack_tracker');
+					`,
+					out: '(a=>()=>a)(1)',
+					validate(fn, {transpiled}) {
+						expect(fn()).toBe(1);
 
 						// Sanity check: Ensure var used has changed prefix outside eval
-						expect(transpiledFiles[srcPath]).toInclude(
-							'const [livepack1_tracker, livepack1_getScopeId] = require("'
-						);
-
-						return fn;
-					},
-					out: '(a=>()=>a)(1)',
-					validate: fn => expect(fn()).toBe(1)
+						expect(transpiled).toInclude('const [livepack1_tracker, livepack1_getScopeId] = require(');
+					}
 				});
 
 				itSerializes('altered internal to eval', {
-					in() {
-						const srcPath = createFixture(`
-							'use strict';
-							module.exports = eval('const livepack_tracker = 1; () => livepack_tracker');
-						`);
-						const fn = require(srcPath);
+					in: `
+						'use strict';
+						module.exports = eval('const livepack_tracker = 1; () => livepack_tracker');
+					`,
+					out: '(a=>()=>a)(1)',
+					validate(fn, {transpiled}) {
+						expect(fn()).toBe(1);
 
 						// Sanity check: Ensure var used has not changed prefix outside eval
-						expect(transpiledFiles[srcPath]).toInclude(
-							'const [livepack_tracker, livepack_getScopeId] = require("'
-						);
-
-						return fn;
-					},
-					out: '(a=>()=>a)(1)',
-					validate: fn => expect(fn()).toBe(1)
+						expect(transpiled).toInclude('const [livepack_tracker, livepack_getScopeId] = require(');
+					}
 				});
 
 				itSerializes('altered internal and external to eval, matched prefixes', {
-					in() {
-						const srcPath = createFixture(`
-							'use strict';
-							const livepack_tracker = 1;\n
-							module.exports = eval('const livepack_tracker = 2; () => livepack_tracker');
-						`);
-						const fn = require(srcPath);
+					in: `
+						'use strict';
+						const livepack_tracker = 1;\n
+						module.exports = eval('const livepack_tracker = 2; () => livepack_tracker');
+					`,
+					out: '(a=>()=>a)(2)',
+					validate(fn, {transpiled}) {
+						expect(fn()).toBe(2);
 
 						// Sanity check: Ensure var used has changed prefix outside eval
-						expect(transpiledFiles[srcPath]).toInclude(
-							'const [livepack1_tracker, livepack1_getScopeId] = require("'
-						);
-
-						return fn;
-					},
-					out: '(a=>()=>a)(2)',
-					validate: fn => expect(fn()).toBe(2)
+						expect(transpiled).toInclude('const [livepack1_tracker, livepack1_getScopeId] = require(');
+					}
 				});
 
 				itSerializes('altered internal and external to eval, unmatched prefixes', {
-					in() {
-						const srcPath = createFixture(`
-							'use strict';
-							const livepack_tracker = 1;
-							module.exports = eval('const livepack1_tracker = 2; () => [livepack_tracker, livepack1_tracker]');
-						`);
-						const fn = require(srcPath);
+					in: `
+						'use strict';
+						const livepack_tracker = 1;
+						module.exports = eval('const livepack1_tracker = 2; () => [livepack_tracker, livepack1_tracker]');
+					`,
+					out: '(b=>a=>()=>[b,a])(1)(2)',
+					validate(fn, {transpiled}) {
+						expect(fn()).toEqual([1, 2]);
 
 						// Sanity check: Ensure var used has changed prefix outside eval
-						expect(transpiledFiles[srcPath]).toInclude(
-							'const [livepack1_tracker, livepack1_getScopeId] = require("'
-						);
-
-						return fn;
-					},
-					out: '(b=>a=>()=>[b,a])(1)(2)',
-					validate: fn => expect(fn()).toEqual([1, 2])
+						expect(transpiled).toInclude('const [livepack1_tracker, livepack1_getScopeId] = require(');
+					}
 				});
 			});
 		});
@@ -843,7 +806,7 @@ describe('eval', () => {
 				// `Object.setPrototypeOf` necessary because Jest creates `module.exports` in another
 				// execution context, so prototype of `export` object is a *different* `Object.prototype`.
 				// This is just an artefact of the testing environment - does not affect real code.
-				const getInput = () => requireFixture(`
+				const input = `
 					Object.setPrototypeOf(exports, Object.prototype);
 
 					const extA = 1;
@@ -864,10 +827,10 @@ describe('eval', () => {
 						var extE = 5;
 						const extF = 6;
 					}
-				`);
+				`;
 
 				itSerializes('serializes correctly', {
-					in: getInput,
+					in: input,
 					out: `(()=>{
 						const a={},
 							b=(0,eval)("
@@ -904,17 +867,17 @@ describe('eval', () => {
 				});
 
 				itSerializes('can access vars from internal scope', {
-					in: getInput,
+					in: input,
 					validate: fn => expect(fn().extC).toBe(3)
 				});
 
 				itSerializes('can access vars from immediate upper scope', {
-					in: getInput,
+					in: input,
 					validate: fn => expect(fn().extB).toBe(2)
 				});
 
 				itSerializes('can access vars from further upper scope', {
-					in: getInput,
+					in: input,
 					validate(fn) {
 						const res = fn();
 						expect(res.extA).toBe(1);
@@ -924,27 +887,27 @@ describe('eval', () => {
 				});
 
 				itSerializes('can access vars declared later in file', {
-					in: getInput,
+					in: input,
 					validate: fn => expect(fn().extD).toBe(4)
 				});
 
 				itSerializes('can access vars declared with `var` in block nested in root', {
-					in: getInput,
+					in: input,
 					validate: fn => expect(fn().extE).toBe(5)
 				});
 
 				itSerializes('cannot access vars declared with `const` in block nested in root', {
-					in: getInput,
+					in: input,
 					validate: fn => expect(fn().typeofExtF).toBe('undefined')
 				});
 
 				itSerializes('can access `this` from external context', {
-					in: getInput,
+					in: input,
 					validate: fn => expect(fn().this).toEqual({x: 7})
 				});
 
 				itSerializes('can access `arguments` from external context', {
-					in: getInput,
+					in: input,
 					validate(fn) {
 						const args = fn().arguments;
 						expect(args).toBeArguments();
@@ -960,7 +923,7 @@ describe('eval', () => {
 				// `Object.setPrototypeOf` necessary because Jest creates `module.exports` in another
 				// execution context, so prototype of `export` object is a *different* `Object.prototype`.
 				// This is just an artefact of the testing environment - does not affect real code.
-				const getInput = () => requireFixture(`
+				const input = `
 					Object.setPrototypeOf(exports, Object.prototype);
 
 					const extA = 1;
@@ -981,10 +944,10 @@ describe('eval', () => {
 						var extE = 5;
 						const extF = 6;
 					}
-				`);
+				`;
 
 				itSerializes('serializes correctly', {
-					in: getInput,
+					in: input,
 					out: `(()=>{
 						const a={},
 							b=(0,eval)("
@@ -1014,17 +977,17 @@ describe('eval', () => {
 				});
 
 				itSerializes('can access vars from internal scope', {
-					in: getInput,
+					in: input,
 					validate: fn => expect(fn().extC).toBe(3)
 				});
 
 				itSerializes('can access vars from immediate upper scope', {
-					in: getInput,
+					in: input,
 					validate: fn => expect(fn().extB).toBe(2)
 				});
 
 				itSerializes('can access vars from further upper scope', {
-					in: getInput,
+					in: input,
 					validate(fn) {
 						const res = fn();
 						expect(res.extA).toBe(1);
@@ -1034,27 +997,27 @@ describe('eval', () => {
 				});
 
 				itSerializes('can access vars declared later in file', {
-					in: getInput,
+					in: input,
 					validate: fn => expect(fn().extD).toBe(4)
 				});
 
 				itSerializes('can access vars declared with `var` in block nested in root', {
-					in: getInput,
+					in: input,
 					validate: fn => expect(fn().extE).toBe(5)
 				});
 
 				itSerializes('cannot access vars declared with `const` in block nested in root', {
-					in: getInput,
+					in: input,
 					validate: fn => expect(fn().typeofExtF).toBe('undefined')
 				});
 
 				itSerializes('cannot access `this` from external context', {
-					in: getInput,
+					in: input,
 					validate: fn => expect(fn.call({y: 77}).this).toEqual({y: 77})
 				});
 
 				itSerializes('cannot access `arguments` from external context', {
-					in: getInput,
+					in: input,
 					validate(fn) {
 						const args = fn(88, 99, 1010).arguments;
 						expect(args).toBeArguments();
@@ -1070,7 +1033,7 @@ describe('eval', () => {
 				// `Object.setPrototypeOf` necessary because Jest creates `module.exports` in another
 				// execution context, so prototype of `export` object is a *different* `Object.prototype`.
 				// This is just an artefact of the testing environment - does not affect real code.
-				const getInput = () => requireFixture(`
+				const input = `
 					Object.setPrototypeOf(exports, Object.prototype);
 
 					const extA = 1;
@@ -1091,10 +1054,10 @@ describe('eval', () => {
 						var extE = 5;
 						const extF = 6;
 					}
-				`);
+				`;
 
 				itSerializes('serializes correctly', {
-					in: getInput,
+					in: input,
 					out: `(()=>{
 						const a={},
 							b=(0,eval)("
@@ -1133,17 +1096,17 @@ describe('eval', () => {
 				});
 
 				itSerializes('can access vars from internal scope', {
-					in: getInput,
+					in: input,
 					validate: fn => expect(fn()().extC).toBe(3)
 				});
 
 				itSerializes('can access vars from immediate upper scope', {
-					in: getInput,
+					in: input,
 					validate: fn => expect(fn()().extB).toBe(2)
 				});
 
 				itSerializes('can access vars from further upper scope', {
-					in: getInput,
+					in: input,
 					validate(fn) {
 						const res = fn()();
 						expect(res.extA).toBe(1);
@@ -1153,27 +1116,27 @@ describe('eval', () => {
 				});
 
 				itSerializes('can access vars declared later in file', {
-					in: getInput,
+					in: input,
 					validate: fn => expect(fn()().extD).toBe(4)
 				});
 
 				itSerializes('can access vars declared with `var` in block nested in root', {
-					in: getInput,
+					in: input,
 					validate: fn => expect(fn()().extE).toBe(5)
 				});
 
 				itSerializes('cannot access vars declared with `const` in block nested in root', {
-					in: getInput,
+					in: input,
 					validate: fn => expect(fn()().typeofExtF).toBe('undefined')
 				});
 
 				itSerializes('can access `this` from external context', {
-					in: getInput,
+					in: input,
 					validate: fn => expect(fn()().this).toEqual({x: 7})
 				});
 
 				itSerializes('can access `arguments` from external context', {
-					in: getInput,
+					in: input,
 					validate(fn) {
 						const args = fn()().arguments;
 						expect(args).toBeArguments();
@@ -1187,7 +1150,7 @@ describe('eval', () => {
 
 			describe('prevents shadowed vars in upper scopes being accessible to eval', () => {
 				itSerializes('simple case', {
-					in: () => requireFixture(`
+					in: `
 						'use strict';
 						const extA = 1,
 							extB = 2;
@@ -1199,7 +1162,7 @@ describe('eval', () => {
 							};
 						}
 						module.exports = fns;
-					`),
+					`,
 					out: `(()=>{
 						const a=(0,eval)("
 								\\"use strict\\";
@@ -1221,7 +1184,7 @@ describe('eval', () => {
 				});
 
 				itSerializes('where shadowed var block is separate', {
-					in: () => requireFixture(`
+					in: `
 						'use strict';
 						const fns = {};
 						const extA = 1;
@@ -1236,7 +1199,7 @@ describe('eval', () => {
 							fns.getOuterExts = () => ({extA, extB});
 						}
 						module.exports = fns;
-					`),
+					`,
 					out: `(()=>{
 						const a=(0,eval)("
 								\\"use strict\\";
@@ -1258,7 +1221,7 @@ describe('eval', () => {
 				});
 
 				itSerializes('where shadowed var introduced to scope chain later', {
-					in: () => requireFixture(`
+					in: `
 						'use strict';
 						const fns = {};
 						const extA = 1;
@@ -1277,7 +1240,7 @@ describe('eval', () => {
 							}
 						}
 						module.exports = fns;
-					`),
+					`,
 					out: `(()=>{
 						const a=(0,eval)("
 								\\"use strict\\";
@@ -1301,7 +1264,7 @@ describe('eval', () => {
 
 			describe('prevents Livepack external vars blocking access to globals in eval', () => {
 				itSerializes('where function containing eval has external scope', {
-					in: () => requireFixture(`
+					in: `
 						const ext = {x: 1};
 						module.exports = {
 							console: ext,
@@ -1310,7 +1273,7 @@ describe('eval', () => {
 								return eval('({console, typeofA: typeof a})');
 							})
 						};
-					`),
+					`,
 					out: `(()=>{
 						const a={x:1};
 						return{
@@ -1394,11 +1357,9 @@ describe('eval', () => {
 			});
 
 			itSerializes('eval expression contains function', {
-				in: () => requireFixture(`
-					module.exports = function(module, exports) {
-						return eval((() => '123')());
-					};
-				`),
+				in: `module.exports = function(module, exports) {
+					return eval((() => '123')());
+				};`,
 				out: '(0,eval)("(function(module,exports){return eval((()=>\\"123\\")())})")',
 				validate(fn) {
 					expect(fn).toBeFunction();
@@ -1582,101 +1543,76 @@ describe('eval', () => {
 
 		describe('with prefix changes', () => {
 			itSerializes('altered external to eval', {
-				in() {
-					const srcPath = createFixture(`
-						'use strict';
-						const livepack_tracker = 1;
-						module.exports = eval('eval("() => livepack_tracker")');
-					`);
-					const fn = require(srcPath);
+				in: `
+					'use strict';
+					const livepack_tracker = 1;
+					module.exports = eval('eval("() => livepack_tracker")');
+				`,
+				out: '(a=>()=>a)(1)',
+				validate(fn, {transpiled}) {
+					expect(fn()).toBe(1);
 
 					// Sanity check: Ensure var used has changed prefix outside eval
-					expect(transpiledFiles[srcPath]).toInclude(
-						'const [livepack1_tracker, livepack1_getScopeId] = require("'
-					);
-
-					return fn;
-				},
-				out: '(a=>()=>a)(1)',
-				validate: fn => expect(fn()).toBe(1)
+					expect(transpiled).toInclude('const [livepack1_tracker, livepack1_getScopeId] = require(');
+				}
 			});
 
 			itSerializes('altered internal to outer eval', {
-				in() {
-					const srcPath = createFixture(`
-						'use strict';
-						module.exports = eval('const livepack_tracker = 1; eval("() => livepack_tracker")');
-					`);
-					const fn = require(srcPath);
+				in: `
+					'use strict';
+					module.exports = eval('const livepack_tracker = 1; eval("() => livepack_tracker")');
+				`,
+				out: '(a=>()=>a)(1)',
+				validate(fn, {transpiled}) {
+					expect(fn()).toBe(1);
 
 					// Sanity check: Ensure var used has not changed prefix outside eval
-					expect(transpiledFiles[srcPath]).toInclude(
-						'const [livepack_tracker, livepack_getScopeId] = require("'
-					);
-
-					return fn;
-				},
-				out: '(a=>()=>a)(1)',
-				validate: fn => expect(fn()).toBe(1)
+					expect(transpiled).toInclude('const [livepack_tracker, livepack_getScopeId] = require(');
+				}
 			});
 
 			itSerializes('altered internal to inner eval', {
-				in() {
-					const srcPath = createFixture(`
-						'use strict';
-						module.exports = eval('eval("const livepack_tracker = 1; () => livepack_tracker")');
-					`);
-					const fn = require(srcPath);
+				in: `
+					'use strict';
+					module.exports = eval('eval("const livepack_tracker = 1; () => livepack_tracker")');
+				`,
+				out: '(a=>()=>a)(1)',
+				validate(fn, {transpiled}) {
+					expect(fn()).toBe(1);
 
 					// Sanity check: Ensure var used has not changed prefix outside eval
-					expect(transpiledFiles[srcPath]).toInclude(
-						'const [livepack_tracker, livepack_getScopeId] = require("'
-					);
-
-					return fn;
-				},
-				out: '(a=>()=>a)(1)',
-				validate: fn => expect(fn()).toBe(1)
+					expect(transpiled).toInclude('const [livepack_tracker, livepack_getScopeId] = require(');
+				}
 			});
 
 			itSerializes('altered internal and external to eval, matched prefixes', {
-				in() {
-					const srcPath = createFixture(`
-						'use strict';
-						const livepack_tracker = 1;
-						module.exports = eval('const livepack_tracker = 2; eval("const livepack_tracker = 3; () => livepack_tracker")');
-					`);
-					const fn = require(srcPath);
+				in: `
+					'use strict';
+					const livepack_tracker = 1;
+					module.exports = eval('const livepack_tracker = 2; eval("const livepack_tracker = 3; () => livepack_tracker")');
+				`,
+				out: '(a=>()=>a)(3)',
+				validate(fn, {transpiled}) {
+					expect(fn()).toBe(3);
 
 					// Sanity check: Ensure var used has changed prefix outside eval
-					expect(transpiledFiles[srcPath]).toInclude(
-						'const [livepack1_tracker, livepack1_getScopeId] = require("'
-					);
-
-					return fn;
-				},
-				out: '(a=>()=>a)(3)',
-				validate: fn => expect(fn()).toBe(3)
+					expect(transpiled).toInclude('const [livepack1_tracker, livepack1_getScopeId] = require(');
+				}
 			});
 
 			itSerializes('altered internal and external to eval, unmatched prefixes', {
-				in() {
-					const srcPath = createFixture(`
-						'use strict';
-						const livepack_tracker = 1;\n
-						module.exports = eval('const livepack1_tracker = 2; eval("const livepack2_tracker = 3; () => [livepack_tracker, livepack1_tracker, livepack2_tracker]")');
-					`);
-					const fn = require(srcPath);
+				in: `
+					'use strict';
+					const livepack_tracker = 1;\n
+					module.exports = eval('const livepack1_tracker = 2; eval("const livepack2_tracker = 3; () => [livepack_tracker, livepack1_tracker, livepack2_tracker]")');
+				`,
+				out: '(c=>b=>a=>()=>[c,b,a])(1)(2)(3)',
+				validate(fn, {transpiled}) {
+					expect(fn()).toEqual([1, 2, 3]);
 
 					// Sanity check: Ensure var used has changed prefix outside eval
-					expect(transpiledFiles[srcPath]).toInclude(
-						'const [livepack1_tracker, livepack1_getScopeId] = require("'
-					);
-
-					return fn;
-				},
-				out: '(c=>b=>a=>()=>[c,b,a])(1)(2)(3)',
-				validate: fn => expect(fn()).toEqual([1, 2, 3])
+					expect(transpiled).toInclude('const [livepack1_tracker, livepack1_getScopeId] = require(');
+				}
 			});
 		});
 
@@ -1684,7 +1620,7 @@ describe('eval', () => {
 			// `Object.setPrototypeOf` necessary because Jest creates `module.exports` in another
 			// execution context, so prototype of `export` object is a *different* `Object.prototype`.
 			// This is just an artefact of the testing environment - does not affect real code.
-			const getInput = () => requireFixture(`
+			const input = `
 				Object.setPrototypeOf(exports, Object.prototype);
 
 				const extA = 1;
@@ -1695,10 +1631,10 @@ describe('eval', () => {
 				outer.isOuter = true;
 
 				module.exports = outer.call({x: 5}, 6, 7, 8);
-			`);
+			`;
 
 			itSerializes('serializes correctly', {
-				in: getInput,
+				in: input,
 				out: `(()=>{
 					const a={},
 						b=(0,eval)("
@@ -1730,22 +1666,22 @@ describe('eval', () => {
 			});
 
 			itSerializes('can access vars from internal scope', {
-				in: getInput,
+				in: input,
 				validate: fn => expect(fn()().extD).toBe(4)
 			});
 
 			itSerializes('can access vars from internal scope of outer `eval()`', {
-				in: getInput,
+				in: input,
 				validate: fn => expect(fn()().extC).toBe(3)
 			});
 
 			itSerializes('can access vars from immediate upper scope', {
-				in: getInput,
+				in: input,
 				validate: fn => expect(fn()().extB).toBe(2)
 			});
 
 			itSerializes('can access vars from further upper scope', {
-				in: getInput,
+				in: input,
 				validate(fn) {
 					const res = fn()();
 					expect(res.extA).toBe(1);
@@ -1755,12 +1691,12 @@ describe('eval', () => {
 			});
 
 			itSerializes('can access `this` from external context', {
-				in: getInput,
+				in: input,
 				validate: fn => expect(fn()().this).toEqual({x: 5})
 			});
 
 			itSerializes('can access `arguments` from external context', {
-				in: getInput,
+				in: input,
 				validate(fn) {
 					const args = fn()().arguments;
 					expect(args).toBeArguments();

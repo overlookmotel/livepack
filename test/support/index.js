@@ -13,7 +13,7 @@ const {join: pathJoin, dirname} = require('path').posix,
 	assert = require('simple-invariant');
 
 // Imports
-const createFixturesFunctions = require('./fixtures.js'),
+const {createFixtures, cleanupFixtures, withFixtures, serializeInNewProcess} = require('./fixtures.js'),
 	{splitPoints: internalSplitPoints, globals} = require('../../lib/shared/internal.js'),
 	{COMMON_JS_MODULE} = require('../../lib/shared/constants.js'),
 	transpiledFiles = require('./transpiledFiles.js');
@@ -28,7 +28,10 @@ module.exports = { // eslint-disable-line jest/no-export
 	itSerializesEqual: wrapItSerializes({equal: true}),
 	stripLineBreaks,
 	stripSourceMapComment,
-	createFixturesFunctions,
+	createFixtures,
+	cleanupFixtures,
+	withFixtures,
+	serializeInNewProcess,
 	tryCatch,
 	transpiledFiles
 };
@@ -163,8 +166,12 @@ function itSerializes(name, options, defaultOptions, describe, runExpectation) {
 	if (defaultOptions) options = {...defaultOptions, ...options};
 
 	// Validate options
-	const inputFn = options.in;
-	assert(isFunction(inputFn), '`options.in` must be a function');
+	const getInput = options.in;
+	assert(
+		isFunction(getInput) || isString(getInput)
+		|| (isObject(getInput) && Object.values(getInput).every(isString)),
+		'`options.in` must be a function, string, or object with string values'
+	);
 
 	let {entries} = options;
 	if (entries === undefined) {
@@ -287,6 +294,22 @@ function itSerializes(name, options, defaultOptions, describe, runExpectation) {
 	);
 	assert(!unknownKey, `Unexpected option '${unknownKey}'`);
 
+	// Define wrapper for fixtures
+	const getInputAndRunTest = isFunction(getInput)
+		? (opts, ctx) => {
+			const input = getInput({...opts, ctx});
+			return runTest(input, opts, {ctx});
+		}
+		: (opts, ctx) => withFixtures(
+			getInput,
+			(input, fixtureOpts) => runTest(input, opts, {
+				ctx,
+				fixturePath: fixtureOpts.path,
+				fixturePaths: fixtureOpts.paths,
+				transpiled: fixtureOpts.transpiled
+			})
+		);
+
 	// Run test function with all options
 	if (describe) {
 		describe(name, defineTests);
@@ -307,7 +330,7 @@ function itSerializes(name, options, defaultOptions, describe, runExpectation) {
 	}
 
 	function defineFormatTests(format) {
-		itAllOptions(options, async (opts) => {
+		itAllOptions(options, (opts) => {
 			// Add other options
 			opts.format = format;
 			opts.comments = true;
@@ -316,76 +339,80 @@ function itSerializes(name, options, defaultOptions, describe, runExpectation) {
 			if (format !== 'cjs') opts.strictEnv = true;
 			Object.assign(opts, otherOptions);
 
-			// Get value
+			// Run test
 			const ctx = Object.create(null);
-			const input = inputFn({...opts, ctx});
-
-			// Serialize value
-			const outputFiles = entries ? serializeEntries(input, opts) : serialize(input, opts);
-
-			// If in profiling mode, don't test output
-			if (PROFILE_ONLY) return;
-
-			// Convert files to object and discard source map files
-			const outputFilesObj = {},
-				fileMappings = [];
-			for (const file of outputFiles) {
-				const {filename} = file;
-				if (filename.endsWith('.map')) continue;
-				assert(!outputFilesObj[filename], `Multiple outputs with same filename '${filename}'`);
-				outputFilesObj[filename] = file.content;
-				if (file.type === 'entry') fileMappings.push({name: file.name, filename});
-			}
-
-			// Check output matches expected
-			const expectedOutput = expectedOutputs[format];
-			if (opts.minify && opts.inline && opts.mangle && expectedOutput !== undefined) {
-				const testFilesObj = preserveComments
-					? outputFilesObj
-					: mapValues(outputFilesObj, stripComments);
-
-				runExpectation(
-					'Output does not match expected',
-					() => expect(testFilesObj).toEqual(expectedOutput)
-				);
-				runExpectation(
-					'Output files order does not match expected',
-					() => expect(Object.keys(testFilesObj)).toEqual(Object.keys(expectedOutput))
-				);
-			}
-
-			// Evaluate output
-			let output = execFiles(outputFilesObj, fileMappings, format, opts.strictEnv);
-			if (!entries) output = output.index;
-
-			// Check output equals input
-			if (equal) {
-				runExpectation(
-					'Eval-ed output does not equal input',
-					() => expect(output).toEqual(input)
-				);
-			}
-
-			// Run validation function on input and output
-			if (validateInput) {
-				try {
-					await validateInput(input, {...opts, ctx, isInput: true, isOutput: false});
-				} catch (err) {
-					err.message = `Validation failed on input\n\n${err.message}`;
-					throw err;
-				}
-			}
-
-			if (validateOutput) {
-				const outputJs = entries ? outputFilesObj : outputFilesObj['index.js'];
-				try {
-					await validateOutput(output, {...opts, ctx, isInput: false, isOutput: true, input, outputJs});
-				} catch (err) {
-					err.message = `Validation failed on output\n\n${err.message}`;
-					throw err;
-				}
-			}
+			return getInputAndRunTest(opts, ctx);
 		});
+	}
+
+	async function runTest(input, opts, testOpts) {
+		// Serialize value
+		const outputFiles = entries ? serializeEntries(input, opts) : serialize(input, opts);
+
+		// If in profiling mode, don't test output
+		if (PROFILE_ONLY) return;
+
+		// Convert files to object and discard source map files
+		const outputFilesObj = {},
+			fileMappings = [];
+		for (const file of outputFiles) {
+			const {filename} = file;
+			if (filename.endsWith('.map')) continue;
+			assert(!outputFilesObj[filename], `Multiple outputs with same filename '${filename}'`);
+			outputFilesObj[filename] = file.content;
+			if (file.type === 'entry') fileMappings.push({name: file.name, filename});
+		}
+
+		// Check output matches expected
+		const expectedOutput = expectedOutputs[opts.format];
+		if (opts.minify && opts.inline && opts.mangle && expectedOutput !== undefined) {
+			const testFilesObj = preserveComments
+				? outputFilesObj
+				: mapValues(outputFilesObj, stripComments);
+
+			runExpectation(
+				'Output does not match expected',
+				() => expect(testFilesObj).toEqual(expectedOutput)
+			);
+			runExpectation(
+				'Output files order does not match expected',
+				() => expect(Object.keys(testFilesObj)).toEqual(Object.keys(expectedOutput))
+			);
+		}
+
+		// Evaluate output
+		let output = execFiles(outputFilesObj, fileMappings, opts.format, opts.strictEnv);
+		if (!entries) output = output.index;
+
+		// Check output equals input
+		if (equal) {
+			runExpectation(
+				'Eval-ed output does not equal input',
+				() => expect(output).toEqual(input)
+			);
+		}
+
+		// Run validation function on input and output
+		if (validateInput) {
+			try {
+				await validateInput(input, {...opts, ...testOpts, isInput: true, isOutput: false});
+			} catch (err) {
+				err.message = `Validation failed on input\n\n${err.message}`;
+				throw err;
+			}
+		}
+
+		if (validateOutput) {
+			const outputJs = entries ? outputFilesObj : outputFilesObj['index.js'];
+			try {
+				await validateOutput(output, {
+					...opts, ...testOpts, isInput: false, isOutput: true, input, outputJs
+				});
+			} catch (err) {
+				err.message = `Validation failed on output\n\n${err.message}`;
+				throw err;
+			}
+		}
 	}
 }
 

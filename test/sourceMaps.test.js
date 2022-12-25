@@ -3,8 +3,6 @@
  * Tests for source maps
  * ------------------*/
 
-/* eslint-disable global-require, import/no-dynamic-require */
-
 'use strict';
 
 // Modules
@@ -15,9 +13,7 @@ const pathJoin = require('path').join,
 	{serialize} = require('livepack');
 
 // Imports
-const {createFixturesFunctions} = require('./support/index.js');
-
-const {createFixture, createFixtures} = createFixturesFunctions(__filename);
+const {withFixtures} = require('./support/index.js');
 
 // Tests
 
@@ -62,103 +58,100 @@ describe('Source maps', () => {
 
 	it('reference sources with absolute paths if no `outputDir` option provided', () => {
 		const code = 'module.exports = function() {};\n';
-		const srcPath = createFixture(code);
+		withFixtures(code, (fn, {path}) => {
+			const out = serialize(fn, {sourceMaps: true, files: true});
+			expect(out).toEqual([
+				{
+					type: 'entry',
+					name: 'index',
+					filename: 'index.js',
+					content: 'function(){}\n//# sourceMappingURL=index.js.map'
+				},
+				{
+					type: 'source map',
+					name: null,
+					filename: 'index.js.map',
+					content: expect.stringMatching(/^\{.+\}$/)
+				}
+			]);
 
-		const fn = require(srcPath);
-		const out = serialize(fn, {sourceMaps: true, files: true});
-		expect(out).toEqual([
-			{
-				type: 'entry',
-				name: 'index',
-				filename: 'index.js',
-				content: 'function(){}\n//# sourceMappingURL=index.js.map'
-			},
-			{
-				type: 'source map',
-				name: null,
-				filename: 'index.js.map',
-				content: expect.stringMatching(/^\{.+\}$/)
-			}
-		]);
-
-		const map = JSON.parse(out[1].content);
-		expect(map).toEqual({
-			version: 3,
-			names: [],
-			sources: [srcPath],
-			sourcesContent: [code],
-			mappings: expect.stringMatching(/./)
+			const map = JSON.parse(out[1].content);
+			expect(map).toEqual({
+				version: 3,
+				names: [],
+				sources: [path],
+				sourcesContent: [code],
+				mappings: expect.stringMatching(/./)
+			});
 		});
 	});
 
 	it('reference sources with relative paths if `outputDir` option provided', () => {
 		const code = 'module.exports = function() {};\n';
-		const srcPath = createFixture(code);
-		const outputDirPath = pathJoin(srcPath, '../build');
+		withFixtures(code, (fn, {path}) => {
+			const outputDirPath = pathJoin(path, '../build');
+			const out = serialize(fn, {sourceMaps: true, files: true, outputDir: outputDirPath});
+			expect(out).toEqual([
+				{
+					type: 'entry',
+					name: 'index',
+					filename: 'index.js',
+					content: 'function(){}\n//# sourceMappingURL=index.js.map'
+				},
+				{
+					type: 'source map',
+					name: null,
+					filename: 'index.js.map',
+					content: expect.stringMatching(/^\{.+\}$/)
+				}
+			]);
 
-		const fn = require(srcPath);
-		const out = serialize(fn, {sourceMaps: true, files: true, outputDir: outputDirPath});
-		expect(out).toEqual([
-			{
-				type: 'entry',
-				name: 'index',
-				filename: 'index.js',
-				content: 'function(){}\n//# sourceMappingURL=index.js.map'
-			},
-			{
-				type: 'source map',
-				name: null,
-				filename: 'index.js.map',
-				content: expect.stringMatching(/^\{.+\}$/)
-			}
-		]);
-
-		const map = JSON.parse(out[1].content);
-		expect(map).toEqual({
-			version: 3,
-			sources: ['../index.js'],
-			names: [],
-			mappings: expect.stringMatching(/./),
-			sourcesContent: [code]
+			const map = JSON.parse(out[1].content);
+			expect(map).toEqual({
+				version: 3,
+				sources: ['../index.js'],
+				names: [],
+				mappings: expect.stringMatching(/./),
+				sourcesContent: [code]
+			});
 		});
 	});
 
 	it('maps error to correct point in source file', () => {
 		const code = "\n\nmodule.exports = function() {\n\tthrow new Error('oops');\n};\n";
-		const srcPath = createFixture(code);
-		const outputDirPath = pathJoin(srcPath, '../build');
+		withFixtures(code, (fn, {path}) => {
+			const outputDirPath = pathJoin(path, '../build');
+			const out = serialize(fn, {sourceMaps: true, files: true, outputDir: outputDirPath});
 
-		const fn = require(srcPath);
-		const out = serialize(fn, {sourceMaps: true, files: true, outputDir: outputDirPath});
+			expect(out).toEqual([
+				{
+					type: 'entry',
+					name: 'index',
+					filename: 'index.js',
+					content: 'function(){throw new Error("oops")}\n//# sourceMappingURL=index.js.map'
+				},
+				{
+					type: 'source map',
+					name: null,
+					filename: 'index.js.map',
+					content: expect.stringMatching(/^\{.+\}$/)
+				}
+			]);
 
-		expect(out).toEqual([
-			{
-				type: 'entry',
-				name: 'index',
-				filename: 'index.js',
-				content: 'function(){throw new Error("oops")}\n//# sourceMappingURL=index.js.map'
-			},
-			{
-				type: 'source map',
+			const map = JSON.parse(out[1].content);
+			const consumer = new SourceMapConsumer(map);
+			expect(consumer.originalPositionFor({line: 1, column: 0})).toEqual({
+				line: 3,
+				column: 17,
 				name: null,
-				filename: 'index.js.map',
-				content: expect.stringMatching(/^\{.+\}$/)
-			}
-		]);
-
-		const map = JSON.parse(out[1].content);
-		const consumer = new SourceMapConsumer(map);
-		expect(consumer.originalPositionFor({line: 1, column: 0})).toEqual({
-			line: 3,
-			column: 17,
-			name: null,
-			source: '../index.js'
-		});
-		expect(consumer.originalPositionFor({line: 1, column: 21})).toEqual({
-			line: 4,
-			column: 11,
-			name: 'Error',
-			source: '../index.js'
+				source: '../index.js'
+			});
+			expect(consumer.originalPositionFor({line: 1, column: 21})).toEqual({
+				line: 4,
+				column: 11,
+				name: 'Error',
+				source: '../index.js'
+			});
 		});
 	});
 
@@ -182,42 +175,41 @@ describe('Source maps', () => {
 				'//# sourceMappingURL=data:application/json;charset=utf-8;base64,'
 			].join('\n'));
 
-			const srcPath = createFixture(code);
-			const outputDirPath = pathJoin(srcPath, '../build');
+			withFixtures(code, (fn, {path}) => {
+				const outputDirPath = pathJoin(path, '../build');
+				const out = serialize(
+					fn, {sourceMaps: true, files: true, outputDir: outputDirPath, strictEnv: true}
+				);
 
-			const fn = require(srcPath);
-			const out = serialize(
-				fn, {sourceMaps: true, files: true, outputDir: outputDirPath, strictEnv: true}
-			);
+				expect(out).toEqual([
+					{
+						type: 'entry',
+						name: 'index',
+						filename: 'index.js',
+						content: '(a=>function(){throw new Error(a)})("foo")\n//# sourceMappingURL=index.js.map'
+					},
+					{
+						type: 'source map',
+						name: null,
+						filename: 'index.js.map',
+						content: expect.stringMatching(/^\{.+\}$/)
+					}
+				]);
 
-			expect(out).toEqual([
-				{
-					type: 'entry',
-					name: 'index',
-					filename: 'index.js',
-					content: '(a=>function(){throw new Error(a)})("foo")\n//# sourceMappingURL=index.js.map'
-				},
-				{
-					type: 'source map',
+				const map = JSON.parse(out[1].content);
+				const consumer = new SourceMapConsumer(map);
+				expect(consumer.originalPositionFor({line: 1, column: 4})).toEqual({
+					line: 2,
+					column: 17,
 					name: null,
-					filename: 'index.js.map',
-					content: expect.stringMatching(/^\{.+\}$/)
-				}
-			]);
-
-			const map = JSON.parse(out[1].content);
-			const consumer = new SourceMapConsumer(map);
-			expect(consumer.originalPositionFor({line: 1, column: 4})).toEqual({
-				line: 2,
-				column: 17,
-				name: null,
-				source: '../src.js'
-			});
-			expect(consumer.originalPositionFor({line: 1, column: 15})).toEqual({
-				line: 2,
-				column: 25,
-				name: null,
-				source: '../src.js'
+					source: '../src.js'
+				});
+				expect(consumer.originalPositionFor({line: 1, column: 15})).toEqual({
+					line: 2,
+					column: 25,
+					name: null,
+					source: '../src.js'
+				});
 			});
 		});
 
@@ -245,46 +237,48 @@ describe('Source maps', () => {
 				'//# sourceMappingURL=intermediate.js.map'
 			].join('\n'));
 
-			const srcPath = createFixtures({
-				'intermediate.js': code,
-				'intermediate.js.map': JSON.stringify(res.map)
-			})['intermediate.js'];
-			const outputDirPath = pathJoin(srcPath, '../build');
-
-			const fn = require(srcPath);
-			const out = serialize(
-				fn, {sourceMaps: true, files: true, outputDir: outputDirPath, strictEnv: true}
-			);
-
-			expect(out).toEqual([
+			withFixtures(
 				{
-					type: 'entry',
-					name: 'index',
-					filename: 'index.js',
-					content: '(a=>function(){throw new Error(a)})("foo")\n//# sourceMappingURL=index.js.map'
+					'intermediate.js': code,
+					'intermediate.js.map': JSON.stringify(res.map)
 				},
-				{
-					type: 'source map',
-					name: null,
-					filename: 'index.js.map',
-					content: expect.stringMatching(/^\{.+\}$/)
-				}
-			]);
+				(fn, {path}) => {
+					const outputDirPath = pathJoin(path, '../build');
+					const out = serialize(
+						fn, {sourceMaps: true, files: true, outputDir: outputDirPath, strictEnv: true}
+					);
 
-			const map = JSON.parse(out[1].content);
-			const consumer = new SourceMapConsumer(map);
-			expect(consumer.originalPositionFor({line: 1, column: 4})).toEqual({
-				line: 2,
-				column: 17,
-				name: null,
-				source: '../src.js'
-			});
-			expect(consumer.originalPositionFor({line: 1, column: 15})).toEqual({
-				line: 2,
-				column: 25,
-				name: null,
-				source: '../src.js'
-			});
+					expect(out).toEqual([
+						{
+							type: 'entry',
+							name: 'index',
+							filename: 'index.js',
+							content: '(a=>function(){throw new Error(a)})("foo")\n//# sourceMappingURL=index.js.map'
+						},
+						{
+							type: 'source map',
+							name: null,
+							filename: 'index.js.map',
+							content: expect.stringMatching(/^\{.+\}$/)
+						}
+					]);
+
+					const map = JSON.parse(out[1].content);
+					const consumer = new SourceMapConsumer(map);
+					expect(consumer.originalPositionFor({line: 1, column: 4})).toEqual({
+						line: 2,
+						column: 17,
+						name: null,
+						source: '../src.js'
+					});
+					expect(consumer.originalPositionFor({line: 1, column: 15})).toEqual({
+						line: 2,
+						column: 25,
+						name: null,
+						source: '../src.js'
+					});
+				}
+			);
 		});
 	});
 });

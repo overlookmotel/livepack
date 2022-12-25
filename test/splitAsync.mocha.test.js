@@ -15,7 +15,7 @@ const {splitAsync} = require('../index.js'), // livepack
 	expect = require('expect').default;
 
 // Imports
-const {createFixturesFunctions} = require('./support/index.js');
+const {createFixtures, cleanupFixtures} = require('./support/index.js');
 
 // Constants
 const NUM_FIXTURES = 5;
@@ -26,14 +26,12 @@ require('jest-extended/all');
 require('./support/expect.js');
 
 // Create fixtures
-const {createFixtures} = createFixturesFunctions(__filename);
-
 const fixtureFiles = {};
 for (let i = 0; i < NUM_FIXTURES; i++) {
 	fixtureFiles[`${i}.js`] = `module.exports = {x: ${i}};`;
 }
 
-const fixturesPaths = Object.values(createFixtures(fixtureFiles));
+const fixturesPaths = createFixtures(fixtureFiles);
 
 // Tests
 
@@ -59,6 +57,8 @@ describe('splitAsync', () => {
 		);
 	});
 });
+
+after(() => cleanupFixtures(fixturesPaths)); // eslint-disable-line no-undef
 
 function runTests(createImport, isNativeImport) {
 	describe('1 call', () => {
