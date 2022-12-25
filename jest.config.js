@@ -5,6 +5,9 @@
 
 'use strict';
 
+// Mock FS for fixtures
+require('./test/support/fixturesFs.js');
+
 // Exports
 
 module.exports = {

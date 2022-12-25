@@ -30,6 +30,8 @@ module.exports = {createFixtures, cleanupFixtures, withFixtures, serializeInNewP
 const fixturesPath = pathJoin(TEMP_DIR_PATH, require.main.filename.slice(TESTS_DIR_PATH.length));
 let fixtureNum = 0;
 
+const fixtures = global.__livepack_fixtures__;
+
 /**
  * Write fixtures files to unique temp dir.
  * `files` is a Object of form `{'index.js': 'content of index.js'}`
@@ -60,6 +62,33 @@ function createFixtures(files) {
 }
 
 /**
+ * Write fake fixtures files to unique temp dir.
+ * They're not actually written to disc, but to virtual FS.
+ * `files` is a Object of form `{'index.js': 'content of index.js'}`
+ * or a string containing content of a single file.
+ * Returns array of full file paths.
+ *
+ * @param {Object|string} files - Object mapping filenames to file content, or single file content string
+ * @returns {Array<string>} - Array of full file paths
+ */
+function createFakeFixtures(files) {
+	// Create unique temp path
+	const fixturePath = pathJoin(fixturesPath, `${fixtureNum++}`);
+
+	// Write files to temp dir
+	files = conformFiles(files);
+	const paths = [];
+	for (const filename of Object.keys(files)) {
+		const path = pathJoin(fixturePath, filename);
+		fixtures[path] = files[filename];
+		paths.push(path);
+	}
+
+	// Return file paths
+	return paths;
+}
+
+/**
  * Cleanup fixtures.
  * Delete files from disc, delete from `transpiledFiles`, delete from module cache.
  * @param {Array<string>} paths - Array of fixture file paths
@@ -68,6 +97,20 @@ function createFixtures(files) {
 function cleanupFixtures(paths) {
 	for (const path of paths) {
 		rmSync(path);
+		delete moduleCache[path];
+		delete transpiledFiles[path];
+	}
+}
+
+/**
+ * Cleanup fake fixtures.
+ * Delete files from fixtures, delete from `transpiledFiles`, delete from module cache.
+ * @param {Array<string>} paths - Array of fixture file paths
+ * @returns {undefined}
+ */
+function cleanupFakeFixtures(paths) {
+	for (const path of paths) {
+		delete fixtures[path];
 		delete moduleCache[path];
 		delete transpiledFiles[path];
 	}
@@ -91,8 +134,8 @@ function cleanupFixtures(paths) {
  */
 function withFixtures(files, fn) {
 	// Create fixtures
-	const paths = createFixtures(files);
-	const cleanup = () => cleanupFixtures(paths);
+	const paths = createFakeFixtures(files);
+	const cleanup = () => cleanupFakeFixtures(paths);
 
 	try {
 		// `require()` first fixture file
