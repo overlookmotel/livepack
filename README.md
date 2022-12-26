@@ -164,6 +164,7 @@ module.exports = (async () => {
 | `--no-exec` | Output a file which exports the input rather than executes it. | Exec enabled |
 | `--stats` | Output stats file.<br />Provide filename or `true` for `livepack-stats.json`. | Disabled |
 | `--no-babel-cache` | Disable Babel's cache | Cache enabled |
+| `--skip-babel-cache-for-dir` | Skip Babel's cache for files in specified directory | None |
 
 #### Config file
 
@@ -189,7 +190,8 @@ You can set options in a `livepack.config.json` file rather than on command line
   "sourceMaps": true,
   "exec": true,
   "stats": false,
-  "babelCache": true
+  "babelCache": true,
+  "skipBabelCacheForDir": null
 }
 ```
 
@@ -258,6 +260,7 @@ require('livepack/register')( {
 | `esm` | `boolean` | Set to `true` if codebase being serialized contains ECMAScript modules (`import x from 'x'`) | `false` |
 | `jsx` | `boolean` | Set to `true` if codebase being serialized contains JSX | `false` |
 | `cache` | `boolean` | If `true`, Babel cache is used to speed up Livepack | `true` |
+| `skipCacheForDir` | `string` | If provided, Babel cache is not used for files in specified directory | `null` |
 
 These options correspond to CLI options, but sometimes named slightly differently.
 
