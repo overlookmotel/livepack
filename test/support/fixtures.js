@@ -7,7 +7,7 @@
 
 // Modules
 const {join: pathJoin, dirname} = require('path'),
-	{writeFileSync, mkdirsSync, rmSync} = require('fs-extra'),
+	{writeFileSync, mkdirSync, rmSync} = require('fs'),
 	{spawn} = require('child_process'),
 	{isString} = require('is-it-type');
 
@@ -48,7 +48,7 @@ function createFixtures(files) {
 	for (const filename of Object.keys(files)) {
 		const path = pathJoin(fixturePath, filename);
 
-		mkdirsSync(dirname(path));
+		mkdirSync(dirname(path), {recursive: true});
 		writeFileSync(path, files[filename]);
 
 		paths.push(path);
