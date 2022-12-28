@@ -46,7 +46,7 @@
     "babel-plugin-dynamic-import-node": "^2.3.3",
     "base32.js": "^0.1.0",
     "convert-source-map": "^2.0.0",
-    "find-cache-dir": "^3.3.2",
+    "find-cache-dir": "^4.0.0",
     "find-up": "^5.0.0",
     "is-it-type": "^5.1.2",
     "lodash": "^4.17.21",
