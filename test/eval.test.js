@@ -511,7 +511,9 @@ describe('eval', () => {
 							expect(fn()).toEqual([123, 456]);
 
 							// Sanity check: Ensure var used has changed prefix outside eval
-							expect(transpiled).toInclude('const [livepack1_tracker, livepack1_getScopeId] = require(');
+							expect(transpiled).toMatch(
+								/const \[livepack1_tracker, livepack1_getScopeId, livepack1_temp_\d+\] = require\("/
+							);
 						}
 					});
 
@@ -527,7 +529,9 @@ describe('eval', () => {
 							expect(fn()).toEqual([123, 456]);
 
 							// Sanity check: Ensure var used has changed prefix outside eval
-							expect(transpiled).toInclude('const [livepack1_tracker, livepack1_getScopeId] = require(');
+							expect(transpiled).toMatch(
+								/const \[livepack1_tracker, livepack1_getScopeId, livepack1_temp_\d+\] = require\("/
+							);
 						}
 					});
 				});
@@ -602,7 +606,9 @@ describe('eval', () => {
 						expect(fn()).toBe(1);
 
 						// Sanity check: Ensure var used has changed prefix outside eval
-						expect(transpiled).toInclude('const [livepack1_tracker, livepack1_getScopeId] = require(');
+						expect(transpiled).toMatch(
+							/const \[livepack1_tracker, livepack1_getScopeId, livepack1_temp_\d+\] = require\("/
+						);
 					}
 				});
 
@@ -616,7 +622,9 @@ describe('eval', () => {
 						expect(fn()).toBe(1);
 
 						// Sanity check: Ensure var used has not changed prefix outside eval
-						expect(transpiled).toInclude('const [livepack_tracker, livepack_getScopeId] = require(');
+						expect(transpiled).toMatch(
+							/const \[livepack_tracker, livepack_getScopeId, livepack_temp_\d+\] = require\("/
+						);
 					}
 				});
 
@@ -631,7 +639,9 @@ describe('eval', () => {
 						expect(fn()).toBe(2);
 
 						// Sanity check: Ensure var used has changed prefix outside eval
-						expect(transpiled).toInclude('const [livepack1_tracker, livepack1_getScopeId] = require(');
+						expect(transpiled).toMatch(
+							/const \[livepack1_tracker, livepack1_getScopeId, livepack1_temp_\d+\] = require\("/
+						);
 					}
 				});
 
@@ -646,7 +656,9 @@ describe('eval', () => {
 						expect(fn()).toEqual([1, 2]);
 
 						// Sanity check: Ensure var used has changed prefix outside eval
-						expect(transpiled).toInclude('const [livepack1_tracker, livepack1_getScopeId] = require(');
+						expect(transpiled).toMatch(
+							/const \[livepack1_tracker, livepack1_getScopeId, livepack1_temp_\d+\] = require\("/
+						);
 					}
 				});
 			});
@@ -1553,7 +1565,9 @@ describe('eval', () => {
 					expect(fn()).toBe(1);
 
 					// Sanity check: Ensure var used has changed prefix outside eval
-					expect(transpiled).toInclude('const [livepack1_tracker, livepack1_getScopeId] = require(');
+					expect(transpiled).toMatch(
+						/const \[livepack1_tracker, livepack1_getScopeId, livepack1_temp_\d+\] = require\("/
+					);
 				}
 			});
 
@@ -1567,7 +1581,9 @@ describe('eval', () => {
 					expect(fn()).toBe(1);
 
 					// Sanity check: Ensure var used has not changed prefix outside eval
-					expect(transpiled).toInclude('const [livepack_tracker, livepack_getScopeId] = require(');
+					expect(transpiled).toMatch(
+						/const \[livepack_tracker, livepack_getScopeId, livepack_temp_\d+\] = require\("/
+					);
 				}
 			});
 
@@ -1581,7 +1597,9 @@ describe('eval', () => {
 					expect(fn()).toBe(1);
 
 					// Sanity check: Ensure var used has not changed prefix outside eval
-					expect(transpiled).toInclude('const [livepack_tracker, livepack_getScopeId] = require(');
+					expect(transpiled).toMatch(
+						/const \[livepack_tracker, livepack_getScopeId, livepack_temp_\d+\] = require\("/
+					);
 				}
 			});
 
@@ -1596,7 +1614,9 @@ describe('eval', () => {
 					expect(fn()).toBe(3);
 
 					// Sanity check: Ensure var used has changed prefix outside eval
-					expect(transpiled).toInclude('const [livepack1_tracker, livepack1_getScopeId] = require(');
+					expect(transpiled).toMatch(
+						/const \[livepack1_tracker, livepack1_getScopeId, livepack1_temp_\d+\] = require\("/
+					);
 				}
 			});
 
@@ -1611,7 +1631,9 @@ describe('eval', () => {
 					expect(fn()).toEqual([1, 2, 3]);
 
 					// Sanity check: Ensure var used has changed prefix outside eval
-					expect(transpiled).toInclude('const [livepack1_tracker, livepack1_getScopeId] = require(');
+					expect(transpiled).toMatch(
+						/const \[livepack1_tracker, livepack1_getScopeId, livepack1_temp_\d+\] = require\("/
+					);
 				}
 			});
 		});

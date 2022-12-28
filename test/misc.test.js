@@ -22,7 +22,7 @@ describe('Internal vars created by instrumentation do not interfere with code', 
 			// NB code for this file is injected into `transpiledFiles` in babel transform
 			// (see `test/support/transform.js`)
 			expect(transpiledFiles[__filename]).toMatch(
-				/const \[livepack1_tracker, livepack1_getScopeId\] = require\("/
+				/const \[livepack1_tracker, livepack1_getScopeId, livepack1_temp_\d+\] = require\("/
 			);
 
 			expect(fn()).toBe('undefined');
