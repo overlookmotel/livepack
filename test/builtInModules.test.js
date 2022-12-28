@@ -5,15 +5,19 @@
 
 'use strict';
 
+// Modules
+const pathModule = require('path'),
+	{createRequire} = require('module');
+
 // Imports
 const {itSerializesEqual, stripSourceMapComment} = require('./support/index.js');
 
 // Tests
 
+const urlModule = createRequire(__filename)('url');
+
 describe('Built-in modules', () => {
 	describe('top level', () => {
-		const pathModule = require('path'); // eslint-disable-line global-require
-
 		describe('single occurance', () => {
 			itSerializesEqual('JS format', {
 				in: () => pathModule,
@@ -85,10 +89,16 @@ describe('Built-in modules', () => {
 				}
 			});
 		});
+
+		itSerializesEqual('loaded with `createRequire()`', {
+			in: () => urlModule,
+			out: 'require("url")',
+			validate: res => expect(res).toBe(urlModule)
+		});
 	});
 
 	describe('level 1', () => {
-		const pathJoin = require('path').join; // eslint-disable-line global-require
+		const pathJoin = pathModule.join;
 
 		describe('single occurance', () => {
 			itSerializesEqual('JS format', {
@@ -164,6 +174,12 @@ describe('Built-in modules', () => {
 					);
 				}
 			});
+		});
+
+		itSerializesEqual('loaded with `createRequire()`', {
+			in: () => urlModule.pathToFileURL,
+			out: 'require("url").pathToFileURL',
+			validate: res => expect(res).toBe(urlModule.pathToFileURL)
 		});
 	});
 });
