@@ -21,8 +21,9 @@ describe('Internal vars created by instrumentation do not interfere with code', 
 			// Check the temp var name which Babel transform creates matches the one being tested for
 			// NB code for this file is injected into `transpiledFiles` in babel transform
 			// (see `test/support/transform.js`)
-			expect(transpiledFiles[__filename]).toMatch(
-				/const \[livepack1_tracker, livepack1_getScopeId, livepack1_temp_\d+\] = require\("/
+			expect(transpiledFiles[__filename]).toInclude(
+				// eslint-disable-next-line no-useless-concat
+				'const [livepack1_tracker, livepack1_getScopeId] = ' + 'require('
 			);
 
 			expect(fn()).toBe('undefined');
@@ -39,7 +40,8 @@ describe('Internal vars created by instrumentation do not interfere with code', 
 			// NB code for this file is injected into `transpiledFiles` in babel transform
 			// (see `test/support/transform.js`)
 			expect(transpiledFiles[__filename])
-				.toMatch(/const( )livepack1_scopeId_2 = livepack1_getScopeId\(\);/);
+				// eslint-disable-next-line no-useless-concat
+				.toInclude('const livepack1_scopeId_2 = ' + 'livepack1_getScopeId();');
 
 			expect(fn()).toBe('undefined');
 		}
@@ -73,7 +75,8 @@ describe('Internal vars created by instrumentation do not interfere with code', 
 			// Check the temp var name which Babel transform creates matches the one being tested for
 			// NB code for this file is injected into `transpiledFiles` in babel transform
 			// (see `test/support/transform.js`)
-			expect(transpiledFiles[__filename]).toMatch(/Object.setPrototypeOf\(livepack1_temp_21 =/);
+			// eslint-disable-next-line no-useless-concat
+			expect(transpiledFiles[__filename]).toInclude('Object.setPrototypeOf' + '(livepack1_temp_21 =');
 
 			expect(obj.x()).toBe('undefined');
 		}

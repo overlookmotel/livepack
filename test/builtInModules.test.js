@@ -5,16 +5,16 @@
 
 'use strict';
 
-// Modules
-const pathModule = require('path'),
-	{createRequire} = require('module');
-
 // Imports
 const {itSerializesEqual, stripSourceMapComment} = require('./support/index.js');
 
-// Tests
+// Load built-in modules with different methods.
+const pathModule = require('path'), // eslint-disable-line import/order
+	Module = module.constructor, // NB Not loaded with `require('module')`
+	urlModule = Module.createRequire(__filename)('url'),
+	querystringModule = module.require('querystring');
 
-const urlModule = createRequire(__filename)('url');
+// Tests
 
 describe('Built-in modules', () => {
 	describe('top level', () => {
@@ -90,10 +90,22 @@ describe('Built-in modules', () => {
 			});
 		});
 
+		itSerializesEqual('`module` module', {
+			in: () => Module,
+			out: 'require("module")',
+			validate: res => expect(res).toBe(Module)
+		});
+
 		itSerializesEqual('loaded with `createRequire()`', {
 			in: () => urlModule,
 			out: 'require("url")',
 			validate: res => expect(res).toBe(urlModule)
+		});
+
+		itSerializesEqual('loaded with `module.require()`', {
+			in: () => querystringModule,
+			out: 'require("querystring")',
+			validate: res => expect(res).toBe(querystringModule)
 		});
 	});
 
@@ -176,10 +188,22 @@ describe('Built-in modules', () => {
 			});
 		});
 
+		itSerializesEqual('`Module.createRequire`', {
+			in: () => Module.createRequire,
+			out: 'require("module").createRequire',
+			validate: res => expect(res).toBe(Module.createRequire)
+		});
+
 		itSerializesEqual('loaded with `createRequire()`', {
 			in: () => urlModule.pathToFileURL,
 			out: 'require("url").pathToFileURL',
 			validate: res => expect(res).toBe(urlModule.pathToFileURL)
+		});
+
+		itSerializesEqual('loaded with `module.require()`', {
+			in: () => querystringModule.parse,
+			out: 'require("querystring").parse',
+			validate: res => expect(res).toBe(querystringModule.parse)
 		});
 	});
 });
