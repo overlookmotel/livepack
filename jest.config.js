@@ -19,6 +19,7 @@ module.exports = {
 		'<rootDir>/test/support/expect.js',
 		'<rootDir>/test/support/register.js'
 	],
+	testSequencer: '<rootDir>/test/support/sequencer.js',
 	// Jest by default uses a number of workers equal to number of CPU cores minus 1.
 	// Github Actions runners provide 2 cores and running with 2 workers is faster than 1.
 	...(process.env.CI && {maxWorkers: '100%'})
