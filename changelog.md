@@ -1,5 +1,67 @@
 # Changelog
 
+## 0.7.7
+
+Bug fixes:
+
+* Instrumentation preserve class names from `AssignmentPattern`
+* Instrument: `eval(...x)` is indirect eval
+* Patch `require` functions created with `createRequire()`
+* Register restore global module cache if error
+* Eagerly catalog `module` module
+
+Improvements:
+
+* Catalog `stream/web` NodeJS internal module
+* Catalog more NodeJS internal modules
+
+Performance:
+
+* Lazy catalog NodeJS built-in modules
+* Patch `util` module methods only when `util` module loaded
+* Record `require` functions in WeakMap
+* Record `eval` shim functions in WeakMap
+
+Refactor:
+
+* Instrument: Move creation of program block
+* Simplify module cache API
+* Refactor determining internal/runtime file paths
+* Combine statements
+
+Dependencies:
+
+* Remove `fs-extra` dependency
+* Update dependencies
+
+Tests:
+
+* Run tests with `jest-light-runner` and virtual fixtures files
+* Simplify use of fixtures
+* Remove fallback implementation of `splitAsync`
+* Don't share fixtures between tests [improve]
+* Delete globals and splits cache after each test [improve]
+
+Dev:
+
+* Rename `LIVEPACK_DEBUG_INSTRUMENT` env
+* `LIVEPACK_DEBUG_INSTRUMENT` env log instrumented `eval` code [improve]
+* Workaround for Jest bug
+* Replace `jest-extended` with `@overlookmotel/jest-extended`
+* CI run tests using all cores [improve]
+* Update Github Actions scripts
+* Update dev dependencies
+
+No code:
+
+* Correct code comments
+
+Docs:
+
+* Fix Github Actions badge [fix]
+* Remove David badges from README
+* Update license year
+
 ## 0.7.6
 
 Bug fixes:

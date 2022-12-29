@@ -1,6 +1,6 @@
 {
   "name": "livepack",
-  "version": "0.7.6",
+  "version": "0.7.7",
   "description": "Serialize live running code to Javascript",
   "main": "index.js",
   "exports": {
