@@ -1,6 +1,5 @@
 [![NPM version](https://img.shields.io/npm/v/livepack.svg)](https://www.npmjs.com/package/livepack)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/overlookmotel/livepack/test.yml?branch=master)](https://github.com/overlookmotel/livepack/actions)
-[![Coverage Status](https://img.shields.io/coveralls/overlookmotel/livepack/master.svg)](https://coveralls.io/r/overlookmotel/livepack)
 
 # Serialize live running code to Javascript
 
