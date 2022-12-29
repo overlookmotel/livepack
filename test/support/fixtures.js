@@ -6,31 +6,34 @@
 'use strict';
 
 // Modules
-const {join: pathJoin, dirname} = require('path'),
-	{writeFileSync, mkdirSync, rmSync} = require('fs'),
+const pathJoin = require('path').join,
 	{spawn} = require('child_process'),
 	{isString} = require('is-it-type');
 
 // Imports
-const transpiledFiles = require('./transpiledFiles.js');
+const {getFixtures, setFixtures, clearFixtures, FIXTURES_DIR_PATH} = require('./fixturesFs.js'),
+	transpiledFiles = require('./transpiledFiles.js'),
+	maps = require('../../lib/register/maps.js'),
+	moduleCache = require('../../lib/shared/moduleCache.js').cache,
+	{globals} = require('../../lib/shared/internal.js');
 
 // Constants
-const TESTS_DIR_PATH = pathJoin(__dirname, '../'),
-	TEMP_DIR_PATH = pathJoin(TESTS_DIR_PATH, '_temp'),
-	REGISTER_PATH = pathJoin(__dirname, '../../register.js'),
-	MAIN_PATH = pathJoin(__dirname, '../../index.js'),
+const SPAWNED_PATH = pathJoin(__dirname, 'spawned.js'),
 	DEFAULT_FILENAME = 'index.js';
 
 // Exports
 
 module.exports = {createFixtures, cleanupFixtures, withFixtures, serializeInNewProcess};
 
-// `fixturesPath` will be unique for each test file
-const fixturesPath = pathJoin(TEMP_DIR_PATH, require.main.filename.slice(TESTS_DIR_PATH.length));
 let fixtureNum = 0;
 
+// Fixture files which are `require()`-ed will be added to `module.children`.
+// Capture it now so they can be deleted again after finished with fixtures, to free memory.
+const moduleChildren = module.children,
+	moduleChildrenLength = moduleChildren.length;
+
 /**
- * Write fixtures files to unique temp dir.
+ * Record fixtures as virtual files in a fake temp dir.
  * `files` is a Object of form `{'index.js': 'content of index.js'}`
  * or a string containing content of a single file.
  * Returns array of full file paths.
@@ -39,36 +42,54 @@ let fixtureNum = 0;
  * @returns {Array<string>} - Array of full file paths
  */
 function createFixtures(files) {
-	// Create unique temp path
-	const fixturePath = pathJoin(fixturesPath, `${fixtureNum++}`);
+	const fixtures = createFixturesFiles(files);
+	setFixtures(fixtures);
+	return Object.keys(fixtures);
+}
 
-	// Write files to temp dir
+/**
+ * Create fixtures files object.
+ * @param {Object|string} files - Object mapping filenames to file content, or single file content string
+ * @returns {Object} - Object mapping file paths to file contents
+ */
+function createFixturesFiles(files) {
+	// Create unique temp dir path
+	const fixturePath = pathJoin(FIXTURES_DIR_PATH, `${fixtureNum++}`);
+
+	// Create object mapping file paths to content
 	files = conformFiles(files);
-	const paths = [];
-	for (const filename of Object.keys(files)) {
-		const path = pathJoin(fixturePath, filename);
-
-		mkdirSync(dirname(path), {recursive: true});
-		writeFileSync(path, files[filename]);
-
-		paths.push(path);
+	const fixtures = Object.create(null);
+	for (const [filename, content] of Object.entries(files)) {
+		fixtures[pathJoin(fixturePath, filename)] = content;
 	}
-
-	// Return file paths
-	return paths;
+	return fixtures;
 }
 
 /**
  * Cleanup fixtures.
- * Delete files from disc, delete from `transpiledFiles`.
- * @param {Array<string>} paths - Array of fixture file paths
+ * For each fixture file:
+ *   - Delete virtual file
+ *   - Delete module from NodeJS module cache
+ *   - Delete source map from source maps cache
+ *   - Delete module object from `globals`
+ *   - Delete from `transpiledFiles`
  * @returns {undefined}
  */
-function cleanupFixtures(paths) {
-	for (const path of paths) {
-		rmSync(path);
+function cleanupFixtures() {
+	for (const path of Object.keys(getFixtures())) {
+		const module = moduleCache[path];
+		if (!module) continue;
+
+		delete moduleCache[path];
+		delete maps[path];
+		globals.delete(module);
 		delete transpiledFiles[path];
 	}
+
+	clearFixtures();
+
+	// Remove references to fixtures modules from `module.children`
+	moduleChildren.length = moduleChildrenLength;
 }
 
 /**
@@ -90,7 +111,6 @@ function cleanupFixtures(paths) {
 function withFixtures(files, fn) {
 	// Create fixtures
 	const paths = createFixtures(files);
-	const cleanup = () => cleanupFixtures(paths);
 
 	try {
 		// `require()` first fixture file
@@ -103,20 +123,20 @@ function withFixtures(files, fn) {
 		if (res instanceof Promise) {
 			return res.then(
 				(value) => {
-					cleanup();
+					cleanupFixtures();
 					return value;
 				},
 				(err) => {
-					cleanup();
+					cleanupFixtures();
 					throw err;
 				}
 			);
 		}
 
-		cleanup();
+		cleanupFixtures();
 		return res;
 	} catch (err) {
-		cleanup();
+		cleanupFixtures();
 		throw err;
 	}
 }
@@ -127,31 +147,19 @@ function withFixtures(files, fn) {
  * @returns {string} - Serialized output
  */
 async function serializeInNewProcess(files) {
-	files = conformFiles(files);
+	// Create fixtures object
+	const fixtures = createFixturesFiles(files);
 
-	files = {
-		'entry.js': [
-			`require(${JSON.stringify(REGISTER_PATH)})({cache: false});`,
-			`const {serialize} = require(${JSON.stringify(MAIN_PATH)});`,
-			`const input = require(${JSON.stringify(`./${Object.keys(files)[0]}`)});`,
-			'console.log(serialize(input));'
-		].join('\n'),
-		...files
-	};
-
-	const path = createFixtures(files)[0];
-	const js = await spawnNode(path);
-	return js.trim();
-}
-
-function spawnNode(path) {
-	return new Promise((resolve, reject) => {
-		const child = spawn(process.execPath, [path]);
+	// Spawn new process `./spawned.js`, pass in fixtures to stdin, and get output from stdout
+	const js = await new Promise((resolve, reject) => {
+		const child = spawn(process.execPath, [SPAWNED_PATH]);
 
 		let stdout = '',
 			stderr = '';
 		child.stdout.on('data', (chunk) => { stdout += chunk; });
 		child.stderr.on('data', (chunk) => { stderr += chunk; });
+
+		child.stdin.write(`${JSON.stringify(fixtures)}\n`);
 
 		child.on('close', () => {
 			if (stderr !== '') {
@@ -161,6 +169,9 @@ function spawnNode(path) {
 			}
 		});
 	});
+
+	// Return output
+	return js.trim();
 }
 
 /**

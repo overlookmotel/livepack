@@ -1,39 +1,22 @@
 /* --------------------
  * livepack module
- * Extra tests for `splitAsync` run in mocha for `import()` support
+ * Tests for `splitAsync`
  * ------------------*/
-
-/* eslint-disable import/order */
 
 'use strict';
 
 // Modules
-require('../lib/init/index.js'); // livepack/lib/init
-
-const {splitAsync} = require('../index.js'), // livepack
+const pathJoin = require('path').join,
 	{isModuleNamespaceObject} = require('util').types,
-	expect = require('expect').default;
-
-// Imports
-const {createFixtures, cleanupFixtures} = require('./support/index.js');
+	{splitAsync} = require('livepack');
 
 // Constants
 const NUM_FIXTURES = 5;
 
-// Init
-global.expect = expect;
-require('@overlookmotel/jest-extended/all');
-require('./support/expect.js');
-
-// Create fixtures
-const fixtureFiles = {};
-for (let i = 0; i < NUM_FIXTURES; i++) {
-	fixtureFiles[`${i}.js`] = `module.exports = {x: ${i}};`;
-}
-
-const fixturesPaths = createFixtures(fixtureFiles);
-
 // Tests
+
+const fixturesPaths = new Array(NUM_FIXTURES).fill()
+	.map((_, index) => pathJoin(__dirname, `fixtures/splitAsync/${index}.js`));
 
 describe('splitAsync', () => {
 	runTests(
@@ -57,8 +40,6 @@ describe('splitAsync', () => {
 		);
 	});
 });
-
-after(() => cleanupFixtures(fixturesPaths)); // eslint-disable-line no-undef
 
 function runTests(createImport, isNativeImport) {
 	describe('1 call', () => {

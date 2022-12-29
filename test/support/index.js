@@ -3,20 +3,30 @@
  * Tests support functions
  * ------------------*/
 
+/* eslint-disable import/order, import/newline-after-import */
+
 'use strict';
 
 // Modules
 const {join: pathJoin, dirname} = require('path').posix,
-	{serialize, serializeEntries} = require('livepack'),
-	mapValues = require('lodash/mapValues'),
+	{serialize, serializeEntries} = require('livepack');
+
+// Load packages from internal module cache to avoid them being transpiled.
+// `shared/internal.js` MUST be loaded from internal cache so it refers to same object
+// used internally in Livepack, so `afterEach` cleanup hook works as intended.
+const {useInternalModuleCache, useGlobalModuleCache} = require('../../lib/shared/moduleCache.js');
+useInternalModuleCache();
+
+const mapValues = require('lodash/mapValues'),
 	{isString, isFullString, isObject, isFunction, isArray, isBoolean} = require('is-it-type'),
 	assert = require('simple-invariant');
 
 // Imports
 const {createFixtures, cleanupFixtures, withFixtures, serializeInNewProcess} = require('./fixtures.js'),
-	{splitPoints: internalSplitPoints, globals} = require('../../lib/shared/internal.js'),
-	{COMMON_JS_MODULE} = require('../../lib/shared/constants.js'),
-	transpiledFiles = require('./transpiledFiles.js');
+	transpiledFiles = require('./transpiledFiles.js'),
+	internalSplitPoints = require('../../lib/shared/internal.js').splitPoints;
+
+useGlobalModuleCache();
 
 // Constants
 const FORMAT_NAMES = {js: 'JS', esm: 'ESM', cjs: 'CommonJS'};
@@ -42,22 +52,9 @@ const DEFAULT_OPTIONS = process.env.LIVEPACK_TEST_QUICK
 	: null;
 const PROFILE_ONLY = process.env.LIVEPACK_TEST_PROFILE;
 
-// Hook to clean up internal state after each test
-const commonJsModules = [];
-globals.set = (value, props) => {
-	if (props.type === COMMON_JS_MODULE) commonJsModules.push(value);
-	return Map.prototype.set.call(globals, value, props);
-};
-
+// Hook to empty split points registry after each test
 afterEach(() => {
-	// Clear split points
 	internalSplitPoints.clear();
-
-	// Clear `module` instances from globals
-	for (const value of commonJsModules) {
-		globals.delete(value);
-	}
-	commonJsModules.length = 0;
 });
 
 /**
