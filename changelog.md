@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.8
+
+Docs:
+
+* Remove coverage badge
+
 ## 0.7.7
 
 Bug fixes:
