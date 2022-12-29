@@ -11,12 +11,6 @@ const parseNodeVersion = require('parse-node-version');
 // Imports
 const {itSerializes, stripSourceMapComment, stripLineBreaks} = require('./support/index.js');
 
-// Set prototype of `module.exports` to `Object.prototype`. Necessary for the test for a function
-// containing global `this`. Jest creates `module.exports` in another execution context,
-// so prototype of `export` object is a *different* `Object.prototype`.
-// This is just an artefact of the testing environment - does not affect real code.
-Object.setPrototypeOf(module.exports, Object.prototype);
-
 // Tests
 
 const {major, minor} = parseNodeVersion(process.version),

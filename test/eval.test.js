@@ -803,12 +803,7 @@ describe('eval', () => {
 	describe('in functions which are serialized', () => {
 		describe('`eval()`', () => {
 			describe('values', () => {
-				// `Object.setPrototypeOf` necessary because Jest creates `module.exports` in another
-				// execution context, so prototype of `export` object is a *different* `Object.prototype`.
-				// This is just an artefact of the testing environment - does not affect real code.
 				const input = `
-					Object.setPrototypeOf(exports, Object.prototype);
-
 					const extA = 1;
 					const outer = (0, function() {
 						const extB = 2;
@@ -920,12 +915,7 @@ describe('eval', () => {
 			});
 
 			describe('values without context', () => {
-				// `Object.setPrototypeOf` necessary because Jest creates `module.exports` in another
-				// execution context, so prototype of `export` object is a *different* `Object.prototype`.
-				// This is just an artefact of the testing environment - does not affect real code.
 				const input = `
-					Object.setPrototypeOf(exports, Object.prototype);
-
 					const extA = 1;
 					const outer = (0, function() {
 						const extB = 2;
@@ -1030,12 +1020,7 @@ describe('eval', () => {
 			});
 
 			describe('functions', () => {
-				// `Object.setPrototypeOf` necessary because Jest creates `module.exports` in another
-				// execution context, so prototype of `export` object is a *different* `Object.prototype`.
-				// This is just an artefact of the testing environment - does not affect real code.
 				const input = `
-					Object.setPrototypeOf(exports, Object.prototype);
-
 					const extA = 1;
 					const outer = (0, function() {
 						const extB = 2;
@@ -1617,12 +1602,7 @@ describe('eval', () => {
 		});
 
 		describe('inner eval in function', () => {
-			// `Object.setPrototypeOf` necessary because Jest creates `module.exports` in another
-			// execution context, so prototype of `export` object is a *different* `Object.prototype`.
-			// This is just an artefact of the testing environment - does not affect real code.
 			const input = `
-				Object.setPrototypeOf(exports, Object.prototype);
-
 				const extA = 1;
 				const outer = (0, function() {
 					const extB = 2;

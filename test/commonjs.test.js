@@ -69,12 +69,8 @@ describe('`module`', () => {
 
 describe('`exports`', () => {
 	itSerializes('is resolved correctly in scope of function', {
-		// `Object.setPrototypeOf` necessary because Jest creates `module.exports` in another
-		// execution context, so prototype of `export` object is a *different* `Object.prototype`.
-		// This is just an artefact of the testing environment - does not affect real code.
 		in: `
 			'use strict';
-			Object.setPrototypeOf(exports, Object.prototype);
 			exports.x = () => {
 				exports.y = 123;
 			};
