@@ -68,13 +68,17 @@
     "@overlookmotel/eslint-config-jest": "^6.0.1",
     "@overlookmotel/eslint-config-node": "^4.1.0",
     "@overlookmotel/jest-extended": "^3.2.0",
+    "collect-v8-coverage": "^1.0.1",
     "eslint": "^8.30.0",
     "expect": "^29.3.1",
     "jest": "^29.3.1",
     "jest-expect-arguments": "^1.0.0",
     "jest-light-runner": "^0.4.1",
     "jest-matcher-utils": "^29.3.1",
-    "npm-run-all": "^4.1.5"
+    "jest-util": "^29.3.1",
+    "npm-run-all": "^4.1.5",
+    "supports-color": "^9.3.1",
+    "tinypool": "^0.3.0"
   },
   "keywords": [
     "build",

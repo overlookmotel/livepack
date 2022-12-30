@@ -9,7 +9,7 @@
 
 module.exports = {
 	testEnvironment: 'node',
-	runner: 'jest-light-runner',
+	runner: '<rootDir>/test/support/runner.mjs',
 	coverageDirectory: 'coverage',
 	coverageProvider: 'v8',
 	collectCoverageFrom: ['*.js', '!.eslintrc.js', '!jest.config.js', 'lib/**/*.js'],
