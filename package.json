@@ -68,7 +68,7 @@
     "@overlookmotel/eslint-config-jest": "^6.0.1",
     "@overlookmotel/eslint-config-node": "^4.1.0",
     "collect-v8-coverage": "^1.0.1",
-    "eslint": "^8.30.0",
+    "eslint": "^8.31.0",
     "expect": "^29.3.1",
     "jest": "^29.3.1",
     "jest-expect-arguments": "^1.0.0",
