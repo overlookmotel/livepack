@@ -1951,7 +1951,7 @@ describe('Strict mode', () => {
 				it('strict mode, throws SyntaxError for syntax illegal in strict mode', () => {
 					'use strict';
 					expect(() => eval('(function(x, x) { return x; })')).toThrowWithMessage(
-						SyntaxError, 'Duplicate parameter name not allowed in this context'
+						SyntaxError, 'Argument name clash. (1:13)'
 					);
 				});
 

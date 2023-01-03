@@ -24,7 +24,8 @@ const mapValues = require('lodash/mapValues'),
 // Imports
 const {createFixtures, cleanupFixtures, withFixtures, serializeInNewProcess} = require('./fixtures.js'),
 	transpiledFiles = require('./transpiledFiles.js'),
-	internalSplitPoints = require('../../lib/shared/internal.js').splitPoints;
+	internalSplitPoints = require('../../lib/shared/internal.js').splitPoints,
+	{disableEvalShim, enableEvalShim} = require('../../lib/init/eval.js');
 
 useGlobalModuleCache();
 
@@ -377,9 +378,22 @@ function itSerializes(name, options, defaultOptions, describe, runExpectation) {
 			);
 		}
 
+		// In following sections, `eval` shim is disabled while executing output and while
+		// validating output.
+		// Output may contain `eval()` calls and these should run as they would for the user,
+		// which is without the `eval` shim.
+		// `eval` shim is left in place, however, for validating input.
+		// Unlike output, input is instrumented, and may contain code which relies on eval shim.
+
 		// Evaluate output
-		let output = execFiles(outputFilesObj, fileMappings, opts.format, opts.strictEnv);
-		if (!entries) output = output.index;
+		let output;
+		try {
+			disableEvalShim();
+			output = execFiles(outputFilesObj, fileMappings, opts.format, opts.strictEnv);
+			if (!entries) output = output.index;
+		} finally {
+			enableEvalShim();
+		}
 
 		// Check output equals input
 		if (equal) {
@@ -402,12 +416,15 @@ function itSerializes(name, options, defaultOptions, describe, runExpectation) {
 		if (validateOutput) {
 			const outputJs = entries ? outputFilesObj : outputFilesObj['index.js'];
 			try {
-				await validateOutput(output, {
-					...opts, ...testOpts, isInput: false, isOutput: true, input, outputJs
-				});
+				disableEvalShim();
+				await validateOutput(
+					output, {...opts, ...testOpts, isInput: false, isOutput: true, input, outputJs}
+				);
 			} catch (err) {
 				err.message = `Validation failed on output\n\n${err.message}`;
 				throw err;
+			} finally {
+				enableEvalShim();
 			}
 		}
 	}

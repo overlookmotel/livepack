@@ -3,17 +3,14 @@
  * Tests for `eval`
  * ------------------*/
 
-/* eslint-disable no-eval */
-
-'use strict';
+/* eslint-disable strict, no-eval, lines-around-directive */
 
 // Modules
-const {serialize} = require('livepack'),
-	escapeRegex = require('lodash/escapeRegExp');
+const {serialize} = require('livepack');
 
 // Imports
 const {
-	itSerializes, itSerializesEqual, tryCatch, stripSourceMapComment, stripLineBreaks
+	itSerializes, itSerializesEqual, stripSourceMapComment, stripLineBreaks
 } = require('./support/index.js');
 
 // Tests
@@ -23,13 +20,13 @@ describe('eval', () => {
 		itSerializes('directly', {
 			in: () => eval,
 			out: 'eval',
-			validateOutput: e => expect(e).toBe(global.eval)
+			validate: e => expect(e).toBe(global.eval)
 		});
 
 		itSerializes('in object', {
 			in: () => ({e: eval}),
 			out: '{e:eval}',
-			validateOutput(obj) {
+			validate(obj) {
 				expect(obj).toEqual({e: global.eval});
 				expect(obj.e).toBe(global.eval);
 			}
@@ -38,7 +35,7 @@ describe('eval', () => {
 		itSerializes('multiple references are de-duplicated', {
 			in: () => ({e: eval, e2: eval}),
 			out: '(()=>{const a=eval;return{e:a,e2:a}})()',
-			validateOutput(obj) {
+			validate(obj) {
 				expect(obj).toEqual({e: global.eval, e2: global.eval});
 				expect(obj.e).toBe(global.eval);
 				expect(obj.e2).toBe(global.eval);
@@ -47,11 +44,12 @@ describe('eval', () => {
 
 		itSerializes('in function scope', {
 			in() {
+				'use strict';
 				const e = eval;
 				return () => e;
 			},
 			out: '(a=>()=>a)(eval)',
-			validateOutput(fn) {
+			validate(fn) {
 				expect(fn).toBeFunction();
 				expect(fn()).toBe(global.eval);
 			}
@@ -148,6 +146,7 @@ describe('eval', () => {
 				describe('`new.target`', () => {
 					itSerializes('from enclosing function', {
 						in() {
+							'use strict';
 							function outer() {
 								return eval('new.target');
 							}
@@ -163,6 +162,7 @@ describe('eval', () => {
 
 					itSerializes('from within arrow functions', {
 						in() {
+							'use strict';
 							function outer() {
 								return () => () => eval('new.target');
 							}
@@ -179,6 +179,8 @@ describe('eval', () => {
 			});
 
 			describe('functions', () => {
+				'use strict';
+
 				itSerializes('returning literal', {
 					in: () => eval('() => 123'),
 					out: '()=>123',
@@ -536,6 +538,12 @@ describe('eval', () => {
 
 			describe('called with', () => {
 				// Tests instrumentation does not change behavior
+				itSerializes('no argumuments returns undefined', {
+					in: () => eval(),
+					out: 'void 0',
+					validate: res => expect(res).toBeUndefined()
+				});
+
 				itSerializes('spread element acts as indirect eval', {
 					in() {
 						const x = 123; // eslint-disable-line no-unused-vars
@@ -557,6 +565,7 @@ describe('eval', () => {
 
 				itSerializes('multiple arguments acts as direct eval', {
 					in() {
+						'use strict';
 						const x = 123; // eslint-disable-line no-unused-vars
 						return eval('() => x', 456, 789);
 					},
@@ -569,6 +578,7 @@ describe('eval', () => {
 
 				itSerializes('multiple arguments with spread acts as direct eval', {
 					in() {
+						'use strict';
 						const x = 123; // eslint-disable-line no-unused-vars
 						return eval('() => x', ...[456, 789]);
 					},
@@ -581,14 +591,9 @@ describe('eval', () => {
 			});
 
 			it('throws if invalid eval code', () => {
-				const err = tryCatch(() => eval('return 123;'));
-				expect(err).toBeInstanceOf(SyntaxError);
-				expect(err.message).toBe('Illegal return statement');
-
-				// Check stack trace does not include internal Livepack code
-				const stackLines = err.stack.split(/\r?\n/);
-				expect(stackLines[0]).toBe('SyntaxError: Illegal return statement');
-				expect(stackLines[1]).toMatch(new RegExp(`\\s+at fn \\(${escapeRegex(__filename)}:\\d+:\\d+\\)`));
+				expect(
+					() => eval('return 123;')
+				).toThrowWithMessage(SyntaxError, "'return' outside of function. (1:0)");
 			});
 
 			describe('cannot serialize function referring to `require`', () => {
@@ -606,6 +611,8 @@ describe('eval', () => {
 			});
 
 			describe('can define vars named same as CommonJS vars', () => {
+				'use strict';
+
 				itSerializes('const', {
 					in: () => eval('const module = 1, exports = 2, require = 3; () => [module, exports, require]'),
 					out: '((a,b,c)=>()=>[a,b,c])(1,2,3)',
@@ -699,6 +706,260 @@ describe('eval', () => {
 						// Sanity check: Ensure var used has changed prefix outside eval
 						expect(transpiled).toInclude('const [livepack1_tracker, livepack1_getScopeId] = require(');
 					}
+				});
+			});
+
+			describe('`var` statements in `eval()`', () => {
+				describe('create var in parent function in sloppy mode', () => {
+					itSerializes('no prefix change', {
+						in() {
+							expect(typeof x).toBe('undefined');
+							const getX1 = eval('var x = 123; () => x');
+							const [getX2, setX] = eval('var x; [() => x, v => { x = v; }]');
+							return {getX1, getX2, setX, x}; // eslint-disable-line no-undef
+						},
+						out: `(()=>{
+							const a=(0,eval)("b=>[()=>b,()=>b,a=>{b=a}]")(123);
+							return{getX1:a[0],getX2:a[1],setX:a[2],x:123}
+						})()`,
+						validate({getX1, getX2, setX, x}) {
+							expect(x).toBe(123);
+							expect(getX1()).toBe(123);
+							expect(getX2()).toBe(123);
+							setX(456);
+							expect(getX1()).toBe(456);
+							expect(getX2()).toBe(456);
+							expect(global.x).toBeUndefined();
+						}
+					});
+
+					itSerializes('with prefix change', {
+						in() {
+							expect(typeof x).toBe('undefined');
+							const getX1 = eval('let livepack_tracker; var x = 123; () => x');
+							const [getX2, setX] = eval('let livepack_tracker; var x; [() => x, v => { x = v; }]');
+							return {getX1, getX2, setX, x}; // eslint-disable-line no-undef
+						},
+						out: `(()=>{
+							const a=(0,eval)("b=>[()=>b,()=>b,a=>{b=a}]")(123);
+							return{getX1:a[0],getX2:a[1],setX:a[2],x:123}
+						})()`,
+						validate({getX1, getX2, setX, x}) {
+							expect(x).toBe(123);
+							expect(getX1()).toBe(123);
+							expect(getX2()).toBe(123);
+							setX(456);
+							expect(getX1()).toBe(456);
+							expect(getX2()).toBe(456);
+							expect(global.x).toBeUndefined();
+						}
+					});
+				});
+
+				describe('create var in parent function in sloppy mode when `eval()` inside `eval()`', () => {
+					itSerializes('no prefix change', {
+						in() {
+							expect(typeof x).toBe('undefined');
+							const getX1 = eval('eval("var x = 123; () => x")');
+							const [getX2, setX] = eval('eval("var x; [() => x, v => { x = v; }]")');
+							return {getX1, getX2, setX, x}; // eslint-disable-line no-undef
+						},
+						out: `(()=>{
+							const a=(0,eval)("b=>[()=>b,()=>b,a=>{b=a}]")(123);
+							return{getX1:a[0],getX2:a[1],setX:a[2],x:123}
+						})()`,
+						validate({getX1, getX2, setX, x}) {
+							expect(x).toBe(123);
+							expect(getX1()).toBe(123);
+							expect(getX2()).toBe(123);
+							setX(456);
+							expect(getX1()).toBe(456);
+							expect(getX2()).toBe(456);
+							expect(global.x).toBeUndefined();
+						}
+					});
+
+					itSerializes('with prefix change in outer `eval()`', {
+						in() {
+							expect(typeof x).toBe('undefined');
+							const getX1 = eval('let livepack_tracker; eval("var x = 123; () => x")');
+							const [getX2, setX] = eval(
+								'let livepack_tracker; eval("var x; [() => x, v => { x = v; }]")'
+							);
+							return {getX1, getX2, setX, x}; // eslint-disable-line no-undef
+						},
+						out: `(()=>{
+							const a=(0,eval)("b=>[()=>b,()=>b,a=>{b=a}]")(123);
+							return{getX1:a[0],getX2:a[1],setX:a[2],x:123}
+						})()`,
+						validate({getX1, getX2, setX, x}) {
+							expect(x).toBe(123);
+							expect(getX1()).toBe(123);
+							expect(getX2()).toBe(123);
+							setX(456);
+							expect(getX1()).toBe(456);
+							expect(getX2()).toBe(456);
+							expect(global.x).toBeUndefined();
+						}
+					});
+
+					itSerializes('with prefix change in inner `eval()`', {
+						in() {
+							expect(typeof x).toBe('undefined');
+							const getX1 = eval('eval("let livepack_tracker; var x = 123; () => x")');
+							const [getX2, setX] = eval(
+								'eval("let livepack_tracker; var x; [() => x, v => { x = v; }]")'
+							);
+							return {getX1, getX2, setX, x}; // eslint-disable-line no-undef
+						},
+						out: `(()=>{
+							const a=(0,eval)("b=>[()=>b,()=>b,a=>{b=a}]")(123);
+							return{getX1:a[0],getX2:a[1],setX:a[2],x:123}
+						})()`,
+						validate({getX1, getX2, setX, x}) {
+							expect(x).toBe(123);
+							expect(getX1()).toBe(123);
+							expect(getX2()).toBe(123);
+							setX(456);
+							expect(getX1()).toBe(456);
+							expect(getX2()).toBe(456);
+							expect(global.x).toBeUndefined();
+						}
+					});
+
+					itSerializes('with prefix changes in both `eval()`s', {
+						in() {
+							expect(typeof x).toBe('undefined');
+							const getX1 = eval(
+								'let livepack_tracker; eval("let livepack1_tracker; var x = 123; () => x")'
+							);
+							const [getX2, setX] = eval(
+								'let livepack_tracker; eval("let livepack1_tracker; var x; [() => x, v => { x = v; }]")'
+							);
+							return {getX1, getX2, setX, x}; // eslint-disable-line no-undef
+						},
+						out: `(()=>{
+							const a=(0,eval)("b=>[()=>b,()=>b,a=>{b=a}]")(123);
+							return{getX1:a[0],getX2:a[1],setX:a[2],x:123}
+						})()`,
+						validate({getX1, getX2, setX, x}) {
+							expect(x).toBe(123);
+							expect(getX1()).toBe(123);
+							expect(getX2()).toBe(123);
+							setX(456);
+							expect(getX1()).toBe(456);
+							expect(getX2()).toBe(456);
+							expect(global.x).toBeUndefined();
+						}
+					});
+				});
+
+				describe('create local var in strict mode', () => {
+					describe('strict mode inherited from outside `eval()`', () => {
+						itSerializes('no prefix change', {
+							in() {
+								'use strict';
+								const [getX1, setX1] = eval('var x = 1; [() => x, v => { x = v; }]');
+								const [getX2, setX2] = eval('var x = 2; [() => x, v => { x = v; }]');
+								return {getX1, setX1, getX2, setX2, typeofOuterX: typeof x};
+							},
+							out: `(()=>{
+								const a=(b=>[()=>b,a=>{b=a}])(1),
+									b=(b=>[()=>b,a=>{b=a}])(2);
+								return{getX1:a[0],setX1:a[1],getX2:b[0],setX2:b[1],typeofOuterX:"undefined"}
+							})()`,
+							validate({getX1, setX1, getX2, setX2, typeofOuterX}) {
+								expect(getX1()).toBe(1);
+								expect(getX2()).toBe(2);
+								setX1(3);
+								setX2(4);
+								expect(getX1()).toBe(3);
+								expect(getX2()).toBe(4);
+								expect(typeofOuterX).toBe('undefined');
+								expect(global.x).toBeUndefined();
+							}
+						});
+
+						itSerializes('with prefix change', {
+							in() {
+								'use strict';
+								const [getX1, setX1] = eval(
+									'let livepack_tracker; var x = 1; [() => x, v => { x = v; }]'
+								);
+								const [getX2, setX2] = eval(
+									'let livepack_tracker; var x = 2; [() => x, v => { x = v; }]'
+								);
+								return {getX1, setX1, getX2, setX2, typeofOuterX: typeof x};
+							},
+							out: `(()=>{
+								const a=(b=>[()=>b,a=>{b=a}])(1),
+									b=(b=>[()=>b,a=>{b=a}])(2);
+								return{getX1:a[0],setX1:a[1],getX2:b[0],setX2:b[1],typeofOuterX:"undefined"}
+							})()`,
+							validate({getX1, setX1, getX2, setX2, typeofOuterX}) {
+								expect(getX1()).toBe(1);
+								expect(getX2()).toBe(2);
+								setX1(3);
+								setX2(4);
+								expect(getX1()).toBe(3);
+								expect(getX2()).toBe(4);
+								expect(typeofOuterX).toBe('undefined');
+								expect(global.x).toBeUndefined();
+							}
+						});
+					});
+
+					describe('strict mode entered inside `eval()`', () => {
+						itSerializes('no prefix change', {
+							in() {
+								const [getX1, setX1] = eval('"use strict"; var x = 1; [() => x, v => { x = v; }]');
+								const [getX2, setX2] = eval('"use strict"; var x = 2; [() => x, v => { x = v; }]');
+								return {getX1, setX1, getX2, setX2, typeofOuterX: typeof x};
+							},
+							out: `(()=>{
+								const a=(b=>[()=>b,a=>{b=a}])(1),
+									b=(b=>[()=>b,a=>{b=a}])(2);
+								return{getX1:a[0],setX1:a[1],getX2:b[0],setX2:b[1],typeofOuterX:"undefined"}
+							})()`,
+							validate({getX1, setX1, getX2, setX2, typeofOuterX}) {
+								expect(getX1()).toBe(1);
+								expect(getX2()).toBe(2);
+								setX1(3);
+								setX2(4);
+								expect(getX1()).toBe(3);
+								expect(getX2()).toBe(4);
+								expect(typeofOuterX).toBe('undefined');
+								expect(global.x).toBeUndefined();
+							}
+						});
+
+						itSerializes('with prefix change', {
+							in() {
+								const [getX1, setX1] = eval(
+									'"use strict"; let livepack_tracker; var x = 1; [() => x, v => { x = v; }]'
+								);
+								const [getX2, setX2] = eval(
+									'"use strict"; let livepack_tracker; var x = 2; [() => x, v => { x = v; }]'
+								);
+								return {getX1, setX1, getX2, setX2, typeofOuterX: typeof x};
+							},
+							out: `(()=>{
+								const a=(b=>[()=>b,a=>{b=a}])(1),
+									b=(b=>[()=>b,a=>{b=a}])(2);
+								return{getX1:a[0],setX1:a[1],getX2:b[0],setX2:b[1],typeofOuterX:"undefined"}
+							})()`,
+							validate({getX1, setX1, getX2, setX2, typeofOuterX}) {
+								expect(getX1()).toBe(1);
+								expect(getX2()).toBe(2);
+								setX1(3);
+								setX2(4);
+								expect(getX1()).toBe(3);
+								expect(getX2()).toBe(4);
+								expect(typeofOuterX).toBe('undefined');
+								expect(global.x).toBeUndefined();
+							}
+						});
+					});
 				});
 			});
 		});
@@ -846,6 +1107,81 @@ describe('eval', () => {
 					in: () => (0, eval)('const a = 123; if (true) { a; } else { false; }'),
 					out: '123',
 					validate: num => expect(num).toBe(123)
+				});
+			});
+
+			describe('`var` statements in indirect `eval`', () => {
+				itSerializes('create global var in sloppy mode', {
+					in() {
+						const x = 123;
+						return (() => {
+							const getX = (0, eval)('var x = 456; () => x');
+							const outerX = x,
+								globalX = global.x;
+							delete global.x;
+							return {getX, outerX, globalX};
+						})();
+					},
+					strictEnv: false,
+					out: '{getX:(0,()=>x),outerX:123,globalX:456}',
+					validate({getX, outerX, globalX}) {
+						expect(outerX).toBe(123);
+						expect(globalX).toBe(456);
+
+						global.x = 789;
+						try {
+							expect(getX()).toBe(789);
+						} finally {
+							delete global.x;
+						}
+					}
+				});
+
+				itSerializes(
+					'create global var in sloppy mode when `var` statement inside nested direct `eval()`',
+					{
+						in() {
+							const x = 123;
+							return (() => {
+								const getX = (0, eval)('eval("var x = 456; () => x")');
+								const outerX = x,
+									globalX = global.x;
+								delete global.x;
+								return {getX, outerX, globalX};
+							})();
+						},
+						strictEnv: false,
+						out: '{getX:(0,()=>x),outerX:123,globalX:456}',
+						validate({getX, outerX, globalX}) {
+							expect(outerX).toBe(123);
+							expect(globalX).toBe(456);
+
+							global.x = 789;
+							try {
+								expect(getX()).toBe(789);
+							} finally {
+								delete global.x;
+							}
+						}
+					}
+				);
+
+				itSerializes('create local var in strict mode', {
+					in() {
+						const x = 123;
+						return (() => {
+							const getX = (0, eval)('"use strict"; var x = 456; () => x;');
+							const outerX = x,
+								globalX = global.x;
+							return {getX, outerX, globalX};
+						})();
+					},
+					out: '{getX:(a=>()=>a)(456),outerX:123,globalX:void 0}',
+					validate({getX, outerX, globalX}) {
+						expect(outerX).toBe(123);
+						expect(globalX).toBeUndefined();
+						expect(getX()).toBe(456);
+					}
 				});
 			});
 		});
@@ -1405,6 +1741,8 @@ describe('eval', () => {
 		});
 
 		describe('indirect `eval`', () => {
+			'use strict';
+
 			describe('values', () => {
 				itSerializes('can evaluate literal', {
 					in() {
@@ -1570,6 +1908,7 @@ describe('eval', () => {
 	describe('`eval()` within `eval()`', () => {
 		itSerializes('with no prefix changes', {
 			in() {
+				'use strict';
 				const ext = 1; // eslint-disable-line no-unused-vars
 				return eval('eval("() => ext")');
 			},
@@ -1780,5 +2119,51 @@ describe('eval', () => {
 				expect(fn()).toEqual(['undefined', 'undefined']);
 			}
 		});
+	});
+
+	describe('`global.eval` can be written to and maintains correct behavior after restored', () => {
+		it('with `eval = ...`', () => {
+			const x = 123; // eslint-disable-line no-unused-vars
+
+			const evalOriginal = eval;
+			eval = () => 456; // eslint-disable-line no-global-assign
+
+			try {
+				expect(eval('x')).toBe(456);
+				expect((0, eval)('typeof x')).toBe(456);
+			} finally {
+				eval = evalOriginal; // eslint-disable-line no-global-assign
+			}
+
+			expect(eval('x')).toBe(123);
+			expect((0, eval)('typeof x')).toBe('undefined');
+		});
+
+		it('with `global.eval = ...`', () => {
+			const x = 123; // eslint-disable-line no-unused-vars
+
+			const evalOriginal = global.eval;
+			global.eval = () => 456;
+
+			try {
+				expect(eval('x')).toBe(456);
+				expect((0, eval)('typeof x')).toBe(456);
+			} finally {
+				global.eval = evalOriginal;
+			}
+
+			expect(eval('x')).toBe(123);
+			expect((0, eval)('typeof x')).toBe('undefined');
+		});
+	});
+
+	itSerializes('`global.eval` instruments code', {
+		in: () => global.eval('const x = 123; () => x;'),
+		strictEnv: false,
+		out: '(a=>()=>a)(123)',
+		validate(fn) {
+			expect(fn).toBeFunction();
+			expect(fn()).toBe(123);
+		}
 	});
 });

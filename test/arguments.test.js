@@ -1033,14 +1033,14 @@ describe('Functions including `arguments`', () => {
 					'use strict'; // eslint-disable-line lines-around-directive
 					return eval('() => {arguments = 1;}');
 				}
-				expect(f).toThrowWithMessage(SyntaxError, 'Unexpected eval or arguments in strict mode');
+				expect(f).toThrowWithMessage(SyntaxError, "Assigning to 'arguments' in strict mode. (1:7)");
 			});
 
 			it('when is sloppy mode function arguments assigned to in strict mode', () => {
 				function f() {
 					return eval("() => {'use strict'; arguments = 1;}");
 				}
-				expect(f).toThrowWithMessage(SyntaxError, 'Unexpected eval or arguments in strict mode');
+				expect(f).toThrowWithMessage(SyntaxError, "Assigning to 'arguments' in strict mode. (1:21)");
 			});
 
 			it('when is sloppy mode variable assigned to in strict mode', () => {
@@ -1049,7 +1049,7 @@ describe('Functions including `arguments`', () => {
 					let arguments = 1;
 					return eval("() => {'use strict'; arguments = 1;}");
 				};
-				expect(f).toThrowWithMessage(SyntaxError, 'Unexpected eval or arguments in strict mode');
+				expect(f).toThrowWithMessage(SyntaxError, "Assigning to 'arguments' in strict mode. (1:21)");
 			});
 			/* eslint-enable no-eval */
 		});
