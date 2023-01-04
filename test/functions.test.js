@@ -6146,8 +6146,8 @@ describe('Functions', () => {
 				out: `(()=>{
 					const a={extA:1},b={extB:2};
 					return(
-						(e,f,g,h)=>(a=f,b=g,c=e,d=h)=>[a,b,c,d]
-					)({ctx:3},a,b,function(){return arguments}(a,b))
+						(e,f,g,h)=>(a=e,b=f,c=g,d=h)=>[a,b,c,d]
+					)(a,b,{ctx:3},function(){return arguments}(a,b))
 				})()`,
 				validate(fn) {
 					expect(fn).toBeFunction();

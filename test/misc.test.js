@@ -49,7 +49,7 @@ describe('Internal vars created by instrumentation do not interfere with code', 
 
 	itSerializes('`temp`', {
 		in: () => Object.setPrototypeOf(
-			{x() { return super.x(typeof livepack_temp_21); }}, // eslint-disable-line camelcase
+			{x() { return super.x(typeof livepack_temp_27); }}, // eslint-disable-line camelcase
 			{x(v) { return v; }}
 		),
 		out: `(()=>{
@@ -58,7 +58,7 @@ describe('Internal vars created by instrumentation do not interfere with code', 
 						b=>a=b,
 						{
 							x(){
-								return Reflect.get(Object.getPrototypeOf(a),"x",this).call(this,typeof livepack_temp_21)
+								return Reflect.get(Object.getPrototypeOf(a),"x",this).call(this,typeof livepack_temp_27)
 							}
 						}.x
 					]
@@ -76,7 +76,7 @@ describe('Internal vars created by instrumentation do not interfere with code', 
 			// NB code for this file is injected into `transpiledFiles` in babel transform
 			// (see `test/support/transform.js`)
 			// eslint-disable-next-line no-useless-concat
-			expect(transpiledFiles[__filename]).toInclude('Object.setPrototypeOf' + '(livepack1_temp_21 =');
+			expect(transpiledFiles[__filename]).toInclude('Object.setPrototypeOf' + '(livepack1_temp_27 =');
 
 			expect(obj.x()).toBe('undefined');
 		}
