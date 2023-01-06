@@ -197,6 +197,12 @@ describe('Maps', () => {
 });
 
 describe('WeakMaps', () => {
+	it('calling `WeakMap()` without `new` throws error', () => {
+		expect(() => WeakMap()).toThrowWithMessage(
+			TypeError, "Class constructor WeakMap cannot be invoked without 'new'"
+		);
+	});
+
 	itSerializes('empty', {
 		in: () => new WeakMap(),
 		out: 'new WeakMap',

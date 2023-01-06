@@ -188,6 +188,12 @@ describe('Sets', () => {
 });
 
 describe('WeakSets', () => {
+	it('calling `WeakSet()` without `new` throws error', () => {
+		expect(() => WeakSet()).toThrowWithMessage(
+			TypeError, "Class constructor WeakSet cannot be invoked without 'new'"
+		);
+	});
+
 	itSerializes('empty', {
 		in: () => new WeakSet(),
 		out: 'new WeakSet',
