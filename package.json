@@ -51,7 +51,6 @@
     "is-it-type": "^5.1.2",
     "lodash": "^4.17.21",
     "native-type-of": "^1.1.0",
-    "parse-node-version": "^2.0.0",
     "pirates": "^4.0.5",
     "reserved-words": "^0.1.2",
     "simple-invariant": "^2.0.1",
@@ -78,6 +77,7 @@
     "jest-runner-eslint": "^1.1.0",
     "jest-util": "^29.3.1",
     "npm-run-all": "^4.1.5",
+    "parse-node-version": "^2.0.0",
     "supports-color": "^9.3.1",
     "tinypool": "^0.3.0"
   },
