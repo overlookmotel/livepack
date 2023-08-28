@@ -7,9 +7,6 @@
 
 'use strict';
 
-// Modules
-const parseNodeVersion = require('parse-node-version');
-
 // Imports
 const {itSerializes} = require('./support/index.js');
 
@@ -22,10 +19,6 @@ const spy = jest.fn;
 // In Node v16.9.0+, classes have `name` property before `prototype` property.
 const anonClassHasNameProp = !!Object.getOwnPropertyDescriptor(class {}, 'name'),
 	classHasNamePropLast = Object.getOwnPropertyNames(class C {})[2] === 'name';
-
-const itSerializesIfNode16 = parseNodeVersion(process.version).major >= 16
-	? itSerializes
-	: itSerializes.skip;
 
 describe('Classes', () => {
 	describe('empty class', () => {
@@ -4254,17 +4247,12 @@ describe('Classes', () => {
 				}
 			});
 
-			/* eslint-disable jest/no-standalone-expect */
-			itSerializesIfNode16('with &&= assignment', {
+			itSerializes('with &&= assignment', {
 				in() {
-					// Using eval here as otherwise syntax error on Node < 16
-					// eslint-disable-next-line no-eval
-					return (0, eval)(`
-						class S {}
-						let C = true;
-						C &&= class extends S {};
-						C;
-					`);
+					class S {}
+					let C = true;
+					C &&= class extends S {};
+					return C;
 				},
 				out: `(()=>{
 					const a=Object.setPrototypeOf,
@@ -4284,16 +4272,12 @@ describe('Classes', () => {
 				}
 			});
 
-			itSerializesIfNode16('with ||= assignment', {
+			itSerializes('with ||= assignment', {
 				in() {
-					// Using eval here as otherwise syntax error on Node < 16
-					// eslint-disable-next-line no-eval
-					return (0, eval)(`
-						class S {}
-						let C = false;
-						C ||= class extends S {};
-						C;
-					`);
+					class S {}
+					let C = false;
+					C ||= class extends S {};
+					return C;
 				},
 				out: `(()=>{
 					const a=Object.setPrototypeOf,
@@ -4313,16 +4297,12 @@ describe('Classes', () => {
 				}
 			});
 
-			itSerializesIfNode16('with ??= assignment', {
+			itSerializes('with ??= assignment', {
 				in() {
-					// Using eval here as otherwise syntax error on Node < 16
-					// eslint-disable-next-line no-eval
-					return (0, eval)(`
-						class S {}
-						let C;
-						C ??= class extends S {};
-						C;
-					`);
+					class S {}
+					let C = null;
+					C ??= class extends S {};
+					return C;
 				},
 				out: `(()=>{
 					const a=Object.setPrototypeOf,
@@ -4341,7 +4321,6 @@ describe('Classes', () => {
 					expect(Klass.name).toBe('C');
 				}
 			});
-			/* eslint-enable jest/no-standalone-expect */
 
 			itSerializes('with = assignment pattern', {
 				in() {

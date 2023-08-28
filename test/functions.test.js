@@ -5,18 +5,11 @@
 
 'use strict';
 
-// Modules
-const parseNodeVersion = require('parse-node-version');
-
 // Imports
 const {itSerializes, stripSourceMapComment, stripLineBreaks} = require('./support/index.js');
 
 // Tests
 
-const {major, minor} = parseNodeVersion(process.version),
-	describeIfNode16 = major >= 16 ? describe : describe.skip,
-	isNode16Point11OrHigher = major > 16 || (major === 16 && minor >= 11),
-	itSerializesIfNode16Point11 = isNode16Point11OrHigher ? itSerializes : itSerializes.skip;
 const spy = jest.fn;
 
 describe('Functions', () => {
@@ -3046,10 +3039,8 @@ describe('Functions', () => {
 					}
 				});
 
-				itSerializesIfNode16Point11('in class static block', {
-					// Using eval here as otherwise syntax error on Node < 16.11.0
-					// eslint-disable-next-line no-eval
-					in: () => eval(`
+				itSerializes('in class static block', {
+					in() {
 						function Outer() {
 							let fn;
 							class C { // eslint-disable-line no-unused-vars
@@ -3059,14 +3050,12 @@ describe('Functions', () => {
 							}
 							return fn;
 						}
-						new Outer();
-					`),
+						return new Outer();
+					},
 					out: '(a=>()=>a)()',
 					validate(fn) {
-						/* eslint-disable jest/no-standalone-expect */
 						expect(fn).toBeFunction();
 						expect(fn()).toBeUndefined();
-						/* eslint-enable jest/no-standalone-expect */
 					}
 				});
 
@@ -9306,14 +9295,13 @@ describe('Functions', () => {
 				}
 			});
 
-			describeIfNode16('&&=', () => {
+			describe('&&=', () => {
 				itSerializes('where executes', {
 					in() {
 						const extA = 1;
-						let extB = 2; // eslint-disable-line prefer-const
+						let extB = 2;
 						return [
-							// Using eval here as otherwise syntax error on Node < 16
-							eval('() => {extA &&= extB++;}'), // eslint-disable-line no-eval
+							() => { extA &&= extB++; }, // eslint-disable-line no-const-assign
 							() => extA,
 							() => extB
 						];
@@ -9339,10 +9327,9 @@ describe('Functions', () => {
 				itSerializes('where does not execute', {
 					in() {
 						const extA = 0;
-						let extB = 2; // eslint-disable-line prefer-const
+						let extB = 2;
 						return [
-							// Using eval here as otherwise syntax error on Node < 16
-							eval('() => {extA &&= extB++;}'), // eslint-disable-line no-eval
+							() => { extA &&= extB++; }, // eslint-disable-line no-const-assign
 							() => extA,
 							() => extB
 						];

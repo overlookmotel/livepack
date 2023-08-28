@@ -13,9 +13,6 @@ const {itSerializes} = require('./support/index.js');
 
 // Tests
 
-const hasUtilDebug = !!debug,
-	describeIfHasUtilDebug = hasUtilDebug ? describe : describe.skip;
-
 describe('Built-in functions', () => {
 	describe("require('util').promisify", () => {
 		itSerializes('simple', {
@@ -53,18 +50,18 @@ describe('Built-in functions', () => {
 	describe("require('util').debuglog", () => {
 		itSerializes('without callback', {
 			in: () => debuglog('foo'),
-			out: `require("util").${hasUtilDebug ? 'debug' : 'debuglog'}("foo")`,
+			out: 'require("util").debug("foo")',
 			validate: fn => expect(fn).toBeFunction()
 		});
 
 		itSerializes('with callback', {
 			in: () => debuglog('foo', () => {}),
-			out: `require("util").${hasUtilDebug ? 'debug' : 'debuglog'}("foo",()=>{})`,
+			out: 'require("util").debug("foo",()=>{})',
 			validate: fn => expect(fn).toBeFunction()
 		});
 	});
 
-	describeIfHasUtilDebug("require('util').debug", () => {
+	describe("require('util').debug", () => {
 		itSerializes('without callback', {
 			in: () => debug('foo'),
 			out: 'require("util").debug("foo")',
