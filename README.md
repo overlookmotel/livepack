@@ -85,7 +85,7 @@ The intention is to overcome the current limitations in future, and make Livepac
 npm install -D livepack
 ```
 
-Requires NodeJS v14 or later.
+Requires NodeJS v18 or later.
 
 ### CLI
 
