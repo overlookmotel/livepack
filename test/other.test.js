@@ -5,10 +5,17 @@
 
 'use strict';
 
+// Modules
+const parseNodeVersion = require('parse-node-version');
+
 // Imports
 const {itSerializes, itSerializesEqual} = require('./support/index.js');
 
 // Tests
+
+// `url[Symbol('context')]` property was removed in NodeJS v20.0.0.
+const urlsHaveContext = parseNodeVersion(process.version).major < 20,
+	itSerializesEqualIfUrlsHaveContext = urlsHaveContext ? itSerializesEqual : itSerializesEqual.skip;
 
 describe('RegExps', () => {
 	itSerializesEqual('with no flags', {
@@ -167,9 +174,12 @@ describe('URLSearchParams', () => {
 		}
 	});
 
-	itSerializesEqual('with context', {
+	// This test only makes sense in NodeJS v18.
+	// `url[Symbol('context')]` was removed in NodeJS v20.0.0.
+	itSerializesEqualIfUrlsHaveContext('with context', {
 		in: () => new URL('http://foo.com/path/to/file.html?a=1&b=2').searchParams,
 		out: 'new URL("http://foo.com/path/to/file.html?a=1&b=2").searchParams',
+		/* eslint-disable jest/no-standalone-expect */
 		validate(params) {
 			expect(params).toBeInstanceOf(URLSearchParams);
 			expect(params.toString()).toBe('a=1&b=2');
@@ -180,6 +190,7 @@ describe('URLSearchParams', () => {
 			expect(url).toBeInstanceOf(URL);
 			expect(url.toString()).toBe('http://foo.com/path/to/file.html?a=1&b=2');
 		}
+		/* eslint-enable jest/no-standalone-expect */
 	});
 
 	itSerializes('URLSearchParams subclass', {
