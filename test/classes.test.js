@@ -14,12 +14,6 @@ const {itSerializes} = require('./support/index.js');
 
 const spy = jest.fn;
 
-// In some versions of Node anonymous classes have a `name` property defined as '' (e.g. v16.10.0).
-// In other versions, anonymous classes have no `name` property at all (e.g. v14.17.6).
-// In Node v16.9.0+, classes have `name` property before `prototype` property.
-const anonClassHasNameProp = !!Object.getOwnPropertyDescriptor(class {}, 'name'),
-	classHasNamePropLast = Object.getOwnPropertyNames(class C {})[2] === 'name';
-
 describe('Classes', () => {
 	describe('empty class', () => {
 		itSerializes('anonymous', {
@@ -156,11 +150,11 @@ describe('Classes', () => {
 				validate(Klass) {
 					expect(Klass).toBeFunction();
 					expect(Klass.name).toBe('');
-					expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'z']);
+					expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'z']);
 					expect(Klass.z).toBeFunction();
 					expect(Klass.z.prototype).toBeUndefined();
 					Klass.z(3);
-					expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'z', 'x']);
+					expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'z', 'x']);
 					expect(Klass.x).toBe(3);
 					const instance = new Klass();
 					expect(instance).toBeObject();
@@ -184,11 +178,11 @@ describe('Classes', () => {
 				validate(Klass) {
 					expect(Klass).toBeFunction();
 					expect(Klass.name).toBe('');
-					expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'z']);
+					expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'z']);
 					expect(Klass.z).toBeFunction();
 					expect(Klass.z.prototype).toBeUndefined();
 					Klass.z(3);
-					expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'z', 'x']);
+					expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'z', 'x']);
 					expect(Klass.x).toBe(13);
 					const instance = new Klass();
 					expect(instance).toBeObject();
@@ -213,11 +207,11 @@ describe('Classes', () => {
 				validate(Klass) {
 					expect(Klass).toBeFunction();
 					expect(Klass.name).toBe('C');
-					expectClassToHaveOwnPropertyNames(Klass, ['length', 'name', 'prototype', 'z']);
+					expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'z']);
 					expect(Klass.z).toBeFunction();
 					expect(Klass.z.prototype).toBeUndefined();
 					Klass.z(3);
-					expectClassToHaveOwnPropertyNames(Klass, ['length', 'name', 'prototype', 'z', 'x']);
+					expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'z', 'x']);
 					expect(Klass.x).toBe(3);
 					const instance = new Klass();
 					expect(instance).toBeObject();
@@ -243,11 +237,11 @@ describe('Classes', () => {
 				validate(Klass) {
 					expect(Klass).toBeFunction();
 					expect(Klass.name).toBe('C');
-					expectClassToHaveOwnPropertyNames(Klass, ['length', 'name', 'prototype', 'z']);
+					expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'z']);
 					expect(Klass.z).toBeFunction();
 					expect(Klass.z.prototype).toBeUndefined();
 					Klass.z(3);
-					expectClassToHaveOwnPropertyNames(Klass, ['length', 'name', 'prototype', 'z', 'x']);
+					expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'z', 'x']);
 					expect(Klass.x).toBe(13);
 					const instance = new Klass();
 					expect(instance).toBeObject();
@@ -280,9 +274,9 @@ describe('Classes', () => {
 				validate(Klass) {
 					expect(Klass).toBeFunction();
 					expect(Klass.name).toBe('');
-					expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'z']);
+					expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'z']);
 					Klass.z(3);
-					expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'z', 'x']);
+					expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'z', 'x']);
 					expect(Klass.x).toBe(3);
 					const instance = new Klass();
 					expect(instance).toBeObject();
@@ -324,9 +318,9 @@ describe('Classes', () => {
 				validate(Klass) {
 					expect(Klass).toBeFunction();
 					expect(Klass.name).toBe('');
-					expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'z']);
+					expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'z']);
 					Klass.z(3);
-					expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'z', 'x']);
+					expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'z', 'x']);
 					expect(Klass.x).toBe(13);
 					const instance = new Klass();
 					expect(instance).toBeObject();
@@ -363,9 +357,9 @@ describe('Classes', () => {
 				validate(Klass) {
 					expect(Klass).toBeFunction();
 					expect(Klass.name).toBe('C');
-					expectClassToHaveOwnPropertyNames(Klass, ['length', 'name', 'prototype', 'z']);
+					expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'z']);
 					Klass.z(3);
-					expectClassToHaveOwnPropertyNames(Klass, ['length', 'name', 'prototype', 'z', 'x']);
+					expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'z', 'x']);
 					expect(Klass.x).toBe(3);
 					const instance = new Klass();
 					expect(instance).toBeObject();
@@ -409,9 +403,9 @@ describe('Classes', () => {
 				validate(Klass) {
 					expect(Klass).toBeFunction();
 					expect(Klass.name).toBe('C');
-					expectClassToHaveOwnPropertyNames(Klass, ['length', 'name', 'prototype', 'z']);
+					expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'z']);
 					Klass.z(3);
-					expectClassToHaveOwnPropertyNames(Klass, ['length', 'name', 'prototype', 'z', 'x']);
+					expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'z', 'x']);
 					expect(Klass.x).toBe(13);
 					const instance = new Klass();
 					expect(instance).toBeObject();
@@ -504,9 +498,9 @@ describe('Classes', () => {
 				)`,
 				validate(Klass) {
 					expect(Klass).toBeFunction();
-					expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'z']);
+					expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'z']);
 					Klass.z();
-					expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'z', 'x']);
+					expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'z', 'x']);
 					expect(Klass.x).toBe(3);
 					const instance = new Klass();
 					expect(instance).toBeObject();
@@ -531,9 +525,9 @@ describe('Classes', () => {
 				)`,
 				validate(Klass) {
 					expect(Klass).toBeFunction();
-					expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'z']);
+					expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'z']);
 					Klass.z();
-					expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'z', 'x']);
+					expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'z', 'x']);
 					expect(Klass.x).toBe(3);
 					const instance = new Klass();
 					expect(instance).toBeObject();
@@ -568,7 +562,7 @@ describe('Classes', () => {
 				})()`,
 				validate(Klass) {
 					expect(Klass).toBeFunction();
-					expectClassToHaveOwnPropertyNames(Klass, ['length', 'name', 'prototype', 'z']);
+					expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'z']);
 					expect(Klass).toHaveDescriptorModifiersFor('name', false, false, true);
 					const instance = new Klass();
 					expect(instance).toBeObject();
@@ -603,9 +597,9 @@ describe('Classes', () => {
 				})()`,
 				validate(Klass) {
 					expect(Klass).toBeFunction();
-					expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'z']);
+					expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'z']);
 					Klass.z();
-					expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'z', 'x']);
+					expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'z', 'x']);
 					expect(Klass.x).toBe(3);
 					const instance = new Klass();
 					expect(instance).toBeObject();
@@ -641,9 +635,9 @@ describe('Classes', () => {
 				})()`,
 				validate(Klass) {
 					expect(Klass).toBeFunction();
-					expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'z']);
+					expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'z']);
 					Klass.z();
-					expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'z', 'x']);
+					expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'z', 'x']);
 					expect(Klass.x).toBe(3);
 					const instance = new Klass();
 					expect(instance).toBeObject();
@@ -693,9 +687,9 @@ describe('Classes', () => {
 			validate(Klass) {
 				expect(Klass).toBeFunction();
 				expect(Klass.name).toBe('C');
-				expectClassToHaveOwnPropertyNames(Klass, ['length', 'name', 'prototype', 'z']);
+				expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'z']);
 				Klass.z(3);
-				expectClassToHaveOwnPropertyNames(Klass, ['length', 'name', 'prototype', 'z', 'x']);
+				expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'z', 'x']);
 				expect(Klass.x).toBe(13);
 				const instance = new Klass(1);
 				expect(instance).toBeObject();
@@ -1315,16 +1309,16 @@ describe('Classes', () => {
 			)`,
 			validate(Klass) {
 				expect(Klass).toBeFunction();
-				expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'y', 'z']);
+				expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'y', 'z']);
 				expect(Klass.y).toBeFunction();
 				expect(Klass.y.prototype).toBeUndefined();
 				expect(Klass.z).toBeFunction();
 				expect(Klass.z.prototype).toBeUndefined();
 				Klass.y();
-				expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'y', 'z', 'x']);
+				expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'y', 'z', 'x']);
 				expect(Klass.x).toBe(1);
 				Klass.z();
-				expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'y', 'z', 'x']);
+				expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'y', 'z', 'x']);
 				expect(Klass.x).toBe(2);
 			}
 		});
@@ -1432,11 +1426,11 @@ describe('Classes', () => {
 			)`,
 			validate(Klass) {
 				expect(Klass).toBeFunction();
-				expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'z']);
+				expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'z']);
 				expect(Klass.z).toBeFunction();
 				expect(Klass.z.prototype).toBeUndefined();
 				expect(Klass.z()).toBeInstanceOf(Promise);
-				expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'z', 'x']);
+				expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'z', 'x']);
 				expect(Klass.x).toBe(3);
 			}
 		});
@@ -1487,7 +1481,7 @@ describe('Classes', () => {
 			)`,
 			validate(Klass) {
 				expect(Klass).toBeFunction();
-				expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'z']);
+				expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'z']);
 				expect(Klass.z).toBeFunction();
 				expect(Klass.z.prototype).toBeObject();
 				expect(Klass.z.prototype).toHaveOwnPropertyNames([]);
@@ -1495,7 +1489,7 @@ describe('Classes', () => {
 				expect(Klass.x).toBeUndefined();
 				expect(res).toBeObject();
 				res.next();
-				expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'z', 'x']);
+				expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'z', 'x']);
 				expect(Klass.x).toBe(3);
 			}
 		});
@@ -1546,7 +1540,7 @@ describe('Classes', () => {
 			)`,
 			validate(Klass) {
 				expect(Klass).toBeFunction();
-				expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'z']);
+				expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'z']);
 				expect(Klass.z).toBeFunction();
 				expect(Klass.z.prototype).toBeObject();
 				expect(Klass.z.prototype).toHaveOwnPropertyNames([]);
@@ -1554,7 +1548,7 @@ describe('Classes', () => {
 				expect(Klass.x).toBeUndefined();
 				expect(res).toBeObject();
 				expect(res.next()).toBeInstanceOf(Promise);
-				expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'z', 'x']);
+				expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'z', 'x']);
 				expect(Klass.x).toBe(3);
 			}
 		});
@@ -1624,14 +1618,14 @@ describe('Classes', () => {
 			)`,
 			validate(Klass) {
 				expect(Klass).toBeFunction();
-				expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'z']);
+				expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'z']);
 				const descriptor = Object.getOwnPropertyDescriptor(Klass, 'z');
 				expect(descriptor.get).toBeFunction();
 				expect(descriptor.get.prototype).toBeUndefined();
 				expect(descriptor.set).toBeFunction();
 				expect(descriptor.set.prototype).toBeUndefined();
 				Klass.z = 3;
-				expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'z', 'x']);
+				expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'z', 'x']);
 				expect(Klass.x).toBe(3);
 				Klass.x = 2;
 				expect(Klass.z).toBe(2);
@@ -1673,11 +1667,7 @@ describe('Classes', () => {
 				})()`,
 				validate(Klass) {
 					expect(Klass).toBeFunction();
-					if (anonClassHasNameProp) {
-						expect(Klass.name).toBe('');
-					} else {
-						expect(Object.getOwnPropertyNames(Klass)).not.toContain('name');
-					}
+					expect(Klass.name).toBe('');
 					const {prototype} = Klass;
 					expect(prototype).toBeObject();
 					expect(prototype.constructor).toBe(Klass);
@@ -4569,13 +4559,6 @@ describe('Classes', () => {
 	});
 
 	describe('name maintained where', () => {
-		// These tests don't use `expectClassToHaveOwnPropertyNames()`
-		// to explicitly test for order of properties on different Node versions
-		const namedClassPropNames = classHasNamePropLast
-			? ['length', 'prototype', 'name']
-			: ['length', 'name', 'prototype'];
-		const anonClassPropNames = anonClassHasNameProp ? namedClassPropNames : ['length', 'prototype'];
-
 		itSerializes('unnamed class as object property', {
 			in: () => ({a: (0, class {})}),
 			out: '{a:(0,class{})}',
@@ -4585,10 +4568,8 @@ describe('Classes', () => {
 				const Klass = obj.a;
 				expect(Klass).toBeFunction();
 				expect(Klass.name).toBe('');
-				expect(Klass).toHaveOwnPropertyNames(anonClassPropNames);
-				if (anonClassHasNameProp) {
-					expect(Klass).toHaveDescriptorModifiersFor('name', false, false, true);
-				}
+				expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype']);
+				expect(Klass).toHaveDescriptorModifiersFor('name', false, false, true);
 			}
 		});
 
@@ -4601,7 +4582,7 @@ describe('Classes', () => {
 			validate(Klass) {
 				expect(Klass).toBeFunction();
 				expect(Klass.name).toBe('X');
-				expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
+				expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype']);
 				expect(Klass).toHaveDescriptorModifiersFor('name', false, false, true);
 			}
 		});
@@ -4615,53 +4596,51 @@ describe('Classes', () => {
 			validate(Klass) {
 				expect(Klass).toBeFunction();
 				expect(Klass.name).toBe('');
-				expect(Klass).toHaveOwnPropertyNames(anonClassPropNames);
-				if (anonClassHasNameProp) {
-					expect(Klass).toHaveDescriptorModifiersFor('name', false, false, true);
-				}
+				expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype']);
+				expect(Klass).toHaveDescriptorModifiersFor('name', false, false, true);
 			}
 		});
 
 		itSerializes('not valid JS identifier', {
 			in: () => ({'0a': class {}}['0a']),
-			out: 'Object.defineProperties(class{},{name:{value:"0a",configurable:true}})',
+			out: 'Object.defineProperties(class{},{name:{value:"0a"}})',
 			validate(Klass) {
 				expect(Klass).toBeFunction();
 				expect(Klass.name).toBe('0a');
-				expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
+				expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype']);
 				expect(Klass).toHaveDescriptorModifiersFor('name', false, false, true);
 			}
 		});
 
 		itSerializes('reserved word', {
 			in: () => ({export: class {}}.export),
-			out: 'Object.defineProperties(class{},{name:{value:"export",configurable:true}})',
+			out: 'Object.defineProperties(class{},{name:{value:"export"}})',
 			validate(Klass) {
 				expect(Klass).toBeFunction();
 				expect(Klass.name).toBe('export');
-				expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
+				expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype']);
 				expect(Klass).toHaveDescriptorModifiersFor('name', false, false, true);
 			}
 		});
 
 		itSerializes('arguments', {
 			in: () => ({arguments: class {}}.arguments),
-			out: 'Object.defineProperties(class{},{name:{value:"arguments",configurable:true}})',
+			out: 'Object.defineProperties(class{},{name:{value:"arguments"}})',
 			validate(Klass) {
 				expect(Klass).toBeFunction();
 				expect(Klass.name).toBe('arguments');
-				expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
+				expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype']);
 				expect(Klass).toHaveDescriptorModifiersFor('name', false, false, true);
 			}
 		});
 
 		itSerializes('eval', {
 			in: () => ({eval: class {}}.eval),
-			out: 'Object.defineProperties(class{},{name:{value:"eval",configurable:true}})',
+			out: 'Object.defineProperties(class{},{name:{value:"eval"}})',
 			validate(Klass) {
 				expect(Klass).toBeFunction();
 				expect(Klass.name).toBe('eval');
-				expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
+				expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype']);
 				expect(Klass).toHaveDescriptorModifiersFor('name', false, false, true);
 			}
 		});
@@ -4671,20 +4650,14 @@ describe('Classes', () => {
 			out: `Object.defineProperties(
 				class{},
 				{
-					name:{value:"0a",configurable:true},
+					name:{value:"0a"},
 					foo:{value:{foo(){}}.foo,writable:true,configurable:true}
 				}
 			)`,
-			validate(Klass, {isOutput}) {
+			validate(Klass) {
 				expect(Klass).toBeFunction();
 				expect(Klass.name).toBe('0a');
-				expect(Klass).toHaveOwnPropertyNames(
-					(!classHasNamePropLast && anonClassHasNameProp)
-						? ['length', 'name', 'prototype', 'foo']
-						: isOutput
-							? ['length', 'prototype', 'name', 'foo']
-							: ['length', 'prototype', 'foo', 'name']
-				);
+				expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'foo']);
 				expect(Klass).toHaveDescriptorModifiersFor('name', false, false, true);
 			}
 		});
@@ -4697,9 +4670,7 @@ describe('Classes', () => {
 				delete C.name;
 				return C;
 			},
-			out: anonClassHasNameProp
-				? '(()=>{const a=(0,class{});delete a.name;return a})()'
-				: 'class{}',
+			out: '(()=>{const a=(0,class{});delete a.name;return a})()',
 			validate(Klass) {
 				expect(Klass).toBeFunction();
 				expect(Klass.name).toBe('');
@@ -4716,14 +4687,12 @@ describe('Classes', () => {
 				Object.defineProperty(C, 'name', {value: 'D', configurable: true});
 				return C;
 			},
-			out: classHasNamePropLast
-				? 'class D{}'
-				: `(()=>{
-					const a=class D{};
-					delete a.name;
-					Object.defineProperties(a,{name:{value:"D",configurable:true}});
-					return a
-				})()`,
+			out: `(()=>{
+				const a=class D{};
+				delete a.name;
+				Object.defineProperties(a,{name:{value:"D",configurable:true}});
+				return a
+			})()`,
 			validate(Klass) {
 				expect(Klass).toBeFunction();
 				expect(Klass.name).toBe('D');
@@ -4744,7 +4713,7 @@ describe('Classes', () => {
 					validate(Klass) {
 						expect(Klass).toBeFunction();
 						expect(Klass.name).toBe('C');
-						expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
+						expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype']);
 						expect(Klass).toHaveDescriptorModifiersFor('name', true, false, true);
 					}
 				});
@@ -4759,7 +4728,7 @@ describe('Classes', () => {
 					validate(Klass) {
 						expect(Klass).toBeFunction();
 						expect(Klass.name).toBe('C');
-						expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
+						expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype']);
 						expect(Klass).toHaveDescriptorModifiersFor('name', false, true, true);
 					}
 				});
@@ -4774,7 +4743,7 @@ describe('Classes', () => {
 					validate(Klass) {
 						expect(Klass).toBeFunction();
 						expect(Klass.name).toBe('C');
-						expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
+						expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype']);
 						expect(Klass).toHaveDescriptorModifiersFor('name', false, false, false);
 					}
 				});
@@ -4784,14 +4753,14 @@ describe('Classes', () => {
 				itSerializes('name prop descriptor `writable` changed', {
 					in() {
 						const C = (0, class {});
-						Object.defineProperty(C, 'name', {value: '', writable: true, configurable: true});
+						Object.defineProperty(C, 'name', {writable: true});
 						return C;
 					},
-					out: 'Object.defineProperties(class{},{name:{value:"",writable:true,configurable:true}})',
+					out: 'Object.defineProperties(class{},{name:{writable:true}})',
 					validate(Klass) {
 						expect(Klass).toBeFunction();
 						expect(Klass.name).toBe('');
-						expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
+						expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype']);
 						expect(Klass).toHaveDescriptorModifiersFor('name', true, false, true);
 					}
 				});
@@ -4799,14 +4768,14 @@ describe('Classes', () => {
 				itSerializes('name prop descriptor `enumerable` changed', {
 					in() {
 						const C = (0, class {});
-						Object.defineProperty(C, 'name', {value: '', enumerable: true, configurable: true});
+						Object.defineProperty(C, 'name', {enumerable: true});
 						return C;
 					},
-					out: 'Object.defineProperties(class{},{name:{value:"",enumerable:true,configurable:true}})',
+					out: 'Object.defineProperties(class{},{name:{enumerable:true}})',
 					validate(Klass) {
 						expect(Klass).toBeFunction();
 						expect(Klass.name).toBe('');
-						expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
+						expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype']);
 						expect(Klass).toHaveDescriptorModifiersFor('name', false, true, true);
 					}
 				});
@@ -4814,14 +4783,14 @@ describe('Classes', () => {
 				itSerializes('name prop descriptor `configurable` changed', {
 					in() {
 						const C = (0, class {});
-						Object.defineProperty(C, 'name', {value: '', configurable: false});
+						Object.defineProperty(C, 'name', {configurable: false});
 						return C;
 					},
-					out: 'Object.defineProperties(class{},{name:{value:"",configurable:false}})',
+					out: 'Object.defineProperties(class{},{name:{configurable:false}})',
 					validate(Klass) {
 						expect(Klass).toBeFunction();
 						expect(Klass.name).toBe('');
-						expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
+						expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype']);
 						expect(Klass).toHaveDescriptorModifiersFor('name', false, false, false);
 					}
 				});
@@ -4835,8 +4804,7 @@ describe('Classes', () => {
 							},
 							set(newName) {
 								this._name = newName;
-							},
-							configurable: true
+							}
 						});
 						return C;
 					},
@@ -4845,22 +4813,21 @@ describe('Classes', () => {
 						{
 							name:{
 								get(){return this._name||"C"},
-								set(a){this._name=a},
-								configurable:true
+								set(a){this._name=a}
 							}
 						}
 					)`,
 					validate(Klass) {
 						expect(Klass).toBeFunction();
 						expect(Klass.name).toBe('C');
-						expect(Klass).toHaveOwnPropertyNames(namedClassPropNames);
+						expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype']);
 						const descriptor = Object.getOwnPropertyDescriptor(Klass, 'name');
 						expect(descriptor).toHaveOwnPropertyNames(['get', 'set', 'enumerable', 'configurable']);
 						expect(descriptor.get).toBeFunction();
 						expect(descriptor.set).toBeFunction();
 						expect(Klass).toHaveDescriptorModifiersFor('name', undefined, false, true);
 						Klass.name = 'D';
-						expect(Klass).toHaveOwnPropertyNames([...namedClassPropNames, '_name']);
+						expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', '_name']);
 						expect(Klass._name).toBe('D');
 						expect(Klass.name).toBe('D');
 					}
@@ -5032,7 +4999,7 @@ describe('Classes', () => {
 					expect(fn).toBeFunction();
 					const Klass = fn();
 					expect(Klass).toBeFunction();
-					expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype']);
+					expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype']);
 					expect(Klass.prototype).toHaveOwnPropertyNames(['constructor']);
 				}
 			});
@@ -5056,9 +5023,9 @@ describe('Classes', () => {
 					expect(fn).toBeFunction();
 					const Klass = fn();
 					expect(Klass).toBeFunction();
-					expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'bar']);
+					expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'bar']);
 					Klass.bar(3);
-					expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'bar', 'z']);
+					expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'bar', 'z']);
 					expect(Klass.z).toBe(3);
 
 					expect(Klass.prototype).toHaveOwnPropertyNames(['constructor', 'foo']);
@@ -5081,7 +5048,7 @@ describe('Classes', () => {
 					const SuperClass = class X {};
 					const Klass = fn(SuperClass);
 					expect(Klass).toBeFunction();
-					expectClassToHaveOwnPropertyNames(Klass, ['length', 'name', 'prototype']);
+					expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype']);
 					expect(Klass.prototype).toHaveOwnPropertyNames(['constructor']);
 					expect(Klass.name).toBe('Y');
 					expect(Klass).toHavePrototype(SuperClass);
@@ -5123,9 +5090,9 @@ describe('Classes', () => {
 					};
 					const Klass = fn(SuperClass);
 					expect(Klass).toBeFunction();
-					expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'bar']);
+					expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'bar']);
 					Klass.bar(3);
-					expectClassToHaveOwnPropertyNames(Klass, ['length', 'prototype', 'bar', 'z']);
+					expect(Klass).toHaveOwnPropertyNames(['length', 'name', 'prototype', 'bar', 'z']);
 					expect(Klass.z).toBe(6);
 
 					expect(Klass.prototype).toHaveOwnPropertyNames(['constructor', 'foo']);
@@ -5389,33 +5356,3 @@ describe('Classes', () => {
 		});
 	});
 });
-
-/**
- * Test class has expected property names.
- * Order of properties is enforced, except for `name` property.
- * In some versions of Node anonymous classes have a `name` property defined as '', in others
- * they have no `name` property at all.
- * If `name` prop is not explicitly defined, caller should omit `name` from the list of expected
- * properties. The discrepancy in versions of Node where classes always have a `name` property
- * will be adjusted for here.
- * Tests for correct JS output still ensure output is uniform across all Node versions.
- * @param {Function} Klass - Class
- * @param {Array<string>} expectedPropNames - Expected prop names
- * @returns {undefined}
- */
-function expectClassToHaveOwnPropertyNames(Klass, expectedPropNames) {
-	if (anonClassHasNameProp && !expectedPropNames.includes('name')) {
-		expectedPropNames = [...expectedPropNames];
-		expectedPropNames.splice(expectedPropNames.indexOf('prototype'), 0, 'name');
-	}
-
-	if (classHasNamePropLast && expectedPropNames.includes('name')) {
-		const namePropIndex = Object.getOwnPropertyNames(Klass).indexOf('name');
-		if (namePropIndex !== -1) {
-			expectedPropNames = expectedPropNames.filter(propName => propName !== 'name');
-			expectedPropNames.splice(namePropIndex, 0, 'name');
-		}
-	}
-
-	expect(Klass).toHaveOwnPropertyNames(expectedPropNames);
-}
