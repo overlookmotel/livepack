@@ -2690,7 +2690,7 @@ describe('Functions', () => {
 			});
 
 			/*
-			// TODO Uncomment once https://github.com/overlookmotel/livepack/issues/353 resolved
+			// TODO: Uncomment once https://github.com/overlookmotel/livepack/issues/353 resolved
 			itSerializes('in script context', {
 				in: () => (0, eval)('() => [this, globalThis]'), // eslint-disable-line no-eval
 				out: '(a=>()=>[a,globalThis])(globalThis)',
@@ -6749,7 +6749,7 @@ describe('Functions', () => {
 							Object.defineProperty(fn, 'name', {value: 'console'});
 							return fn;
 						},
-						// TODO This output should be one-liner - `const a` is not required
+						// TODO: This output should be one-liner - `const a` is not required
 						out: `(()=>{
 							const a=(a=>a=(0,function(){return[a,console]}))();
 							Object.defineProperties(a,{name:{value:"console"}});
@@ -6796,7 +6796,7 @@ describe('Functions', () => {
 							Object.defineProperty(fn, 'name', {value: 'new-name'});
 							return fn;
 						},
-						// TODO This output should be one-liner - `const a` is not required
+						// TODO: This output should be one-liner - `const a` is not required
 						out: `(()=>{
 							const a=(a=>a=(0,function(){return a}))();
 							Object.defineProperties(a,{name:{value:"new-name"}});
@@ -6816,7 +6816,7 @@ describe('Functions', () => {
 							Object.defineProperty(fn, 'name', {value: {x: 1}});
 							return fn;
 						},
-						// TODO This output should be one-liner - `const a` is not required
+						// TODO: This output should be one-liner - `const a` is not required
 						out: `(()=>{
 							const a=(a=>a=(0,function(){return a}))();
 							Object.defineProperties(a,{name:{value:{x:1}}});
@@ -6853,7 +6853,7 @@ describe('Functions', () => {
 						Object.defineProperty(fn, 'name', {value: 'fn', configurable: true});
 						return fn;
 					},
-					// TODO Output could be a little more compact. No need for `fn` name in `function fn(){}`.
+					// TODO: Output could be a little more compact. No need for `fn` name in `function fn(){}`.
 					out: `(()=>{
 						const a=(a=>a=function fn(){return a})();
 						delete a.name;
@@ -6953,7 +6953,7 @@ describe('Functions', () => {
 						}
 						x;
 					`),
-					// TODO This should be output as a one-liner. No need for `a` to be a separate var.
+					// TODO: This should be output as a one-liner. No need for `a` to be a separate var.
 					out: `(()=>{
 						const a=(0,eval)("x=>x=(0,function(){eval(\\"0\\");return x})")();
 						Object.defineProperties(a,{name:{value:"x"}});
@@ -6975,7 +6975,7 @@ describe('Functions', () => {
 						}
 						({x, getX: (0, () => x)})
 					`),
-					// TODO This output should be shorter. No need for the var `b`.
+					// TODO: This output should be shorter. No need for the var `b`.
 					out: `(()=>{
 						const a=(0,eval)("x=>[x=(0,function(){eval(\\"0\\");x=1;return x}),()=>x]")(),
 							b=a[0];

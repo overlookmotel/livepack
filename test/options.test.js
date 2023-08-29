@@ -233,7 +233,7 @@ describe('Options', () => {
 
 			describe('does not unwrap', () => {
 				it('named function', () => {
-					// TODO No reason why this couldn't be unwrapped
+					// TODO: No reason why this couldn't be unwrapped
 					const fn = function fn() {
 						console.log(1); // eslint-disable-line no-console
 					};

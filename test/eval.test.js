@@ -444,7 +444,7 @@ describe('eval', () => {
 				});
 
 				// These tests don't work due to https://github.com/overlookmotel/livepack/issues/102
-				// TODO Uncomment these tests once that issue resolved.
+				// TODO: Uncomment these tests once that issue resolved.
 				// eslint-disable-next-line jest/no-commented-out-tests
 				/*
 				describe('defined in method key', () => {
@@ -768,7 +768,7 @@ describe('eval', () => {
 					// is *not* the arguments object of the outer function.
 					// It doesn't test what it is, because it's not performing exactly right.
 					// It's picking up the `arguments` object of the CJS loader function wrapping this module.
-					// TODO Fix this.
+					// TODO: Fix this.
 					in() {
 						function outer() {
 							return (0, eval)("() => typeof arguments === 'undefined' ? undefined : arguments");

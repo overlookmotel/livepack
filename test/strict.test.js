@@ -825,7 +825,7 @@ describe('Strict mode', () => {
 
 			// These tests don't work at present, due to bug with how Livepack handles `eval`.
 			// https://github.com/overlookmotel/livepack/issues/137
-			// TODO Enable these tests when issue is resolved.
+			// TODO: Enable these tests when issue is resolved.
 			// eslint-disable-next-line jest/no-commented-out-tests
 			/*
 			describe('eval', () => {
