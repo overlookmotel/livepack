@@ -8605,6 +8605,21 @@ describe('Functions', () => {
 				}
 			});
 
+			itSerializes('getter which throws', {
+				in() {
+					function fn() {}
+					Object.defineProperty(fn, 'name', {get() { throw new Error('oops'); }});
+					return fn;
+				},
+				out: 'Object.defineProperties(function(){},{name:{get(){throw new Error("oops")}}})',
+				validate(fn) {
+					expect(() => fn.name).toThrowWithMessage(Error, 'oops');
+					expect(Object.getOwnPropertyDescriptor(fn, 'name')).toEqual({
+						get: expect.any(Function), set: undefined, enumerable: false, configurable: true
+					});
+				}
+			});
+
 			describe('properties altered', () => {
 				itSerializes.each( // eslint-disable-next-line no-bitwise
 					[0, 1, 2, 3, 4, 5, 6, 7].map(n => [!(n & 4), !(n & 2), !(n & 1)]),
