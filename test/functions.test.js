@@ -7268,6 +7268,143 @@ describe('Functions', () => {
 				}
 			});
 
+			// Tests for https://github.com/overlookmotel/livepack/issues/494
+			describe('function declaration where other internal bindings with same name', () => {
+				itSerializes('in nested block', {
+					in() {
+						return () => {
+							function fn() {
+								return 123;
+							}
+							let n;
+							{
+								const fn = 456; // eslint-disable-line no-shadow
+								n = fn;
+							}
+							return [fn, n];
+						};
+					},
+					out: '()=>{function fn(){return 123}let a;{const b=456;a=b}return[fn,a]}',
+					validate(outerFn) {
+						expect(outerFn).toBeFunction();
+						const [fn, n] = outerFn();
+						expect(fn).toBeFunction();
+						expect(fn()).toBe(123);
+						expect(n).toBe(456);
+					}
+				});
+
+				itSerializes('where referenced in nested function', {
+					in() {
+						return () => {
+							function fn() {
+								return 123;
+							}
+							let n;
+							{
+								const fn = 456; // eslint-disable-line no-shadow
+								n = fn;
+							}
+							return [() => fn, n];
+						};
+					},
+					out: '()=>{function fn(){return 123}let a;{const b=456;a=b}return[()=>fn,a]}',
+					validate(outerFn) {
+						expect(outerFn).toBeFunction();
+						const [getFn, n] = outerFn();
+						expect(getFn).toBeFunction();
+						const fn = getFn();
+						expect(fn).toBeFunction();
+						expect(fn()).toBe(123);
+						expect(n).toBe(456);
+					}
+				});
+
+				describe('when function top level', () => {
+					itSerializes('var statement before', {
+						in() {
+							return () => {
+								var fn; // eslint-disable-line no-var
+								function fn() { // eslint-disable-line no-redeclare
+									return 123;
+								}
+								return fn;
+							};
+						},
+						out: '()=>{var fn;function fn(){return 123}return fn}',
+						validate(outerFn) {
+							expect(outerFn).toBeFunction();
+							const fn = outerFn();
+							expect(fn).toBeFunction();
+							expect(fn()).toBe(123);
+						}
+					});
+
+					itSerializes('var statement after', {
+						in() {
+							return () => {
+								function fn() {
+									return 123;
+								}
+								var fn; // eslint-disable-line no-var, no-redeclare, vars-on-top
+								return fn;
+							};
+						},
+						out: '()=>{function fn(){return 123}var fn;return fn}',
+						validate(outerFn) {
+							expect(outerFn).toBeFunction();
+							const fn = outerFn();
+							expect(fn).toBeFunction();
+							expect(fn()).toBe(123);
+						}
+					});
+				});
+
+				describe('when function in nested block and hoisted', () => {
+					itSerializes('var statement before', {
+						// Sloppy mode
+						in: `module.exports = () => {
+							var fn;
+							{
+								function fn() {
+									return 123;
+								}
+							}
+							return fn;
+						}`,
+						strictEnv: false,
+						out: '()=>{var fn;{function fn(){return 123}}return fn}',
+						validate(outerFn) {
+							expect(outerFn).toBeFunction();
+							const fn = outerFn();
+							expect(fn).toBeFunction();
+							expect(fn()).toBe(123);
+						}
+					});
+
+					itSerializes('var statement after', {
+						// Sloppy mode
+						in: `module.exports = () => {
+							{
+								function fn() {
+									return 123;
+								}
+							}
+							var fn;
+							return fn;
+						}`,
+						strictEnv: false,
+						out: '()=>{{function fn(){return 123}}var fn;return fn}',
+						validate(outerFn) {
+							expect(outerFn).toBeFunction();
+							const fn = outerFn();
+							expect(fn).toBeFunction();
+							expect(fn()).toBe(123);
+						}
+					});
+				});
+			});
+
 			itSerializes('function expression', {
 				in() {
 					return () => function fn() {
