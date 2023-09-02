@@ -12,7 +12,13 @@ module.exports = {
 	runner: '<rootDir>/test/support/runner.mjs',
 	coverageDirectory: 'coverage',
 	coverageProvider: 'v8',
-	collectCoverageFrom: ['*.js', '!.eslintrc.js', '!jest.config.js', 'lib/**/*.js'],
+	collectCoverageFrom: [
+		'*.js',
+		'!.eslintrc.js',
+		'!jest.config.js',
+		'!jest-eslint.config.js',
+		'lib/**/*.js'
+	],
 	setupFilesAfterEnv: [
 		'jest-extended/all',
 		'jest-expect-arguments',
