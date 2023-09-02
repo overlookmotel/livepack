@@ -3813,7 +3813,7 @@ describe('Classes', () => {
 		});
 
 		describe('var used in transpiled super shadowed by local var with same name', () => {
-			// NB These tests relate to correct functioning of instrumentation
+			// NB: These tests relate to correct functioning of instrumentation
 			itSerializes('class declaration name', {
 				in() {
 					class X {
@@ -4130,9 +4130,9 @@ describe('Classes', () => {
 		});
 
 		describe('class name preserved when gained implicitly', () => {
-			// NB These tests relate to correct functioning of instrumentation
+			// NB: These tests relate to correct functioning of instrumentation
 			itSerializes('with const definition', {
-				// NB Shadow `C` var inside class ctor so instrumentation has to create temp var to access `C`
+				// NB: Shadow `C` var inside class ctor so instrumentation has to create temp var to access `C`
 				in() {
 					class S {}
 					const C = class extends S {
@@ -4663,7 +4663,7 @@ describe('Classes', () => {
 		});
 
 		itSerializes('name prop deleted', {
-			// NB Livepack cannot detect that `name` was deleted in versions of Node
+			// NB: Livepack cannot detect that `name` was deleted in versions of Node
 			// where anonymous classes have no `name` prop
 			in() {
 				class C {}
@@ -4679,7 +4679,7 @@ describe('Classes', () => {
 		});
 
 		itSerializes('name prop deleted and redefined', {
-			// NB Livepack cannot detect that `name` was deleted and redefined in versions of Node
+			// NB: Livepack cannot detect that `name` was deleted and redefined in versions of Node
 			// where `name` prop is last
 			in() {
 				class C {}

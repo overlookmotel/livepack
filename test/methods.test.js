@@ -266,7 +266,7 @@ describe('Object methods', () => {
 		});
 
 		itSerializes('using super and super var shadowed within method', {
-			// NB This test relates to correct functioning of instrumentation
+			// NB: This test relates to correct functioning of instrumentation
 			in() {
 				const obj = {
 					x() {
@@ -349,7 +349,7 @@ describe('Object methods', () => {
 			});
 
 			itSerializes('unwrapped', {
-				// NB 4294967294 is max integer key
+				// NB: 4294967294 is max integer key
 				in: () => ({
 					'0a'() { return this; }, // eslint-disable-line object-shorthand
 					0() { return this; },
@@ -577,7 +577,7 @@ describe('Object methods', () => {
 
 		itSerializes('with integer keys', {
 			in() {
-				// NB 4294967294 is max integer key
+				// NB: 4294967294 is max integer key
 				const obj = {
 					'0a'() { return this; }, // eslint-disable-line object-shorthand
 					0() { return this; },

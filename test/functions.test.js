@@ -6316,7 +6316,7 @@ describe('Functions', () => {
 			itSerializes('using `let`', {
 				in() {
 					const arr = [];
-					for (let x = 1, y = 11; x <= 3; x++, y++) arr.push(() => [x, y]); // NB No statement block
+					for (let x = 1, y = 11; x <= 3; x++, y++) arr.push(() => [x, y]); // NB: No statement block
 					return arr;
 				},
 				out: `(()=>{
@@ -6337,7 +6337,7 @@ describe('Functions', () => {
 				in() {
 					const arr = [];
 					// eslint-disable-next-line no-var, vars-on-top, no-loop-func
-					for (var x = 1, y = 11; x <= 3; x++, y++) arr.push(() => [x, y]); // NB No statement block
+					for (var x = 1, y = 11; x <= 3; x++, y++) arr.push(() => [x, y]); // NB: No statement block
 					return arr;
 				},
 				out: '(()=>{const a=((a,b)=>()=>()=>[a,b])(4,14);return[a(),a(),a()]})()',
@@ -6357,7 +6357,7 @@ describe('Functions', () => {
 				itSerializes('without destructuring', {
 					in() {
 						const arr = [];
-						for (const x of [0, 2, 4]) arr.push(() => x); // NB No statement block
+						for (const x of [0, 2, 4]) arr.push(() => x); // NB: No statement block
 						return arr;
 					},
 					out: '(()=>{const a=a=>()=>a;return[a(0),a(2),a(4)]})()',
@@ -6380,7 +6380,7 @@ describe('Functions', () => {
 								{x: 11, yy: [12], m: 13, n: 14},
 								{x: 21, yy: [22], m: 23, n: 24}
 							]
-						) arr.push(() => [x, y, z]); // NB No statement block
+						) arr.push(() => [x, y, z]); // NB: No statement block
 						return arr;
 					},
 					out: `(()=>{
@@ -6409,7 +6409,7 @@ describe('Functions', () => {
 					in() {
 						const arr = [];
 						// eslint-disable-next-line no-var, vars-on-top, no-loop-func
-						for (var x of [{obj1: 1}, {obj2: 2}, {obj3: 3}]) arr.push(() => x); // NB No statement block
+						for (var x of [{obj1: 1}, {obj2: 2}, {obj3: 3}]) arr.push(() => x); // NB: No statement block
 						return arr;
 					},
 					out: '(()=>{const a=(a=>()=>()=>a)({obj3:3});return[a(),a(),a()]})()',
@@ -6437,7 +6437,7 @@ describe('Functions', () => {
 								{x: {objX3: 21}, yy: [{objY3: 22}], m: {objM3: 23}, n: {objN3: 24}}
 							]
 						) arr.push(() => [x, y, z]); // eslint-disable-line no-loop-func
-						// NB No statement block
+						// NB: No statement block
 						return arr;
 					},
 					out: `(()=>{
@@ -6470,7 +6470,7 @@ describe('Functions', () => {
 			itSerializes('using `const`', {
 				in() {
 					const arr = [];
-					for (const x in {x: 1, y: 2, z: 3}) arr.push(() => x); // NB No statement block
+					for (const x in {x: 1, y: 2, z: 3}) arr.push(() => x); // NB: No statement block
 					return arr;
 				},
 				out: '(()=>{const a=a=>()=>a;return[a("x"),a("y"),a("z")]})()',
@@ -6488,7 +6488,7 @@ describe('Functions', () => {
 				in() {
 					const arr = [];
 					// eslint-disable-next-line no-var, vars-on-top, no-loop-func
-					for (var x in {x: 1, y: 2, z: 3}) arr.push(() => x); // NB No statement block
+					for (var x in {x: 1, y: 2, z: 3}) arr.push(() => x); // NB: No statement block
 					return arr;
 				},
 				out: '(()=>{const a=(a=>()=>()=>a)("z");return[a(),a(),a()]})()',

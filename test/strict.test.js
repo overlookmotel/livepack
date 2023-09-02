@@ -10,7 +10,7 @@ const {itSerializes} = require('./support/index.js');
 
 // Tests
 
-// NB `delete Object.prototype` throws in strict mode, but returns false in sloppy mode
+// NB: `delete Object.prototype` throws in strict mode, but returns false in sloppy mode
 
 const itSerializesEntries = itSerializes.withOptions({entries: true});
 
@@ -685,7 +685,8 @@ describe('Strict mode', () => {
 			});
 
 			describe('in scope of `eval()`', () => {
-				// NB Inputs are wrapped in `(0, eval)` to prevent test functions being included in scope of eval
+				// NB: Inputs are wrapped in `(0, eval)` to prevent test functions being included
+				// in scope of eval
 				/* eslint-disable no-eval */
 				describe('accessible if eval is sloppy mode', () => {
 					itSerializes('alone', {
@@ -784,7 +785,7 @@ describe('Strict mode', () => {
 		});
 
 		describe('scope function with `arguments` or `eval` param', () => {
-			// NB Inputs are wrapped in `(0, eval)` to prevent test functions being included in scope of eval
+			// NB: Inputs are wrapped in `(0, eval)` to prevent test functions being included in scope of eval
 			/* eslint-disable no-eval */
 			describe('arguments', () => {
 				itSerializes('in sloppy env adds directive to child function, not scope function', {

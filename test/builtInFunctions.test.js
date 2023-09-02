@@ -20,7 +20,7 @@ describe('Built-in functions', () => {
 			out: 'require("util").promisify(a=>a(null,1))',
 			validate(fn) {
 				expect(fn).toBeFunction();
-				// NB `.isInstanceOf(Promise)` doesn't work in this case
+				// NB: `.isInstanceOf(Promise)` doesn't work in this case
 				// as Jest seems to use a `Promise` global from another realm
 				expect(fn().then).toBeFunction();
 			}

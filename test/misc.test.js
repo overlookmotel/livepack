@@ -18,9 +18,9 @@ describe('Internal vars created by instrumentation do not interfere with code', 
 		},
 		out: '()=>typeof livepack_tracker',
 		validate(fn) {
-			// Check the temp var name which Babel transform creates matches the one being tested for
-			// NB code for this file is injected into `transpiledFiles` in babel transform
-			// (see `test/support/transform.js`)
+			// Check the temp var name which Babel transform creates matches the one being tested for.
+			// NB: Code for this file is injected into `transpiledFiles` in babel transform
+			// (see `test/support/transform.js`).
 			expect(transpiledFiles[__filename]).toInclude(
 				// eslint-disable-next-line no-useless-concat
 				'const [livepack1_tracker, livepack1_getScopeId] = ' + 'require('
@@ -36,9 +36,9 @@ describe('Internal vars created by instrumentation do not interfere with code', 
 		},
 		out: '(a=>()=>a&&typeof livepack_scopeId_2)({})',
 		validate(fn) {
-			// Check the temp var name which Babel transform creates matches the one being tested for
-			// NB code for this file is injected into `transpiledFiles` in babel transform
-			// (see `test/support/transform.js`)
+			// Check the temp var name which Babel transform creates matches the one being tested for.
+			// NB: Code for this file is injected into `transpiledFiles` in babel transform
+			// (see `test/support/transform.js`).
 			expect(transpiledFiles[__filename])
 				// eslint-disable-next-line no-useless-concat
 				.toInclude('const livepack1_scopeId_2 = ' + 'livepack1_getScopeId();');
@@ -72,9 +72,9 @@ describe('Internal vars created by instrumentation do not interfere with code', 
 			return c
 		})()`,
 		validate(obj) {
-			// Check the temp var name which Babel transform creates matches the one being tested for
-			// NB code for this file is injected into `transpiledFiles` in babel transform
-			// (see `test/support/transform.js`)
+			// Check the temp var name which Babel transform creates matches the one being tested for.
+			// NB: Code for this file is injected into `transpiledFiles` in babel transform
+			// (see `test/support/transform.js`).
 			// eslint-disable-next-line no-useless-concat
 			expect(transpiledFiles[__filename]).toInclude('Object.setPrototypeOf' + '(livepack1_temp_21 =');
 
