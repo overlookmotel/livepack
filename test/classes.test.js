@@ -4663,8 +4663,6 @@ describe('Classes', () => {
 		});
 
 		itSerializes('name prop deleted', {
-			// NB: Livepack cannot detect that `name` was deleted in versions of Node
-			// where anonymous classes have no `name` prop
 			in() {
 				class C {}
 				delete C.name;
@@ -4679,8 +4677,6 @@ describe('Classes', () => {
 		});
 
 		itSerializes('name prop deleted and redefined', {
-			// NB: Livepack cannot detect that `name` was deleted and redefined in versions of Node
-			// where `name` prop is last
 			in() {
 				class C {}
 				delete C.name;
