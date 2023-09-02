@@ -555,7 +555,7 @@ function stripComments(js) {
 }
 
 function stripEslintComments(js) {
-	// NB Comments cause Babel to add semicolons at end of blocks, which it otherwise doesn't
+	// NB: Comments cause Babel to add semicolons at end of blocks, which it otherwise doesn't
 	return js.replace(/\/\/ eslint-disable-(?:next-)?line [^\n]+\n/g, '')
 		.replace(/;}/g, '}');
 }

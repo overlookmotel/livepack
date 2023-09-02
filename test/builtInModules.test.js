@@ -10,7 +10,7 @@ const {itSerializesEqual, stripSourceMapComment} = require('./support/index.js')
 
 // Load built-in modules with different methods.
 const pathModule = require('path'), // eslint-disable-line import/order
-	Module = module.constructor, // NB Not loaded with `require('module')`
+	Module = module.constructor, // NB: Not loaded with `require('module')`
 	urlModule = Module.createRequire(__filename)('url'),
 	querystringModule = module.require('querystring');
 
