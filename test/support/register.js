@@ -7,9 +7,6 @@
 
 'use strict';
 
-// Patch filesystem for virtual fixtures files
-require('./fixturesFs.js');
-
 // Install register require hook.
 // Disable instrumentation cache. Tests run in multiple threads, so it'd be read from and written to
 // concurrently unless disabled.

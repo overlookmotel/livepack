@@ -8,6 +8,7 @@ import {join as pathJoin} from 'path';
 import {fileURLToPath, pathToFileURL} from 'url';
 import {createRequire} from 'module';
 import LightRunner from 'jest-light-runner'; // eslint-disable-line import/no-unresolved
+import {Piscina} from 'piscina';
 import Tinypool from 'tinypool';
 import supportsColor from 'supports-color';
 import assert from 'simple-invariant';
@@ -20,7 +21,9 @@ const THIS_FILE_PATH = fileURLToPath(import.meta.url),
 			createRequire(THIS_FILE_PATH).resolve('jest-light-runner'),
 			'../worker-runner.js'
 		)
-	).toString();
+	).toString(),
+	WRAPPED_LIGHT_RUNNER_WORKER_URL = pathToFileURL(pathJoin(THIS_FILE_PATH, '../runnerWorker.mjs'))
+		.toString();
 
 // Exports
 
@@ -34,7 +37,37 @@ const THIS_FILE_PATH = fileURLToPath(import.meta.url),
 export default function getRunner(config) {
 	return config.collectCoverage
 		? new CoverageRunner(config) // eslint-disable-line no-use-before-define
-		: new LightRunner(config);
+		: new TestRunner(config); // eslint-disable-line no-use-before-define
+}
+
+/**
+ * Alternative runner used for tests.
+ *
+ * A thin wrapper around `jest-light-runner`, but substitutes a worker which
+ * establishes an internal module cache before anything else, so all modules loaded during setup
+ * are not publicly exposed.
+ *
+ * If any module is then loaded by test code, it will be instrumented, and so can be serialized.
+ */
+class TestRunner {
+	constructor(config) {
+		this._config = config;
+
+		this._piscina = new Piscina({
+			filename: WRAPPED_LIGHT_RUNNER_WORKER_URL,
+			maxThreads: config.maxWorkers,
+			env: {
+				// Workers don't have a tty; we whant them to inherit
+				// the color support level from the main thread.
+				FORCE_COLOR: supportsColor.stdout.level,
+				...process.env
+			}
+		});
+	}
+
+	runTests(tests, watcher, onStart, onResult, onFailure) {
+		return LightRunner.prototype.runTests.call(this, tests, watcher, onStart, onResult, onFailure);
+	}
 }
 
 /**
