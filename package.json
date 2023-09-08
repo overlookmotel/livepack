@@ -41,7 +41,7 @@
     "@babel/parser": "^7.22.15",
     "@babel/plugin-transform-modules-commonjs": "^7.22.15",
     "@babel/plugin-transform-react-jsx": "^7.22.15",
-    "@babel/traverse": "^7.22.15",
+    "@babel/traverse": "^7.22.17",
     "@babel/types": "^7.22.15",
     "babel-plugin-dynamic-import-node": "^2.3.3",
     "base32.js": "^0.1.0",
