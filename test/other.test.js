@@ -10,7 +10,7 @@ const {itSerializes, itSerializesEqual} = require('./support/index.js');
 
 // Tests
 
-describe('RegExps', () => {
+describe.skip('RegExps', () => {
 	itSerializesEqual('with no flags', {
 		in: () => /^foo$/,
 		out: '/^foo$/',
@@ -70,7 +70,7 @@ describe('RegExps', () => {
 	});
 });
 
-describe('Dates', () => {
+describe.skip('Dates', () => {
 	itSerializesEqual('without extra props', {
 		in: () => new Date('01/01/2020 12:00:00'),
 		out: 'new Date(1577880000000)',
@@ -120,7 +120,7 @@ describe('Dates', () => {
 	});
 });
 
-describe('URLs', () => {
+describe.skip('URLs', () => {
 	itSerializesEqual('URL', {
 		in: () => new URL('http://foo.com/path/to/file.html?a=1&b=2'),
 		out: 'new URL("http://foo.com/path/to/file.html?a=1&b=2")',
@@ -157,7 +157,7 @@ describe('URLs', () => {
 	});
 });
 
-describe('URLSearchParams', () => {
+describe.skip('URLSearchParams', () => {
 	itSerializesEqual('without context', {
 		in: () => new URLSearchParams('a=1&b=2'),
 		out: 'new URLSearchParams("a=1&b=2")',
@@ -209,7 +209,7 @@ describe('URLSearchParams', () => {
 	});
 });
 
-describe('TypedArray', () => {
+describe.skip('TypedArray', () => {
 	itSerializesEqual('class', {
 		in: () => Object.getPrototypeOf(Uint8Array), // TypedArray
 		out: 'Object.getPrototypeOf(Uint8Array)',

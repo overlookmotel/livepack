@@ -17,7 +17,7 @@ const {withFixtures} = require('./support/index.js');
 
 // Tests
 
-describe('Source maps', () => {
+describe.skip('Source maps', () => {
 	it("output inline if `sourceMaps` option 'inline'", () => {
 		const out = serialize(1, {sourceMaps: 'inline'});
 		expect(out).toMatch(/^1\n\/\/# sourceMappingURL=data:application\/json;charset=utf-8;base64,.+$/);

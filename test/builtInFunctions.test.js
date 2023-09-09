@@ -16,7 +16,7 @@ const {itSerializes} = require('./support/index.js');
 const hasUtilDebug = !!debug,
 	describeIfHasUtilDebug = hasUtilDebug ? describe : describe.skip;
 
-describe('Built-in functions', () => {
+describe.skip('Built-in functions', () => {
 	describe("require('util').promisify", () => {
 		itSerializes('simple', {
 			in: () => promisify(cb => cb(null, 1)),

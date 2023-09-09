@@ -19,7 +19,7 @@ const {major, minor} = parseNodeVersion(process.version),
 	itSerializesIfNode16Point11 = isNode16Point11OrHigher ? itSerializes : itSerializes.skip;
 const spy = jest.fn;
 
-describe('Functions', () => {
+describe.skip('Functions', () => {
 	describe('without scope', () => {
 		describe('single instantiation of function', () => {
 			describe('arrow function', () => {

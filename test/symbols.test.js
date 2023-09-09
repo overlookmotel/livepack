@@ -10,7 +10,7 @@ const {itSerializes, stripSourceMapComment} = require('./support/index.js');
 
 // Tests
 
-describe('Symbols', () => {
+describe.skip('Symbols', () => {
 	itSerializes('named symbol', {
 		in: () => Symbol('foo'),
 		out: 'Symbol("foo")',

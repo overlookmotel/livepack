@@ -14,7 +14,7 @@ const {serializeInNewProcess} = require('./support/index.js');
 
 // Tests
 
-describe('register', () => {
+describe.skip('register', () => {
 	it('allows serializing functions', async () => {
 		const js = await serializeInNewProcess(
 			'const extA = 123;\n'

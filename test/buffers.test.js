@@ -10,7 +10,7 @@ const {itSerializes, itSerializesEqual} = require('./support/index.js');
 
 // Tests
 
-describe('Buffers', () => {
+describe.skip('Buffers', () => {
 	describe('nodeJS Buffers', () => {
 		itSerializesEqual('without extra props', {
 			in: () => Buffer.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ'),

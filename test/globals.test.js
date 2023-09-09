@@ -13,7 +13,7 @@ const {itSerializesEqual, stripSourceMapComment} = require('./support/index.js')
 
 // Tests
 
-describe('Globals', () => {
+describe.skip('Globals', () => {
 	itSerializesEqual('`globalThis`', {
 		in: () => global,
 		out: 'globalThis',

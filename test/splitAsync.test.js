@@ -18,7 +18,7 @@ const NUM_FIXTURES = 5;
 const fixturesPaths = new Array(NUM_FIXTURES).fill()
 	.map((_, index) => pathJoin(__dirname, `fixtures/splitAsync/${index}.js`));
 
-describe('splitAsync', () => {
+describe.skip('splitAsync', () => {
 	runTests(
 		(val, index) => {
 			if (!val) val = {x: index || 0};

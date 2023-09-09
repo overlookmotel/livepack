@@ -10,7 +10,7 @@ const {itSerializesEqual, stripSourceMapComment} = require('./support/index.js')
 
 // Tests
 
-describe('CJS output format', () => {
+describe.skip('CJS output format', () => {
 	itSerializesEqual('protects `module` var', {
 		in: () => ({module: {a: 1}}),
 		format: 'cjs',

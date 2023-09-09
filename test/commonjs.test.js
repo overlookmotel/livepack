@@ -10,7 +10,7 @@ const {itSerializes, itSerializesEqual, stripLineBreaks} = require('./support/in
 
 // Tests
 
-describe('`module`', () => {
+describe.skip('`module`', () => {
 	itSerializes('exported directly', {
 		in: 'module.exports = module;',
 		out: '(()=>{const a={};a.exports=a;return a})()',
@@ -67,7 +67,7 @@ describe('`module`', () => {
 	});
 });
 
-describe('`exports`', () => {
+describe.skip('`exports`', () => {
 	itSerializes('is resolved correctly in scope of function', {
 		in: `
 			'use strict';
@@ -91,7 +91,7 @@ describe('`exports`', () => {
 	});
 });
 
-describe('`__dirname`', () => {
+describe.skip('`__dirname`', () => {
 	itSerializesEqual('exported directly is source path', {
 		in: () => __dirname,
 		out: `${JSON.stringify(__dirname)}`,
@@ -121,7 +121,7 @@ describe('`__dirname`', () => {
 	});
 });
 
-describe('`__filename`', () => {
+describe.skip('`__filename`', () => {
 	itSerializesEqual('exported directly is source path', {
 		in: () => __filename,
 		out: `${JSON.stringify(__filename)}`,

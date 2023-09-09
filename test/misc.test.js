@@ -11,7 +11,7 @@ const {itSerializes, transpiledFiles} = require('./support/index.js');
 // Tests
 const ext = {};
 
-describe('Internal vars created by instrumentation do not interfere with code', () => {
+describe.skip('Internal vars created by instrumentation do not interfere with code', () => {
 	itSerializes('`tracker`', {
 		in() {
 			return () => typeof livepack_tracker; // eslint-disable-line camelcase

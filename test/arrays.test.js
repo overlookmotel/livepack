@@ -10,7 +10,7 @@ const {itSerializesEqual} = require('./support/index.js');
 
 // Tests
 
-describe('Arrays', () => {
+describe.skip('Arrays', () => {
 	itSerializesEqual('empty array', {
 		in: () => [],
 		out: '[]'

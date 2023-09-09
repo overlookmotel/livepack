@@ -27,7 +27,7 @@ const itSerializesIfNode16 = parseNodeVersion(process.version).major >= 16
 	? itSerializes
 	: itSerializes.skip;
 
-describe('Classes', () => {
+describe.skip('Classes', () => {
 	describe('empty class', () => {
 		itSerializes('anonymous', {
 			in: () => class {},

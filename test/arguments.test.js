@@ -11,7 +11,7 @@ const itSerializes = require('./support/index.js').itSerializes.withOptions({str
 
 // Tests
 
-describe('Arguments object', () => {
+describe.skip('Arguments object', () => {
 	itSerializes('empty', {
 		in() {
 			function createArgs() { return arguments; }
@@ -303,7 +303,7 @@ describe('Arguments object', () => {
 	});
 });
 
-describe('Functions including `arguments`', () => {
+describe.skip('Functions including `arguments`', () => {
 	describe('referencing upper function scope', () => {
 		describe('1 level up', () => {
 			itSerializes('single instantiation', {

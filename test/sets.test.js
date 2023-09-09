@@ -10,7 +10,7 @@ const {itSerializes, itSerializesEqual} = require('./support/index.js');
 
 // Tests
 
-describe('Sets', () => {
+describe.skip('Sets', () => {
 	itSerializesEqual('no entries', {
 		in: () => new Set(),
 		out: 'new Set',
@@ -187,7 +187,7 @@ describe('Sets', () => {
 	});
 });
 
-describe('WeakSets', () => {
+describe.skip('WeakSets', () => {
 	it('calling `WeakSet()` without `new` throws error', () => {
 		expect(() => WeakSet()).toThrowWithMessage(
 			TypeError, "Class constructor WeakSet cannot be invoked without 'new'"

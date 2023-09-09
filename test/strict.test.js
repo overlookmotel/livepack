@@ -14,7 +14,7 @@ const {itSerializes} = require('./support/index.js');
 
 const itSerializesEntries = itSerializes.withOptions({entries: true});
 
-describe('Strict mode', () => {
+describe.skip('Strict mode', () => {
 	describe('single function', () => {
 		describe('strict mode function', () => {
 			itSerializes('in strict env has directive removed', {

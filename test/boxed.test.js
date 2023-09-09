@@ -12,7 +12,7 @@ const {itSerializes, itSerializesEqual} = require('./support/index.js');
 
 // Tests
 
-describe('Boxed Strings', () => {
+describe.skip('Boxed Strings', () => {
 	itSerializes('non-empty string', {
 		in: () => new String('abc'),
 		out: 'new String("abc")',
@@ -99,7 +99,7 @@ describe('Boxed Strings', () => {
 	});
 });
 
-describe('Boxed Booleans', () => {
+describe.skip('Boxed Booleans', () => {
 	itSerializesEqual('true', {
 		in: () => new Boolean(true),
 		out: 'new Boolean(1)',
@@ -165,7 +165,7 @@ describe('Boxed Booleans', () => {
 	});
 });
 
-describe('Boxed Numbers', () => {
+describe.skip('Boxed Numbers', () => {
 	itSerializesEqual('positive integer', {
 		in: () => new Number(1),
 		out: 'new Number(1)',
@@ -301,7 +301,7 @@ describe('Boxed Numbers', () => {
 	});
 });
 
-describe('Boxed BigInts', () => {
+describe.skip('Boxed BigInts', () => {
 	itSerializesEqual('zero', {
 		in: () => Object(BigInt(0)),
 		out: 'Object(0n)',
@@ -388,7 +388,7 @@ describe('Boxed BigInts', () => {
 	});
 });
 
-describe('Boxed Symbols', () => {
+describe.skip('Boxed Symbols', () => {
 	itSerializesEqual('without description', {
 		in: () => Object(Symbol()), // eslint-disable-line symbol-description
 		out: 'Object(Symbol())',

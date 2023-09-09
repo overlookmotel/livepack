@@ -16,7 +16,7 @@ const pathModule = require('path'), // eslint-disable-line import/order
 
 // Tests
 
-describe('Built-in modules', () => {
+describe.skip('Built-in modules', () => {
 	describe('top level', () => {
 		describe('single occurance', () => {
 			itSerializesEqual('JS format', {

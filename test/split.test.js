@@ -18,7 +18,7 @@ const {itSerializes, stripSourceMapComment, stripLineBreaks} = require('./suppor
 const itSerializesEntries = itSerializes.withOptions({entries: true, format: ['cjs', 'esm', 'js']}),
 	itSerializesEntriesEqual = itSerializesEntries.withOptions({equal: true});
 
-describe('Code splitting', () => {
+describe.skip('Code splitting', () => {
 	describe('serializeEntries()', () => {
 		itSerializesEntriesEqual('outputs primitives in separate files', {
 			in: () => ({

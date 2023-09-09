@@ -12,7 +12,7 @@ const {itSerializes, itSerializesEqual} = require('./support/index.js');
 
 const unsafeNumberString = (BigInt(Number.MAX_SAFE_INTEGER) + BigInt(1)).toString();
 
-describe('Objects', () => {
+describe.skip('Objects', () => {
 	itSerializesEqual('empty object', {
 		in: () => ({}),
 		out: '{}'

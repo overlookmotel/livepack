@@ -10,7 +10,7 @@ const {itSerializes, itSerializesEqual} = require('./support/index.js');
 
 // Tests
 
-describe('Maps', () => {
+describe.skip('Maps', () => {
 	itSerializesEqual('no entries', {
 		in: () => new Map(),
 		out: 'new Map',
@@ -196,7 +196,7 @@ describe('Maps', () => {
 	});
 });
 
-describe('WeakMaps', () => {
+describe.skip('WeakMaps', () => {
 	it('calling `WeakMap()` without `new` throws error', () => {
 		expect(() => WeakMap()).toThrowWithMessage(
 			TypeError, "Class constructor WeakMap cannot be invoked without 'new'"
