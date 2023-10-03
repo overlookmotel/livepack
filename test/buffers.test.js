@@ -121,6 +121,62 @@ describe('Buffers', () => {
 			});
 		});
 
+		describe('zeroed', () => {
+			itSerializesEqual('Uint8Array', {
+				in: () => new Uint8Array([0, 0, 0, 0]),
+				out: 'new Uint8Array(4)',
+				validate(buf) {
+					expect(buf).toBeInstanceOf(Uint8Array);
+					expect([...buf]).toEqual([0, 0, 0, 0]);
+				}
+			});
+
+			itSerializesEqual('Int8Array', {
+				in: () => new Int8Array([0, 0, 0, 0]),
+				out: 'new Int8Array(4)',
+				validate(buf) {
+					expect(buf).toBeInstanceOf(Int8Array);
+					expect([...buf]).toEqual([0, 0, 0, 0]);
+				}
+			});
+
+			itSerializesEqual('Uint16Array', {
+				in: () => new Uint16Array([0, 0, 0, 0]),
+				out: 'new Uint16Array(4)',
+				validate(buf) {
+					expect(buf).toBeInstanceOf(Uint16Array);
+					expect([...buf]).toEqual([0, 0, 0, 0]);
+				}
+			});
+
+			itSerializesEqual('Int16Array', {
+				in: () => new Int16Array([0, 0, 0, 0]),
+				out: 'new Int16Array(4)',
+				validate(buf) {
+					expect(buf).toBeInstanceOf(Int16Array);
+					expect([...buf]).toEqual([0, 0, 0, 0]);
+				}
+			});
+
+			itSerializesEqual('Uint32Array', {
+				in: () => new Uint32Array([0, 0, 0, 0]),
+				out: 'new Uint32Array(4)',
+				validate(buf) {
+					expect(buf).toBeInstanceOf(Uint32Array);
+					expect([...buf]).toEqual([0, 0, 0, 0]);
+				}
+			});
+
+			itSerializesEqual('Int32Array', {
+				in: () => new Int32Array([0, 0, 0, 0]),
+				out: 'new Int32Array(4)',
+				validate(buf) {
+					expect(buf).toBeInstanceOf(Int32Array);
+					expect([...buf]).toEqual([0, 0, 0, 0]);
+				}
+			});
+		});
+
 		describe('standard', () => {
 			itSerializesEqual('Uint8Array', {
 				in: () => new Uint8Array([100, 0, 200]),
