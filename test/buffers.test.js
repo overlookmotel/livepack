@@ -121,6 +121,98 @@ describe('Buffers', () => {
 			});
 		});
 
+		describe('in middle of ArrayBuffer', () => {
+			itSerializesEqual('Uint8Array', {
+				in() {
+					const arr = new ArrayBuffer(16);
+					const buf = new Uint8Array(arr, 4, 2);
+					buf[0] = 100;
+					buf[1] = 200;
+					return buf;
+				},
+				out: 'new Uint8Array([100,200])',
+				validate(buf) {
+					expect(buf).toBeInstanceOf(Uint8Array);
+					expect([...buf]).toEqual([100, 200]);
+				}
+			});
+
+			itSerializesEqual('Int8Array', {
+				in() {
+					const arr = new ArrayBuffer(16);
+					const buf = new Int8Array(arr, 4, 2);
+					buf[0] = 100;
+					buf[1] = -56;
+					return buf;
+				},
+				out: 'new Int8Array([100,-56])',
+				validate(buf) {
+					expect(buf).toBeInstanceOf(Int8Array);
+					expect([...buf]).toEqual([100, -56]);
+				}
+			});
+
+			itSerializesEqual('Uint16Array', {
+				in() {
+					const arr = new ArrayBuffer(16);
+					const buf = new Uint16Array(arr, 4, 2);
+					buf[0] = 1000;
+					buf[1] = 40000;
+					return buf;
+				},
+				out: 'new Uint16Array([1000,40000])',
+				validate(buf) {
+					expect(buf).toBeInstanceOf(Uint16Array);
+					expect([...buf]).toEqual([1000, 40000]);
+				}
+			});
+
+			itSerializesEqual('Int16Array', {
+				in() {
+					const arr = new ArrayBuffer(16);
+					const buf = new Int16Array(arr, 4, 2);
+					buf[0] = 1000;
+					buf[1] = -1000;
+					return buf;
+				},
+				out: 'new Int16Array([1000,-1000])',
+				validate(buf) {
+					expect(buf).toBeInstanceOf(Int16Array);
+					expect([...buf]).toEqual([1000, -1000]);
+				}
+			});
+
+			itSerializesEqual('Uint32Array', {
+				in() {
+					const arr = new ArrayBuffer(16);
+					const buf = new Uint32Array(arr, 4, 2);
+					buf[0] = 100000;
+					buf[1] = 40000000;
+					return buf;
+				},
+				out: 'new Uint32Array([100000,40000000])',
+				validate(buf) {
+					expect(buf).toBeInstanceOf(Uint32Array);
+					expect([...buf]).toEqual([100000, 40000000]);
+				}
+			});
+
+			itSerializesEqual('Int32Array', {
+				in() {
+					const arr = new ArrayBuffer(16);
+					const buf = new Int32Array(arr, 4, 2);
+					buf[0] = 100000;
+					buf[1] = -100000;
+					return buf;
+				},
+				out: 'new Int32Array([100000,-100000])',
+				validate(buf) {
+					expect(buf).toBeInstanceOf(Int32Array);
+					expect([...buf]).toEqual([100000, -100000]);
+				}
+			});
+		});
+
 		describe('typedArrays with prototype altered', () => {
 			itSerializes('to null', {
 				in() {
