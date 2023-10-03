@@ -65,6 +65,62 @@ describe('Buffers', () => {
 	});
 
 	describe('typedArrays', () => {
+		describe('zero length', () => {
+			itSerializesEqual('Uint8Array', {
+				in: () => new Uint8Array([]),
+				out: 'new Uint8Array',
+				validate(buf) {
+					expect(buf).toBeInstanceOf(Uint8Array);
+					expect(buf).toHaveLength(0);
+				}
+			});
+
+			itSerializesEqual('Int8Array', {
+				in: () => new Int8Array([]),
+				out: 'new Int8Array',
+				validate(buf) {
+					expect(buf).toBeInstanceOf(Int8Array);
+					expect(buf).toHaveLength(0);
+				}
+			});
+
+			itSerializesEqual('Uint16Array', {
+				in: () => new Uint16Array([]),
+				out: 'new Uint16Array',
+				validate(buf) {
+					expect(buf).toBeInstanceOf(Uint16Array);
+					expect(buf).toHaveLength(0);
+				}
+			});
+
+			itSerializesEqual('Int16Array', {
+				in: () => new Int16Array([]),
+				out: 'new Int16Array',
+				validate(buf) {
+					expect(buf).toBeInstanceOf(Int16Array);
+					expect(buf).toHaveLength(0);
+				}
+			});
+
+			itSerializesEqual('Uint32Array', {
+				in: () => new Uint32Array([]),
+				out: 'new Uint32Array',
+				validate(buf) {
+					expect(buf).toBeInstanceOf(Uint32Array);
+					expect(buf).toHaveLength(0);
+				}
+			});
+
+			itSerializesEqual('Int32Array', {
+				in: () => new Int32Array([]),
+				out: 'new Int32Array',
+				validate(buf) {
+					expect(buf).toBeInstanceOf(Int32Array);
+					expect(buf).toHaveLength(0);
+				}
+			});
+		});
+
 		describe('standard', () => {
 			itSerializesEqual('Uint8Array', {
 				in: () => new Uint8Array([100, 0, 200]),
@@ -290,6 +346,15 @@ describe('Buffers', () => {
 	});
 
 	describe('arrayBuffers', () => {
+		itSerializes('zero length', {
+			in: () => new ArrayBuffer(0),
+			out: 'new ArrayBuffer',
+			validate(buf) {
+				expect(buf).toHavePrototype(ArrayBuffer.prototype);
+				expect(buf.byteLength).toBe(0);
+			}
+		});
+
 		itSerializes('entirely zeroed', {
 			in: () => new ArrayBuffer(8),
 			out: 'new ArrayBuffer(8)',
@@ -348,6 +413,15 @@ describe('Buffers', () => {
 	});
 
 	describe('sharedArrayBuffers', () => {
+		itSerializes('zero length', {
+			in: () => new SharedArrayBuffer(0),
+			out: 'new SharedArrayBuffer',
+			validate(buf) {
+				expect(buf).toHavePrototype(SharedArrayBuffer.prototype);
+				expect(buf.byteLength).toBe(0);
+			}
+		});
+
 		itSerializes('entirely zeroed', {
 			in: () => new SharedArrayBuffer(8),
 			out: 'new SharedArrayBuffer(8)',
