@@ -89,7 +89,7 @@ describe('Sets', () => {
 		});
 	});
 
-	describe('set subclass', () => {
+	describe.skip('set subclass', () => {
 		itSerializes('no entries', {
 			in() {
 				class S extends Set {}

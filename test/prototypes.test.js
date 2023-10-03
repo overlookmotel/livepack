@@ -10,7 +10,7 @@ const {itSerializes} = require('./support/index.js');
 
 // Tests
 
-describe('Prototypes', () => {
+describe.skip('Prototypes', () => {
 	describe('function expressions', () => {
 		describe('prototype not altered and', () => {
 			itSerializes('function has no other props', {

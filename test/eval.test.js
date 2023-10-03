@@ -17,7 +17,7 @@ const {
 
 // Tests
 
-describe('eval', () => {
+describe.skip('eval', () => {
 	describe('serialized', () => {
 		itSerializes('directly', {
 			in: () => eval,

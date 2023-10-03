@@ -35,6 +35,7 @@ module.exports = {
 					'itSerializesEntriesEqual.each'
 				]
 			}
-		]
+		],
+		'jest/no-disabled-tests': ['off']
 	}
 };

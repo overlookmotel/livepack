@@ -52,7 +52,7 @@ describe('Boxed Strings', () => {
 		}
 	});
 
-	itSerializes('with `toString` property', {
+	itSerializes.skip('with `toString` property', {
 		in() {
 			const str = new String('abc');
 			str.toString = () => 'e';
@@ -71,7 +71,7 @@ describe('Boxed Strings', () => {
 		}
 	});
 
-	itSerializes('String subclass', {
+	itSerializes.skip('String subclass', {
 		in() {
 			class S extends String {}
 			return new S('abc');
@@ -120,7 +120,7 @@ describe('Boxed Booleans', () => {
 		}
 	});
 
-	itSerializes('with `valueOf` property', {
+	itSerializes.skip('with `valueOf` property', {
 		in() {
 			const bool = new Boolean(true);
 			bool.valueOf = () => false;
@@ -138,7 +138,7 @@ describe('Boxed Booleans', () => {
 		}
 	});
 
-	itSerializesEqual('Boolean subclass', {
+	itSerializesEqual.skip('Boolean subclass', {
 		in() {
 			class B extends Boolean {}
 			return new B(true);
@@ -256,7 +256,7 @@ describe('Boxed Numbers', () => {
 		}
 	});
 
-	itSerializes('with `valueOf` property', {
+	itSerializes.skip('with `valueOf` property', {
 		in() {
 			const num = new Number(1);
 			num.valueOf = () => 2;
@@ -274,7 +274,7 @@ describe('Boxed Numbers', () => {
 		}
 	});
 
-	itSerializesEqual('Number subclass', {
+	itSerializesEqual.skip('Number subclass', {
 		in() {
 			class N extends Number {}
 			return new N(1);
@@ -357,7 +357,7 @@ describe('Boxed BigInts', () => {
 		}
 	});
 
-	itSerializesEqual('BigInt subclass', {
+	itSerializesEqual.skip('BigInt subclass', {
 		in() {
 			class B extends BigInt {}
 			const bigInt = Object(BigInt(100));

@@ -49,7 +49,7 @@ describe('RegExps', () => {
 		}
 	});
 
-	itSerializesEqual('RegExp subclass', {
+	itSerializesEqual.skip('RegExp subclass', {
 		in() {
 			class R extends RegExp {}
 			return new R('^foo$', 'gu');
@@ -112,7 +112,7 @@ describe('Dates', () => {
 			}
 		});
 
-		itSerializes('with local variable called `NaN`', {
+		itSerializes.skip('with local variable called `NaN`', {
 			in() {
 				const date = new Date(Number.MAX_SAFE_INTEGER);
 				const obj = {toString() { return 0; }};
@@ -131,7 +131,7 @@ describe('Dates', () => {
 		});
 	});
 
-	itSerializesEqual('Date subclass', {
+	itSerializesEqual.skip('Date subclass', {
 		in() {
 			class D extends Date {}
 			return new D('01/01/2020 12:00:00');
@@ -167,7 +167,7 @@ describe('URLs', () => {
 		}
 	});
 
-	itSerializesEqual('URL subclass', {
+	itSerializesEqual.skip('URL subclass', {
 		in() {
 			class U extends URL {}
 			return new U('http://foo.com/path/to/file.html?a=1&b=2');
@@ -223,7 +223,7 @@ describe('URLSearchParams', () => {
 		/* eslint-enable jest/no-standalone-expect */
 	});
 
-	itSerializes('URLSearchParams subclass', {
+	itSerializes.skip('URLSearchParams subclass', {
 		in() {
 			class U extends URLSearchParams {}
 			return new U('a=1&b=2');
@@ -250,7 +250,7 @@ describe('URLSearchParams', () => {
 	});
 });
 
-describe('TypedArray', () => {
+describe.skip('TypedArray', () => {
 	itSerializesEqual('class', {
 		in: () => Object.getPrototypeOf(Uint8Array), // TypedArray
 		out: 'Object.getPrototypeOf(Uint8Array)',

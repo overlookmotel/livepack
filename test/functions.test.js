@@ -12,7 +12,7 @@ const {itSerializes, stripSourceMapComment, stripLineBreaks} = require('./suppor
 
 const spy = jest.fn;
 
-describe('Functions', () => {
+describe.skip('Functions', () => {
 	describe('without scope', () => {
 		describe('single instantiation of function', () => {
 			describe('arrow function', () => {

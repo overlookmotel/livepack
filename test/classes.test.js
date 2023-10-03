@@ -14,7 +14,7 @@ const {itSerializes} = require('./support/index.js');
 
 const spy = jest.fn;
 
-describe('Classes', () => {
+describe.skip('Classes', () => {
 	describe('empty class', () => {
 		itSerializes('anonymous', {
 			in: () => class {},

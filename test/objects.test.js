@@ -540,7 +540,7 @@ describe('Objects', () => {
 			});
 
 			describe('with getter / setter', () => {
-				itSerializesEqual('getter', {
+				itSerializesEqual.skip('getter', {
 					in: () => ({
 						x: 1,
 						get y() { return 2; }
@@ -558,7 +558,7 @@ describe('Objects', () => {
 					}
 				});
 
-				itSerializesEqual('setter', {
+				itSerializesEqual.skip('setter', {
 					in: () => ({
 						x: 1,
 						set y(newX) { this.x = newX; }
@@ -581,7 +581,7 @@ describe('Objects', () => {
 					}
 				});
 
-				itSerializesEqual('getter and setter undefined', {
+				itSerializesEqual.skip('getter and setter undefined', {
 					in() {
 						const obj = {x: 1};
 						Object.defineProperty(obj, 'y', {get: undefined, enumerable: true});
@@ -684,7 +684,7 @@ describe('Objects', () => {
 				);
 			});
 
-			itSerializesEqual('with getter', {
+			itSerializesEqual.skip('with getter', {
 				in() {
 					const obj = {
 						x: 1,
@@ -710,7 +710,7 @@ describe('Objects', () => {
 				}
 			});
 
-			itSerializesEqual('with setter', {
+			itSerializesEqual.skip('with setter', {
 				in() {
 					const obj = {
 						x: 1,

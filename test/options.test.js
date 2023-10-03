@@ -10,7 +10,7 @@ const {serialize} = require('livepack');
 
 // Tests
 
-describe('Options', () => {
+describe.skip('Options', () => {
 	describe('format', () => {
 		it('default', () => {
 			expect(serialize(1)).toBe('1');

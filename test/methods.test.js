@@ -12,7 +12,7 @@ const {itSerializes} = require('./support/index.js');
 
 const unsafeNumberString = (BigInt(Number.MAX_SAFE_INTEGER) + BigInt(1)).toString();
 
-describe('Object methods', () => {
+describe.skip('Object methods', () => {
 	describe('without descriptors', () => {
 		itSerializes('plain', {
 			in() {

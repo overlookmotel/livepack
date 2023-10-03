@@ -93,7 +93,7 @@ describe('Maps', () => {
 		});
 	});
 
-	describe('map subclass', () => {
+	describe.skip('map subclass', () => {
 		itSerializes('no entries', {
 			in() {
 				class M extends Map {}

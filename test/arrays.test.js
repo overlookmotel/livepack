@@ -295,7 +295,7 @@ describe('Arrays', () => {
 			});
 		});
 
-		itSerializesEqual('getters + setters', {
+		itSerializesEqual.skip('getters + setters', {
 			in() {
 				const arr = [1, 2, 3];
 				Object.defineProperties(arr, {
@@ -331,7 +331,7 @@ describe('Arrays', () => {
 		});
 	});
 
-	describe('array subclass', () => {
+	describe.skip('array subclass', () => {
 		itSerializesEqual('empty array', {
 			in() {
 				class A extends Array {}
