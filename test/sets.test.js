@@ -234,4 +234,25 @@ describe('WeakSets', () => {
 			expect(weakSet.has(weakSet)).toBeTrue();
 		}
 	});
+
+	itSerializes('with circular contents followed by non-circular', {
+		in() {
+			const weakSet = new WeakSet();
+			weakSet.add(weakSet);
+			const obj = {x: 1};
+			weakSet.add(obj);
+			return {weakSet, obj};
+		},
+		out: `(()=>{
+			const a={x:1},
+				b=new WeakSet([a]);
+			b.add(b);
+			return{weakSet:b,obj:a}
+		})()`,
+		validate({weakSet, obj}) {
+			expect(weakSet).toBeInstanceOf(WeakSet);
+			expect(weakSet.has(weakSet)).toBeTrue();
+			expect(weakSet.has(obj)).toBeTrue();
+		}
+	});
 });

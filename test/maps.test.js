@@ -266,4 +266,32 @@ describe('WeakMaps', () => {
 			expect(weakMap.get(weakMap)).toEqual(obj2);
 		}
 	});
+
+	itSerializes('with circular contents followed by non-circular', {
+		in() {
+			const weak = new WeakMap();
+			const x = {a: 1},
+				y = {b: 2};
+			weak.set(x, weak);
+			weak.set(weak, y);
+			weak.set(y, x);
+			return {obj1: x, obj2: y, weakMap: weak};
+		},
+		out: `(()=>{
+			const a={a:1},
+				b={b:2},
+				c=new WeakMap([[b,a]]);
+			c.set(a,c);
+			c.set(c,b);
+			return{obj1:a,obj2:b,weakMap:c}
+		})()`,
+		validate({obj1, obj2, weakMap}) {
+			expect(weakMap).toBeInstanceOf(WeakMap);
+			expect(obj1).toEqual({a: 1});
+			expect(obj2).toEqual({b: 2});
+			expect(weakMap.get(obj1)).toBe(weakMap);
+			expect(weakMap.get(weakMap)).toEqual(obj2);
+			expect(weakMap.get(obj2)).toEqual(obj1);
+		}
+	});
 });
