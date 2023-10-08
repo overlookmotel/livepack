@@ -1,5 +1,6 @@
 # TODO
 
+* Implement changes to URLs/URLSearchParams on `dev` branch
 * Tests for primitives always being inlined
 * TODO comments in `objects.js`
 * Remove remaining creation of dependencies during serialization
