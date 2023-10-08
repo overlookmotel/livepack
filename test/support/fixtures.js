@@ -96,7 +96,7 @@ function cleanupFixtures() {
  * Run a function with fixtures.
  *
  * Write fixtures files to disc and `require()` first file.
- * Pass that input to function provided, along with info `{fixturePath, fixturePaths, transpiled}`:
+ * Pass that input to function provided, along with info `{path, paths, transpiled}`:
  *   - `path` is the path to first fixture file on disc
  *   - `paths` is an array of paths to fixtures files
  *   - `transpiled` is the content of first file after instrumentation
