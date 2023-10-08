@@ -101,6 +101,36 @@ describe('Dates', () => {
 		}
 	});
 
+	describe('invalid date', () => {
+		itSerializes('alone', {
+			in: () => new Date(Number.MAX_SAFE_INTEGER),
+			out: 'new Date(NaN)',
+			validate(date) {
+				expect(date).toHavePrototype(Date.prototype);
+				expect(date).not.toBeValidDate();
+				expect(date.getTime()).toBeNaN();
+			}
+		});
+
+		itSerializes('with local variable called `NaN`', {
+			in() {
+				const date = new Date(Number.MAX_SAFE_INTEGER);
+				const obj = {toString() { return 0; }};
+				return {
+					NaN: obj,
+					obj,
+					date
+				};
+			},
+			out: '(()=>{const a={toString(){return 0}};return{NaN:a,obj:a,date:new Date(NaN)}})()',
+			validate({date}) {
+				expect(date).toHavePrototype(Date.prototype);
+				expect(date).not.toBeValidDate();
+				expect(date.getTime()).toBeNaN();
+			}
+		});
+	});
+
 	itSerializesEqual('Date subclass', {
 		in() {
 			class D extends Date {}
