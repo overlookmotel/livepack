@@ -170,74 +170,225 @@ describe('Arrays', () => {
 
 	describe('extra properties', () => {
 		describe('non-circular', () => {
-			itSerializesEqual('without descriptors', {
-				in() {
-					const arr = [1, 2, 3];
-					arr.x = 4;
-					arr.y = 5;
-					return arr;
-				},
-				out: 'Object.assign([1,2,3],{x:4,y:5})'
+			describe('without descriptors', () => {
+				itSerializesEqual('string keys', {
+					in() {
+						const arr = [1, 2, 3];
+						arr.x = 4;
+						arr.y = 5;
+						return arr;
+					},
+					out: 'Object.assign([1,2,3],{x:4,y:5})'
+				});
+
+				itSerializesEqual("including prop called '__proto__'", {
+					in() {
+						const arr = [1, 2, 3];
+						arr.x = 4;
+						Object.defineProperty(
+							arr, '__proto__',
+							{value: 5, writable: true, enumerable: true, configurable: true}
+						);
+						arr.y = 6;
+						return arr;
+					},
+					out: `(()=>{
+						const a=Object,
+							b=a.defineProperties;
+						return b(
+							a.defineProperty(
+								b(
+									[1,2,3],
+									{x:{value:4,writable:true,enumerable:true,configurable:true}}
+								),
+								"__proto__",
+								{value:5,writable:true,enumerable:true,configurable:true}
+							),
+							{y:{value:6,writable:true,enumerable:true,configurable:true}}
+						)
+					})()`,
+					validate(arr) {
+						expect(arr).toHaveOwnPropertyNames(['0', '1', '2', 'length', 'x', '__proto__', 'y']);
+						expect(arr.x).toBe(4);
+						expect(arr.__proto__).toBe(5); // eslint-disable-line no-proto
+						expect(arr.y).toBe(6);
+						expect(arr).toHaveDescriptorModifiersFor('x', true, true, true);
+						expect(arr).toHaveDescriptorModifiersFor('__proto__', true, true, true);
+						expect(arr).toHaveDescriptorModifiersFor('y', true, true, true);
+					}
+				});
 			});
 
-			itSerializesEqual('with descriptors', {
-				in() {
-					const arr = [1, 2, 3];
-					Object.defineProperty(arr, 'x', {value: 4, enumerable: true});
-					Object.defineProperty(arr, 'y', {value: 5, writable: true, configurable: true});
-					return arr;
-				},
-				out: `Object.defineProperties(
-					[1,2,3],
-					{x:{value:4,enumerable:true},y:{value:5,writable:true,configurable:true}}
-				)`,
-				validate(arr) {
-					expect(arr).toHaveOwnPropertyNames(['0', '1', '2', 'length', 'x', 'y']);
-					expect(arr.x).toBe(4);
-					expect(arr.y).toBe(5);
-					expect(arr).toHaveDescriptorModifiersFor('x', false, true, false);
-					expect(arr).toHaveDescriptorModifiersFor('y', true, false, true);
-				}
+			describe('with descriptors', () => {
+				itSerializesEqual('string keys', {
+					in() {
+						const arr = [1, 2, 3];
+						Object.defineProperty(arr, 'x', {value: 4, enumerable: true});
+						Object.defineProperty(arr, 'y', {value: 5, writable: true, configurable: true});
+						return arr;
+					},
+					out: `Object.defineProperties(
+						[1,2,3],
+						{x:{value:4,enumerable:true},y:{value:5,writable:true,configurable:true}}
+					)`,
+					validate(arr) {
+						expect(arr).toHaveOwnPropertyNames(['0', '1', '2', 'length', 'x', 'y']);
+						expect(arr.x).toBe(4);
+						expect(arr.y).toBe(5);
+						expect(arr).toHaveDescriptorModifiersFor('x', false, true, false);
+						expect(arr).toHaveDescriptorModifiersFor('y', true, false, true);
+					}
+				});
+
+				itSerializesEqual("including prop called '__proto__'", {
+					in() {
+						const arr = [1, 2, 3];
+						Object.defineProperty(arr, 'x', {value: 4, enumerable: true});
+						Object.defineProperty(arr, '__proto__', {value: 5, configurable: true});
+						Object.defineProperty(arr, 'y', {value: 6, writable: true, configurable: true});
+						return arr;
+					},
+					out: `(()=>{
+						const a=Object,
+							b=a.defineProperties;
+						return b(
+							a.defineProperty(
+								b([1,2,3],{x:{value:4,enumerable:true}}),
+								"__proto__",
+								{value:5,configurable:true}
+							),
+							{y:{value:6,writable:true,configurable:true}}
+						)
+					})()`,
+					validate(arr) {
+						expect(arr).toHaveOwnPropertyNames(['0', '1', '2', 'length', 'x', '__proto__', 'y']);
+						expect(arr.x).toBe(4);
+						expect(arr.__proto__).toBe(5); // eslint-disable-line no-proto
+						expect(arr.y).toBe(6);
+						expect(arr).toHaveDescriptorModifiersFor('x', false, true, false);
+						expect(arr).toHaveDescriptorModifiersFor('__proto__', false, false, true);
+						expect(arr).toHaveDescriptorModifiersFor('y', true, false, true);
+					}
+				});
 			});
 		});
 
 		describe('circular references', () => {
-			itSerializesEqual('without descriptors', {
-				in() {
-					const arr = [1, 2, 3];
-					arr.x = arr;
-					arr.y = arr;
-					return arr;
-				},
-				out: '(()=>{const a=[1,2,3];a.x=a;a.y=a;return a})()',
-				validate(arr) {
-					expect(arr.x).toBe(arr);
-					expect(arr.y).toBe(arr);
-				}
+			describe('without descriptors', () => {
+				itSerializesEqual('string keys', {
+					in() {
+						const arr = [1, 2, 3];
+						arr.x = arr;
+						arr.y = arr;
+						return arr;
+					},
+					out: '(()=>{const a=[1,2,3];a.x=a;a.y=a;return a})()',
+					validate(arr) {
+						expect(arr.x).toBe(arr);
+						expect(arr.y).toBe(arr);
+					}
+				});
+
+				itSerializesEqual("including prop called '__proto__'", {
+					in() {
+						const arr = [1, 2, 3];
+						arr.x = arr;
+						Object.defineProperty(
+							arr, '__proto__',
+							{value: arr, writable: true, enumerable: true, configurable: true}
+						);
+						arr.y = 4;
+						return arr;
+					},
+					out: `(()=>{
+						const a=Object,
+							b=a.defineProperties,
+							c=b(
+								a.defineProperty(
+									b([1,2,3],{x:{writable:true,enumerable:true,configurable:true}}),
+									"__proto__",
+									{writable:true,enumerable:true,configurable:true}
+								),
+								{y:{value:4,writable:true,enumerable:true,configurable:true}}
+							);
+						c.x=c;
+						c.__proto__=c;
+						return c
+					})()`,
+					validate(arr) {
+						expect(arr).toHaveOwnPropertyNames(['0', '1', '2', 'length', 'x', '__proto__', 'y']);
+						expect(arr.x).toBe(arr);
+						expect(arr.__proto__).toBe(arr); // eslint-disable-line no-proto
+						expect(arr.y).toBe(4);
+						expect(arr).toHaveDescriptorModifiersFor('x', true, true, true);
+						expect(arr).toHaveDescriptorModifiersFor('__proto__', true, true, true);
+						expect(arr).toHaveDescriptorModifiersFor('y', true, true, true);
+					}
+				});
 			});
 
-			itSerializesEqual('with descriptors', {
-				in() {
-					const arr = [1, 2, 3];
-					Object.defineProperty(arr, 'x', {value: arr, enumerable: true});
-					Object.defineProperty(arr, 'y', {value: arr, writable: true, configurable: true});
-					return arr;
-				},
-				out: `(()=>{
-					const a=[1,2,3];
-					Object.defineProperties(a,{
-						x:{value:a,enumerable:true},
-						y:{value:a,writable:true,configurable:true}
-					});
-					return a
-				})()`,
-				validate(arr) {
-					expect(arr).toHaveOwnPropertyNames(['0', '1', '2', 'length', 'x', 'y']);
-					expect(arr.x).toBe(arr);
-					expect(arr.y).toBe(arr);
-					expect(arr).toHaveDescriptorModifiersFor('x', false, true, false);
-					expect(arr).toHaveDescriptorModifiersFor('y', true, false, true);
-				}
+			describe('with descriptors', () => {
+				itSerializesEqual('string keys', {
+					in() {
+						const arr = [1, 2, 3];
+						Object.defineProperty(arr, 'x', {value: arr, enumerable: true});
+						Object.defineProperty(arr, 'y', {value: arr, writable: true, configurable: true});
+						return arr;
+					},
+					out: `(()=>{
+						const a=[1,2,3];
+						Object.defineProperties(a,{
+							x:{value:a,enumerable:true},
+							y:{value:a,writable:true,configurable:true}
+						});
+						return a
+					})()`,
+					validate(arr) {
+						expect(arr).toHaveOwnPropertyNames(['0', '1', '2', 'length', 'x', 'y']);
+						expect(arr.x).toBe(arr);
+						expect(arr.y).toBe(arr);
+						expect(arr).toHaveDescriptorModifiersFor('x', false, true, false);
+						expect(arr).toHaveDescriptorModifiersFor('y', true, false, true);
+					}
+				});
+
+				itSerializesEqual("including prop called '__proto__'", {
+					in() {
+						const arr = [1, 2, 3];
+						Object.defineProperty(arr, 'x', {value: arr, enumerable: true});
+						Object.defineProperty(arr, '__proto__', {value: arr, configurable: true});
+						Object.defineProperty(arr, 'y', {value: 4, writable: true, configurable: true});
+						return arr;
+					},
+					out: `(()=>{
+						const a=Object,
+							b=a.defineProperties,
+							c=a.defineProperty,
+							d=b(
+								c(
+									b([1,2,3],{x:{writable:true,enumerable:true,configurable:true}}),
+									"__proto__",
+									{writable:true,enumerable:true,configurable:true}
+								),
+								{y:{value:4,writable:true,configurable:true}}
+							);
+						c(
+							b(d,{x:{value:d,writable:false,configurable:false}}),
+							"__proto__",
+							{value:d,writable:false,enumerable:false}
+						);
+						return d
+					})()`,
+					validate(arr) {
+						expect(arr).toHaveOwnPropertyNames(['0', '1', '2', 'length', 'x', '__proto__', 'y']);
+						expect(arr.x).toBe(arr);
+						expect(arr.__proto__).toBe(arr); // eslint-disable-line no-proto
+						expect(arr.y).toBe(4);
+						expect(arr).toHaveDescriptorModifiersFor('x', false, true, false);
+						expect(arr).toHaveDescriptorModifiersFor('__proto__', false, false, true);
+						expect(arr).toHaveDescriptorModifiersFor('y', true, false, true);
+					}
+				});
 			});
 		});
 	});
@@ -328,6 +479,184 @@ describe('Arrays', () => {
 				expect(arr).toHaveDescriptorModifiersFor(1, true, true, true);
 				expect(arr).toHaveDescriptorModifiersFor(2, undefined, true, true);
 			}
+		});
+	});
+
+	describe('prototype altered', () => {
+		describe('to null', () => {
+			itSerializesEqual('with no extra properties', {
+				in: () => Object.setPrototypeOf([1, 2, 3], null),
+				out: 'Object.setPrototypeOf([1,2,3],null)',
+				validate(arr) {
+					expect(arr).toHavePrototype(null);
+				}
+			});
+
+			itSerializesEqual("with extra properties including one named '__proto__'", {
+				in() {
+					const arr = [1, 2, 3];
+					Object.setPrototypeOf(arr, null);
+					arr.x = 4;
+					arr.__proto__ = 5; // eslint-disable-line no-proto
+					arr.y = 6;
+					return arr;
+				},
+				out: `(()=>{
+					const a=Object,
+						b=a.defineProperties;
+					return b(
+						a.defineProperty(
+							b(
+								a.setPrototypeOf([1,2,3],null),
+								{x:{value:4,writable:true,enumerable:true,configurable:true}}
+							),
+							"__proto__",
+							{value:5,writable:true,enumerable:true,configurable:true}
+						),
+						{y:{value:6,writable:true,enumerable:true,configurable:true}}
+					)
+				})()`,
+				validate(arr) {
+					expect(arr).toHavePrototype(null);
+					expect(arr).toHaveOwnPropertyNames(['0', '1', '2', 'length', 'x', '__proto__', 'y']);
+					expect(arr.x).toBe(4);
+					expect(arr.__proto__).toBe(5); // eslint-disable-line no-proto
+					expect(arr.y).toBe(6);
+					expect(arr).toHaveDescriptorModifiersFor('x', true, true, true);
+					expect(arr).toHaveDescriptorModifiersFor('__proto__', true, true, true);
+					expect(arr).toHaveDescriptorModifiersFor('y', true, true, true);
+				}
+			});
+
+			itSerializesEqual("with extra circular properties including one named '__proto__'", {
+				in() {
+					const arr = [1, 2, 3];
+					Object.setPrototypeOf(arr, null);
+					arr.x = arr;
+					arr.__proto__ = arr; // eslint-disable-line no-proto
+					arr.y = 4;
+					return arr;
+				},
+				out: `(()=>{
+					const a=Object,
+						b=a.defineProperties,
+						c=b(
+							a.defineProperty(
+								b(
+									a.setPrototypeOf([1,2,3],null),
+									{x:{writable:true,enumerable:true,configurable:true}}
+								),
+								"__proto__",
+								{writable:true,enumerable:true,configurable:true}
+							),
+							{y:{value:4,writable:true,enumerable:true,configurable:true}});
+					c.x=c;
+					c.__proto__=c;
+					return c
+				})()`,
+				validate(arr) {
+					expect(arr).toHavePrototype(null);
+					expect(arr).toHaveOwnPropertyNames(['0', '1', '2', 'length', 'x', '__proto__', 'y']);
+					expect(arr.x).toBe(arr);
+					expect(arr.__proto__).toBe(arr); // eslint-disable-line no-proto
+					expect(arr.y).toBe(4);
+					expect(arr).toHaveDescriptorModifiersFor('x', true, true, true);
+					expect(arr).toHaveDescriptorModifiersFor('__proto__', true, true, true);
+					expect(arr).toHaveDescriptorModifiersFor('y', true, true, true);
+				}
+			});
+		});
+
+		describe('to Object.prototype', () => {
+			itSerializesEqual('with no extra properties', {
+				in: () => Object.setPrototypeOf([1, 2, 3], Object.prototype),
+				out: '(()=>{const a=Object;return a.setPrototypeOf([1,2,3],a.prototype)})()',
+				validate(arr) {
+					expect(arr).toHavePrototype(Object.prototype);
+				}
+			});
+
+			itSerializesEqual("with extra properties including one named '__proto__'", {
+				in() {
+					const arr = [1, 2, 3];
+					Object.setPrototypeOf(arr, Object.prototype);
+					arr.x = 4;
+					Object.defineProperty(
+						arr, '__proto__',
+						{value: arr, writable: true, enumerable: true, configurable: true}
+					);
+					arr.__proto__ = 5; // eslint-disable-line no-proto
+					arr.y = 6;
+					return arr;
+				},
+				out: `(()=>{
+					const a=Object,
+						b=a.defineProperties;
+					return b(
+						a.defineProperty(
+							b(
+								a.setPrototypeOf([1,2,3],a.prototype),
+								{x:{value:4,writable:true,enumerable:true,configurable:true}}
+							),
+							"__proto__",
+							{value:5,writable:true,enumerable:true,configurable:true}
+						),
+						{y:{value:6,writable:true,enumerable:true,configurable:true}}
+					)
+				})()`,
+				validate(arr) {
+					expect(arr).toHavePrototype(Object.prototype);
+					expect(arr).toHaveOwnPropertyNames(['0', '1', '2', 'length', 'x', '__proto__', 'y']);
+					expect(arr.x).toBe(4);
+					expect(arr.__proto__).toBe(5); // eslint-disable-line no-proto
+					expect(arr.y).toBe(6);
+					expect(arr).toHaveDescriptorModifiersFor('x', true, true, true);
+					expect(arr).toHaveDescriptorModifiersFor('__proto__', true, true, true);
+					expect(arr).toHaveDescriptorModifiersFor('y', true, true, true);
+				}
+			});
+
+			itSerializesEqual("with extra circular properties including one named '__proto__'", {
+				in() {
+					const arr = [1, 2, 3];
+					Object.setPrototypeOf(arr, Object.prototype);
+					arr.x = arr;
+					Object.defineProperty(
+						arr, '__proto__',
+						{value: arr, writable: true, enumerable: true, configurable: true}
+					);
+					arr.y = 4;
+					return arr;
+				},
+				out: `(()=>{
+					const a=Object,
+						b=a.defineProperties,
+						c=b(
+							a.defineProperty(
+								b(
+									a.setPrototypeOf([1,2,3],a.prototype),
+									{x:{writable:true,enumerable:true,configurable:true}}
+								),
+								"__proto__",
+								{writable:true,enumerable:true,configurable:true}
+							),
+							{y:{value:4,writable:true,enumerable:true,configurable:true}}
+						);
+					c.x=c;
+					c.__proto__=c;
+					return c
+				})()`,
+				validate(arr) {
+					expect(arr).toHavePrototype(Object.prototype);
+					expect(arr).toHaveOwnPropertyNames(['0', '1', '2', 'length', 'x', '__proto__', 'y']);
+					expect(arr.x).toBe(arr);
+					expect(arr.__proto__).toBe(arr); // eslint-disable-line no-proto
+					expect(arr.y).toBe(4);
+					expect(arr).toHaveDescriptorModifiersFor('x', true, true, true);
+					expect(arr).toHaveDescriptorModifiersFor('__proto__', true, true, true);
+					expect(arr).toHaveDescriptorModifiersFor('y', true, true, true);
+				}
+			});
 		});
 	});
 

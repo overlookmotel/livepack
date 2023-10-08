@@ -357,6 +357,25 @@ describe('Boxed BigInts', () => {
 		}
 	});
 
+	itSerializes.skip('with `valueOf` property', {
+		in() {
+			const bigInt = Object(1n);
+			bigInt.valueOf = () => 2n;
+			return bigInt;
+		},
+		out: 'Object.assign(Object(1n),{valueOf:(0,()=>2n)})',
+		validate(bigInt) {
+			expect(typeof bigInt).toBe('object');
+			expect(typeof bigInt.valueOf()).toBe('bigint');
+			expect(bigInt).toHavePrototype(BigInt.prototype);
+			expect(BigInt.prototype.valueOf.call(bigInt)).toBe(1n);
+			expect(BigInt(bigInt)).toBe(2n);
+			expect(bigInt.valueOf).toBeFunction();
+			expect(bigInt).toHaveDescriptorModifiersFor('valueOf', true, true, true);
+			expect(bigInt.valueOf()).toBe(2n);
+		}
+	});
+
 	itSerializesEqual.skip('BigInt subclass', {
 		in() {
 			class B extends BigInt {}
