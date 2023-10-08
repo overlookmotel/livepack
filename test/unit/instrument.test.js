@@ -111,6 +111,9 @@ const ignoredNodeTypes = new Set([
 	// Not real node types
 	'Noop',
 	'Placeholder',
+	// New AST node type introduced in Babel v7.23.0, but usage disabled by default
+	// https://github.com/babel/babel/pull/15682
+	'ImportExpression',
 	// ECMA proposals not adopted yet
 	'ArgumentPlaceholder',
 	'BindExpression',
