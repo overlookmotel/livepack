@@ -9513,7 +9513,7 @@ describe('Functions', () => {
 					const extA = {
 						valueOf() {
 							calls.push('valueOf');
-							return 1;
+							return 1n;
 						}
 					};
 					return [
@@ -9528,9 +9528,9 @@ describe('Functions', () => {
 					const a=[],
 						b=((b,c)=>[
 							a=>c=a,
-							{valueOf(){b.push("valueOf");return 1}}.valueOf,
+							{valueOf(){b.push("valueOf");return 1n}}.valueOf,
 							()=>{
-								+c,
+								(a=>a++)(c),
 								(()=>{const a=0;a=0})()
 							},
 							()=>c
@@ -9552,7 +9552,7 @@ describe('Functions', () => {
 					const extA = {
 						valueOf() {
 							calls.push('valueOf');
-							return 1;
+							return 1n;
 						}
 					};
 					return [
@@ -9567,9 +9567,9 @@ describe('Functions', () => {
 					const a=[],
 						b=((b,c)=>[
 							a=>c=a,
-							{valueOf(){b.push("valueOf");return 1}}.valueOf,
+							{valueOf(){b.push("valueOf");return 1n}}.valueOf,
 							()=>{
-								+c,
+								(a=>--a)(c),
 								(()=>{const a=0;a=0})()
 							},
 							()=>c
