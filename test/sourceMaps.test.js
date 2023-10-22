@@ -197,6 +197,14 @@ describe('Source maps', () => {
 				]);
 
 				const map = JSON.parse(out[1].content);
+				expect(map).toEqual({
+					version: 3,
+					names: ['Error', 'message'],
+					sources: ['../src.js', '../index.js'],
+					sourcesContent: [srcCode, code],
+					mappings: 'IACiB,UCEY,CDFJ,KAAM,IAAI,CAAAA,KAAK,CAACC,CAAO,CCAG,CDAC'
+				});
+
 				const consumer = new SourceMapConsumer(map);
 				expect(consumer.originalPositionFor({line: 1, column: 4})).toEqual({
 					line: 2,
@@ -264,6 +272,14 @@ describe('Source maps', () => {
 					]);
 
 					const map = JSON.parse(out[1].content);
+					expect(map).toEqual({
+						version: 3,
+						names: ['Error', 'message'],
+						sources: ['../src.js', '../intermediate.js'],
+						sourcesContent: [srcCode, code],
+						mappings: 'IACiB,UCEY,CDFJ,KAAM,IAAI,CAAAA,KAAK,CAACC,CAAO,CCAG,CDAC'
+					});
+
 					const consumer = new SourceMapConsumer(map);
 					expect(consumer.originalPositionFor({line: 1, column: 4})).toEqual({
 						line: 2,
