@@ -61,7 +61,7 @@
   },
   "devDependencies": {
     "@babel/plugin-transform-arrow-functions": "^7.22.5",
-    "@babel/plugin-transform-strict-mode": "^7.22.5",
+    "@babel/plugin-transform-strict-mode": "^7.23.3",
     "@jest/test-sequencer": "^29.7.0",
     "@overlookmotel/eslint-config": "^10.1.0",
     "@overlookmotel/eslint-config-jest": "^6.0.1",
