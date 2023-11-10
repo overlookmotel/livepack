@@ -1730,4 +1730,54 @@ describe('eval', () => {
 			}
 		});
 	});
+
+	describe('multiple `eval()`s evaluated before serialization', () => {
+		// Tests cover https://github.com/overlookmotel/livepack/issues/538
+		itSerializesEqual('simple case', {
+			in: `
+				'use strict';
+				const x = 11, y = 22;
+				module.exports = [eval('x'), eval('y')];
+			`,
+			out: '[11,22]'
+		});
+
+		describe('with prefix num change in 1st eval', () => {
+			itSerializes('with direct eval containing prefix num change', {
+				in: `
+					'use strict';
+					const x = 11, y = 22;
+					module.exports = [
+						eval('let livepack_temp; () => x'),
+						eval('() => y')
+					];
+				`,
+				out: '(()=>{const a=((a,b)=>[()=>a,()=>b])(11,22);return[a[0],a[1]]})()',
+				validate([fn1, fn2]) {
+					expect(fn1).toBeFunction();
+					expect(fn2).toBeFunction();
+					expect(fn1()).toBe(11);
+					expect(fn2()).toBe(22);
+				}
+			});
+
+			itSerializes('with indirect eval containing prefix num change', {
+				in: `
+					'use strict';
+					const y = 22;
+					module.exports = [
+						eval('let livepack_temp; () => 11'),
+						eval('() => y')
+					];
+				`,
+				out: '[()=>11,(a=>()=>a)(22)]',
+				validate([fn1, fn2]) {
+					expect(fn1).toBeFunction();
+					expect(fn2).toBeFunction();
+					expect(fn1()).toBe(11);
+					expect(fn2()).toBe(22);
+				}
+			});
+		});
+	});
 });
