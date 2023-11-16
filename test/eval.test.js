@@ -175,6 +175,148 @@ describe('eval', () => {
 						}
 					});
 				});
+
+				describe('`super`', () => {
+					describe('in object literal method', () => {
+						itSerializesEqual('with no prefix num change', {
+							in() {
+								const obj = {
+									meth() {
+										return eval('super.meth()');
+									},
+									__proto__: {
+										meth() { return 123; }
+									}
+								};
+								return obj.meth();
+							},
+							out: '123'
+						});
+
+						itSerializesEqual('with prefix num change', {
+							in() {
+								const obj = {
+									meth() {
+										return eval('let livepack_tracker; super.meth()');
+									},
+									__proto__: {
+										meth() { return 123; }
+									}
+								};
+								return obj.meth();
+							},
+							out: '123'
+						});
+					});
+
+					describe('in class prototype method', () => {
+						/* eslint-disable class-methods-use-this */
+						itSerializesEqual('with no prefix num change', {
+							in() {
+								class S {
+									meth() { return 123; }
+								}
+								class C extends S {
+									meth() {
+										return eval('super.meth()');
+									}
+								}
+								const obj = new C();
+								return obj.meth();
+							},
+							out: '123'
+						});
+
+						itSerializesEqual('with prefix num change', {
+							in() {
+								class S {
+									meth() { return 123; }
+								}
+								class C extends S {
+									meth() {
+										return eval('let livepack_tracker; super.meth()');
+									}
+								}
+								const obj = new C();
+								return obj.meth();
+							},
+							out: '123'
+						});
+						/* eslint-enable class-methods-use-this */
+					});
+
+					describe('in class static method', () => {
+						itSerializesEqual('with no prefix num change', {
+							in() {
+								class S {
+									static meth() { return 123; }
+								}
+								class C extends S {
+									static meth() {
+										return eval('super.meth()');
+									}
+								}
+								return C.meth();
+							},
+							out: '123'
+						});
+
+						itSerializesEqual('with prefix num change', {
+							in() {
+								class S {
+									static meth() { return 123; }
+								}
+								class C extends S {
+									static meth() {
+										return eval('let livepack_tracker; super.meth()');
+									}
+								}
+								return C.meth();
+							},
+							out: '123'
+						});
+					});
+
+					describe('in class constructor', () => {
+						/* eslint-disable class-methods-use-this, constructor-super */
+						itSerializesEqual('with no prefix num change', {
+							in() {
+								class S {
+									constructor() { this.x = 456; }
+									meth() { return 123; }
+								}
+								class C extends S {
+									constructor() {
+										eval('super()');
+										eval('this.n = super.meth();');
+									}
+								}
+								const obj = new C();
+								return [obj.n, obj.x];
+							},
+							out: '[123,456]'
+						});
+
+						itSerializesEqual('with prefix num change', {
+							in() {
+								class S {
+									constructor() { this.x = 456; }
+									meth() { return 123; }
+								}
+								class C extends S {
+									constructor() {
+										eval('let livepack_tracker; super()');
+										eval('let livepack1_tracker; this.n = super.meth()');
+									}
+								}
+								const obj = new C();
+								return [obj.n, obj.x];
+							},
+							out: '[123,456]'
+						});
+						/* eslint-enable class-methods-use-this, constructor-super */
+					});
+				});
 			});
 
 			describe('functions', () => {
@@ -373,6 +515,150 @@ describe('eval', () => {
 							const ctor = function() { return 1; };
 							expect(Reflect.construct(fn, [], ctor)).toBe(ctor);
 						}
+					});
+				});
+
+				describe('using `super`', () => {
+					describe('in object literal method', () => {
+						itSerializesEqual('with no prefix num change', {
+							in() {
+								const obj = {
+									meth() {
+										return eval('() => super.meth()');
+									},
+									__proto__: {
+										meth() { return 123; }
+									}
+								};
+								return obj.meth()();
+							},
+							out: '123'
+						});
+
+						itSerializesEqual('with prefix num change', {
+							in() {
+								const obj = {
+									meth() {
+										return eval('let livepack_tracker; () => super.meth()');
+									},
+									__proto__: {
+										meth() { return 123; }
+									}
+								};
+								return obj.meth()();
+							},
+							out: '123'
+						});
+					});
+
+					describe('in class prototype method', () => {
+						/* eslint-disable class-methods-use-this */
+						itSerializesEqual('with no prefix num change', {
+							in() {
+								class S {
+									meth() { return 123; }
+								}
+								class C extends S {
+									meth() {
+										return eval('() => super.meth()');
+									}
+								}
+								const obj = new C();
+								return obj.meth()();
+							},
+							out: '123'
+						});
+
+						itSerializesEqual('with prefix num change', {
+							in() {
+								class S {
+									meth() { return 123; }
+								}
+								class C extends S {
+									meth() {
+										return eval('let livepack_tracker; () => super.meth()');
+									}
+								}
+								const obj = new C();
+								return obj.meth()();
+							},
+							out: '123'
+						});
+						/* eslint-enable class-methods-use-this */
+					});
+
+					describe('in class static method', () => {
+						itSerializesEqual('with no prefix num change', {
+							in() {
+								class S {
+									static meth() { return 123; }
+								}
+								class C extends S {
+									static meth() {
+										return eval('() => super.meth()');
+									}
+								}
+								return C.meth()();
+							},
+							out: '123'
+						});
+
+						itSerializesEqual('with prefix num change', {
+							in() {
+								class S {
+									static meth() { return 123; }
+								}
+								class C extends S {
+									static meth() {
+										return eval('let livepack_tracker; () => super.meth()');
+									}
+								}
+								return C.meth()();
+							},
+							out: '123'
+						});
+					});
+
+					describe('in class constructor', () => {
+						/* eslint-disable class-methods-use-this, constructor-super, no-this-before-super */
+						itSerializesEqual('with no prefix num change', {
+							in() {
+								class S {
+									constructor() { this.x = 456; }
+									meth() { return 123; }
+								}
+								class C extends S {
+									constructor() {
+										const callSuper = eval('() => super()');
+										callSuper();
+										this.f = eval('() => super.meth()');
+									}
+								}
+								const obj = new C();
+								return [obj.f(), obj.x];
+							},
+							out: '[123,456]'
+						});
+
+						itSerializesEqual('with prefix num change', {
+							in() {
+								class S {
+									constructor() { this.x = 456; }
+									meth() { return 123; }
+								}
+								class C extends S {
+									constructor() {
+										const callSuper = eval('let livepack_tracker; () => super()');
+										callSuper();
+										this.f = eval('let livepack1_tracker; () => super.meth()');
+									}
+								}
+								const obj = new C();
+								return [obj.f(), obj.x];
+							},
+							out: '[123,456]'
+						});
+						/* eslint-enable class-methods-use-this, constructor-super, no-this-before-super */
 					});
 				});
 
@@ -1016,6 +1302,304 @@ describe('eval', () => {
 						expect(args[1]).toBe(99);
 						expect(args[2]).toBe(1010);
 					}
+				});
+			});
+
+			describe('`super`', () => {
+				describe('in object literal method', () => {
+					itSerializes('with no prefix num change', {
+						in: `
+							'use strict';
+							const obj = {
+								meth() {
+									return eval('() => super.meth()');
+								},
+								__proto__: {
+									meth() { return 123; }
+								}
+							};
+							module.exports = obj.meth();
+							delete obj.meth;
+						`,
+						out: `(()=>{
+							const a=Object.create({meth(){return 123}});
+							return(
+								b=>a=>()=>Reflect.get(Object.getPrototypeOf(b),"meth",a).call(a)
+							)(a)(a)
+						})()`,
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn()).toBe(123);
+						}
+					});
+
+					itSerializes('with prefix num change', {
+						in: `
+							'use strict';
+							const obj = {
+								meth() {
+									return eval('let livepack_tracker; () => super.meth()');
+								},
+								__proto__: {
+									meth() { return 123; }
+								}
+							};
+							module.exports = obj.meth();
+							delete obj.meth;
+						`,
+						out: `(()=>{
+							const a=Object.create({meth(){return 123}});
+							return(
+								b=>a=>()=>Reflect.get(Object.getPrototypeOf(b),"meth",a).call(a)
+							)(a)(a)
+						})()`,
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn()).toBe(123);
+						}
+					});
+				});
+
+				describe('in class prototype method', () => {
+					itSerializes('with no prefix num change', {
+						in: `
+							class S {
+								meth() { return 123; }
+							}
+							class C extends S {
+								meth() {
+									return eval('() => super.meth()');
+								}
+							}
+							const obj = new C();
+							module.exports = obj.meth();
+							delete C.prototype.meth;
+						`,
+						out: `(()=>{
+							const a=(b=>[
+									b=class C{
+										constructor(...a){
+											return Reflect.construct(Object.getPrototypeOf(b),a,b)
+										}
+									},
+									a=>()=>Reflect.get(Object.getPrototypeOf(b.prototype),"meth",a).call(a)
+								])(),
+								b=a[0],
+								c=Object,
+								d=c.setPrototypeOf,
+								e=class S{},
+								f=e.prototype,
+								g=b.prototype;
+							c.defineProperties(f,{
+								meth:{value:{meth(){return 123}}.meth,writable:true,configurable:true}
+							});
+							d(b,e);
+							d(g,f);
+							return a[1](c.create(g))
+						})()`,
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn()).toBe(123);
+						}
+					});
+
+					itSerializes('with prefix num change', {
+						in: `
+							class S {
+								meth() { return 123; }
+							}
+							class C extends S {
+								meth() {
+									return eval('let livepack_tracker; () => super.meth()');
+								}
+							}
+							const obj = new C();
+							module.exports = obj.meth();
+							delete C.prototype.meth;
+						`,
+						out: `(()=>{
+							const a=(b=>[
+									b=class C{
+										constructor(...a){
+											return Reflect.construct(Object.getPrototypeOf(b),a,b)
+										}
+									},
+									a=>()=>Reflect.get(Object.getPrototypeOf(b.prototype),"meth",a).call(a)
+								])(),
+								b=a[0],
+								c=Object,
+								d=c.setPrototypeOf,
+								e=class S{},
+								f=e.prototype,
+								g=b.prototype;
+							c.defineProperties(f,{
+								meth:{value:{meth(){return 123}}.meth,writable:true,configurable:true}
+							});
+							d(b,e);
+							d(g,f);
+							return a[1](c.create(g))
+						})()`,
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn()).toBe(123);
+						}
+					});
+				});
+
+				describe('in class static method', () => {
+					itSerializes('with no prefix num change', {
+						in: `
+							class S {
+								static meth() { return 123; }
+							}
+							class C extends S {
+								static meth() {
+									return eval('() => super.meth()');
+								}
+							}
+							module.exports = C.meth();
+							delete C.meth;
+						`,
+						out: `(()=>{
+							const a=(b=>[
+									b=class C{
+										constructor(...a){
+											return Reflect.construct(Object.getPrototypeOf(b),a,b)
+										}
+									},
+									a=>()=>Reflect.get(Object.getPrototypeOf(b),"meth",a).call(a)
+								])(),
+								b=a[0],
+								c=Object,
+								d=c.setPrototypeOf,
+								e=c.defineProperties(
+									class S{},
+									{meth:{value:{meth(){return 123}}.meth,writable:true,configurable:true}}
+								);
+							d(b,e);
+							d(b.prototype,e.prototype);
+							return a[1](b)
+						})()`,
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn()).toBe(123);
+						}
+					});
+
+					itSerializes('with prefix num change', {
+						in: `
+							class S {
+								static meth() { return 123; }
+							}
+							class C extends S {
+								static meth() {
+									return eval('let livepack_tracker; () => super.meth()');
+								}
+							}
+							module.exports = C.meth();
+							delete C.meth;
+						`,
+						out: `(()=>{
+							const a=(b=>[
+									b=class C{
+										constructor(...a){
+											return Reflect.construct(Object.getPrototypeOf(b),a,b)
+										}
+									},
+									a=>()=>Reflect.get(Object.getPrototypeOf(b),"meth",a).call(a)
+								])(),
+								b=a[0],
+								c=Object,
+								d=c.setPrototypeOf,
+								e=c.defineProperties(
+									class S{},
+									{meth:{value:{meth(){return 123}}.meth,writable:true,configurable:true}}
+								);
+							d(b,e);
+							d(b.prototype,e.prototype);
+							return a[1](b)
+						})()`,
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn()).toBe(123);
+						}
+					});
+				});
+
+				describe('in class constructor', () => {
+					itSerializes('with no prefix num change', {
+						in: `
+							class S {
+								meth() { return 123; }
+							}
+							class C extends S {
+								constructor(module, exports, obj) {
+									super();
+									this.f = eval('() => super.meth()');
+								}
+							}
+							const obj = new C();
+							delete C.prototype.meth;
+							module.exports = obj.f;
+							delete obj.f;
+						`,
+						out: `(()=>{
+							const a=class S{},
+								b=a.prototype,
+								c=Object,
+								d=(0,eval)("\\"use strict\\";S=>_b=>[_b=class C{constructor(module,exports,obj){const _a=Reflect.construct(Object.getPrototypeOf(_b),[],_b);_a.f=eval(\\"() => super.meth()\\");return _a}},a=>()=>Reflect.get(Object.getPrototypeOf(_b.prototype),\\"meth\\",a).call(a)]")(a)(),
+								e=d[0],
+								f=c.setPrototypeOf,
+								g=e.prototype;
+							c.defineProperties(b,{
+								meth:{value:{meth(){return 123}}.meth,writable:true,configurable:true}
+							});
+							f(e,a);
+							f(g,b);
+							return d[1](c.create(g))
+						})()`,
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn()).toBe(123);
+						}
+					});
+
+					itSerializes('with prefix num change', {
+						in: `
+							class S {
+								meth() { return 123; }
+							}
+							class C extends S {
+								constructor(module, exports, obj) {
+									super();
+									this.f = eval('let livepack_tracker; () => super.meth()');
+								}
+							}
+							const obj = new C();
+							delete C.prototype.meth;
+							module.exports = obj.f;
+							delete obj.f;
+						`,
+						out: `(()=>{
+							const a=class S{},
+								b=a.prototype,
+								c=Object,
+								d=(0,eval)("\\"use strict\\";S=>_b=>[_b=class C{constructor(module,exports,obj){const _a=Reflect.construct(Object.getPrototypeOf(_b),[],_b);_a.f=eval(\\"let livepack_tracker; () => super.meth()\\");return _a}},a=>()=>Reflect.get(Object.getPrototypeOf(_b.prototype),\\"meth\\",a).call(a)]")(a)(),
+								e=d[0],
+								f=c.setPrototypeOf,
+								g=e.prototype;
+							c.defineProperties(b,{
+								meth:{value:{meth(){return 123}}.meth,writable:true,configurable:true}
+							});
+							f(e,a);
+							f(g,b);
+							return d[1](c.create(g))
+						})()`,
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn()).toBe(123);
+						}
+					});
 				});
 			});
 
