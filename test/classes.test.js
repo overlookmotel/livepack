@@ -751,52 +751,128 @@ describe('Classes', () => {
 
 			/* eslint-disable no-eval */
 			describe('when constructor contains `eval()`', () => {
-				itSerializes('class declaration', {
-					in: () => (0, eval)(`
-						class X {
-							constructor() {
-								eval('0');
-								this.x = X;
+				describe('standalone class', () => {
+					itSerializes('class declaration', {
+						in: () => (0, eval)(`
+							class X {
+								constructor() {
+									eval('0');
+									this.x = X;
+								}
 							}
+							(() => {
+								const Klass = X;
+								X = 1;
+								return Klass;
+							})();
+						`),
+						out: '(0,eval)("(class X{constructor(){eval(\\"0\\");this.x=X}})")',
+						validate(Klass) {
+							expect(Klass).toBeFunction();
+							expect(Klass.name).toBe('X');
+							const instance = new Klass();
+							expect(instance).toBeObject();
+							expect(instance).toContainAllKeys(['x']);
+							expect(instance.x).toBe(Klass);
+							expect(Object.getPrototypeOf(instance)).toBe(Klass.prototype);
 						}
-						(() => {
-							const Klass = X;
-							X = 1;
-							return Klass;
-						})();
-					`),
-					out: '(0,eval)("(class X{constructor(){eval(\\"0\\");this.x=X}})")',
-					validate(Klass) {
-						expect(Klass).toBeFunction();
-						expect(Klass.name).toBe('X');
-						const instance = new Klass();
-						expect(instance).toBeObject();
-						expect(instance).toContainAllKeys(['x']);
-						expect(instance.x).toBe(Klass);
-						expect(Object.getPrototypeOf(instance)).toBe(Klass.prototype);
-					}
+					});
+
+					itSerializes('class expression', {
+						in: () => (0, eval)(`
+							const X = 1;
+							(class X {
+								constructor() {
+									eval('0');
+									this.x = X;
+								}
+							})
+						`),
+						out: '(0,eval)("(class X{constructor(){eval(\\"0\\");this.x=X}})")',
+						validate(Klass) {
+							expect(Klass).toBeFunction();
+							expect(Klass.name).toBe('X');
+							const instance = new Klass();
+							expect(instance).toBeObject();
+							expect(instance).toContainAllKeys(['x']);
+							expect(instance.x).toBe(Klass);
+							expect(Object.getPrototypeOf(instance)).toBe(Klass.prototype);
+						}
+					});
 				});
 
-				itSerializes('class expression', {
-					in: () => (0, eval)(`
-						const X = 1;
-						(class X {
-							constructor() {
-								eval('0');
-								this.x = X;
+				describe('class extending another class', () => {
+					itSerializes('class declaration', {
+						in: () => (0, eval)(`
+							class S {}
+							class X extends S {
+								constructor() {
+									super();
+									eval('0');
+									this.x = X;
+								}
 							}
-						})
-					`),
-					out: '(0,eval)("(class X{constructor(){eval(\\"0\\");this.x=X}})")',
-					validate(Klass) {
-						expect(Klass).toBeFunction();
-						expect(Klass.name).toBe('X');
-						const instance = new Klass();
-						expect(instance).toBeObject();
-						expect(instance).toContainAllKeys(['x']);
-						expect(instance.x).toBe(Klass);
-						expect(Object.getPrototypeOf(instance)).toBe(Klass.prototype);
-					}
+							(() => {
+								const Klass = X;
+								X = 1;
+								return Klass;
+							})();
+						`),
+						out: `(()=>{
+							const a=class S{},
+								b=Object.setPrototypeOf,
+								c=(0,eval)("S=>_b=>_b=class X{constructor(){const _a=Reflect.construct(Object.getPrototypeOf(_b),[],_b);eval(\\"0\\");_a.x=X;return _a}}")(a)();
+							b(c,a);
+							b(c.prototype,a.prototype);
+							return c
+						})()`,
+						validate(Klass) {
+							expect(Klass).toBeFunction();
+							expect(Klass.name).toBe('X');
+							const instance = new Klass();
+							expect(instance).toBeObject();
+							expect(instance).toContainAllKeys(['x']);
+							expect(instance.x).toBe(Klass);
+							expect(Object.getPrototypeOf(instance)).toBe(Klass.prototype);
+							const superClass = Object.getPrototypeOf(Klass);
+							expect(superClass).toBeFunction();
+							expect(superClass.name).toBe('S');
+						}
+					});
+
+					itSerializes('class expression', {
+						in: () => (0, eval)(`
+							class S {}
+							const X = 1;
+							(class X extends S {
+								constructor() {
+									super();
+									eval('0');
+									this.x = X;
+								}
+							})
+						`),
+						out: `(()=>{
+							const a=class S{},
+								b=Object.setPrototypeOf,
+								c=(0,eval)("S=>_b=>_b=class X{constructor(){const _a=Reflect.construct(Object.getPrototypeOf(_b),[],_b);eval(\\"0\\");_a.x=X;return _a}}")(a)();
+							b(c,a);
+							b(c.prototype,a.prototype);
+							return c
+						})()`,
+						validate(Klass) {
+							expect(Klass).toBeFunction();
+							expect(Klass.name).toBe('X');
+							const instance = new Klass();
+							expect(instance).toBeObject();
+							expect(instance).toContainAllKeys(['x']);
+							expect(instance.x).toBe(Klass);
+							expect(Object.getPrototypeOf(instance)).toBe(Klass.prototype);
+							const superClass = Object.getPrototypeOf(Klass);
+							expect(superClass).toBeFunction();
+							expect(superClass.name).toBe('S');
+						}
+					});
 				});
 			});
 			/* eslint-enable no-eval */
