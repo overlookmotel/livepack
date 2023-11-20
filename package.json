@@ -38,7 +38,7 @@
     "@babel/core": "^7.23.3",
     "@babel/generator": "^7.23.3",
     "@babel/helper-module-transforms": "^7.23.3",
-    "@babel/parser": "^7.23.3",
+    "@babel/parser": "^7.23.4",
     "@babel/plugin-transform-modules-commonjs": "^7.23.3",
     "@babel/plugin-transform-react-jsx": "^7.22.15",
     "@babel/traverse": "^7.23.3",
