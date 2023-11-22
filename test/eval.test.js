@@ -1717,6 +1717,318 @@ describe('eval', () => {
 				});
 			});
 
+			describe('does not freeze vars internal to function where not accessible to eval', () => {
+				describe('in nested blocks', () => {
+					itSerializes('where vars differently named from frozen vars', {
+						in: `
+							module.exports = function(module, exports) {
+								const intA = 1;
+								{
+									let intB;
+									intB = 2;
+									{
+										let intC = 3;
+									}
+								}
+								return eval('intA');
+							};
+						`,
+						out: `(0,eval)("
+							(function(module,exports){const intA=1;{let a;a=2;{let b=3}}return eval(\\"intA\\")})
+						")`,
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn()).toBe(1);
+						}
+					});
+
+					itSerializes('where var shares name with frozen var', {
+						in: `
+							module.exports = function(module, exports) {
+								const intA = 1;
+								{
+									let intA;
+									intA = 2;
+									{
+										let intC = 3;
+									}
+								}
+								return eval('intA');
+							};
+						`,
+						out: `(0,eval)("
+							(function(module,exports){const intA=1;{let a;a=2;{let b=3}}return eval(\\"intA\\")})
+						")`,
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn()).toBe(1);
+						}
+					});
+				});
+
+				describe('in nested functions', () => {
+					itSerializes('where vars differently named from frozen vars', {
+						in: `
+							module.exports = function(module, exports) {
+								const intA = 1, intB = 2;
+								return [
+									...eval('[intA, intB]'),
+									...(intC => { let intD = 4; return [intC, intD]; })(3)
+								];
+							};
+						`,
+						out: `(0,eval)("
+							(function(module,exports){
+								const intA=1,intB=2;
+								return[...eval(\\"[intA, intB]\\"),...(a=>{let b=4;return[a,b]})(3)]
+							})
+						")`,
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn()).toEqual([1, 2, 3, 4]);
+						}
+					});
+
+					itSerializes('where vars share names with frozen vars', {
+						in: `
+							module.exports = function(module, exports) {
+								const intA = 1, intB = 2;
+								return [
+									...eval('[intA, intB]'),
+									...(intA => { let intB = 4; return [intA, intB]; })(3)
+								];
+							};
+						`,
+						out: `(0,eval)("
+							(function(module,exports){
+								const intA=1,intB=2;
+								return[...eval(\\"[intA, intB]\\"),...(a=>{let b=4;return[a,b]})(3)]
+							})
+						")`,
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn()).toEqual([1, 2, 3, 4]);
+						}
+					});
+				});
+
+				describe('in function body where eval in function params', () => {
+					itSerializes('where vars differently named from frozen vars', {
+						in: `
+							module.exports = function(intA = 1, intB = eval('intA'), module, exports) {
+								const intC = 2;
+								{
+									const intD = 3;
+									return [intA, intB, intC, intD];
+								}
+							};
+						`,
+						out: `(0,eval)("
+							(function(intA=1,intB=eval(\\"intA\\"),module,exports){
+								const a=2;
+								{
+									const b=3;
+									return[intA,intB,a,b]
+								}
+							})
+						")`,
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn()).toEqual([1, 1, 2, 3]);
+						}
+					});
+
+					itSerializes('where vars share names with frozen vars', {
+						in: `
+							module.exports = function(intA = 1, intB = eval('intA'), module, exports) {
+								const out = [intA, intB];
+								{
+									const intA = 2, intB = 3;
+									return [...out, intA, intB];
+								}
+							};
+						`,
+						out: `(0,eval)("
+							(function(intA=1,intB=eval(\\"intA\\"),module,exports){
+								const a=[intA,intB];
+								{
+									const b=2,c=3;
+									return[...a,b,c]
+								}
+							})
+						")`,
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn()).toEqual([1, 1, 2, 3]);
+						}
+					});
+				});
+
+				describe('where eval in nested function', () => {
+					itSerializes('where vars differently named from frozen vars', {
+						in: `
+							module.exports = function(module, exports) {
+								const intA = 1, intB = 2;
+								const fn = () => eval('[intA, intB]');
+								{
+									const intC = 3;
+									const intD = (intE => intE)(4);
+									return [intA, intB, ...fn(), intC, intD];
+								}
+							};
+						`,
+						out: `(0,eval)("
+							(function(module,exports){
+								const intA=1,intB=2;
+								const fn=()=>eval(\\"[intA, intB]\\");
+								{
+									const a=3;
+									const b=(c=>c)(4);
+									return[intA,intB,...fn(),a,b]
+								}
+							})
+						")`,
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn()).toEqual([1, 2, 1, 2, 3, 4]);
+						}
+					});
+
+					itSerializes('where vars share names with frozen vars', {
+						in: `
+							module.exports = function(module, exports) {
+								const intA = 1, intB = 2, intC = 3;
+								const fn = () => eval('[intA, intB, intC]');
+								{
+									const intA = 4;
+									const intB = (intC => intC)(5);
+									return [...fn(), intA, intB];
+								}
+							};
+						`,
+						out: `(0,eval)("
+							(function(module,exports){
+								const intA=1,intB=2,intC=3;
+								const fn=()=>eval(\\"[intA, intB, intC]\\");
+								{
+									const a=4;
+									const b=(c=>c)(5);
+									return[...fn(),a,b]
+								}
+							})
+						")`,
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn()).toEqual([1, 2, 3, 4, 5]);
+						}
+					});
+				});
+			});
+
+			describe('freezes linked vars internal to function where one is in scope of eval', () => {
+				describe('function param + var binding', () => {
+					itSerializes('where var binding is frozen', {
+						in: `
+							module.exports = function(param = 1, module, exports) {
+								var param;
+								eval('param');
+								return param;
+							};
+						`,
+						out: `(0,eval)("
+							(function(param=1,module,exports){var param;eval(\\"param\\");return param})
+						")`,
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn()).toBe(1);
+						}
+					});
+
+					itSerializes('where function param is frozen', {
+						in: `
+							module.exports = function(param = {x: 1}, y = eval('param'), module, exports) {
+								var param;
+								return [param, y];
+							};
+						`,
+						out: `(0,eval)("
+							(function(param={x:1},y=eval(\\"param\\"),module,exports){
+								var param;
+								return[param,y]
+							})
+						")`,
+						validate(fn) {
+							expect(fn).toBeFunction();
+							const arr = fn();
+							expect(arr).toEqual([{x: 1}, {x: 1}]);
+							expect(arr[1]).toBe(arr[0]);
+						}
+					});
+				});
+
+				describe('for statement bindings', () => {
+					itSerializes('where left binding is frozen', {
+						in: `
+							module.exports = function(module, exports) {
+								let getLeft, getRight;
+								for (
+									let [x, y = getLeft = () => x, z = () => eval('x')]
+									of (getRight = () => typeof x, [[1]])
+								) ;
+								return {getLeft, getRight};
+							};
+						`,
+						out: `(0,eval)("
+							(function(module,exports){
+								let getLeft,getRight;
+								for(let[x,y=getLeft=()=>x,z=()=>eval(\\"x\\")]of(getRight=()=>typeof x,[[1]]));
+								return{getLeft,getRight}
+							})
+						")`,
+						validate(fn) {
+							expect(fn).toBeFunction();
+							const {getLeft, getRight} = fn();
+							expect(getLeft).toBeFunction();
+							expect(getLeft()).toBe(1);
+							expect(getRight).toBeFunction();
+							expect(getRight).toThrowWithMessage(
+								ReferenceError, "Cannot access 'x' before initialization"
+							);
+						}
+					});
+
+					itSerializes('where right binding is frozen', {
+						in: `
+							module.exports = function(module, exports) {
+								let getLeft, getRight;
+								for (
+									let [x, y = getLeft = () => x]
+									of (getRight = () => typeof x, () => eval('x'), [[1]])
+								) ;
+								return {getLeft, getRight};
+							};
+						`,
+						out: `(0,eval)("
+							(function(module,exports){
+								let getLeft,getRight;
+								for(let[x,y=getLeft=()=>x]of(getRight=()=>typeof x,()=>eval(\\"x\\"),[[1]]));
+								return{getLeft,getRight}
+							})
+						")`,
+						validate(fn) {
+							expect(fn).toBeFunction();
+							const {getLeft, getRight} = fn();
+							expect(getLeft).toBeFunction();
+							expect(getLeft()).toBe(1);
+							expect(getRight).toBeFunction();
+							expect(getRight).toThrowWithMessage(
+								ReferenceError, "Cannot access 'x' before initialization"
+							);
+						}
+					});
+				});
+			});
+
 			describe('prevents shadowed vars in upper scopes being accessible to eval', () => {
 				itSerializes('simple case', {
 					in: `
@@ -1829,6 +2141,59 @@ describe('eval', () => {
 						expect(evalFn()).toEqual({extA: 1, extB: 10, extC: 3, typeofA: 'undefined'});
 					}
 				});
+
+				describe('where shadowed var internal to function', () => {
+					itSerializes('simple case', {
+						in: `
+							module.exports = function(module, exports) {
+								const intA = 1, intB = intA;
+								{
+									const intA = 2;
+									return eval('({intA, intB, typeofA: typeof a})');
+								}
+							};
+						`,
+						out: `(0,eval)("
+							(function(module,exports){
+								const intA=1,intB=intA;
+								{
+									const intA=2;
+									return eval(\\"({intA, intB, typeofA: typeof a})\\")
+								}
+							})
+						")`,
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn()).toEqual({intA: 2, intB: 1, typeofA: 'undefined'});
+						}
+					});
+
+					itSerializes('where var is not accessible to eval due to strict mode rules', {
+						// `package` is a reserved keyword in strict mode
+						in: `
+							module.exports = function(module, exports) {
+								const package = 1, intA = package;
+								return (() => {
+									'use strict';
+									return eval('({intA, typeofA: typeof a})')
+								})();
+							};
+						`,
+						out: `(0,eval)("
+							(function(module,exports){
+								const package=1,intA=package;
+								return(()=>{
+									\\"use strict\\";
+									return eval(\\"({intA, typeofA: typeof a})\\")
+								})()
+							})
+						")`,
+						validate(fn) {
+							expect(fn).toBeFunction();
+							expect(fn()).toEqual({intA: 1, typeofA: 'undefined'});
+						}
+					});
+				});
 			});
 
 			describe('prevents Livepack external vars blocking access to globals in eval', () => {
@@ -1922,6 +2287,172 @@ describe('eval', () => {
 							`));
 						}
 					}
+				});
+			});
+
+			describe('where var frozen by eval also used in const violation', () => {
+				describe('where const violation in body of function', () => {
+					describe('no other bindings with same name', () => {
+						itSerializes('direct assignment', {
+							in: `
+								module.exports = function(module, exports) {
+									const x = 1;
+									eval('x');
+									x = 2;
+								};
+							`,
+							out: `(0,eval)("
+								(function(module,exports){const x=1;eval(\\"x\\");x=2;})
+							")`,
+							validate(fn) {
+								expect(fn).toBeFunction();
+								expect(fn).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+							}
+						});
+
+						itSerializes('read-write assignment', {
+							in: `
+								module.exports = function(module, exports) {
+									const x = 1;
+									eval('x');
+									x += 2;
+								};
+							`,
+							out: `(0,eval)("
+								(function(module,exports){const x=1;eval(\\"x\\");x+=2;})
+							")`,
+							validate(fn) {
+								expect(fn).toBeFunction();
+								expect(fn).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+							}
+						});
+					});
+
+					describe('other bindings with same name', () => {
+						itSerializes('direct assignment', {
+							in: `
+								module.exports = function(module, exports) {
+									const x = 1;
+									eval('x');
+									{
+										let x = 3;
+									}
+									x = 2;
+								};
+							`,
+							out: `(0,eval)("
+								(function(module,exports){const x=1;eval(\\"x\\");{let a=3}x=2;})
+							")`,
+							validate(fn) {
+								expect(fn).toBeFunction();
+								expect(fn).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+							}
+						});
+
+						itSerializes('read-write assignment', {
+							in: `
+								module.exports = function(module, exports) {
+									const x = 1;
+									eval('x');
+									{
+										let x = 4;
+									}
+									x += 2;
+								};
+							`,
+							out: `(0,eval)("
+								(function(module,exports){const x=1;eval(\\"x\\");{let a=4}x+=2;})
+							")`,
+							validate(fn) {
+								expect(fn).toBeFunction();
+								expect(fn).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+							}
+						});
+					});
+				});
+
+				describe('where const violation in nested function', () => {
+					describe('no other bindings with same name', () => {
+						itSerializes('direct assignment', {
+							in: `
+								module.exports = function(module, exports) {
+									const x = 1;
+									eval('x');
+									return () => x = 2;
+								};
+							`,
+							out: `(0,eval)("
+								(function(module,exports){const x=1;eval(\\"x\\");return()=>x=2;})
+							")`,
+							validate(fn) {
+								expect(fn).toBeFunction();
+								const innerFn = fn();
+								expect(innerFn).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+							}
+						});
+
+						itSerializes('read-write assignment', {
+							in: `
+								module.exports = function(module, exports) {
+									const x = 1;
+									eval('x');
+									return () => x += 2;
+								};
+							`,
+							out: `(0,eval)("
+								(function(module,exports){const x=1;eval(\\"x\\");return()=>x+=2;})
+							")`,
+							validate(fn) {
+								expect(fn).toBeFunction();
+								const innerFn = fn();
+								expect(innerFn).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+							}
+						});
+					});
+
+					describe('other bindings with same name', () => {
+						itSerializes('direct assignment', {
+							in: `
+								module.exports = function(module, exports) {
+									const x = 1;
+									eval('x');
+									{
+										let x = 3;
+									}
+									return () => x = 2;
+								};
+							`,
+							out: `(0,eval)("
+								(function(module,exports){const x=1;eval(\\"x\\");{let a=3}return()=>x=2;})
+							")`,
+							validate(fn) {
+								expect(fn).toBeFunction();
+								const innerFn = fn();
+								expect(innerFn).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+							}
+						});
+
+						itSerializes('read-write assignment', {
+							in: `
+								module.exports = function(module, exports) {
+									const x = 1;
+									eval('x');
+									{
+										let x = 4;
+									}
+									return () => x += 2;
+								};
+							`,
+							out: `(0,eval)("
+								(function(module,exports){const x=1;eval(\\"x\\");{let a=4}return()=>x+=2;})
+							")`,
+							validate(fn) {
+								expect(fn).toBeFunction();
+								const innerFn = fn();
+								expect(innerFn).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+							}
+						});
+					});
 				});
 			});
 
