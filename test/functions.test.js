@@ -8140,6 +8140,23 @@ describe('Functions', () => {
 		}
 	});
 
+	itSerializes('var called `arguments` remains linked to function `arguments` in sloppy mode function', {
+		in: `
+			module.exports = function() {
+				var arguments;
+				return arguments;
+			};
+		`,
+		strictEnv: false,
+		out: 'function(){var arguments;return arguments}',
+		validate(fn) {
+			expect(fn).toBeFunction();
+			const args = fn(1, 2, 3);
+			expect(args).toBeArguments();
+			expect([...args]).toEqual([1, 2, 3]);
+		}
+	});
+
 	describe('bound functions', () => {
 		describe('no circular references (no injection)', () => {
 			itSerializes('single instantiation', {
