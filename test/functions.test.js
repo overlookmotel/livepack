@@ -6596,13 +6596,12 @@ describe('Functions', () => {
 				});
 
 				itSerializes('sloppy mode function assignment silently fails', {
-					// eslint-disable-next-line no-eval
-					in: () => (0, eval)(`
-						(function x() {
+					in: `
+						module.exports = function x() {
 							x = 1;
 							return x;
-						})
-					`),
+						};
+					`,
 					out: '(a=>a=function x(){1;return a})()',
 					strictEnv: false,
 					validate(fn) {
@@ -8121,14 +8120,13 @@ describe('Functions', () => {
 	});
 
 	itSerializes('params and `arguments` remain unlinked in sloppy mode function with complex params', {
-		in() {
-			// eslint-disable-next-line no-eval
-			return (0, eval)(`(function(x = 1) {
+		in: `
+			module.exports = function(x = 1) {
 				arguments[0] = 2;
 				x = 3;
 				return [x, arguments];
-			})`);
-		},
+			};
+		`,
 		strictEnv: false,
 		out: 'function(a=1){arguments[0]=2;a=3;return[a,arguments]}',
 		validate(fn) {
