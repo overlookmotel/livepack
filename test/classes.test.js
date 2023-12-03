@@ -806,7 +806,7 @@ describe('Classes', () => {
 						in: () => (0, eval)(`
 							class S {}
 							class X extends S {
-								constructor() {
+								constructor(S) {
 									super();
 									eval('0');
 									this.x = X;
@@ -819,11 +819,13 @@ describe('Classes', () => {
 							})();
 						`),
 						out: `(()=>{
-							const a=class S{},
-								b=Object.setPrototypeOf,
-								c=(0,eval)("S=>_b=>_b=class X{constructor(){const _a=Reflect.construct(Object.getPrototypeOf(_b),[],_b);eval(\\"0\\");_a.x=X;return _a}}")(a)();
-							b(c,a);
-							b(c.prototype,a.prototype);
+							const a=Object.setPrototypeOf,
+								b=class S{},
+								c=a(
+									(0,eval)("(class X extends class{}{constructor(S){super();eval(\\"0\\");this.x=X}})"),
+									b
+								);
+							a(c.prototype,b.prototype);
 							return c
 						})()`,
 						validate(Klass) {
@@ -845,7 +847,7 @@ describe('Classes', () => {
 							class S {}
 							const X = 1;
 							(class X extends S {
-								constructor() {
+								constructor(S) {
 									super();
 									eval('0');
 									this.x = X;
@@ -853,11 +855,15 @@ describe('Classes', () => {
 							})
 						`),
 						out: `(()=>{
-							const a=class S{},
-								b=Object.setPrototypeOf,
-								c=(0,eval)("S=>_b=>_b=class X{constructor(){const _a=Reflect.construct(Object.getPrototypeOf(_b),[],_b);eval(\\"0\\");_a.x=X;return _a}}")(a)();
-							b(c,a);
-							b(c.prototype,a.prototype);
+							const a=Object.setPrototypeOf,
+								b=class S{},
+								c=a(
+									(0,eval)(
+										"(class X extends class{}{constructor(S){super();eval(\\"0\\");this.x=X}})"
+									),
+									b
+								);
+							a(c.prototype,b.prototype);
 							return c
 						})()`,
 						validate(Klass) {
@@ -1023,13 +1029,8 @@ describe('Classes', () => {
 							function fn(){return a}
 						])(),
 						c=b[1],
-						d=(b=>b=class X{
-							constructor(...a){
-								return Reflect.construct(Object.getPrototypeOf(b),a,b)
-							}
-						})();
+						d=a(class X extends class{}{},c);
 					b[0](d);
-					a(d,c);
 					a(d.prototype,c.prototype);
 					return d
 				})()`,
@@ -1056,13 +1057,8 @@ describe('Classes', () => {
 							function fn(){return a}
 						])(),
 						c=b[1],
-						d=(b=>b=class X{
-							constructor(...a){
-								return Reflect.construct(Object.getPrototypeOf(b),a,b)
-							}
-						})();
+						d=a(class X extends class{}{},c);
 					b[0](d);
-					a(d,c);
 					a(d.prototype,c.prototype);
 					return d
 				})()`,
@@ -1730,14 +1726,7 @@ describe('Classes', () => {
 								this.x=1
 							}
 						},
-						c=(
-							b=>b=(0,class{
-								constructor(...a){
-									return Reflect.construct(Object.getPrototypeOf(b),a,b)
-								}
-							})
-						)();
-					a(c,b);
+						c=a(class extends class{}{},b);
 					a(c.prototype,b.prototype);
 					return c
 				})()`,
@@ -1778,12 +1767,7 @@ describe('Classes', () => {
 								this.x=1
 							}
 						},
-						c=(b=>b=class Y{
-							constructor(...a){
-								return Reflect.construct(Object.getPrototypeOf(b),a,b)
-							}
-						})();
-					a(c,b);
+						c=a(class Y extends class{}{},b);
 					a(c.prototype,b.prototype);
 					return c
 				})()`,
@@ -1830,12 +1814,14 @@ describe('Classes', () => {
 								this.x=1
 							}
 						},
-						c=(a=>a=class Y{
-							constructor(){
-								return Reflect.construct(Object.getPrototypeOf(a),[],a)
-							}
-						})();
-					a(c,b);
+						c=a(
+							class Y extends class{}{
+								constructor(){
+									super()
+								}
+							},
+							b
+						);
 					a(c.prototype,b.prototype);
 					return c
 				})()`,
@@ -1880,12 +1866,14 @@ describe('Classes', () => {
 								this.x=1
 							}
 						},
-						c=(a=>a=class Y{
-							constructor(){
-								return Reflect.construct(Object.getPrototypeOf(a),[],a)
-							}
-						})();
-					a(c,b);
+						c=a(
+							class Y extends class{}{
+								constructor(){
+									return super()
+								}
+							},
+							b
+						);
 					a(c.prototype,b.prototype);
 					return c
 				})()`,
@@ -1930,12 +1918,14 @@ describe('Classes', () => {
 								this.x=a+b+c
 							}
 						},
-						c=(c=>c=class Y{
-							constructor(a,b){
-								return Reflect.construct(Object.getPrototypeOf(c),[a,b,100],c)
-							}
-						})();
-					a(c,b);
+						c=a(
+							class Y extends class{}{
+								constructor(a,b){
+									super(a,b,100)
+								}
+							},
+							b
+						);
 					a(c.prototype,b.prototype);
 					return c
 				})()`,
@@ -1981,13 +1971,15 @@ describe('Classes', () => {
 								this.x=a+10
 							}
 						},
-						c=(b=>b=class Y{
-							constructor(){
-								const a=1;
-								return Reflect.construct(Object.getPrototypeOf(b),[a],b)
-							}
-						})();
-					a(c,b);
+						c=a(
+							class Y extends class{}{
+								constructor(){
+									const a=1;
+									super(a)
+								}
+							},
+							b
+						);
 					a(c.prototype,b.prototype);
 					return c
 				})()`,
@@ -2033,14 +2025,15 @@ describe('Classes', () => {
 								this.x=1
 							}
 						},
-						c=(b=>b=class Y{
-							constructor(){
-								const a=Reflect.construct(Object.getPrototypeOf(b),[],b);
-								a.y=2;
-								return a
-							}
-						})();
-					a(c,b);
+						c=a(
+							class Y extends class{}{
+								constructor(){
+									super();
+									this.y=2
+								}
+							},
+							b
+						);
 					a(c.prototype,b.prototype);
 					return c
 				})()`,
@@ -2088,15 +2081,16 @@ describe('Classes', () => {
 								this.x=a+10
 							}
 						},
-						c=(c=>c=class Y{
-							constructor(){
-								const a=1;
-								const b=Reflect.construct(Object.getPrototypeOf(c),[a],c);
-								b.y=2;
-								return b
-							}
-						})();
-					a(c,b);
+						c=a(
+							class Y extends class{}{
+								constructor(){
+									const a=1;
+									super(a);
+									this.y=2
+								}
+							},
+							b
+						);
 					a(c.prototype,b.prototype);
 					return c
 				})()`,
@@ -2147,18 +2141,18 @@ describe('Classes', () => {
 									this.x=a
 								}
 							},
-							c=(c=>c=class Y{
-								constructor(a){
-									let b;
-									if(a){
-										b=Reflect.construct(Object.getPrototypeOf(c),[a],c)
-									}else{
-										b=Reflect.construct(Object.getPrototypeOf(c),[1],c)
+							c=a(
+								class Y extends class{}{
+									constructor(a){
+										if(a){
+											super(a)
+										}else{
+											super(1)
+										}
 									}
-									return b
-								}
-							})();
-						a(c,b);
+								},
+								b
+							);
 						a(c.prototype,b.prototype);
 						return c
 					})()`,
@@ -2213,15 +2207,17 @@ describe('Classes', () => {
 									this.x=a
 								}
 							},
-							c=(b=>b=class Y{
-								constructor(){
-									const a=Reflect.construct(Object.getPrototypeOf(b),[1],b);
-									return a;
-									a=Reflect.construct(Object.getPrototypeOf(b),[],b);
-									return a=Reflect.construct(Object.getPrototypeOf(b),[],b)
-								}
-							})();
-						a(c,b);
+							c=a(
+								class Y extends class{}{
+									constructor(){
+										super(1);
+										return this;
+										super();
+										super()
+									}
+								},
+								b
+							);
 						a(c.prototype,b.prototype);
 						return c
 					})()`,
@@ -2272,19 +2268,19 @@ describe('Classes', () => {
 									this.x=a
 								}
 							},
-							c=(c=>c=class Y{
-								constructor(a){
-									let b;
-									if(a){
-										b=Reflect.construct(Object.getPrototypeOf(c),[a],c);
-										return b
+							c=a(
+								class Y extends class{}{
+									constructor(a){
+										if(a){
+											super(a);
+											return this
+										}
+										super(1);
+										a=2
 									}
-									b=Reflect.construct(Object.getPrototypeOf(c),[1],c);
-									a=2;
-									return b
-								}
-							})();
-						a(c,b);
+								},
+								b
+							);
 						a(c.prototype,b.prototype);
 						return c
 					})()`,
@@ -2340,12 +2336,7 @@ describe('Classes', () => {
 								this.x=1
 							}
 						},
-						d=(b=>b=class Y{
-							constructor(...a){
-								return Reflect.construct(Object.getPrototypeOf(b),a,b)
-							}
-						})();
-					b(d,c);
+						d=b(class Y extends class{}{},c);
 					b(
 						a.defineProperties(
 							d.prototype,
@@ -2408,28 +2399,24 @@ describe('Classes', () => {
 					};
 				},
 				out: `(()=>{
-					const a=(b=>[
-							b=class Y{
-								constructor(...a){
-									return Reflect.construct(Object.getPrototypeOf(b),a,b)
-								}
-							},
-							{
-								foo(){
-									Reflect.get(Object.getPrototypeOf(b.prototype),"foo",this).call(this)
-								}
-							}.foo
-						])(),
-						b=Object,
-						c=b.setPrototypeOf,
-						d=class X{
+					const a=Object,
+						b=a.setPrototypeOf,
+						c=class X{
 							constructor(){this.x=1}
 						},
-						e=d.prototype,
-						f=b.defineProperties,
-						g=a[0];
-					f(
-						e,
+						d=c.prototype,
+						e=a.defineProperties,
+						f=b(class Y extends class{}{},c),
+						g=(a=>[
+							b=>a=b,
+							{
+								foo(){
+									Reflect.get(Object.getPrototypeOf(a.prototype),"foo",this).call(this)
+								}
+							}.foo
+						])();
+					e(
+						d,
 						{
 							foo:{
 								value:{foo(){this.y=2}}.foo,
@@ -2438,17 +2425,17 @@ describe('Classes', () => {
 							}
 						}
 					);
-					c(g,d);
-					c(
-						f(
-							g.prototype,
+					g[0](f);
+					b(
+						e(
+							f.prototype,
 							{
-								foo:{value:a[1],writable:true,configurable:true}
+								foo:{value:g[1],writable:true,configurable:true}
 							}
 						),
-						e
+						d
 					);
-					return g
+					return f
 				})()`,
 				validate(Klass) {
 					expect(Klass).toBeFunction();
@@ -2494,28 +2481,24 @@ describe('Classes', () => {
 					};
 				},
 				out: `(()=>{
-					const a=(c=>[
-							c=class Y{
-								constructor(...a){
-									return Reflect.construct(Object.getPrototypeOf(c),a,c)
-								}
-							},
+					const a=Object,
+						b=a.setPrototypeOf,
+						c=class X{
+							constructor(){this.x=1}
+						},
+						d=c.prototype,
+						e=a.defineProperties,
+						f=b(class Y extends class{}{},c),
+						g=(c=>[
+							a=>c=a,
 							{
 								foo(a,b){
 									Reflect.get(Object.getPrototypeOf(c.prototype),"foo",this).call(this,a,b)
 								}
 							}.foo
-						])(),
-						b=Object,
-						c=b.setPrototypeOf,
-						d=class X{
-							constructor(){this.x=1}
-						},
-						e=d.prototype,
-						f=b.defineProperties,
-						g=a[0];
-					f(
-						e,
+						])();
+					e(
+						d,
 						{
 							foo:{
 								value:{foo(a,b){this.y=a+b}}.foo,
@@ -2524,17 +2507,17 @@ describe('Classes', () => {
 							}
 						}
 					);
-					c(g,d);
-					c(
-						f(
-							g.prototype,
+					g[0](f);
+					b(
+						e(
+							f.prototype,
 							{
-								foo:{value:a[1],writable:true,configurable:true}
+								foo:{value:g[1],writable:true,configurable:true}
 							}
 						),
-						e
+						d
 					);
-					return g
+					return f
 				})()`,
 				validate(Klass) {
 					expect(Klass).toBeFunction();
@@ -2580,28 +2563,24 @@ describe('Classes', () => {
 					};
 				},
 				out: `(()=>{
-					const a=(b=>[
-							b=class Y{
-								constructor(...a){
-									return Reflect.construct(Object.getPrototypeOf(b),a,b)
-								}
-							},
-							{
-								foo(){
-									return Reflect.get(Object.getPrototypeOf(b.prototype),"foo",this)
-								}
-							}.foo
-						])(),
-						b=Object,
-						c=b.setPrototypeOf,
-						d=class X{
+					const a=Object,
+						b=a.setPrototypeOf,
+						c=class X{
 							constructor(){this.x=1}
 						},
-						e=d.prototype,
-						f=b.defineProperties,
-						g=a[0];
-					f(
-						e,
+						d=c.prototype,
+						e=a.defineProperties,
+						f=b(class Y extends class{}{},c),
+						g=(a=>[
+							b=>a=b,
+							{
+								foo(){
+									return Reflect.get(Object.getPrototypeOf(a.prototype),"foo",this)
+								}
+							}.foo
+						])();
+					e(
+						d,
 						{
 							foo:{
 								value:{foo(){return 2}}.foo,
@@ -2610,17 +2589,17 @@ describe('Classes', () => {
 							}
 						}
 					);
-					c(g,d);
-					c(
-						f(
-							g.prototype,
+					g[0](f);
+					b(
+						e(
+							f.prototype,
 							{
-								foo:{value:a[1],writable:true,configurable:true}
+								foo:{value:g[1],writable:true,configurable:true}
 							}
 						),
-						e
+						d
 					);
-					return g
+					return f
 				})()`,
 				validate(Klass) {
 					expect(Klass).toBeFunction();
@@ -2663,35 +2642,31 @@ describe('Classes', () => {
 					};
 				},
 				out: `(()=>{
-					const a=(b=>[
-							b=class Y{
-								constructor(...a){
-									return Reflect.construct(Object.getPrototypeOf(b),a,b)
-								}
-							},
-							{
-								foo(){
-									Reflect.set(Object.getPrototypeOf(b.prototype),"y",2,this)
-								}
-							}.foo
-						])(),
-						b=Object,
-						c=b.setPrototypeOf,
-						d=class X{
+					const a=Object,
+						b=a.setPrototypeOf,
+						c=class X{
 							constructor(){this.x=1}
 						},
-						e=a[0];
-					c(e,d);
-					c(
-						b.defineProperties(
-							e.prototype,
+						d=b(class Y extends class{}{},c),
+						e=(a=>[
+							b=>a=b,
 							{
-								foo:{value:a[1],writable:true,configurable:true}
+								foo(){
+									Reflect.set(Object.getPrototypeOf(a.prototype),"y",2,this)
+								}
+							}.foo
+						])();
+					e[0](d);
+					b(
+						a.defineProperties(
+							d.prototype,
+							{
+								foo:{value:e[1],writable:true,configurable:true}
 							}
 						),
-						d.prototype
+						c.prototype
 					);
-					return e
+					return d
 				})()`,
 				validate(Klass) {
 					expect(Klass).toBeFunction();
@@ -2740,12 +2715,14 @@ describe('Classes', () => {
 					};
 				},
 				out: `(()=>{
-					const a=(b=>[
-							b=class Y{
-								constructor(...a){
-									return Reflect.construct(Object.getPrototypeOf(b),a,b)
-								}
-							},
+					const a=Object,
+						b=a.setPrototypeOf,
+						c=class X{},
+						d=c.prototype,
+						e=a.defineProperties,
+						f=b(class Y extends class{}{},c),
+						g=(b=>[
+							a=>b=a,
 							{
 								"get foo"(){
 									return Reflect.get(Object.getPrototypeOf(b.prototype),"foo",this)*2
@@ -2756,15 +2733,9 @@ describe('Classes', () => {
 									Reflect.set(Object.getPrototypeOf(b.prototype),"foo",a*5,this)
 								}
 							}["set foo"]
-						])(),
-						b=Object,
-						c=b.setPrototypeOf,
-						d=class X{},
-						e=d.prototype,
-						f=b.defineProperties,
-						g=a[0];
-					f(
-						e,
+						])();
+					e(
+						d,
 						{
 							foo:{
 								get:{"get foo"(){return 1}}["get foo"],
@@ -2773,17 +2744,17 @@ describe('Classes', () => {
 							}
 						}
 					);
-					c(g,d);
-					c(
-						f(
-							g.prototype,
+					g[0](f);
+					b(
+						e(
+							f.prototype,
 							{
-								foo:{get:a[1],set:a[2],configurable:true}
+								foo:{get:g[1],set:g[2],configurable:true}
 							}
 						),
-						e
+						d
 					);
-					return g
+					return f
 				})()`,
 				validate(Klass) {
 					expect(Klass).toBeFunction();
@@ -2840,27 +2811,22 @@ describe('Classes', () => {
 								this.x=1
 							}
 						},
-						d=(b=>b=class Y{
-							constructor(...a){
-								return Reflect.construct(Object.getPrototypeOf(b),a,b)
-							}
-						})();
-					b(
-						a.defineProperties(
-							d,
-							{
-								bar:{
-									value:{
-										bar(){
-											this.y=2
-										}
-									}.bar,
-									writable:true,configurable:true
+						d=b(
+							a.defineProperties(
+								class Y extends class{}{},
+								{
+									bar:{
+										value:{
+											bar(){
+												this.y=2
+											}
+										}.bar,
+										writable:true,configurable:true
+									}
 								}
-							}
-						),
-						c
-					);
+							),
+							c
+						);
 					b(d.prototype,c.prototype);
 					return d
 				})()`,
@@ -2909,15 +2875,11 @@ describe('Classes', () => {
 					};
 				},
 				out: `(()=>{
-					const a=(b=>[
-							b=class Y{
-								constructor(...a){
-									return Reflect.construct(Object.getPrototypeOf(b),a,b)
-								}
-							},
+					const a=(a=>[
+							b=>a=b,
 							{
 								bar(){
-									Reflect.get(Object.getPrototypeOf(b),"bar",this).call(this)
+									Reflect.get(Object.getPrototypeOf(a),"bar",this).call(this)
 								}
 							}.bar
 						])(),
@@ -2935,16 +2897,16 @@ describe('Classes', () => {
 									configurable:true
 								}
 						}),
-						f=a[0];
-					d(
-						c(
-							f,
-							{
-								bar:{value:a[1],writable:true,configurable:true}
-							}
-						),
-						e
-					);
+						f=d(
+							c(
+								class Y extends class{}{},
+								{
+									bar:{value:a[1],writable:true,configurable:true}
+								}
+							),
+							e
+						);
+					a[0](f);
 					d(f.prototype,e.prototype);
 					return f
 				})()`,
@@ -2994,11 +2956,7 @@ describe('Classes', () => {
 				},
 				out: `(()=>{
 					const a=(c=>[
-							c=class Y{
-								constructor(...a){
-									return Reflect.construct(Object.getPrototypeOf(c),a,c)
-								}
-							},
+							a=>c=a,
 							{
 								bar(a,b){
 									Reflect.get(Object.getPrototypeOf(c),"bar",this).call(this,a,b)
@@ -3020,16 +2978,16 @@ describe('Classes', () => {
 								}
 							}
 						),
-						f=a[0];
-					d(
-						c(
-							f,
-							{
-								bar:{value:a[1],writable:true,configurable:true}
-							}
-						),
-						e
-					);
+						f=d(
+							c(
+								class Y extends class{}{},
+								{
+									bar:{value:a[1],writable:true,configurable:true}
+								}
+							),
+							e
+						);
+					a[0](f);
 					d(f.prototype,e.prototype);
 					return f
 				})()`,
@@ -3078,15 +3036,11 @@ describe('Classes', () => {
 					};
 				},
 				out: `(()=>{
-					const a=(b=>[
-							b=class Y{
-								constructor(...a){
-									return Reflect.construct(Object.getPrototypeOf(b),a,b)
-								}
-							},
+					const a=(a=>[
+							b=>a=b,
 							{
 								bar(){
-									return Reflect.get(Object.getPrototypeOf(b),"bar",this)
+									return Reflect.get(Object.getPrototypeOf(a),"bar",this)
 								}
 							}.bar
 						])(),
@@ -3105,16 +3059,16 @@ describe('Classes', () => {
 								}
 							}
 						),
-						f=a[0];
-					d(
-						c(
-							f,
-							{
-								bar:{value:a[1],writable:true,configurable:true}
-							}
-						),
-						e
-					);
+						f=d(
+							c(
+								class Y extends class{}{},
+								{
+									bar:{value:a[1],writable:true,configurable:true}
+								}
+							),
+							e
+						);
+					a[0](f);
 					d(f.prototype,e.prototype);
 					return f
 				})()`,
@@ -3160,15 +3114,11 @@ describe('Classes', () => {
 					};
 				},
 				out: `(()=>{
-					const a=(b=>[
-							b=class Y{
-								constructor(...a){
-									return Reflect.construct(Object.getPrototypeOf(b),a,b)
-								}
-							},
+					const a=(a=>[
+							b=>a=b,
 							{
 								bar(){
-									Reflect.set(Object.getPrototypeOf(b),"y",2,this)
+									Reflect.set(Object.getPrototypeOf(a),"y",2,this)
 								}
 							}.bar
 						])(),
@@ -3177,16 +3127,16 @@ describe('Classes', () => {
 						d=class X{
 							constructor(){this.x=1}
 						},
-						e=a[0];
-					c(
-						b.defineProperties(
-							e,
-							{
-								bar:{value:a[1],writable:true,configurable:true}
-							}
-						),
-						d
-					);
+						e=c(
+							b.defineProperties(
+								class Y extends class{}{},
+								{
+									bar:{value:a[1],writable:true,configurable:true}
+								}
+							),
+							d
+						);
+					a[0](e);
 					c(e.prototype,d.prototype);
 					return e
 				})()`,
@@ -3239,11 +3189,7 @@ describe('Classes', () => {
 				},
 				out: `(()=>{
 					const a=(b=>[
-							b=class Y{
-								constructor(...a){
-									return Reflect.construct(Object.getPrototypeOf(b),a,b)
-								}
-							},
+							a=>b=a,
 							{
 								"get bar"(){
 									return Reflect.get(Object.getPrototypeOf(b),"bar",this)*2
@@ -3268,16 +3214,16 @@ describe('Classes', () => {
 								}
 							}
 						),
-						f=a[0];
-					d(
-						c(
-							f,
-							{
-								bar:{get:a[1],set:a[2],configurable:true}
-							}
-						),
-						e
-					);
+						f=d(
+							c(
+								class Y extends class{}{},
+								{
+									bar:{get:a[1],set:a[2],configurable:true}
+								}
+							),
+							e
+						);
+					a[0](f);
 					d(f.prototype,e.prototype);
 					return f
 				})()`,
@@ -3318,12 +3264,7 @@ describe('Classes', () => {
 				out: `(()=>{
 					const a=Object.setPrototypeOf,
 						b=class X{},
-						c=(b=>b=class Y{
-							constructor(...a){
-								return Reflect.construct(Object.getPrototypeOf(b),a,b)
-							}
-						})();
-					a(c,b);
+						c=a(class Y extends class{}{},b);
 					a(c.prototype,b.prototype);
 					return c
 				})()`,
@@ -3358,14 +3299,15 @@ describe('Classes', () => {
 				out: `(()=>{
 					const a=Object.setPrototypeOf,
 						b=class X{},
-						c=(b=>b=class Y{
-							constructor(){
-								const a=Reflect.construct(Object.getPrototypeOf(b),[],b);
-								a.x=1;
-								return a
-							}
-						})();
-					a(c,b);
+						c=a(
+							class Y extends class{}{
+								constructor(){
+									super();
+									this.x=1
+								}
+							},
+							b
+						);
 					a(c.prototype,b.prototype);
 					return c
 				})()`,
@@ -3387,6 +3329,172 @@ describe('Classes', () => {
 					expect(instance).toBeInstanceOf(SuperClass);
 					expect(instance).toHaveOwnPropertyNames(['x']);
 					expect(instance.x).toBe(1);
+				}
+			});
+		});
+
+		describe('defaults', () => {
+			itSerializes('Object', {
+				in() {
+					return class extends Object {};
+				},
+				out: `(()=>{
+					const a=Object,
+						b=a.setPrototypeOf,
+						c=b(class extends class{}{},a);
+					b(c.prototype,a.prototype);
+					return c
+				})()`,
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					expect(Klass).toHavePrototype(Object);
+					expect(Klass.prototype).toHavePrototype(Object.prototype);
+				}
+			});
+
+			itSerializes('Function', {
+				in() {
+					return class extends Function {};
+				},
+				out: `(()=>{
+					const a=Object.setPrototypeOf,
+						b=Function,
+						c=a(class extends class{}{},b);
+					a(c.prototype,b.prototype);
+					return c
+				})()`,
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					expect(Klass).toHavePrototype(Function);
+					expect(Klass.prototype).toHavePrototype(Function.prototype);
+				}
+			});
+
+			itSerializes('Function.prototype', {
+				in() {
+					class X extends Object {}
+					Object.setPrototypeOf(X, Function.prototype);
+					return X;
+				},
+				out: `(()=>{
+					const a=Object,
+						b=a.setPrototypeOf,
+						c=b(class X extends class{}{},Function.prototype);
+					b(c.prototype,a.prototype);
+					return c
+				})()`,
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					expect(Klass).toHavePrototype(Function.prototype);
+					expect(Klass.prototype).toHavePrototype(Object.prototype);
+				}
+			});
+		});
+
+		describe('`super()` in arrow function', () => {
+			itSerializes('when class serialized', {
+				in() {
+					class X {
+						constructor() {
+							this.x = 1;
+						}
+					}
+					return class Y extends X {
+						constructor() { // eslint-disable-line constructor-super
+							const callSuper = () => super();
+							callSuper();
+						}
+					};
+				},
+				out: `(()=>{
+					const a=Object.setPrototypeOf,
+						b=class X{
+							constructor(){
+								this.x=1
+							}
+						},
+						c=a(
+							class Y extends class{}{
+								constructor(){
+									const a=()=>super();
+									a()
+								}
+							},
+							b
+						);
+					a(c.prototype,b.prototype);
+					return c
+				})()`,
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					expect(Klass.name).toBe('Y');
+					const {prototype} = Klass;
+					expect(prototype).toBeObject();
+					expect(prototype.constructor).toBe(Klass);
+					const proto = Object.getPrototypeOf(prototype);
+					expect(proto).toBeObject();
+					expect(proto).not.toBe(Object.prototype);
+					expect(proto).toHavePrototype(Object.prototype);
+					const SuperClass = proto.constructor;
+					expect(SuperClass).toBeFunction();
+					expect(SuperClass.name).toBe('X');
+					const instance = new Klass();
+					expect(instance).toBeInstanceOf(Klass);
+					expect(instance).toBeInstanceOf(SuperClass);
+					expect(instance).toHaveOwnPropertyNames(['x']);
+					expect(instance.x).toBe(1);
+				}
+			});
+
+			itSerializes('when arrow function serialized', {
+				in() {
+					class X {
+						constructor() {
+							this.x = 1;
+						}
+					}
+
+					class Y extends X {
+						constructor() {
+							return {callSuper: (0, () => super())}; // eslint-disable-line no-constructor-return
+						}
+					}
+
+					return new Y().callSuper;
+				},
+				out: `(()=>{
+					const a=Object.setPrototypeOf,
+						b=class X{
+							constructor(){
+								this.x=1
+							}
+						},
+						c=a(
+							class Y extends class{}{
+								constructor(){
+									return{callSuper:(0,()=>super())}
+								}
+							},
+							b
+						);
+					a(c.prototype,b.prototype);
+					return(a=>()=>Reflect.construct(Object.getPrototypeOf(a),[],a))(c)
+				})()`,
+				validate(fn) {
+					expect(fn).toBeFunction();
+					const instance = fn();
+					expect(instance).toBeObject();
+					expect(instance).toHaveOwnPropertyNames(['x']);
+					expect(instance.x).toBe(1);
+					const proto = Object.getPrototypeOf(instance);
+					expect(proto).toBeObject();
+					const Klass = proto.constructor;
+					expect(Klass).toBeFunction();
+					expect(Klass.name).toBe('Y');
+					const SuperClass = Object.getPrototypeOf(Klass);
+					expect(SuperClass).toBeFunction();
+					expect(SuperClass.name).toBe('X');
+					expect(Object.getPrototypeOf(proto).constructor).toBe(SuperClass);
 				}
 			});
 		});
@@ -3415,29 +3523,36 @@ describe('Classes', () => {
 				return Klass;
 			},
 			out: `(()=>{
-				const a=(c=>b=>[
-						b=class Klass{
+				const a=Object,
+					b=a.setPrototypeOf,
+					c=(b=>[
+						class Klass extends class{}{
 							constructor(){
-								const a=Reflect.construct(Object.getPrototypeOf(b),[],b);
-								a.ext=c;
-								a.superToString=Reflect.get(Object.getPrototypeOf(b.prototype),"toString",a);
-								return a
+								super();
+								this.ext=b;
+								this.superToString=super.toString
 							}
 						},
-						{
-							foo(){
-								return[c,Reflect.get(Object.getPrototypeOf(b.prototype),"toString",this)]
-							}
-						}.foo
-					])(1)(),
-					b=Object,
-					c=a[0];
-				b.setPrototypeOf(c,b);
-				b.defineProperties(
-					c.prototype,
-					{foo:{value:a[1],writable:true,configurable:true}}
+						a=>[
+							b=>a=b,
+							{
+								foo(){
+									return[b,Reflect.get(Object.getPrototypeOf(a.prototype),"toString",this)]
+								}
+							}.foo
+						]
+					])(1),
+					d=b(c[0],a),
+					e=c[1]();
+				e[0](d);
+				b(
+					a.defineProperties(
+						d.prototype,
+						{foo:{value:e[1],writable:true,configurable:true}}
+					),
+					a.prototype
 				);
-				return c
+				return d
 			})()`,
 			validate(Klass) {
 				expect(Klass).toBeFunction();
@@ -3453,6 +3568,8 @@ describe('Classes', () => {
 
 		// https://github.com/overlookmotel/livepack/issues/294
 		describe('two classes using super in same scope do not have super classes confused', () => {
+			// NB: `super` var is no longer used in class constructors, so this test is extraneous.
+			// But leaving it here in case that changes.
 			itSerializes('in implicit constructor', {
 				in() {
 					class SuperKlass1 {
@@ -3477,21 +3594,11 @@ describe('Classes', () => {
 						b=class SuperKlass1{
 							constructor(){this.x=1}
 						},
-						c=(b=>b=class Klass1{
-							constructor(...a){
-								return Reflect.construct(Object.getPrototypeOf(b),a,b)
-							}
-						})(),
+						c=a(class Klass1 extends class{}{},b),
 						d=class SuperKlass2{
 							constructor(){this.x=2}
 						},
-						e=(b=>b=class Klass2{
-							constructor(...a){
-								return Reflect.construct(Object.getPrototypeOf(b),a,b)
-							}
-						})();
-					a(c,b);
-					a(e,d);
+						e=a(class Klass2 extends class{}{},d);
 					a(c.prototype,b.prototype);
 					a(e.prototype,d.prototype);
 					return{Klass1:c,Klass2:e}
@@ -3506,6 +3613,8 @@ describe('Classes', () => {
 				}
 			});
 
+			// NB: `super` var is no longer used in class constructors, so this test is extraneous.
+			// But leaving it here in case that changes.
 			itSerializes('in explicit constructor', {
 				in() {
 					class SuperKlass1 {
@@ -3540,25 +3649,27 @@ describe('Classes', () => {
 						b=class SuperKlass1{
 							constructor(){this.x=1}
 						},
-						c=(b=>b=class Klass1{
-							constructor(){
-								const a=Reflect.construct(Object.getPrototypeOf(b),[],b);
-								a.y=a.x;
-								return a
-							}
-						})(),
+						c=a(
+							class Klass1 extends class{}{
+								constructor(){
+									super();
+									this.y=this.x
+								}
+							},
+							b
+						),
 						d=class SuperKlass2{
 							constructor(){this.x=2}
 						},
-						e=(b=>b=class Klass2{
-							constructor(){
-								const a=Reflect.construct(Object.getPrototypeOf(b),[],b);
-								a.y=a.x;
-								return a
-							}
-						})();
-					a(c,b);
-					a(e,d);
+						e=a(
+							class Klass2 extends class{}{
+								constructor(){
+									super();
+									this.y=this.x
+								}
+							},
+							d
+						);
 					a(c.prototype,b.prototype);
 					a(e.prototype,d.prototype);
 					return{Klass1:c,Klass2:e}
@@ -3595,74 +3706,69 @@ describe('Classes', () => {
 					};
 				},
 				out: `(()=>{
-					const a=(b=>[
-							b=class Klass1{
-								constructor(...a){
-									return Reflect.construct(Object.getPrototypeOf(b),a,b)
-								}
-							},
+					const a=Object,
+						b=a.setPrototypeOf,
+						c=class SuperKlass1{},
+						d=c.prototype,
+						e=a.defineProperties,
+						f=b(
+							class Klass1 extends class{}{},
+							c
+						),
+						g=(a=>[
+							b=>a=b,
 							{
 								foo(){
-									return Reflect.get(Object.getPrototypeOf(b.prototype),"foo",this).call(this)
+									return Reflect.get(Object.getPrototypeOf(a.prototype),"foo",this).call(this)
 								}
 							}.foo
 						])(),
-						b=Object,
-						c=b.setPrototypeOf,
-						d=class SuperKlass1{},
-						e=d.prototype,
-						f=b.defineProperties,
-						g=a[0],
-						h=(b=>[
-							b=class Klass2{
-								constructor(...a){
-									return Reflect.construct(Object.getPrototypeOf(b),a,b)
-								}
-							},
+						h=class SuperKlass2{},
+						i=h.prototype,
+						j=b(class Klass2 extends class{}{},h),
+						k=(a=>[
+							b=>a=b,
 							{
 								foo(){
-									return Reflect.get(Object.getPrototypeOf(b.prototype),"foo",this).call(this)
+									return Reflect.get(Object.getPrototypeOf(a.prototype),"foo",this).call(this)
 								}
 							}.foo
-						])(),
-						i=class SuperKlass2{},
-						j=i.prototype,
-						k=h[0];
-					f(e,{
+						])();
+					e(d,{
 						foo:{
 							value:{foo(){return 1}}.foo,
 							writable:true,
 							configurable:true
 						}
 					});
-					c(g,d);
-					f(j,{
+					g[0](f);
+					b(
+						e(
+							f.prototype,
+							{
+								foo:{value:g[1],writable:true,configurable:true}
+							}
+						),
+						d
+					);
+					e(i,{
 						foo:{
 							value:{foo(){return 2}}.foo,
 							writable:true,
 							configurable:true
 						}
 					});
-					c(k,i);
-					c(
-						f(
-							g.prototype,
+					k[0](j);
+					b(
+						e(
+							j.prototype,
 							{
-								foo:{value:a[1],writable:true,configurable:true}
+								foo:{value:k[1],writable:true,configurable:true}
 							}
 						),
-						e
+						i
 					);
-					c(
-						f(
-							k.prototype,
-							{
-								foo:{value:h[1],writable:true,configurable:true}
-							}
-						),
-						j
-					);
-					return{Klass1:g,Klass2:k}
+					return{Klass1:f,Klass2:j}
 				})()`,
 				validate({Klass1, Klass2}) {
 					expect(Klass1).toBeFunction();
@@ -3694,15 +3800,11 @@ describe('Classes', () => {
 					};
 				},
 				out: `(()=>{
-					const a=(b=>[
-							b=class Klass1{
-								constructor(...a){
-									return Reflect.construct(Object.getPrototypeOf(b),a,b)
-								}
-							},
+					const a=(a=>[
+							b=>a=b,
 							{
 								foo(){
-									return Reflect.get(Object.getPrototypeOf(b),"foo",this).call(this)
+									return Reflect.get(Object.getPrototypeOf(a),"foo",this).call(this)
 								}
 							}.foo
 						])(),
@@ -3719,16 +3821,18 @@ describe('Classes', () => {
 								}
 							}
 						),
-						f=a[0],
-						g=(b=>[
-							b=class Klass2{
-								constructor(...a){
-									return Reflect.construct(Object.getPrototypeOf(b),a,b)
-								}
-							},
+						f=d(
+							c(
+								class Klass1 extends class{}{},
+								{foo:{value:a[1],writable:true,configurable:true}}
+							),
+							e
+						),
+						g=(a=>[
+							b=>a=b,
 							{
 								foo(){
-									return Reflect.get(Object.getPrototypeOf(b),"foo",this).call(this)
+									return Reflect.get(Object.getPrototypeOf(a),"foo",this).call(this)
 								}
 							}.foo
 						])(),
@@ -3742,22 +3846,16 @@ describe('Classes', () => {
 								}
 							}
 						),
-						i=g[0];
-					d(
-						c(
-							f,
-							{foo:{value:a[1],writable:true,configurable:true}}
-						),
-						e
-					);
-					d(
-						c(
-							i,
-							{foo:{value:g[1],writable:true,configurable:true}}
-						),
-						h
-					);
+						i=d(
+							c(
+								class Klass2 extends class{}{},
+								{foo:{value:g[1],writable:true,configurable:true}}
+							),
+							h
+						);
+					a[0](f);
 					d(f.prototype,e.prototype);
+					g[0](i);
 					d(i.prototype,h.prototype);
 					return{Klass1:f,Klass2:i}
 				})()`,
@@ -3802,26 +3900,25 @@ describe('Classes', () => {
 				return Klass;
 			},
 			out: `(()=>{
-				const a=(c=>[
-						a=>c=a,
-						b=>[
-							b=class Y{
-								constructor(){
-									const a=Reflect.construct(Object.getPrototypeOf(b),[],b);
-									a.z=c;
-									return a
-								}
-							},
+				const a=(b=>[
+						b=class Y extends class{}{
+							constructor(){
+								super();
+								this.z=b
+							}
+						},
+						a=>[
+							b=>a=b,
 							{
 								bar(){
-									Reflect.get(Object.getPrototypeOf(b),"bar",this).call(this);
-									return c
+									Reflect.get(Object.getPrototypeOf(a),"bar",this).call(this);
+									return b
 								}
 							}.bar,
 							{
 								foo(){
-									Reflect.get(Object.getPrototypeOf(b.prototype),"foo",this).call(this);
-									return c
+									Reflect.get(Object.getPrototypeOf(a.prototype),"foo",this).call(this);
+									return b
 								}
 							}.foo
 						]
@@ -3848,8 +3945,8 @@ describe('Classes', () => {
 						}
 					),
 					h=g.prototype,
-					i=b[0];
-				a[0](i);
+					i=a[0];
+				b[0](i);
 				d(
 					h,
 					{
@@ -3923,26 +4020,19 @@ describe('Classes', () => {
 					return Y;
 				},
 				out: `(()=>{
-					const a=(c=>[
-							c=class Y{
-								constructor(){
-									const a=4;
-									const b=Reflect.construct(Object.getPrototypeOf(c),[],c);
-									b.z=a;
-									return b
-								}
-							},
+					const a=(b=>[
+							a=>b=a,
 							{
 								bar(){
 									const a=6;
-									Reflect.get(Object.getPrototypeOf(c),"bar",this).call(this);
+									Reflect.get(Object.getPrototypeOf(b),"bar",this).call(this);
 									return a
 								}
 							}.bar,
 							{
 								foo(){
 									const a=5;
-									Reflect.get(Object.getPrototypeOf(c.prototype),"foo",this).call(this);
+									Reflect.get(Object.getPrototypeOf(b.prototype),"foo",this).call(this);
 									return a
 								}
 							}.foo
@@ -3959,19 +4049,25 @@ describe('Classes', () => {
 							}
 						),
 						f=e.prototype,
-						g=a[0];
+						g=d(
+							c(
+								class Y extends class{}{
+									constructor(){
+										const a=4;
+										super();
+										this.z=a
+									}
+								},
+								{bar:{value:a[1],writable:true,configurable:true}}
+							),
+							e
+						);
+					a[0](g);
 					c(
 						f,
 						{
 							foo:{value:{foo(){this.y=2}}.foo,writable:true,configurable:true}
 						}
-					);
-					d(
-						c(
-							g,
-							{bar:{value:a[1],writable:true,configurable:true}}
-						),
-						e
 					);
 					d(
 						c(
@@ -4027,26 +4123,19 @@ describe('Classes', () => {
 					};
 				},
 				out: `(()=>{
-					const a=(c=>[
-							c=class Y{
-								constructor(){
-									const a=4;
-									const b=Reflect.construct(Object.getPrototypeOf(c),[],c);
-									b.z=a;
-									return b
-								}
-							},
+					const a=(b=>[
+							a=>b=a,
 							{
 								bar(){
 									const a=6;
-									Reflect.get(Object.getPrototypeOf(c),"bar",this).call(this);
+									Reflect.get(Object.getPrototypeOf(b),"bar",this).call(this);
 									return a
 								}
 							}.bar,
 							{
 								foo(){
 									const a=5;
-									Reflect.get(Object.getPrototypeOf(c.prototype),"foo",this).call(this);
+									Reflect.get(Object.getPrototypeOf(b.prototype),"foo",this).call(this);
 									return a
 								}
 							}.foo
@@ -4063,19 +4152,25 @@ describe('Classes', () => {
 							}
 						),
 						f=e.prototype,
-						g=a[0];
+						g=d(
+							c(
+								class Y extends class{}{
+									constructor(){
+										const a=4;
+										super();
+										this.z=a
+									}
+								},
+								{bar:{value:a[1],writable:true,configurable:true}}
+							),
+							e
+						);
+					a[0](g);
 					c(
 						f,
 						{
 							foo:{value:{foo(){this.y=2}}.foo,writable:true,configurable:true}
 						}
-					);
-					d(
-						c(
-							g,
-							{bar:{value:a[1],writable:true,configurable:true}}
-						),
-						e
 					);
 					d(
 						c(
@@ -4132,26 +4227,19 @@ describe('Classes', () => {
 					return Y;
 				},
 				out: `(()=>{
-					const a=(c=>[
-							c=class Y{
-								constructor(){
-									const a=4;
-									const b=Reflect.construct(Object.getPrototypeOf(c),[],c);
-									b.z=a;
-									return b
-								}
-							},
+					const a=(b=>[
+							a=>b=a,
 							{
 								bar(){
 									const a=6;
-									Reflect.get(Object.getPrototypeOf(c),"bar",this).call(this);
+									Reflect.get(Object.getPrototypeOf(b),"bar",this).call(this);
 									return a
 								}
 							}.bar,
 							{
 								foo(){
 									const a=5;
-									Reflect.get(Object.getPrototypeOf(c.prototype),"foo",this).call(this);
+									Reflect.get(Object.getPrototypeOf(b.prototype),"foo",this).call(this);
 									return a
 								}
 							}.foo
@@ -4168,19 +4256,25 @@ describe('Classes', () => {
 							}
 						),
 						f=e.prototype,
-						g=a[0];
+						g=d(
+							c(
+								class Y extends class{}{
+									constructor(){
+										const a=4;
+										super();
+										this.z=a
+									}
+								},
+								{bar:{value:a[1],writable:true,configurable:true}}
+							),
+							e
+						);
+					a[0](g);
 					c(
 						f,
 						{
 							foo:{value:{foo(){this.y=2}}.foo,writable:true,configurable:true}
 						}
-					);
-					d(
-						c(
-							g,
-							{bar:{value:a[1],writable:true,configurable:true}}
-						),
-						e
 					);
 					d(
 						c(
@@ -4212,25 +4306,33 @@ describe('Classes', () => {
 				in() {
 					class S {}
 					const C = class extends S {
-						constructor() {
+						foo() {
 							const C = 1; // eslint-disable-line no-unused-vars, no-shadow
-							super();
+							return super.x;
 						}
 					};
 					return C;
 				},
 				out: `(()=>{
-					const a=Object.setPrototypeOf,
-						b=class S{},
-						c=(b=>b=class C{
-							constructor(){
-								const a=1;
-								return Reflect.construct(Object.getPrototypeOf(b),[],b)
-							}
-						})();
-					a(c,b);
-					a(c.prototype,b.prototype);
-					return c
+					const a=Object,
+						b=a.setPrototypeOf,
+						c=class S{},
+						d=b(class C extends class{}{},c),
+						e=(b=>[
+							a=>b=a,
+							{
+								foo(){
+									const a=1;
+									return Reflect.get(Object.getPrototypeOf(b.prototype),"x",this)
+								}
+							}.foo
+						])();
+					e[0](d);
+					b(
+						a.defineProperties(d.prototype,{foo:{value:e[1],writable:true,configurable:true}}),
+						c.prototype
+					);
+					return d
 				})()`,
 				validate(Klass) {
 					expect(Klass).toBeFunction();
@@ -4242,20 +4344,34 @@ describe('Classes', () => {
 				in() {
 					class S {}
 					let x = 123, // eslint-disable-line no-unused-vars, prefer-const
-						C = class extends S {}; // eslint-disable-line prefer-const
+						C = class extends S { // eslint-disable-line prefer-const
+							foo() {
+								const C = 1; // eslint-disable-line no-unused-vars, no-shadow
+								return super.x;
+							}
+						};
 					return C;
 				},
 				out: `(()=>{
-					const a=Object.setPrototypeOf,
-						b=class S{},
-						c=(b=>b=class C{
-							constructor(...a){
-								return Reflect.construct(Object.getPrototypeOf(b),a,b)
-							}
-						})();
-					a(c,b);
-					a(c.prototype,b.prototype);
-					return c
+					const a=Object,
+						b=a.setPrototypeOf,
+						c=class S{},
+						d=b(class C extends class{}{},c),
+						e=(b=>[
+							a=>b=a,
+							{
+								foo(){
+									const a=1;
+									return Reflect.get(Object.getPrototypeOf(b.prototype),"x",this)
+								}
+							}.foo
+						])();
+					e[0](d);
+					b(
+						a.defineProperties(d.prototype,{foo:{value:e[1],writable:true,configurable:true}}),
+						c.prototype
+					);
+					return d
 				})()`,
 				validate(Klass) {
 					expect(Klass).toBeFunction();
@@ -4267,20 +4383,34 @@ describe('Classes', () => {
 				in() {
 					class S {}
 					var x = 123, // eslint-disable-line no-unused-vars, no-var, vars-on-top
-						C = class extends S {};
+						C = class extends S {
+							foo() {
+								const C = 1; // eslint-disable-line no-unused-vars, no-shadow
+								return super.x;
+							}
+						};
 					return C;
 				},
 				out: `(()=>{
-					const a=Object.setPrototypeOf,
-						b=class S{},
-						c=(b=>b=class C{
-							constructor(...a){
-								return Reflect.construct(Object.getPrototypeOf(b),a,b)
-							}
-						})();
-					a(c,b);
-					a(c.prototype,b.prototype);
-					return c
+					const a=Object,
+						b=a.setPrototypeOf,
+						c=class S{},
+						d=b(class C extends class{}{},c),
+						e=(b=>[
+							a=>b=a,
+							{
+								foo(){
+									const a=1;
+									return Reflect.get(Object.getPrototypeOf(b.prototype),"x",this)
+								}
+							}.foo
+						])();
+					e[0](d);
+					b(
+						a.defineProperties(d.prototype,{foo:{value:e[1],writable:true,configurable:true}}),
+						c.prototype
+					);
+					return d
 				})()`,
 				validate(Klass) {
 					expect(Klass).toBeFunction();
@@ -4292,20 +4422,34 @@ describe('Classes', () => {
 				in() {
 					class S {}
 					let C;
-					C = class extends S {}; // eslint-disable-line prefer-const
+					C = class extends S { // eslint-disable-line prefer-const
+						foo() {
+							const C = 1; // eslint-disable-line no-unused-vars, no-shadow
+							return super.x;
+						}
+					};
 					return C;
 				},
 				out: `(()=>{
-					const a=Object.setPrototypeOf,
-						b=class S{},
-						c=(b=>b=class C{
-							constructor(...a){
-								return Reflect.construct(Object.getPrototypeOf(b),a,b)
-							}
-						})();
-					a(c,b);
-					a(c.prototype,b.prototype);
-					return c
+					const a=Object,
+						b=a.setPrototypeOf,
+						c=class S{},
+						d=b(class C extends class{}{},c),
+						e=(b=>[
+							a=>b=a,
+							{
+								foo(){
+									const a=1;
+									return Reflect.get(Object.getPrototypeOf(b.prototype),"x",this)
+								}
+							}.foo
+						])();
+					e[0](d);
+					b(
+						a.defineProperties(d.prototype,{foo:{value:e[1],writable:true,configurable:true}}),
+						c.prototype
+					);
+					return d
 				})()`,
 				validate(Klass) {
 					expect(Klass).toBeFunction();
@@ -4317,20 +4461,34 @@ describe('Classes', () => {
 				in() {
 					class S {}
 					let C = true;
-					C &&= class extends S {};
+					C &&= class extends S {
+						foo() {
+							const C = 1; // eslint-disable-line no-unused-vars, no-shadow
+							return super.x;
+						}
+					};
 					return C;
 				},
 				out: `(()=>{
-					const a=Object.setPrototypeOf,
-						b=class S{},
-						c=(b=>b=class C{
-							constructor(...a){
-								return Reflect.construct(Object.getPrototypeOf(b),a,b)
-							}
-						})();
-					a(c,b);
-					a(c.prototype,b.prototype);
-					return c
+					const a=Object,
+						b=a.setPrototypeOf,
+						c=class S{},
+						d=b(class C extends class{}{},c),
+						e=(b=>[
+							a=>b=a,
+							{
+								foo(){
+									const a=1;
+									return Reflect.get(Object.getPrototypeOf(b.prototype),"x",this)
+								}
+							}.foo
+						])();
+					e[0](d);
+					b(
+						a.defineProperties(d.prototype,{foo:{value:e[1],writable:true,configurable:true}}),
+						c.prototype
+					);
+					return d
 				})()`,
 				validate(Klass) {
 					expect(Klass).toBeFunction();
@@ -4342,20 +4500,34 @@ describe('Classes', () => {
 				in() {
 					class S {}
 					let C = false;
-					C ||= class extends S {};
+					C ||= class extends S {
+						foo() {
+							const C = 1; // eslint-disable-line no-unused-vars, no-shadow
+							return super.x;
+						}
+					};
 					return C;
 				},
 				out: `(()=>{
-					const a=Object.setPrototypeOf,
-						b=class S{},
-						c=(b=>b=class C{
-							constructor(...a){
-								return Reflect.construct(Object.getPrototypeOf(b),a,b)
-							}
-						})();
-					a(c,b);
-					a(c.prototype,b.prototype);
-					return c
+					const a=Object,
+						b=a.setPrototypeOf,
+						c=class S{},
+						d=b(class C extends class{}{},c),
+						e=(b=>[
+							a=>b=a,
+							{
+								foo(){
+									const a=1;
+									return Reflect.get(Object.getPrototypeOf(b.prototype),"x",this)
+								}
+							}.foo
+						])();
+					e[0](d);
+					b(
+						a.defineProperties(d.prototype,{foo:{value:e[1],writable:true,configurable:true}}),
+						c.prototype
+					);
+					return d
 				})()`,
 				validate(Klass) {
 					expect(Klass).toBeFunction();
@@ -4367,20 +4539,34 @@ describe('Classes', () => {
 				in() {
 					class S {}
 					let C = null;
-					C ??= class extends S {};
+					C ??= class extends S {
+						foo() {
+							const C = 1; // eslint-disable-line no-unused-vars, no-shadow
+							return super.x;
+						}
+					};
 					return C;
 				},
 				out: `(()=>{
-					const a=Object.setPrototypeOf,
-						b=class S{},
-						c=(b=>b=class C{
-							constructor(...a){
-								return Reflect.construct(Object.getPrototypeOf(b),a,b)
-							}
-						})();
-					a(c,b);
-					a(c.prototype,b.prototype);
-					return c
+					const a=Object,
+						b=a.setPrototypeOf,
+						c=class S{},
+						d=b(class C extends class{}{},c),
+						e=(b=>[
+							a=>b=a,
+							{
+								foo(){
+									const a=1;
+									return Reflect.get(Object.getPrototypeOf(b.prototype),"x",this)
+								}
+							}.foo
+						])();
+					e[0](d);
+					b(
+						a.defineProperties(d.prototype,{foo:{value:e[1],writable:true,configurable:true}}),
+						c.prototype
+					);
+					return d
 				})()`,
 				validate(Klass) {
 					expect(Klass).toBeFunction();
@@ -4392,21 +4578,35 @@ describe('Classes', () => {
 				in() {
 					class S {}
 					let {
-						C = class extends S {} // eslint-disable-line prefer-const
+						C = class extends S { // eslint-disable-line prefer-const
+							foo() {
+								const C = 1; // eslint-disable-line no-unused-vars, no-shadow
+								return super.x;
+							}
+						}
 					} = {};
 					return C;
 				},
 				out: `(()=>{
-					const a=Object.setPrototypeOf,
-						b=class S{},
-						c=(b=>b=class C{
-							constructor(...a){
-								return Reflect.construct(Object.getPrototypeOf(b),a,b)
-							}
-						})();
-					a(c,b);
-					a(c.prototype,b.prototype);
-					return c
+					const a=Object,
+						b=a.setPrototypeOf,
+						c=class S{},
+						d=b(class C extends class{}{},c),
+						e=(b=>[
+							a=>b=a,
+							{
+								foo(){
+									const a=1;
+									return Reflect.get(Object.getPrototypeOf(b.prototype),"x",this)
+								}
+							}.foo
+						])();
+					e[0](d);
+					b(
+						a.defineProperties(d.prototype,{foo:{value:e[1],writable:true,configurable:true}}),
+						c.prototype
+					);
+					return d
 				})()`,
 				validate(Klass) {
 					expect(Klass).toBeFunction();
@@ -4447,31 +4647,34 @@ describe('Classes', () => {
 				return createClass(4, 5);
 			},
 			out: `(()=>{
-				const a=((c,d)=>b=>[
-						b=class Y{
+				const a=((b,c)=>[
+						class Y extends class{}{
 							constructor(){
-								const a=Reflect.construct(Object.getPrototypeOf(b),[],b);
-								a.z=[c,d];
-								return a
+								super();
+								this.z=[b,c]
 							}
 						},
-						{
-							bar(){
-								Reflect.get(Object.getPrototypeOf(b),"bar",this).call(this);
-								return[c,d]
-							}
-						}.bar,
-						{
-							foo(){
-								Reflect.get(Object.getPrototypeOf(b.prototype),"foo",this).call(this);
-								return[c,d]
-							}
-						}.foo
-					])(4,5)(),
-					b=Object,
-					c=b.defineProperties,
-					d=b.setPrototypeOf,
-					e=c(
+						a=>[
+							b=>a=b,
+							{
+								bar(){
+									Reflect.get(Object.getPrototypeOf(a),"bar",this).call(this);
+									return[b,c]
+								}
+							}.bar,
+							{
+								foo(){
+									Reflect.get(Object.getPrototypeOf(a.prototype),"foo",this).call(this);
+									return[b,c]
+								}
+							}.foo
+						]
+					])(4,5),
+					b=a[1](),
+					c=Object,
+					d=c.defineProperties,
+					e=c.setPrototypeOf,
+					f=d(
 						class X{
 							constructor(){this.x=1}
 						},
@@ -4479,10 +4682,19 @@ describe('Classes', () => {
 							bar:{value:{bar(){this.y=3}}.bar,writable:true,configurable:true}
 						}
 					),
-					f=e.prototype,
-					g=a[0];
-				c(
-					f,
+					g=f.prototype,
+					h=e(
+						d(
+							a[0],
+							{
+								bar:{value:b[1],writable:true,configurable:true}
+							}
+						),
+						f
+					);
+				b[0](h);
+				d(
+					g,
 					{
 						foo:{
 							value:{foo(){this.y=2}}.foo,
@@ -4491,25 +4703,16 @@ describe('Classes', () => {
 						}
 					}
 				);
-				d(
-					c(
-						g,
+				e(
+					d(
+						h.prototype,
 						{
-							bar:{value:a[1],writable:true,configurable:true}
+							foo:{value:b[2],writable:true,configurable:true}
 						}
 					),
-					e
+					g
 				);
-				d(
-					c(
-						g.prototype,
-						{
-							foo:{value:a[2],writable:true,configurable:true}
-						}
-					),
-					f
-				);
-				return g
+				return h
 			})()`,
 			validate(Klass) {
 				expect(Klass).toBeFunction();
@@ -4529,26 +4732,40 @@ describe('Classes', () => {
 			itSerializes('function call used as object prop key only called once', {
 				in() {
 					const fn = spy(() => 'Y');
-					class X {}
+					class X {
+						foo() { // eslint-disable-line class-methods-use-this
+							return 123;
+						}
+					}
 					const obj = {
-						[fn()]: class extends X {}
+						[fn()]: class extends X {
+							bar() {
+								return super.foo();
+							}
+						}
 					};
 					expect(fn).toHaveBeenCalledTimes(1);
 					return obj;
 				},
 				out: `(()=>{
-					const a=Object.setPrototypeOf,
-						b=class X{},
-						c=(
-							b=>b=class Y{
-								constructor(...a){
-									return Reflect.construct(Object.getPrototypeOf(b),a,b)
+					const a=Object,
+						b=a.setPrototypeOf,
+						c=class X{},
+						d=c.prototype,
+						e=a.defineProperties,
+						f=b(class Y extends class{}{},c),
+						g=(a=>[
+							b=>a=b,
+							{
+								bar(){
+									return Reflect.get(Object.getPrototypeOf(a.prototype),"foo",this).call(this)
 								}
-							}
-						)();
-					a(c,b);
-					a(c.prototype,b.prototype);
-					return{Y:c}
+							}.bar
+						])();
+					e(d,{foo:{value:{foo(){return 123}}.foo,writable:true,configurable:true}});
+					g[0](f);
+					b(e(f.prototype,{bar:{value:g[1],writable:true,configurable:true}}),d);
+					return{Y:f}
 				})()`,
 				validate(obj) {
 					expect(obj).toBeObject();
@@ -4559,6 +4776,7 @@ describe('Classes', () => {
 					const SuperClass = Object.getPrototypeOf(Klass);
 					expect(SuperClass).toBeFunction();
 					expect(SuperClass.name).toBe('X');
+					expect(new Klass().bar()).toBe(123);
 				}
 			});
 
@@ -4566,26 +4784,40 @@ describe('Classes', () => {
 				in() {
 					const o = {};
 					o.toString = spy(() => 'Y');
-					class X {}
+					class X {
+						foo() { // eslint-disable-line class-methods-use-this
+							return 123;
+						}
+					}
 					const obj = {
-						[o]: class extends X {}
+						[o]: class extends X {
+							bar() {
+								return super.foo();
+							}
+						}
 					};
 					expect(o.toString).toHaveBeenCalledTimes(1);
 					return obj;
 				},
 				out: `(()=>{
-					const a=Object.setPrototypeOf,
-						b=class X{},
-						c=(
-							b=>b=class Y{
-								constructor(...a){
-									return Reflect.construct(Object.getPrototypeOf(b),a,b)
+					const a=Object,
+						b=a.setPrototypeOf,
+						c=class X{},
+						d=c.prototype,
+						e=a.defineProperties,
+						f=b(class Y extends class{}{},c),
+						g=(a=>[
+							b=>a=b,
+							{
+								bar(){
+									return Reflect.get(Object.getPrototypeOf(a.prototype),"foo",this).call(this)
 								}
-							}
-						)();
-					a(c,b);
-					a(c.prototype,b.prototype);
-					return{Y:c}
+							}.bar
+						])();
+					e(d,{foo:{value:{foo(){return 123}}.foo,writable:true,configurable:true}});
+					g[0](f);
+					b(e(f.prototype,{bar:{value:g[1],writable:true,configurable:true}}),d);
+					return{Y:f}
 				})()`,
 				validate(obj) {
 					expect(obj).toBeObject();
@@ -4596,29 +4828,44 @@ describe('Classes', () => {
 					const SuperClass = Object.getPrototypeOf(Klass);
 					expect(SuperClass).toBeFunction();
 					expect(SuperClass.name).toBe('X');
+					expect(new Klass().bar()).toBe(123);
 				}
 			});
 
 			itSerializes('undefined used as object prop key', {
 				in() {
-					class X {}
+					class X {
+						foo() { // eslint-disable-line class-methods-use-this
+							return 123;
+						}
+					}
 					return {
-						[undefined]: class extends X {}
+						[undefined]: class extends X {
+							bar() {
+								return super.foo();
+							}
+						}
 					};
 				},
 				out: `(()=>{
-					const a=Object.setPrototypeOf,
-						b=class X{},
-						c=(
-							b=>b=class undefined{
-								constructor(...a){
-									return Reflect.construct(Object.getPrototypeOf(b),a,b)
+					const a=Object,
+						b=a.setPrototypeOf,
+						c=class X{},
+						d=c.prototype,
+						e=a.defineProperties,
+						f=b(class undefined extends class{}{},c),
+						g=(a=>[
+							b=>a=b,
+							{
+								bar(){
+									return Reflect.get(Object.getPrototypeOf(a.prototype),"foo",this).call(this)
 								}
-							}
-						)();
-					a(c,b);
-					a(c.prototype,b.prototype);
-					return{undefined:c}
+							}.bar
+						])();
+					e(d,{foo:{value:{foo(){return 123}}.foo,writable:true,configurable:true}});
+					g[0](f);
+					b(e(f.prototype,{bar:{value:g[1],writable:true,configurable:true}}),d);
+					return{undefined:f}
 				})()`,
 				validate(obj) {
 					expect(obj).toBeObject();
@@ -4629,6 +4876,7 @@ describe('Classes', () => {
 					const SuperClass = Object.getPrototypeOf(Klass);
 					expect(SuperClass).toBeFunction();
 					expect(SuperClass.name).toBe('X');
+					expect(new Klass().bar()).toBe(123);
 				}
 			});
 		});
@@ -5387,17 +5635,17 @@ describe('Classes', () => {
 							this.x=1
 						}
 					},
-					d=(b=>b=class Y{
-						constructor(){
-							const a=Reflect.construct(Object.getPrototypeOf(b),[],b);
-							a.y=2;
-							return a
-						}
-					})(),
-					e=d.prototype;
-				b(d,c);
-				b(e,c.prototype);
-				return a.assign(a.create(e),{x:1,y:2})
+					d=b(
+						class Y extends class{}{
+							constructor(){
+								super();
+								this.y=2
+							}
+						},
+						c
+					).prototype;
+				b(d,c.prototype);
+				return a.assign(a.create(d),{x:1,y:2})
 			})()`,
 			validate(instance) {
 				expect(instance).toBeObject();

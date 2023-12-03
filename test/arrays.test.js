@@ -340,13 +340,9 @@ describe('Arrays', () => {
 			out: `(()=>{
 				const a=Object.setPrototypeOf,
 					b=Array,
-					c=(b=>b=class A{
-						constructor(...a){return Reflect.construct(Object.getPrototypeOf(b),a,b)}
-					})(),
-					d=c.prototype;
-				a(c,b);
-				a(d,b.prototype);
-				return a([],d)
+					c=a(class A extends class{}{},b).prototype;
+				a(c,b.prototype);
+				return a([],c)
 			})()`,
 			validate(arr) {
 				expect(arr).toBeArrayOfSize(0);
@@ -367,13 +363,9 @@ describe('Arrays', () => {
 			out: `(()=>{
 				const a=Object.setPrototypeOf,
 					b=Array,
-					c=(b=>b=class A{
-						constructor(...a){return Reflect.construct(Object.getPrototypeOf(b),a,b)}
-					})(),
-					d=c.prototype;
-				a(c,b);
-				a(d,b.prototype);
-				return a([1,2,3],d)
+					c=a(class A extends class{}{},b).prototype;
+				a(c,b.prototype);
+				return a([1,2,3],c)
 			})()`,
 			validate(arr) {
 				expect(arr).toBeArrayOfSize(3);
@@ -399,16 +391,12 @@ describe('Arrays', () => {
 			out: `(()=>{
 				const a=Object.setPrototypeOf,
 					b=Array,
-					c=(b=>b=class A{
-						constructor(...a){return Reflect.construct(Object.getPrototypeOf(b),a,b)}
-					})(),
-					d=c.prototype,
-					e=a([,2],d);
-				a(c,b);
-				a(d,b.prototype);
-				e[0]=e;
-				e[2]=e;
-				return e
+					c=a(class A extends class{}{},b).prototype,
+					d=a([,2],c);
+				a(c,b.prototype);
+				d[0]=d;
+				d[2]=d;
+				return d
 			})()`,
 			validate(arr) {
 				expect(arr).toBeArrayOfSize(3);

@@ -79,13 +79,9 @@ describe('Boxed Strings', () => {
 		out: `(()=>{
 			const a=String,
 				b=Object.setPrototypeOf,
-				c=(b=>b=class S{
-					constructor(...a){return Reflect.construct(Object.getPrototypeOf(b),a,b)}
-				})(),
-				d=c.prototype;
-			b(c,a);
-			b(d,a.prototype);
-			return b(new a("abc"),d)
+				c=b(class S extends class{}{},a).prototype;
+			b(c,a.prototype);
+			return b(new a("abc"),c)
 		})()`,
 		validate(str) {
 			expect(typeof str).toBe('object');
@@ -146,13 +142,9 @@ describe('Boxed Booleans', () => {
 		out: `(()=>{
 			const a=Boolean,
 				b=Object.setPrototypeOf,
-				c=(b=>b=class B{
-					constructor(...a){return Reflect.construct(Object.getPrototypeOf(b),a,b)}
-				})(),
-				d=c.prototype;
-			b(c,a);
-			b(d,a.prototype);
-			return b(new a(1),d)
+				c=b(class B extends class{}{},a).prototype;
+			b(c,a.prototype);
+			return b(new a(1),c)
 		})()`,
 		validate(bool) {
 			expect(typeof bool).toBe('object');
@@ -282,13 +274,9 @@ describe('Boxed Numbers', () => {
 		out: `(()=>{
 			const a=Number,
 				b=Object.setPrototypeOf,
-				c=(b=>b=class N{
-					constructor(...a){return Reflect.construct(Object.getPrototypeOf(b),a,b)}
-				})(),
-				d=c.prototype;
-			b(c,a);
-			b(d,a.prototype);
-			return b(new a(1),d)
+				c=b(class N extends class{}{},a).prototype;
+			b(c,a.prototype);
+			return b(new a(1),c)
 		})()`,
 		validate(num) {
 			expect(typeof num).toBe('object');
@@ -368,13 +356,9 @@ describe('Boxed BigInts', () => {
 			const a=Object,
 				b=a.setPrototypeOf,
 				c=BigInt,
-				d=(b=>b=class B{
-					constructor(...a){return Reflect.construct(Object.getPrototypeOf(b),a,b)}
-				})(),
-				e=d.prototype;
-			b(d,c);
-			b(e,c.prototype);
-			return b(a(100n),e)
+				d=b(class B extends class{}{},c).prototype;
+			b(d,c.prototype);
+			return b(a(100n),d)
 		})()`,
 		validate(bigInt) {
 			expect(typeof bigInt).toBe('object');

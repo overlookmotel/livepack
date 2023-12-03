@@ -45,13 +45,9 @@ describe('Buffers', () => {
 			out: `(()=>{
 				const a=Buffer,
 					b=Object.setPrototypeOf,
-					c=(b=>b=class B{
-						constructor(...a){return Reflect.construct(Object.getPrototypeOf(b),a,b)}
-					})(),
-					d=c.prototype;
-				b(c,a);
-				b(d,a.prototype);
-				return b(a.from("QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVo=","base64"),d)
+					c=b(class B extends class{}{},a).prototype;
+				b(c,a.prototype);
+				return b(a.from("QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVo=","base64"),c)
 			})()`,
 			validate(buf) {
 				expect(buf).toBeInstanceOf(Buffer);
@@ -377,18 +373,9 @@ describe('Buffers', () => {
 			out: `(()=>{
 				const a=Uint8Array,
 					b=Object.setPrototypeOf,
-					c=(b=>b=class B{
-						constructor(...a){
-							return Reflect.construct(Object.getPrototypeOf(b),a,b)
-						}
-					})(),
-					d=c.prototype;
-				b(c,a);
-				b(d,a.prototype);
-				return b(
-					new a([100,200]),
-					d
-				)
+					c=b(class B extends class{}{},a).prototype;
+				b(c,a.prototype);
+				return b(new a([100,200]),c)
 			})()`,
 			validate(buf) {
 				expect(buf).toBeInstanceOf(Uint8Array);

@@ -3407,11 +3407,7 @@ describe('Functions', () => {
 				},
 				out: `(()=>{
 					const a=(b=>[
-							b=class C{
-								constructor(...a){
-									return Reflect.construct(Object.getPrototypeOf(b),a,b)
-								}
-							},
+							a=>b=a,
 							{
 								getFoo(){
 									return()=>Reflect.get(Object.getPrototypeOf(b.prototype),"foo",this).call(this)
@@ -3419,15 +3415,15 @@ describe('Functions', () => {
 							}.getFoo,
 							a=>()=>Reflect.get(Object.getPrototypeOf(b.prototype),"foo",a).call(a)
 						])(),
-						b=a[0],
-						c=Object,
-						d=c.setPrototypeOf,
-						e=class S{},
-						f=e.prototype,
-						g=c.defineProperties,
-						h=b.prototype;
-					g(
-						f,
+						b=Object,
+						c=b.setPrototypeOf,
+						d=class S{},
+						e=d.prototype,
+						f=b.defineProperties,
+						g=c(class C extends class{}{},d),
+						h=g.prototype;
+					f(
+						e,
 						{
 							foo:{
 								value:{foo(){return 1}}.foo,
@@ -3436,17 +3432,17 @@ describe('Functions', () => {
 							}
 						}
 					);
-					d(b,e);
-					d(
-						g(
+					c(
+						f(
 							h,
 							{
 								getFoo:{value:a[1],writable:true,configurable:true}
 							}
 						),
-						f
+						e
 					);
-					return a[2](c.create(h))
+					a[0](g);
+					return a[2](b.create(h))
 				})()`,
 				validate(fn) {
 					expect(fn).toBeFunction();
@@ -3470,11 +3466,7 @@ describe('Functions', () => {
 				},
 				out: `(()=>{
 					const a=(b=>[
-							b=class C{
-								constructor(...a){
-									return Reflect.construct(Object.getPrototypeOf(b),a,b)
-								}
-							},
+							a=>b=a,
 							{
 								getFoo(){
 									return()=>()=>Reflect.get(Object.getPrototypeOf(b.prototype),"foo",this).call(this)
@@ -3482,15 +3474,15 @@ describe('Functions', () => {
 							}.getFoo,
 							a=>()=>Reflect.get(Object.getPrototypeOf(b.prototype),"foo",a).call(a)
 						])(),
-						b=a[0],
-						c=Object,
-						d=c.setPrototypeOf,
-						e=class S{},
-						f=e.prototype,
-						g=c.defineProperties,
-						h=b.prototype;
-					g(
-						f,
+						b=Object,
+						c=b.setPrototypeOf,
+						d=class S{},
+						e=d.prototype,
+						f=b.defineProperties,
+						g=c(class C extends class{}{},d),
+						h=g.prototype;
+					f(
+						e,
 						{
 							foo:{
 								value:{foo(){return 1}}.foo,
@@ -3499,17 +3491,17 @@ describe('Functions', () => {
 							}
 						}
 					);
-					d(b,e);
-					d(
-						g(
+					c(
+						f(
 							h,
 							{
 								getFoo:{value:a[1],writable:true,configurable:true}
 							}
 						),
-						f
+						e
 					);
-					return a[2](c.create(h))
+					a[0](g);
+					return a[2](b.create(h))
 				})()`,
 				validate(fn) {
 					expect(fn).toBeFunction();
@@ -3532,28 +3524,24 @@ describe('Functions', () => {
 					return [C, new C().getFoo()];
 				},
 				out: `(()=>{
-					const a=(b=>[
-							b=class C{
-								constructor(...a){
-									return Reflect.construct(Object.getPrototypeOf(b),a,b)
-								}
-							},
+					const a=Object,
+						b=a.setPrototypeOf,
+						c=class S{},
+						d=c.prototype,
+						e=a.defineProperties,
+						f=b(class C extends class{}{},c),
+						g=f.prototype,
+						h=(b=>[
+							a=>b=a,
 							{
 								getFoo(){
 									return()=>Reflect.get(Object.getPrototypeOf(b.prototype),"foo",this).call(this)
 								}
 							}.getFoo,
 							a=>()=>Reflect.get(Object.getPrototypeOf(b.prototype),"foo",a).call(a)
-						])(),
-						b=Object,
-						c=b.setPrototypeOf,
-						d=class S{},
-						e=d.prototype,
-						f=b.defineProperties,
-						g=a[0],
-						h=g.prototype;
-					f(
-						e,
+						])();
+					e(
+						d,
 						{
 							foo:{
 								value:{foo(){return 1}}.foo,
@@ -3562,17 +3550,17 @@ describe('Functions', () => {
 							}
 						}
 					);
-					c(g,d);
-					c(
-						f(
-							h,
+					h[0](f);
+					b(
+						e(
+							g,
 							{
-								getFoo:{value:a[1],writable:true,configurable:true}
+								getFoo:{value:h[1],writable:true,configurable:true}
 							}
 						),
-						e
+						d
 					);
-					return[g,a[2](b.create(h))]
+					return[f,h[2](a.create(g))]
 				})()`,
 				validate([C, fn]) {
 					expect(fn).toBeFunction();
@@ -3604,11 +3592,7 @@ describe('Functions', () => {
 				},
 				out: `(()=>{
 					const a=(b=>[
-							b=class C{
-								constructor(...a){
-									return Reflect.construct(Object.getPrototypeOf(b),a,b)
-								}
-							},
+							a=>b=a,
 							{
 								getFoo(){
 									return()=>Reflect.get(Object.getPrototypeOf(b.prototype),"foo",this)
@@ -3616,31 +3600,31 @@ describe('Functions', () => {
 							}.getFoo,
 							a=>()=>Reflect.get(Object.getPrototypeOf(b.prototype),"foo",a)
 						])(),
-						b=a[0],
-						c=Object,
-						d=c.setPrototypeOf,
-						e=class S{},
-						f=e.prototype,
-						g=c.defineProperties,
-						h=b.prototype;
-					g(
-						f,
+						b=Object,
+						c=b.setPrototypeOf,
+						d=class S{},
+						e=d.prototype,
+						f=b.defineProperties,
+						g=c(class C extends class{}{},d),
+						h=g.prototype;
+					f(
+						e,
 						{
 							foo:{get:{"get foo"(){return this.x*2}}["get foo"],configurable:true}
 						}
 					);
-					d(b,e);
-					d(
-						g(
+					c(
+						f(
 							h,
 							{
 								foo:{get:{"get foo"(){return this.x*3}}["get foo"],configurable:true},
 								getFoo:{value:a[1],writable:true,configurable:true}
 							}
 						),
-						f
+						e
 					);
-					return a[2](c.assign(c.create(h),{x:5}))
+					a[0](g);
+					return a[2](b.assign(b.create(h),{x:5}))
 				})()`,
 				validate(fn) {
 					expect(fn).toBeFunction();
@@ -3671,11 +3655,7 @@ describe('Functions', () => {
 				},
 				out: `(()=>{
 					const a=(b=>[
-							b=class C{
-								constructor(...a){
-									return Reflect.construct(Object.getPrototypeOf(b),a,b)
-								}
-							},
+							a=>b=a,
 							{
 								setFoo(){
 									return()=>{
@@ -3687,31 +3667,31 @@ describe('Functions', () => {
 								Reflect.set(Object.getPrototypeOf(b.prototype),"foo",5,a)
 							}
 						])(),
-						b=a[0],
-						c=Object,
-						d=c.setPrototypeOf,
-						e=class S{},
-						f=e.prototype,
-						g=c.defineProperties,
-						h=b.prototype,
-						i=c.create(h);
-					g(
-						f,
+						b=Object,
+						c=b.setPrototypeOf,
+						d=class S{},
+						e=d.prototype,
+						f=b.defineProperties,
+						g=c(class C extends class{}{},d),
+						h=g.prototype,
+						i=b.create(h);
+					f(
+						e,
 						{
 							foo:{set:{"set foo"(a){this.x=a*2}}["set foo"],configurable:true}
 						}
 					);
-					d(b,e);
-					d(
-						g(
+					c(
+						f(
 							h,
 							{
 								foo:{set:{"set foo"(a){this.x=a*3}}["set foo"],configurable:true},
 								setFoo:{value:a[1],writable:true,configurable:true}
 							}
 						),
-						f
+						e
 					);
+					a[0](g);
 					return{fn:a[2](i),c:i}
 				})()`,
 				validate({fn, c}) {
@@ -3741,11 +3721,7 @@ describe('Functions', () => {
 				},
 				out: `(()=>{
 					const a=(b=>[
-							b=class C{
-								constructor(...a){
-									return Reflect.construct(Object.getPrototypeOf(b),a,b)
-								}
-							},
+							a=>b=a,
 							{
 								getFoo(){
 									return()=>Reflect.get(Object.getPrototypeOf(b),"foo",this).call(this)
@@ -3753,11 +3729,10 @@ describe('Functions', () => {
 							}.getFoo,
 							a=>()=>Reflect.get(Object.getPrototypeOf(b),"foo",a).call(a)
 						])(),
-						b=a[0],
-						c=Object,
-						d=c.defineProperties,
-						e=c.setPrototypeOf,
-						f=d(
+						b=Object,
+						c=b.defineProperties,
+						d=b.setPrototypeOf,
+						e=c(
 							class S{},
 							{
 								foo:{
@@ -3766,18 +3741,19 @@ describe('Functions', () => {
 									configurable:true
 								}
 							}
-						);
-					e(
-						d(
-							b,
-							{
-								getFoo:{value:a[1],writable:true,configurable:true}
-							}
 						),
-						f
-					);
-					e(b.prototype,f.prototype);
-					return a[2](b)
+						f=d(
+							c(
+								class C extends class{}{},
+								{
+									getFoo:{value:a[1],writable:true,configurable:true}
+								}
+							),
+							e
+						);
+					d(f.prototype,e.prototype);
+					a[0](f);
+					return a[2](f)
 				})()`,
 				validate(fn) {
 					expect(fn).toBeFunction();
@@ -3801,11 +3777,7 @@ describe('Functions', () => {
 				},
 				out: `(()=>{
 					const a=(b=>[
-							b=class C{
-								constructor(...a){
-									return Reflect.construct(Object.getPrototypeOf(b),a,b)
-								}
-							},
+							a=>b=a,
 							{
 								getFoo(){
 									return()=>()=>Reflect.get(Object.getPrototypeOf(b),"foo",this).call(this)
@@ -3813,11 +3785,10 @@ describe('Functions', () => {
 							}.getFoo,
 							a=>()=>Reflect.get(Object.getPrototypeOf(b),"foo",a).call(a)
 						])(),
-						b=a[0],
-						c=Object,
-						d=c.defineProperties,
-						e=c.setPrototypeOf,
-						f=d(
+						b=Object,
+						c=b.defineProperties,
+						d=b.setPrototypeOf,
+						e=c(
 							class S{},
 							{
 								foo:{
@@ -3826,18 +3797,19 @@ describe('Functions', () => {
 									configurable:true
 								}
 							}
-						);
-					e(
-						d(
-							b,
-							{
-								getFoo:{value:a[1],writable:true,configurable:true}
-							}
 						),
-						f
-					);
-					e(b.prototype,f.prototype);
-					return a[2](b)
+						f=d(
+							c(
+								class C extends class{}{},
+								{
+									getFoo:{value:a[1],writable:true,configurable:true}
+								}
+							),
+							e
+						);
+					d(f.prototype,e.prototype);
+					a[0](f);
+					return a[2](f)
 				})()`,
 				validate(fn) {
 					expect(fn).toBeFunction();
@@ -3861,11 +3833,7 @@ describe('Functions', () => {
 				},
 				out: `(()=>{
 					const a=(b=>[
-							b=class C{
-								constructor(...a){
-									return Reflect.construct(Object.getPrototypeOf(b),a,b)
-								}
-							},
+							a=>b=a,
 							{
 								getFoo(){
 									return()=>Reflect.get(Object.getPrototypeOf(b),"foo",this).call(this)
@@ -3886,16 +3854,16 @@ describe('Functions', () => {
 								}
 							}
 						),
-						f=a[0];
-					d(
-						c(
-							f,
-							{
-								getFoo:{value:a[1],writable:true,configurable:true}
-							}
-						),
-						e
-					);
+						f=d(
+							c(
+								class C extends class{}{},
+								{
+									getFoo:{value:a[1],writable:true,configurable:true}
+								}
+							),
+							e
+						);
+					a[0](f);
 					d(f.prototype,e.prototype);
 					return[f,a[2](f)]
 				})()`,
@@ -3928,11 +3896,7 @@ describe('Functions', () => {
 				},
 				out: `(()=>{
 					const a=(b=>[
-							b=class C{
-								constructor(...a){
-									return Reflect.construct(Object.getPrototypeOf(b),a,b)
-								}
-							},
+							a=>b=a,
 							{
 								getFoo(){
 									return()=>Reflect.get(Object.getPrototypeOf(b),"foo",this)
@@ -3940,29 +3904,29 @@ describe('Functions', () => {
 							}.getFoo,
 							a=>()=>Reflect.get(Object.getPrototypeOf(b),"foo",a)
 						])(),
-						b=a[0],
-						c=Object,
-						d=c.defineProperties,
-						e=c.setPrototypeOf,
-						f=d(
+						b=Object,
+						c=b.defineProperties,
+						d=b.setPrototypeOf,
+						e=c(
 							class S{},
 							{
 								foo:{get:{"get foo"(){return this.x*2}}["get foo"],configurable:true}
 							}
-						);
-					e(
-						d(
-							b,
-							{
-								foo:{get:{"get foo"(){return this.x*3}}["get foo"],configurable:true},
-								getFoo:{value:a[1],writable:true,configurable:true},
-								x:{value:5,writable:true,enumerable:true,configurable:true}
-							}
 						),
-						f
-					);
-					e(b.prototype,f.prototype);
-					return a[2](b)
+						f=d(
+							c(
+								class C extends class{}{},
+								{
+									foo:{get:{"get foo"(){return this.x*3}}["get foo"],configurable:true},
+									getFoo:{value:a[1],writable:true,configurable:true},
+									x:{value:5,writable:true,enumerable:true,configurable:true}
+								}
+							),
+							e
+						);
+					d(f.prototype,e.prototype);
+					a[0](f);
+					return a[2](f)
 				})()`,
 				validate(fn) {
 					expect(fn).toBeFunction();
@@ -3992,11 +3956,7 @@ describe('Functions', () => {
 				},
 				out: `(()=>{
 					const a=(b=>[
-							b=class C{
-								constructor(...a){
-									return Reflect.construct(Object.getPrototypeOf(b),a,b)
-								}
-							},
+							a=>b=a,
 							{
 								setFoo(){
 									return()=>{
@@ -4008,28 +3968,28 @@ describe('Functions', () => {
 								Reflect.set(Object.getPrototypeOf(b),"foo",5,a)
 							}
 						])(),
-						b=a[0],
-						c=Object,
-						d=c.defineProperties,
-						e=c.setPrototypeOf,
-						f=d(
+						b=Object,
+						c=b.defineProperties,
+						d=b.setPrototypeOf,
+						e=c(
 							class S{},
 							{
 								foo:{set:{"set foo"(a){this.x=a*2}}["set foo"],configurable:true}
 							}
-						);
-					e(
-						d(
-							b,
-							{
-								foo:{set:{"set foo"(a){this.x=a*3}}["set foo"],configurable:true},
-								setFoo:{value:a[1],writable:true,configurable:true}
-							}
 						),
-						f
-					);
-					e(b.prototype,f.prototype);
-					return{fn:a[2](b),C:b}
+						f=d(
+							c(
+								class C extends class{}{},
+								{
+									foo:{set:{"set foo"(a){this.x=a*3}}["set foo"],configurable:true},
+									setFoo:{value:a[1],writable:true,configurable:true}
+								}
+							),
+							e
+						);
+					d(f.prototype,e.prototype);
+					a[0](f);
+					return{fn:a[2](f),C:f}
 				})()`,
 				validate({fn, C}) {
 					expect(fn).toBeFunction();
@@ -10395,44 +10355,52 @@ describe('Functions', () => {
 								extB = 2;
 							}
 						}
+
+						let setExtA;
+						class Klass extends SuperKlass {
+							constructor() { // eslint-disable-line constructor-super
+								// eslint-disable-next-line no-const-assign, no-return-assign
+								setExtA = (0, () => extA = super());
+							}
+						}
+						try {
+							new Klass(); // eslint-disable-line no-new
+						} catch {} // eslint-disable-line no-empty
+
 						return [
-							class extends SuperKlass {
-								constructor() {
-									extA = super(); // eslint-disable-line no-const-assign
-								}
-							},
+							setExtA,
 							() => extA,
 							() => extB
 						];
 					},
 					out: `(()=>{
 						const a=Object.setPrototypeOf,
-							b=((a,b)=>[
-								class SuperKlass{
+							b=((b,c,d)=>[
+								class Klass extends class{}{
 									constructor(){
-										b=2
+										c=(0,()=>(super(),(()=>{const a=0;a=0})()))
 									}
 								},
-								()=>a,
-								()=>b
+								class SuperKlass{
+									constructor(){d=2}
+								},
+								()=>b,
+								()=>d
 							])(1),
-							c=b[0],
-							d=(
-								c=>c=(0,class{
-									constructor(){
-										let a;
-										a=Reflect.construct(Object.getPrototypeOf(c),[],c),(()=>{const b=0;b=0})();
-										return a
-									}
-								})
-							)();
-						a(d,c);
+							c=b[1],
+							d=a(b[0],c);
 						a(d.prototype,c.prototype);
-						return[d,b[1],b[2]]
+						return[
+							(b=>()=>(
+								Reflect.construct(Object.getPrototypeOf(b),[],b),
+								(()=>{const a=0;a=0})())
+							)(d),
+							b[2],
+							b[3]
+						]
 					})()`,
-					validate([Klass, getExtA, getExtB]) {
-						expect(Klass).toBeFunction();
-						expect(() => new Klass()).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+					validate([setExtA, getExtA, getExtB]) {
+						expect(setExtA).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
 						expect(getExtA()).toBe(1); // `ext` not set
 						expect(getExtB()).toBe(2); // `SuperKlass` constructor called
 					}
@@ -10447,42 +10415,57 @@ describe('Functions', () => {
 								extB = 2;
 							}
 						}
+
+						let setExtA;
+						class Klass extends SuperKlass {
+							constructor() { // eslint-disable-line constructor-super
+								// eslint-disable-next-line no-const-assign, no-return-assign
+								setExtA = (0, () => super(extA = 3));
+							}
+						}
+						try {
+							new Klass(); // eslint-disable-line no-new
+						} catch {} // eslint-disable-line no-empty
+
 						return [
-							class extends SuperKlass {
-								constructor() {
-									super(extA = 3); // eslint-disable-line no-const-assign
-								}
-							},
+							setExtA,
 							() => extA,
 							() => extB
 						];
 					},
 					out: `(()=>{
 						const a=Object.setPrototypeOf,
-							b=((a,b)=>[
-								class SuperKlass{
+							b=((b,c,d)=>[
+								class Klass extends class{}{
 									constructor(){
-										b=2
+										c=(0,()=>super((3,(()=>{const a=0;a=0})())))
 									}
 								},
-								()=>a,
-								()=>b
-							])(1),
-							c=b[0],
-							d=(
-								b=>b=(0,class{
+								class SuperKlass{
 									constructor(){
-										return Reflect.construct(Object.getPrototypeOf(b),[(3,(()=>{const a=0;a=0})())],b)
+										d=2
 									}
-								})
-							)();
-						a(d,c);
+								},
+								()=>b,
+								()=>d
+							])(1),
+							c=b[1],
+							d=a(b[0],c);
 						a(d.prototype,c.prototype);
-						return[d,b[1],b[2]]
+						return[
+							(
+								b=>()=>Reflect.construct(
+									Object.getPrototypeOf(b),
+									[(3,(()=>{const a=0;a=0})())],
+									b
+								)
+							)(d),
+							b[2],
+							b[3]
+						]
 					})()`,
-					validate([Klass, getExtA, getExtB]) {
-						expect(Klass).toBeFunction();
-						expect(() => new Klass()).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
+					validate([setExtA, getExtA, getExtB]) {
+						expect(setExtA).toThrowWithMessage(TypeError, 'Assignment to constant variable.');
 						expect(getExtA()).toBe(1); // `ext` not set
 						expect(getExtB()).toBeUndefined(); // `SuperKlass` constructor not called
 					}

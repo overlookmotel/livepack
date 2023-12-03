@@ -98,15 +98,9 @@ describe('Sets', () => {
 			out: `(()=>{
 				const a=Set,
 					b=Object.setPrototypeOf,
-					c=(b=>b=class S{
-						constructor(...a){
-							return Reflect.construct(Object.getPrototypeOf(b),a,b)
-						}
-					})(),
-					d=c.prototype;
-				b(c,a);
-				b(d,a.prototype);
-				return b(new a,d)
+					c=b(class S extends class{}{},a).prototype;
+				b(c,a.prototype);
+				return b(new a,c)
 			})()`,
 			validate(set) {
 				expect(set).toBeInstanceOf(Set);
@@ -126,15 +120,9 @@ describe('Sets', () => {
 			out: `(()=>{
 				const a=Set,
 					b=Object.setPrototypeOf,
-					c=(b=>b=class S{
-						constructor(...a){
-							return Reflect.construct(Object.getPrototypeOf(b),a,b)
-						}
-					})(),
-					d=c.prototype;
-				b(c,a);
-				b(d,a.prototype);
-				return b(new a([1,2,3]),d)
+					c=b(class S extends class{}{},a).prototype;
+				b(c,a.prototype);
+				return b(new a([1,2,3]),c)
 			})()`,
 			validate(set) {
 				expect(set).toBeInstanceOf(Set);
@@ -158,18 +146,12 @@ describe('Sets', () => {
 			out: `(()=>{
 				const a=Set,
 					b=Object.setPrototypeOf,
-					c=(b=>b=class S{
-						constructor(...a){
-							return Reflect.construct(Object.getPrototypeOf(b),a,b)
-						}
-					})(),
-					d=c.prototype,
-					e=b(new a([1]),d);
-				b(c,a);
-				b(d,a.prototype);
-				e.add(e);
-				e.add(2);
-				return e
+					c=b(class S extends class{}{},a).prototype,
+					d=b(new a([1]),c);
+				b(c,a.prototype);
+				d.add(d);
+				d.add(2);
+				return d
 			})()`,
 			validate(set) {
 				expect(set).toBeInstanceOf(Set);

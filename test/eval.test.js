@@ -1376,26 +1376,19 @@ describe('eval', () => {
 							delete C.prototype.meth;
 						`,
 						out: `(()=>{
-							const a=(b=>[
-									b=class C{
-										constructor(...a){
-											return Reflect.construct(Object.getPrototypeOf(b),a,b)
-										}
-									},
-									a=>()=>Reflect.get(Object.getPrototypeOf(b.prototype),"meth",a).call(a)
-								])(),
-								b=a[0],
-								c=Object,
-								d=c.setPrototypeOf,
-								e=class S{},
-								f=e.prototype,
-								g=b.prototype;
-							c.defineProperties(f,{
+							const a=Object,
+								b=a.setPrototypeOf,
+								c=class S{},
+								d=c.prototype,
+								e=b(class C extends class{}{},c),
+								f=e.prototype;
+							a.defineProperties(d,{
 								meth:{value:{meth(){return 123}}.meth,writable:true,configurable:true}
 							});
-							d(b,e);
-							d(g,f);
-							return a[1](c.create(g))
+							b(f,d);
+							return(
+								b=>a=>()=>Reflect.get(Object.getPrototypeOf(b.prototype),"meth",a).call(a)
+							)(e)(a.create(f))
 						})()`,
 						validate(fn) {
 							expect(fn).toBeFunction();
@@ -1418,26 +1411,19 @@ describe('eval', () => {
 							delete C.prototype.meth;
 						`,
 						out: `(()=>{
-							const a=(b=>[
-									b=class C{
-										constructor(...a){
-											return Reflect.construct(Object.getPrototypeOf(b),a,b)
-										}
-									},
-									a=>()=>Reflect.get(Object.getPrototypeOf(b.prototype),"meth",a).call(a)
-								])(),
-								b=a[0],
-								c=Object,
-								d=c.setPrototypeOf,
-								e=class S{},
-								f=e.prototype,
-								g=b.prototype;
-							c.defineProperties(f,{
+							const a=Object,
+								b=a.setPrototypeOf,
+								c=class S{},
+								d=c.prototype,
+								e=b(class C extends class{}{},c),
+								f=e.prototype;
+							a.defineProperties(d,{
 								meth:{value:{meth(){return 123}}.meth,writable:true,configurable:true}
 							});
-							d(b,e);
-							d(g,f);
-							return a[1](c.create(g))
+							b(f,d);
+							return(
+								b=>a=>()=>Reflect.get(Object.getPrototypeOf(b.prototype),"meth",a).call(a)
+							)(e)(a.create(f))
 						})()`,
 						validate(fn) {
 							expect(fn).toBeFunction();
@@ -1461,24 +1447,17 @@ describe('eval', () => {
 							delete C.meth;
 						`,
 						out: `(()=>{
-							const a=(b=>[
-									b=class C{
-										constructor(...a){
-											return Reflect.construct(Object.getPrototypeOf(b),a,b)
-										}
-									},
-									a=>()=>Reflect.get(Object.getPrototypeOf(b),"meth",a).call(a)
-								])(),
-								b=a[0],
-								c=Object,
-								d=c.setPrototypeOf,
-								e=c.defineProperties(
+							const a=Object,
+								b=a.setPrototypeOf,
+								c=a.defineProperties(
 									class S{},
 									{meth:{value:{meth(){return 123}}.meth,writable:true,configurable:true}}
-								);
-							d(b,e);
-							d(b.prototype,e.prototype);
-							return a[1](b)
+								),
+								d=b(class C extends class{}{},c);
+							b(d.prototype,c.prototype);
+							return(
+								b=>a=>()=>Reflect.get(Object.getPrototypeOf(b),"meth",a).call(a)
+							)(d)(d)
 						})()`,
 						validate(fn) {
 							expect(fn).toBeFunction();
@@ -1500,24 +1479,17 @@ describe('eval', () => {
 							delete C.meth;
 						`,
 						out: `(()=>{
-							const a=(b=>[
-									b=class C{
-										constructor(...a){
-											return Reflect.construct(Object.getPrototypeOf(b),a,b)
-										}
-									},
-									a=>()=>Reflect.get(Object.getPrototypeOf(b),"meth",a).call(a)
-								])(),
-								b=a[0],
-								c=Object,
-								d=c.setPrototypeOf,
-								e=c.defineProperties(
+							const a=Object,
+								b=a.setPrototypeOf,
+								c=a.defineProperties(
 									class S{},
 									{meth:{value:{meth(){return 123}}.meth,writable:true,configurable:true}}
-								);
-							d(b,e);
-							d(b.prototype,e.prototype);
-							return a[1](b)
+								),
+								d=b(class C extends class{}{},c);
+							b(d.prototype,c.prototype);
+							return(
+								b=>a=>()=>Reflect.get(Object.getPrototypeOf(b),"meth",a).call(a)
+							)(d)(d)
 						})()`,
 						validate(fn) {
 							expect(fn).toBeFunction();
@@ -1533,7 +1505,7 @@ describe('eval', () => {
 								meth() { return 123; }
 							}
 							class C extends S {
-								constructor(module, exports, obj) {
+								constructor(module, exports, S, obj) {
 									super();
 									this.f = eval('() => super.meth()');
 								}
@@ -1544,19 +1516,22 @@ describe('eval', () => {
 							delete obj.f;
 						`,
 						out: `(()=>{
-							const a=class S{},
-								b=a.prototype,
-								c=Object,
-								d=(0,eval)("\\"use strict\\";S=>_b=>[_b=class C{constructor(module,exports,obj){const _a=Reflect.construct(Object.getPrototypeOf(_b),[],_b);_a.f=eval(\\"() => super.meth()\\");return _a}},a=>()=>Reflect.get(Object.getPrototypeOf(_b.prototype),\\"meth\\",a).call(a)]")(a)(),
-								e=d[0],
-								f=c.setPrototypeOf,
-								g=e.prototype;
-							c.defineProperties(b,{
+							const a=Object,
+								b=a.setPrototypeOf,
+								c=class S{},
+								d=c.prototype,
+								e=b(
+									(0,eval)("(class C extends class{}{constructor(module,exports,S,obj){super();this.f=eval(\\"() => super.meth()\\")}})"),
+									c
+								),
+								f=e.prototype;
+							a.defineProperties(d,{
 								meth:{value:{meth(){return 123}}.meth,writable:true,configurable:true}
 							});
-							f(e,a);
-							f(g,b);
-							return d[1](c.create(g))
+							b(f,d);
+							return(
+								b=>a=>()=>Reflect.get(Object.getPrototypeOf(b.prototype),"meth",a).call(a)
+							)(e)(a.create(f))
 						})()`,
 						validate(fn) {
 							expect(fn).toBeFunction();
@@ -1570,7 +1545,7 @@ describe('eval', () => {
 								meth() { return 123; }
 							}
 							class C extends S {
-								constructor(module, exports, obj) {
+								constructor(module, exports, S, obj) {
 									super();
 									this.f = eval('let livepack_tracker; () => super.meth()');
 								}
@@ -1581,19 +1556,22 @@ describe('eval', () => {
 							delete obj.f;
 						`,
 						out: `(()=>{
-							const a=class S{},
-								b=a.prototype,
-								c=Object,
-								d=(0,eval)("\\"use strict\\";S=>_b=>[_b=class C{constructor(module,exports,obj){const _a=Reflect.construct(Object.getPrototypeOf(_b),[],_b);_a.f=eval(\\"let livepack_tracker; () => super.meth()\\");return _a}},a=>()=>Reflect.get(Object.getPrototypeOf(_b.prototype),\\"meth\\",a).call(a)]")(a)(),
-								e=d[0],
-								f=c.setPrototypeOf,
-								g=e.prototype;
-							c.defineProperties(b,{
+							const a=Object,
+								b=a.setPrototypeOf,
+								c=class S{},
+								d=c.prototype,
+								e=b(
+									(0,eval)("(class C extends class{}{constructor(module,exports,S,obj){super();this.f=eval(\\"let livepack_tracker; () => super.meth()\\")}})"),
+									c
+								),
+								f=e.prototype;
+							a.defineProperties(d,{
 								meth:{value:{meth(){return 123}}.meth,writable:true,configurable:true}
 							});
-							f(e,a);
-							f(g,b);
-							return d[1](c.create(g))
+							b(f,d);
+							return(
+								b=>a=>()=>Reflect.get(Object.getPrototypeOf(b.prototype),"meth",a).call(a)
+							)(e)(a.create(f))
 						})()`,
 						validate(fn) {
 							expect(fn).toBeFunction();
