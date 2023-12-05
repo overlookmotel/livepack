@@ -47,9 +47,7 @@ module.exports = { // eslint-disable-line jest/no-export
 };
 
 // `LIVEPACK_TEST_QUICK` env runs tests in default options only
-const DEFAULT_OPTIONS = process.env.LIVEPACK_TEST_QUICK
-	? {minify: true, mangle: true, inline: true}
-	: null;
+const DEFAULT_OPTIONS = process.env.LIVEPACK_TEST_QUICK ? {minify: true, mangle: true} : null;
 const PROFILE_ONLY = process.env.LIVEPACK_TEST_PROFILE;
 
 // Hook to empty split points registry after each test
@@ -142,7 +140,6 @@ function createRunExpectationFn(callFn) {
  * @param {boolean} [options.preserveComments=false] - If set, does not remove comments from output
  *   before comparing against `options.out`
  * @param {boolean} [options.minify] - If defined, only runs with that option
- * @param {boolean} [options.inline] - If defined, only runs with that option
  * @param {boolean} [options.mangle] - If defined, only runs with that option
  * @param {boolean} [options.strictEnv] - If defined, calls `serialize()` with that option
  * @param {string} [options.entryChunkName] - If defined, calls `serialize()` with that option
@@ -284,7 +281,7 @@ function itSerializes(name, options, defaultOptions, describe, runExpectation) {
 			'in', 'out', 'outJs', 'outEsm', 'outCjs',
 			'validate', 'validateInput', 'validateOutput',
 			'format', 'equal', 'entries', 'preserveLineBreaks', 'preserveComments',
-			'minify', 'inline', 'mangle',
+			'minify', 'mangle',
 			'strictEnv',
 			'entryChunkName', 'splitChunkName', 'commonChunkName'
 		].includes(key)
@@ -362,7 +359,7 @@ function itSerializes(name, options, defaultOptions, describe, runExpectation) {
 
 		// Check output matches expected
 		const expectedOutput = expectedOutputs[opts.format];
-		if (opts.minify && opts.inline && opts.mangle && expectedOutput !== undefined) {
+		if (opts.minify && opts.mangle && expectedOutput !== undefined) {
 			const testFilesObj = preserveComments
 				? outputFilesObj
 				: mapValues(outputFilesObj, stripComments);
@@ -414,10 +411,9 @@ function itSerializes(name, options, defaultOptions, describe, runExpectation) {
 }
 
 /**
- * Run test function with all combinations of `minify`, `inline` and `mangle` options.
+ * Run test function with all combinations of `minify` and `mangle` options.
  * @param {Object} options - Options object
  * @param {boolean} [options.minify] - If defined, only runs with that option
- * @param {boolean} [options.inline] - If defined, only runs with that option
  * @param {boolean} [options.mangle] - If defined, only runs with that option
  * @param {Function} fn - Test function
  * @returns {undefined}
@@ -427,14 +423,10 @@ function itAllOptions(options, fn) {
 
 	for (const minify of options.minify === undefined ? [true, false] : [options.minify]) {
 		describe(`minify: ${minify}`, () => {
-			for (const inline of options.inline === undefined ? [true, false] : [options.inline]) {
-				describe(`inline: ${inline}`, () => {
-					for (const mangle of options.mangle === undefined ? [true, false] : [options.mangle]) {
-						// eslint-disable-next-line jest/expect-expect, arrow-body-style
-						it(`mangle: ${mangle}`, () => {
-							return fn({minify, inline, mangle}); // eslint-disable-line jest/no-test-return-statement
-						});
-					}
+			for (const mangle of options.mangle === undefined ? [true, false] : [options.mangle]) {
+				// eslint-disable-next-line jest/expect-expect, arrow-body-style
+				it(`mangle: ${mangle}`, () => {
+					return fn({minify, mangle}); // eslint-disable-line jest/no-test-return-statement
 				});
 			}
 		});

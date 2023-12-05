@@ -289,21 +289,7 @@ describe('Options', () => {
 		});
 
 		it('false', () => {
-			expect(serialize({a: 1}, {minify: false, inline: true})).toBe('{\n  a: 1\n}\n');
-		});
-	});
-
-	describe('inline', () => {
-		it('default', () => {
-			expect(serialize({a: {b: 1}})).toBe('{a:{b:1}}');
-		});
-
-		it('true', () => {
-			expect(serialize({a: {b: 1}}, {inline: true})).toBe('{a:{b:1}}');
-		});
-
-		it('false', () => {
-			expect(serialize({a: {b: 1}}, {inline: false})).toBe('(()=>{const a={b:1},b={a};return b})()');
+			expect(serialize({a: 1}, {minify: false})).toBe('{\n  a: 1\n}\n');
 		});
 	});
 

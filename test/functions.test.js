@@ -8429,7 +8429,6 @@ describe('Functions', () => {
 					return (x, y) => [a, x, y]; // eslint-disable-line no-undef
 				},
 				minify: true,
-				inline: true,
 				mangle: true,
 				validateOutput(fn, {outputJs}) {
 					expect(stripSourceMapComment(outputJs)).toBe('(b,c)=>[a,b,c]');
@@ -8442,7 +8441,6 @@ describe('Functions', () => {
 					return {a: fn, b: fn};
 				},
 				minify: true,
-				inline: true,
 				mangle: false,
 				validateOutput(fn, {outputJs}) {
 					expect(stripSourceMapComment(outputJs)).toBe(
@@ -8457,7 +8455,6 @@ describe('Functions', () => {
 				return (x, y) => function a() { return [x, y]; };
 			},
 			minify: true,
-			inline: true,
 			mangle: true,
 			validateOutput(fn, {outputJs}) {
 				expect(stripSourceMapComment(outputJs)).toBe('(b,c)=>function a(){return[b,c]}');
@@ -8472,7 +8469,6 @@ describe('Functions', () => {
 				return fn;
 			},
 			minify: true,
-			inline: true,
 			validateOutput(fn, {outputJs, mangle}) {
 				expect(stripSourceMapComment(outputJs)).toBe(
 					mangle
@@ -8488,7 +8484,6 @@ describe('Functions', () => {
 				return {console: function() { return console; }}.console;
 			},
 			minify: true,
-			inline: true,
 			validateOutput(fn, {outputJs}) {
 				expect(stripSourceMapComment(outputJs)).toBe(
 					'Object.defineProperties(function(){return console},{name:{value:"console"}})'
@@ -11170,7 +11165,7 @@ describe('Functions', () => {
 				return {
 					in: () => (0, eval)(fnStrWithExtAdded), // eslint-disable-line no-eval
 					strictEnv: false,
-					validate(wrapperFn, {isOutput, outputJs, minify, mangle, inline}) {
+					validate(wrapperFn, {isOutput, outputJs, minify, mangle}) {
 						const fn = wrapperFn();
 						expect(fn).toBeFunction();
 						expect(fn).toHaveLength(len);
@@ -11181,7 +11176,7 @@ describe('Functions', () => {
 							expect(fn(...callArgs)).toEqual(expectedRes);
 						}
 
-						if (isOutput && minify && !mangle && inline) {
+						if (isOutput && minify && !mangle) {
 							expect(stripLineBreaks(outputJs)).toBe(fnStrWithExtAdded.replace(/ /g, ''));
 						}
 					}

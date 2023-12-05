@@ -76,15 +76,11 @@ describe('Built-in modules', () => {
 				in: () => ({path: pathModule, path2: pathModule, path3: pathModule}),
 				format: 'esm',
 				minify: true,
-				validateOutput(obj, {outputJs, mangle, inline}) {
+				validateOutput(obj, {outputJs, mangle}) {
 					expect(stripSourceMapComment(outputJs)).toBe(
 						mangle
-							? inline
-								? 'import a from"path";export default{path:a,path2:a,path3:a}'
-								: 'import a from"path";const b={path:a,path2:a,path3:a};export default b'
-							: inline
-								? 'import path from"path";export default{path,path2:path,path3:path}'
-								: 'import path from"path";const index={path,path2:path,path3:path};export default index'
+							? 'import a from"path";export default{path:a,path2:a,path3:a}'
+							: 'import path from"path";export default{path,path2:path,path3:path}'
 					);
 				}
 			});
@@ -130,15 +126,11 @@ describe('Built-in modules', () => {
 				in: () => pathJoin,
 				format: 'esm',
 				minify: true,
-				validateOutput(res, {outputJs, mangle, inline}) {
+				validateOutput(res, {outputJs, mangle}) {
 					expect(stripSourceMapComment(outputJs)).toBe(
 						mangle
-							? inline
-								? 'import a from"path";export default a.join'
-								: 'import a from"path";const b=a.join;export default b'
-							: inline
-								? 'import path from"path";export default path.join'
-								: 'import path from"path";const pathJoin=path.join;export default pathJoin'
+							? 'import a from"path";export default a.join'
+							: 'import path from"path";export default path.join'
 					);
 				}
 			});
@@ -174,15 +166,11 @@ describe('Built-in modules', () => {
 				in: () => ({pathJoin, pathJoin2: pathJoin, pathJoin3: pathJoin}),
 				format: 'esm',
 				minify: true,
-				validateOutput(obj, {outputJs, mangle, inline}) {
+				validateOutput(obj, {outputJs, mangle}) {
 					expect(stripSourceMapComment(outputJs)).toBe(
 						mangle
-							? inline
-								? 'import a from"path";const b=a.join;export default{pathJoin:b,pathJoin2:b,pathJoin3:b}'
-								: 'import a from"path";const b=a.join,c={pathJoin:b,pathJoin2:b,pathJoin3:b};export default c'
-							: inline
-								? 'import path from"path";const pathJoin=path.join;export default{pathJoin,pathJoin2:pathJoin,pathJoin3:pathJoin}'
-								: 'import path from"path";const pathJoin=path.join,index={pathJoin,pathJoin2:pathJoin,pathJoin3:pathJoin};export default index'
+							? 'import a from"path";const b=a.join;export default{pathJoin:b,pathJoin2:b,pathJoin3:b}'
+							: 'import path from"path";const pathJoin=path.join;export default{pathJoin,pathJoin2:pathJoin,pathJoin3:pathJoin}'
 					);
 				}
 			});

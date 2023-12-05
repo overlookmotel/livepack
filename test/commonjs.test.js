@@ -103,20 +103,8 @@ describe('`__dirname`', () => {
 			return () => __dirname;
 		},
 		out: '()=>__dirname',
-		validateOutput(fn, {outputJs, minify, inline, mangle}) {
-			expect(stripLineBreaks(outputJs)).toBe(
-				minify
-					? inline
-						? '()=>__dirname'
-						: mangle
-							? '(()=>{const a=(0,()=>__dirname);return a})()'
-							: '(()=>{const index=(0,()=>__dirname);return index})()'
-					: inline
-						? '() => __dirname'
-						: mangle
-							? '(() => {const a = (0, () => __dirname);return a;})()'
-							: '(() => {const index = (0, () => __dirname);return index;})()'
-			);
+		validateOutput(fn, {outputJs, minify}) {
+			expect(stripLineBreaks(outputJs)).toBe(minify ? '()=>__dirname' : '() => __dirname');
 		}
 	});
 });
@@ -133,20 +121,8 @@ describe('`__filename`', () => {
 			return () => __filename;
 		},
 		out: '()=>__filename',
-		validateOutput(fn, {outputJs, minify, inline, mangle}) {
-			expect(stripLineBreaks(outputJs)).toBe(
-				minify
-					? inline
-						? '()=>__filename'
-						: mangle
-							? '(()=>{const a=(0,()=>__filename);return a})()'
-							: '(()=>{const index=(0,()=>__filename);return index})()'
-					: inline
-						? '() => __filename'
-						: mangle
-							? '(() => {const a = (0, () => __filename);return a;})()'
-							: '(() => {const index = (0, () => __filename);return index;})()'
-			);
+		validateOutput(fn, {outputJs, minify}) {
+			expect(stripLineBreaks(outputJs)).toBe(minify ? '()=>__filename' : '() => __filename');
 		}
 	});
 });

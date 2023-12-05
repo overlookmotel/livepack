@@ -41,7 +41,6 @@ describe('Symbols', () => {
 
 	itSerializes('name var after symbol description', {
 		minify: true,
-		inline: true,
 		mangle: false,
 		in() {
 			const s = Symbol('foo bar');

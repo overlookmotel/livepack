@@ -2196,7 +2196,7 @@ describe('eval', () => {
 							")(a)
 						}
 					})()`,
-					validate({evalFn, ext, console: ext2}, {isOutput, minify, mangle, inline, outputJs}) {
+					validate({evalFn, ext, console: ext2}, {isOutput, minify, mangle, outputJs}) {
 						expect(evalFn).toBeFunction();
 						const res = evalFn();
 						expect(res).toBeObject();
@@ -2206,7 +2206,7 @@ describe('eval', () => {
 						expect(ext2).toBe(ext);
 
 						// Test top level var naming unaffected by global use inside eval when mangle disabled
-						if (isOutput && minify && !mangle && inline) {
+						if (isOutput && minify && !mangle) {
 							expect(stripSourceMapComment(outputJs)).toBe(stripLineBreaks(`
 								(()=>{
 									const console={x:1};
@@ -2242,7 +2242,7 @@ describe('eval', () => {
 							evalFn:(0,eval)("()=>eval(\\"({console, typeofA: typeof a})\\")")
 						}
 					})()`,
-					validate({evalFn, ext, console: ext2}, {isOutput, minify, mangle, inline, outputJs}) {
+					validate({evalFn, ext, console: ext2}, {isOutput, minify, mangle, outputJs}) {
 						expect(evalFn).toBeFunction();
 						const res = evalFn();
 						expect(res).toBeObject();
@@ -2252,7 +2252,7 @@ describe('eval', () => {
 						expect(ext2).toBe(ext);
 
 						// Test top level var naming unaffected by global use inside eval when mangle disabled
-						if (isOutput && minify && !mangle && inline) {
+						if (isOutput && minify && !mangle) {
 							expect(stripSourceMapComment(outputJs)).toBe(stripLineBreaks(`
 								(()=>{
 									const console={x:1};

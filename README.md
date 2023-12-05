@@ -159,7 +159,6 @@ module.exports = (async () => {
 | `--entry-chunk-name` | Template for entry point chunk names ([more info](#customizing-chunk-names)) | `[name]` |
 | `--split-chunk-name` | Template for split chunk names ([more info](#customizing-chunk-names)) | `[name].[hash]` |
 | `--common-chunk-name` | Template for common chunk names ([more info](#customizing-chunk-names)) | `common.[hash]` |
-| `--no-inline` | More verbose output. Only useful for debugging. | Inlining enabled |
 | `--source-maps` / `-s` | Output source maps. `--source-maps inline` for inline source maps. | Disabled |
 | `--no-exec` | Output a file which exports the input rather than executes it. | Exec enabled |
 | `--stats` | Output stats file.<br />Provide filename or `true` for `livepack-stats.json`. | Disabled |
@@ -182,7 +181,6 @@ You can set options in a `livepack.config.json` file rather than on command line
   "minify": true,
   "mangle": true,
   "comments": false,
-  "inline": true,
   "entryChunkName": "[name]",
   "splitChunkName": "[name].[hash]",
   "commonChunkName": "common.[hash]",
@@ -310,7 +308,6 @@ serialize( {x: 1}, {
 | `minify` | `boolean` | Minify output | `true` |
 | `mangle` | `boolean` | Mangle (shorten) variable names | `options.minify` |
 | `comments` | `boolean` | Include comments in output | `!options.minify` |
-| `inline` | `boolean` | Less verbose output | `true` |
 | `files` | `boolean` | `true` to output array of files (see [below](#files)) | `false` for `serialize()`,<br />`true` for `serializeEntries()` |
 | `strictEnv` | `boolean` | `true` if environment code will execute in is strict mode (only relevant for `js` format) | `false` for `js` or `cjs` format, `true` for `esm` |
 | `entryChunkName` | `string` | Template for entry point chunk names ([more info](#customizing-chunk-names)) | `'[name]'` |

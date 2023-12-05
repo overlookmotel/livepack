@@ -63,7 +63,6 @@ describe('Globals', () => {
 
 		itSerializesEqual('vars named with full path', {
 			minify: true,
-			inline: true,
 			mangle: false,
 			in: () => ({a: Object.assign, b: Object.assign}),
 			validateOutput(obj, {outputJs}) {
@@ -100,7 +99,6 @@ describe('Globals', () => {
 
 		itSerializesEqual('vars named with full path', {
 			minify: true,
-			inline: true,
 			mangle: false,
 			in: () => ({a: Array.prototype.slice, b: Array.prototype.slice}),
 			validateOutput(obj, {outputJs}) {

@@ -1730,29 +1730,28 @@ describe('Code splitting', () => {
 				in() {
 					function shared() {}
 					return {
-						one: {shared},
-						two: {shared}
+						one: {shared, shared2: shared},
+						two: {shared, shared2: shared}
 					};
 				},
 				minify: true,
 				mangle: false,
-				inline: false,
 				validateOutput(entries, {format, outputJs}) {
 					expect(mapValues(outputJs, stripSourceMapComment)).toEqual({
 						cjs: {
-							'one.js': 'const shared=require("./common.ES3UJHYS.js"),one={shared};module.exports=one',
-							'two.js': 'const shared=require("./common.ES3UJHYS.js"),two={shared};module.exports=two',
-							'common.ES3UJHYS.js': '"use strict";const shared=function shared(){};module.exports=shared'
+							'one.js': 'const shared=require("./common.IJKW3HB4.js");module.exports={shared,shared2:shared}',
+							'two.js': 'const shared=require("./common.IJKW3HB4.js");module.exports={shared,shared2:shared}',
+							'common.IJKW3HB4.js': '"use strict";module.exports=function shared(){}'
 						},
 						esm: {
-							'one.js': 'import shared from"./common.KST74VJL.js";const one={shared};export default one',
-							'two.js': 'import shared from"./common.KST74VJL.js";const two={shared};export default two',
-							'common.KST74VJL.js': 'const shared=function shared(){};export default shared'
+							'one.js': 'import shared from"./common.FYASFQEL.js";export default{shared,shared2:shared}',
+							'two.js': 'import shared from"./common.FYASFQEL.js";export default{shared,shared2:shared}',
+							'common.FYASFQEL.js': 'export default function shared(){}'
 						},
 						js: {
-							'one.js': '(()=>{const shared=require("./common.ES3UJHYS.js"),one={shared};return one})()',
-							'two.js': '(()=>{const shared=require("./common.ES3UJHYS.js"),two={shared};return two})()',
-							'common.ES3UJHYS.js': '"use strict";const shared=function shared(){};module.exports=shared'
+							'one.js': '(()=>{const shared=require("./common.IJKW3HB4.js");return{shared,shared2:shared}})()',
+							'two.js': '(()=>{const shared=require("./common.IJKW3HB4.js");return{shared,shared2:shared}})()',
+							'common.IJKW3HB4.js': '"use strict";module.exports=function shared(){}'
 						}
 					}[format]);
 				}
@@ -1763,29 +1762,28 @@ describe('Code splitting', () => {
 					function shared1() {}
 					function shared2() {}
 					return {
-						one: {shared1, shared2},
-						two: {shared1, shared2}
+						one: {shared1, shared2, s1: shared1, s2: shared2},
+						two: {shared1, shared2, s1: shared1, s2: shared2}
 					};
 				},
 				minify: true,
 				mangle: false,
-				inline: false,
 				validateOutput(entries, {format, outputJs}) {
 					expect(mapValues(outputJs, stripSourceMapComment)).toEqual({
 						cjs: {
-							'one.js': 'const shared1_shared2=require("./common.5WJVFRQQ.js"),shared1=shared1_shared2[0],shared2=shared1_shared2[1],one={shared1,shared2};module.exports=one',
-							'two.js': 'const shared1_shared2=require("./common.5WJVFRQQ.js"),shared1=shared1_shared2[0],shared2=shared1_shared2[1],two={shared1,shared2};module.exports=two',
-							'common.5WJVFRQQ.js': '"use strict";const shared1=function shared1(){},shared2=function shared2(){},shared1_shared2=[shared1,shared2];module.exports=shared1_shared2'
+							'one.js': 'const shared1_shared2=require("./common.AIZS66PB.js"),shared1=shared1_shared2[0],shared2=shared1_shared2[1];module.exports={shared1,shared2,s1:shared1,s2:shared2}',
+							'two.js': 'const shared1_shared2=require("./common.AIZS66PB.js"),shared1=shared1_shared2[0],shared2=shared1_shared2[1];module.exports={shared1,shared2,s1:shared1,s2:shared2}',
+							'common.AIZS66PB.js': '"use strict";module.exports=[function shared1(){},function shared2(){}]'
 						},
 						esm: {
-							'one.js': 'import shared1_shared2 from"./common.VSFPYWJY.js";const shared1=shared1_shared2[0],shared2=shared1_shared2[1],one={shared1,shared2};export default one',
-							'two.js': 'import shared1_shared2 from"./common.VSFPYWJY.js";const shared1=shared1_shared2[0],shared2=shared1_shared2[1],two={shared1,shared2};export default two',
-							'common.VSFPYWJY.js': 'const shared1=function shared1(){},shared2=function shared2(){},shared1_shared2=[shared1,shared2];export default shared1_shared2'
+							'one.js': 'import shared1_shared2 from"./common.5HYUMQZQ.js";const shared1=shared1_shared2[0],shared2=shared1_shared2[1];export default{shared1,shared2,s1:shared1,s2:shared2}',
+							'two.js': 'import shared1_shared2 from"./common.5HYUMQZQ.js";const shared1=shared1_shared2[0],shared2=shared1_shared2[1];export default{shared1,shared2,s1:shared1,s2:shared2}',
+							'common.5HYUMQZQ.js': 'export default[function shared1(){},function shared2(){}]'
 						},
 						js: {
-							'one.js': '(()=>{const shared1_shared2=require("./common.5WJVFRQQ.js"),shared1=shared1_shared2[0],shared2=shared1_shared2[1],one={shared1,shared2};return one})()',
-							'two.js': '(()=>{const shared1_shared2=require("./common.5WJVFRQQ.js"),shared1=shared1_shared2[0],shared2=shared1_shared2[1],two={shared1,shared2};return two})()',
-							'common.5WJVFRQQ.js': '"use strict";const shared1=function shared1(){},shared2=function shared2(){},shared1_shared2=[shared1,shared2];module.exports=shared1_shared2'
+							'one.js': '(()=>{const shared1_shared2=require("./common.AIZS66PB.js"),shared1=shared1_shared2[0],shared2=shared1_shared2[1];return{shared1,shared2,s1:shared1,s2:shared2}})()',
+							'two.js': '(()=>{const shared1_shared2=require("./common.AIZS66PB.js"),shared1=shared1_shared2[0],shared2=shared1_shared2[1];return{shared1,shared2,s1:shared1,s2:shared2}})()',
+							'common.AIZS66PB.js': '"use strict";module.exports=[function shared1(){},function shared2(){}]'
 						}
 					}[format]);
 				}
@@ -2303,33 +2301,6 @@ describe('Code splitting', () => {
 				outJs: {
 					'one.js': 'require("./split1.QEIVLBZW.js")',
 					'split1.QEIVLBZW.js': 'module.exports={x:1}'
-				}
-			});
-
-			itSerializesEntriesEqual('does not include proxy var if `inline` option off', {
-				in() {
-					return {
-						one: split({x: 1}, 'split1')
-					};
-				},
-				minify: true,
-				mangle: false,
-				inline: false,
-				validateOutput(obj, {format, outputJs}) {
-					expect(mapValues(outputJs, stripSourceMapComment)).toEqual({
-						cjs: {
-							'one.js': 'const one=require("./split1.BFDZPM3P.js");module.exports=one',
-							'split1.BFDZPM3P.js': 'const one={x:1};module.exports=one'
-						},
-						esm: {
-							'one.js': 'import one from"./split1.A6Y24AYR.js";export default one',
-							'split1.A6Y24AYR.js': 'const one={x:1};export default one'
-						},
-						js: {
-							'one.js': '(()=>{const one=require("./split1.BFDZPM3P.js");return one})()',
-							'split1.BFDZPM3P.js': 'const one={x:1};module.exports=one'
-						}
-					}[format]);
 				}
 			});
 		});

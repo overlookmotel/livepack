@@ -56,11 +56,21 @@ describe('Objects', () => {
 
 		itSerializesEqual('properties with names which are JS reserved words', {
 			// This test is to ensure doesn't create illegally-named intermediate vars when
-			// `mangle` and `inline` options false
-			in: () => ({
-				if: {}, do: {}, this: {}, arguments: {}, repeat: {if: {}, do: {}, this: {}, arguments: {}}
-			}),
-			out: '{if:{},do:{},this:{},arguments:{},repeat:{if:{},do:{},this:{},arguments:{}}}'
+			// `mangle` option false
+			in() {
+				const a = {},
+					b = {},
+					c = {},
+					d = {};
+				return {
+					if: a,
+					do: b,
+					this: c,
+					arguments: d,
+					repeats: [a, b, c, d]
+				};
+			},
+			out: '(()=>{const a={},b={},c={},d={};return{if:a,do:b,this:c,arguments:d,repeats:[a,b,c,d]}})()'
 		});
 
 		itSerializesEqual('with undefined value', {
