@@ -8,7 +8,8 @@
 'use strict';
 
 // Imports
-const {itSerializes} = require('./support/index.js');
+const {serialize} = require('livepack'),
+	{itSerializes} = require('./support/index.js');
 
 // Tests
 
@@ -5571,6 +5572,351 @@ describe('Classes', () => {
 					}
 				}`,
 				validate
+			});
+		});
+	});
+
+	describe('class properties', () => {
+		// Tests for https://github.com/overlookmotel/livepack/issues/549
+		describe('prototype properties do not produce side effects when serializing class', () => {
+			describe('class with no super class', () => {
+				describe('with no constructor', () => {
+					it('property with value', () => {
+						const calls = [];
+						class C {
+							x = calls.push('prop');
+						}
+						serialize(C);
+						expect(calls).toEqual([]);
+					});
+
+					it('property with no value first', () => {
+						const calls = [];
+						class C {
+							x;
+							y = calls.push('prop');
+						}
+						serialize(C);
+						expect(calls).toEqual([]);
+					});
+
+					it('private property with value', () => {
+						const calls = [];
+						class C {
+							#x = calls.push('prop');
+						}
+						serialize(C);
+						expect(calls).toEqual([]);
+					});
+
+					it('private property with no value first', () => {
+						const calls = [];
+						class C {
+							#x;
+							#y = calls.push('prop');
+						}
+						serialize(C);
+						expect(calls).toEqual([]);
+					});
+				});
+
+				describe('with constructor', () => {
+					it('property with value', () => {
+						const calls = [];
+						class C {
+							x = calls.push('prop');
+							constructor({y}) {
+								this.f = () => y;
+							}
+						}
+						serialize(C);
+						expect(calls).toEqual([]);
+					});
+
+					it('property with no value first', () => {
+						const calls = [];
+						class C {
+							x;
+							y = calls.push('prop');
+							constructor({y}) {
+								this.f = () => y;
+							}
+						}
+						serialize(C);
+						expect(calls).toEqual([]);
+					});
+
+					it('private property with value', () => {
+						const calls = [];
+						class C {
+							#x = calls.push('prop');
+							constructor({y}) {
+								this.f = () => y;
+							}
+						}
+						serialize(C);
+						expect(calls).toEqual([]);
+					});
+
+					it('private property with no value first', () => {
+						const calls = [];
+						class C {
+							#x;
+							#y = calls.push('prop');
+							constructor({y}) {
+								this.f = () => y;
+							}
+						}
+						serialize(C);
+						expect(calls).toEqual([]);
+					});
+				});
+			});
+
+			describe('class with super class', () => {
+				describe('with no constructor', () => {
+					it('property with value', () => {
+						const calls = [];
+						class S {
+							x = calls.push('super prop');
+						}
+						class C extends S {
+							y = calls.push('prop');
+						}
+						serialize(C);
+						expect(calls).toEqual([]);
+					});
+
+					it('property with no value first', () => {
+						const calls = [];
+						class S {
+							w;
+							x = calls.push('super prop');
+						}
+						class C extends S {
+							y;
+							z = calls.push('prop');
+						}
+						serialize(C);
+						expect(calls).toEqual([]);
+					});
+
+					it('private property with value', () => {
+						const calls = [];
+						class S {
+							#x = calls.push('super prop');
+						}
+						class C extends S {
+							#y = calls.push('prop');
+						}
+						serialize(C);
+						expect(calls).toEqual([]);
+					});
+
+					it('private property with no value first', () => {
+						const calls = [];
+						class S {
+							#w;
+							#x = calls.push('super prop');
+						}
+						class C extends S {
+							#y;
+							#z = calls.push('prop');
+						}
+						serialize(C);
+						expect(calls).toEqual([]);
+					});
+				});
+
+				describe('with constructor', () => {
+					it('property with value', () => {
+						const calls = [];
+						class S {
+							x = calls.push('super prop');
+						}
+						class C extends S {
+							y = calls.push('prop');
+							constructor({y}) {
+								super();
+								this.f = () => y;
+							}
+						}
+						serialize(C);
+						expect(calls).toEqual([]);
+					});
+
+					it('property with no value first', () => {
+						const calls = [];
+						class S {
+							w;
+							x = calls.push('super prop');
+						}
+						class C extends S {
+							y;
+							z = calls.push('prop');
+							constructor({y}) {
+								super();
+								this.f = () => y;
+							}
+						}
+						serialize(C);
+						expect(calls).toEqual([]);
+					});
+
+					it('private property with value', () => {
+						const calls = [];
+						class S {
+							#x = calls.push('super prop');
+						}
+						class C extends S {
+							#y = calls.push('prop');
+							constructor({y}) {
+								super();
+								this.f = () => y;
+							}
+						}
+						serialize(C);
+						expect(calls).toEqual([]);
+					});
+
+					it('private property with no value first', () => {
+						const calls = [];
+						class S {
+							#w;
+							#x = calls.push('super prop');
+						}
+						class C extends S {
+							#y;
+							#z = calls.push('prop');
+							constructor({y}) {
+								super();
+								this.f = () => y;
+							}
+						}
+						serialize(C);
+						expect(calls).toEqual([]);
+					});
+				});
+			});
+		});
+
+		describe('prototype properties do not affect instrumentation of class constructor', () => {
+			describe('property with no value', () => {
+				itSerializes('function referencing complex param', {
+					in() {
+						class C {
+							x;
+							constructor({y, f = (0, () => y)}) {
+								this.f = f;
+							}
+						}
+						const obj = new C({y: 123});
+						return obj.f;
+					},
+					out: '(a=>()=>a)(123)',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						expect(fn()).toBe(123);
+					}
+				});
+
+				itSerializes('class using `super` in constructor params', {
+					in() {
+						class C {
+							x;
+							constructor(
+								c = class extends Object { foo() { return super.toString; }}
+							) {
+								this.c = c;
+							}
+						}
+						const obj = new C();
+						return obj.c;
+					},
+					out: `(()=>{
+						const a=Object,
+							b=a.setPrototypeOf,
+							c=b(class c extends class{}{},a),
+							d=(a=>[
+								b=>a=b,
+								{
+									foo(){
+										return Reflect.get(Object.getPrototypeOf(a.prototype),"toString",this)
+									}
+								}.foo
+							])();
+						d[0](c);
+						b(
+							a.defineProperties(c.prototype,{foo:{value:d[1],writable:true,configurable:true}}),
+							a.prototype
+						);
+						return c
+					})()`,
+					validate(Klass) {
+						expect(Klass).toBeFunction();
+						const obj = new Klass();
+						expect(obj.foo()).toBe(Object.prototype.toString);
+					}
+				});
+			});
+
+			describe('property with value', () => {
+				itSerializes('function referencing complex param', {
+					in() {
+						class C {
+							x = 123;
+							constructor({y, f = (0, () => y)}) {
+								this.f = f;
+							}
+						}
+						const obj = new C({y: 123});
+						return obj.f;
+					},
+					out: '(a=>()=>a)(123)',
+					validate(fn) {
+						expect(fn).toBeFunction();
+						expect(fn()).toBe(123);
+					}
+				});
+
+				itSerializes('class using `super` in constructor params', {
+					in() {
+						class C {
+							x = 123;
+							constructor(
+								c = class extends Object { foo() { return super.toString; }}
+							) {
+								this.c = c;
+							}
+						}
+						const obj = new C();
+						return obj.c;
+					},
+					out: `(()=>{
+						const a=Object,
+							b=a.setPrototypeOf,
+							c=b(class c extends class{}{},a),
+							d=(a=>[
+								b=>a=b,
+								{
+									foo(){
+										return Reflect.get(Object.getPrototypeOf(a.prototype),"toString",this)
+									}
+								}.foo
+							])();
+						d[0](c);
+						b(
+							a.defineProperties(c.prototype,{foo:{value:d[1],writable:true,configurable:true}}),
+							a.prototype
+						);
+						return c
+					})()`,
+					validate(Klass) {
+						expect(Klass).toBeFunction();
+						const obj = new Klass();
+						expect(obj.foo()).toBe(Object.prototype.toString);
+					}
+				});
 			});
 		});
 	});
