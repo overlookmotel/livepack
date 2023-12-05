@@ -1380,7 +1380,7 @@ describe('eval', () => {
 								b=a.setPrototypeOf,
 								c=class S{},
 								d=c.prototype,
-								e=b(class C extends class{}{},c),
+								e=b(class C extends null{},c),
 								f=e.prototype;
 							a.defineProperties(d,{
 								meth:{value:{meth(){return 123}}.meth,writable:true,configurable:true}
@@ -1415,7 +1415,7 @@ describe('eval', () => {
 								b=a.setPrototypeOf,
 								c=class S{},
 								d=c.prototype,
-								e=b(class C extends class{}{},c),
+								e=b(class C extends null{},c),
 								f=e.prototype;
 							a.defineProperties(d,{
 								meth:{value:{meth(){return 123}}.meth,writable:true,configurable:true}
@@ -1453,7 +1453,7 @@ describe('eval', () => {
 									class S{},
 									{meth:{value:{meth(){return 123}}.meth,writable:true,configurable:true}}
 								),
-								d=b(class C extends class{}{},c);
+								d=b(class C extends null{},c);
 							b(d.prototype,c.prototype);
 							return(
 								b=>a=>()=>Reflect.get(Object.getPrototypeOf(b),"meth",a).call(a)
@@ -1485,7 +1485,7 @@ describe('eval', () => {
 									class S{},
 									{meth:{value:{meth(){return 123}}.meth,writable:true,configurable:true}}
 								),
-								d=b(class C extends class{}{},c);
+								d=b(class C extends null{},c);
 							b(d.prototype,c.prototype);
 							return(
 								b=>a=>()=>Reflect.get(Object.getPrototypeOf(b),"meth",a).call(a)
@@ -1521,7 +1521,7 @@ describe('eval', () => {
 								c=class S{},
 								d=c.prototype,
 								e=b(
-									(0,eval)("(class C extends class{}{constructor(module,exports,S,obj){super();this.f=eval(\\"() => super.meth()\\")}})"),
+									(0,eval)("(class C extends null{constructor(module,exports,S,obj){super();this.f=eval(\\"() => super.meth()\\")}})"),
 									c
 								),
 								f=e.prototype;
@@ -1561,7 +1561,7 @@ describe('eval', () => {
 								c=class S{},
 								d=c.prototype,
 								e=b(
-									(0,eval)("(class C extends class{}{constructor(module,exports,S,obj){super();this.f=eval(\\"let livepack_tracker; () => super.meth()\\")}})"),
+									(0,eval)("(class C extends null{constructor(module,exports,S,obj){super();this.f=eval(\\"let livepack_tracker; () => super.meth()\\")}})"),
 									c
 								),
 								f=e.prototype;

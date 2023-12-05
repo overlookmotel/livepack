@@ -98,7 +98,7 @@ describe('Sets', () => {
 			out: `(()=>{
 				const a=Set,
 					b=Object.setPrototypeOf,
-					c=b(class S extends class{}{},a).prototype;
+					c=b(class S extends null{},a).prototype;
 				b(c,a.prototype);
 				return b(new a,c)
 			})()`,
@@ -120,7 +120,7 @@ describe('Sets', () => {
 			out: `(()=>{
 				const a=Set,
 					b=Object.setPrototypeOf,
-					c=b(class S extends class{}{},a).prototype;
+					c=b(class S extends null{},a).prototype;
 				b(c,a.prototype);
 				return b(new a([1,2,3]),c)
 			})()`,
@@ -146,7 +146,7 @@ describe('Sets', () => {
 			out: `(()=>{
 				const a=Set,
 					b=Object.setPrototypeOf,
-					c=b(class S extends class{}{},a).prototype,
+					c=b(class S extends null{},a).prototype,
 					d=b(new a([1]),c);
 				b(c,a.prototype);
 				d.add(d);

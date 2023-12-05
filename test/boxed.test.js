@@ -79,7 +79,7 @@ describe('Boxed Strings', () => {
 		out: `(()=>{
 			const a=String,
 				b=Object.setPrototypeOf,
-				c=b(class S extends class{}{},a).prototype;
+				c=b(class S extends null{},a).prototype;
 			b(c,a.prototype);
 			return b(new a("abc"),c)
 		})()`,
@@ -142,7 +142,7 @@ describe('Boxed Booleans', () => {
 		out: `(()=>{
 			const a=Boolean,
 				b=Object.setPrototypeOf,
-				c=b(class B extends class{}{},a).prototype;
+				c=b(class B extends null{},a).prototype;
 			b(c,a.prototype);
 			return b(new a(1),c)
 		})()`,
@@ -274,7 +274,7 @@ describe('Boxed Numbers', () => {
 		out: `(()=>{
 			const a=Number,
 				b=Object.setPrototypeOf,
-				c=b(class N extends class{}{},a).prototype;
+				c=b(class N extends null{},a).prototype;
 			b(c,a.prototype);
 			return b(new a(1),c)
 		})()`,
@@ -356,7 +356,7 @@ describe('Boxed BigInts', () => {
 			const a=Object,
 				b=a.setPrototypeOf,
 				c=BigInt,
-				d=b(class B extends class{}{},c).prototype;
+				d=b(class B extends null{},c).prototype;
 			b(d,c.prototype);
 			return b(a(100n),d)
 		})()`,

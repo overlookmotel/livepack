@@ -3420,7 +3420,7 @@ describe('Functions', () => {
 						d=class S{},
 						e=d.prototype,
 						f=b.defineProperties,
-						g=c(class C extends class{}{},d),
+						g=c(class C extends null{},d),
 						h=g.prototype;
 					f(
 						e,
@@ -3479,7 +3479,7 @@ describe('Functions', () => {
 						d=class S{},
 						e=d.prototype,
 						f=b.defineProperties,
-						g=c(class C extends class{}{},d),
+						g=c(class C extends null{},d),
 						h=g.prototype;
 					f(
 						e,
@@ -3529,7 +3529,7 @@ describe('Functions', () => {
 						c=class S{},
 						d=c.prototype,
 						e=a.defineProperties,
-						f=b(class C extends class{}{},c),
+						f=b(class C extends null{},c),
 						g=f.prototype,
 						h=(b=>[
 							a=>b=a,
@@ -3605,7 +3605,7 @@ describe('Functions', () => {
 						d=class S{},
 						e=d.prototype,
 						f=b.defineProperties,
-						g=c(class C extends class{}{},d),
+						g=c(class C extends null{},d),
 						h=g.prototype;
 					f(
 						e,
@@ -3672,7 +3672,7 @@ describe('Functions', () => {
 						d=class S{},
 						e=d.prototype,
 						f=b.defineProperties,
-						g=c(class C extends class{}{},d),
+						g=c(class C extends null{},d),
 						h=g.prototype,
 						i=b.create(h);
 					f(
@@ -3744,7 +3744,7 @@ describe('Functions', () => {
 						),
 						f=d(
 							c(
-								class C extends class{}{},
+								class C extends null{},
 								{
 									getFoo:{value:a[1],writable:true,configurable:true}
 								}
@@ -3800,7 +3800,7 @@ describe('Functions', () => {
 						),
 						f=d(
 							c(
-								class C extends class{}{},
+								class C extends null{},
 								{
 									getFoo:{value:a[1],writable:true,configurable:true}
 								}
@@ -3856,7 +3856,7 @@ describe('Functions', () => {
 						),
 						f=d(
 							c(
-								class C extends class{}{},
+								class C extends null{},
 								{
 									getFoo:{value:a[1],writable:true,configurable:true}
 								}
@@ -3915,7 +3915,7 @@ describe('Functions', () => {
 						),
 						f=d(
 							c(
-								class C extends class{}{},
+								class C extends null{},
 								{
 									foo:{get:{"get foo"(){return this.x*3}}["get foo"],configurable:true},
 									getFoo:{value:a[1],writable:true,configurable:true},
@@ -3979,7 +3979,7 @@ describe('Functions', () => {
 						),
 						f=d(
 							c(
-								class C extends class{}{},
+								class C extends null{},
 								{
 									foo:{set:{"set foo"(a){this.x=a*3}}["set foo"],configurable:true},
 									setFoo:{value:a[1],writable:true,configurable:true}
@@ -10376,7 +10376,7 @@ describe('Functions', () => {
 					out: `(()=>{
 						const a=Object.setPrototypeOf,
 							b=((b,c,d)=>[
-								class Klass extends class{}{
+								class Klass extends null{
 									constructor(){
 										c=(0,()=>(super(),(()=>{const a=0;a=0})()))
 									}
@@ -10436,7 +10436,7 @@ describe('Functions', () => {
 					out: `(()=>{
 						const a=Object.setPrototypeOf,
 							b=((b,c,d)=>[
-								class Klass extends class{}{
+								class Klass extends null{
 									constructor(){
 										c=(0,()=>super((3,(()=>{const a=0;a=0})())))
 									}

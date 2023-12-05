@@ -823,7 +823,7 @@ describe('Classes', () => {
 							const a=Object.setPrototypeOf,
 								b=class S{},
 								c=a(
-									(0,eval)("(class X extends class{}{constructor(S){super();eval(\\"0\\");this.x=X}})"),
+									(0,eval)("(class X extends null{constructor(S){super();eval(\\"0\\");this.x=X}})"),
 									b
 								);
 							a(c.prototype,b.prototype);
@@ -860,7 +860,7 @@ describe('Classes', () => {
 								b=class S{},
 								c=a(
 									(0,eval)(
-										"(class X extends class{}{constructor(S){super();eval(\\"0\\");this.x=X}})"
+										"(class X extends null{constructor(S){super();eval(\\"0\\");this.x=X}})"
 									),
 									b
 								);
@@ -1030,7 +1030,7 @@ describe('Classes', () => {
 							function fn(){return a}
 						])(),
 						c=b[1],
-						d=a(class X extends class{}{},c);
+						d=a(class X extends null{},c);
 					b[0](d);
 					a(d.prototype,c.prototype);
 					return d
@@ -1058,7 +1058,7 @@ describe('Classes', () => {
 							function fn(){return a}
 						])(),
 						c=b[1],
-						d=a(class X extends class{}{},c);
+						d=a(class X extends null{},c);
 					b[0](d);
 					a(d.prototype,c.prototype);
 					return d
@@ -1727,7 +1727,7 @@ describe('Classes', () => {
 								this.x=1
 							}
 						},
-						c=a(class extends class{}{},b);
+						c=a(class extends null{},b);
 					a(c.prototype,b.prototype);
 					return c
 				})()`,
@@ -1768,7 +1768,7 @@ describe('Classes', () => {
 								this.x=1
 							}
 						},
-						c=a(class Y extends class{}{},b);
+						c=a(class Y extends null{},b);
 					a(c.prototype,b.prototype);
 					return c
 				})()`,
@@ -1816,7 +1816,7 @@ describe('Classes', () => {
 							}
 						},
 						c=a(
-							class Y extends class{}{
+							class Y extends null{
 								constructor(){
 									super()
 								}
@@ -1868,7 +1868,7 @@ describe('Classes', () => {
 							}
 						},
 						c=a(
-							class Y extends class{}{
+							class Y extends null{
 								constructor(){
 									return super()
 								}
@@ -1920,7 +1920,7 @@ describe('Classes', () => {
 							}
 						},
 						c=a(
-							class Y extends class{}{
+							class Y extends null{
 								constructor(a,b){
 									super(a,b,100)
 								}
@@ -1973,7 +1973,7 @@ describe('Classes', () => {
 							}
 						},
 						c=a(
-							class Y extends class{}{
+							class Y extends null{
 								constructor(){
 									const a=1;
 									super(a)
@@ -2027,7 +2027,7 @@ describe('Classes', () => {
 							}
 						},
 						c=a(
-							class Y extends class{}{
+							class Y extends null{
 								constructor(){
 									super();
 									this.y=2
@@ -2083,7 +2083,7 @@ describe('Classes', () => {
 							}
 						},
 						c=a(
-							class Y extends class{}{
+							class Y extends null{
 								constructor(){
 									const a=1;
 									super(a);
@@ -2143,7 +2143,7 @@ describe('Classes', () => {
 								}
 							},
 							c=a(
-								class Y extends class{}{
+								class Y extends null{
 									constructor(a){
 										if(a){
 											super(a)
@@ -2209,7 +2209,7 @@ describe('Classes', () => {
 								}
 							},
 							c=a(
-								class Y extends class{}{
+								class Y extends null{
 									constructor(){
 										super(1);
 										return this;
@@ -2270,7 +2270,7 @@ describe('Classes', () => {
 								}
 							},
 							c=a(
-								class Y extends class{}{
+								class Y extends null{
 									constructor(a){
 										if(a){
 											super(a);
@@ -2337,7 +2337,7 @@ describe('Classes', () => {
 								this.x=1
 							}
 						},
-						d=b(class Y extends class{}{},c);
+						d=b(class Y extends null{},c);
 					b(
 						a.defineProperties(
 							d.prototype,
@@ -2407,7 +2407,7 @@ describe('Classes', () => {
 						},
 						d=c.prototype,
 						e=a.defineProperties,
-						f=b(class Y extends class{}{},c),
+						f=b(class Y extends null{},c),
 						g=(a=>[
 							b=>a=b,
 							{
@@ -2489,7 +2489,7 @@ describe('Classes', () => {
 						},
 						d=c.prototype,
 						e=a.defineProperties,
-						f=b(class Y extends class{}{},c),
+						f=b(class Y extends null{},c),
 						g=(c=>[
 							a=>c=a,
 							{
@@ -2571,7 +2571,7 @@ describe('Classes', () => {
 						},
 						d=c.prototype,
 						e=a.defineProperties,
-						f=b(class Y extends class{}{},c),
+						f=b(class Y extends null{},c),
 						g=(a=>[
 							b=>a=b,
 							{
@@ -2648,7 +2648,7 @@ describe('Classes', () => {
 						c=class X{
 							constructor(){this.x=1}
 						},
-						d=b(class Y extends class{}{},c),
+						d=b(class Y extends null{},c),
 						e=(a=>[
 							b=>a=b,
 							{
@@ -2721,7 +2721,7 @@ describe('Classes', () => {
 						c=class X{},
 						d=c.prototype,
 						e=a.defineProperties,
-						f=b(class Y extends class{}{},c),
+						f=b(class Y extends null{},c),
 						g=(b=>[
 							a=>b=a,
 							{
@@ -2814,7 +2814,7 @@ describe('Classes', () => {
 						},
 						d=b(
 							a.defineProperties(
-								class Y extends class{}{},
+								class Y extends null{},
 								{
 									bar:{
 										value:{
@@ -2900,7 +2900,7 @@ describe('Classes', () => {
 						}),
 						f=d(
 							c(
-								class Y extends class{}{},
+								class Y extends null{},
 								{
 									bar:{value:a[1],writable:true,configurable:true}
 								}
@@ -2981,7 +2981,7 @@ describe('Classes', () => {
 						),
 						f=d(
 							c(
-								class Y extends class{}{},
+								class Y extends null{},
 								{
 									bar:{value:a[1],writable:true,configurable:true}
 								}
@@ -3062,7 +3062,7 @@ describe('Classes', () => {
 						),
 						f=d(
 							c(
-								class Y extends class{}{},
+								class Y extends null{},
 								{
 									bar:{value:a[1],writable:true,configurable:true}
 								}
@@ -3130,7 +3130,7 @@ describe('Classes', () => {
 						},
 						e=c(
 							b.defineProperties(
-								class Y extends class{}{},
+								class Y extends null{},
 								{
 									bar:{value:a[1],writable:true,configurable:true}
 								}
@@ -3217,7 +3217,7 @@ describe('Classes', () => {
 						),
 						f=d(
 							c(
-								class Y extends class{}{},
+								class Y extends null{},
 								{
 									bar:{get:a[1],set:a[2],configurable:true}
 								}
@@ -3265,7 +3265,7 @@ describe('Classes', () => {
 				out: `(()=>{
 					const a=Object.setPrototypeOf,
 						b=class X{},
-						c=a(class Y extends class{}{},b);
+						c=a(class Y extends null{},b);
 					a(c.prototype,b.prototype);
 					return c
 				})()`,
@@ -3301,7 +3301,7 @@ describe('Classes', () => {
 					const a=Object.setPrototypeOf,
 						b=class X{},
 						c=a(
-							class Y extends class{}{
+							class Y extends null{
 								constructor(){
 									super();
 									this.x=1
@@ -3342,7 +3342,7 @@ describe('Classes', () => {
 				out: `(()=>{
 					const a=Object,
 						b=a.setPrototypeOf,
-						c=b(class extends class{}{},a);
+						c=b(class extends null{},a);
 					b(c.prototype,a.prototype);
 					return c
 				})()`,
@@ -3360,7 +3360,7 @@ describe('Classes', () => {
 				out: `(()=>{
 					const a=Object.setPrototypeOf,
 						b=Function,
-						c=a(class extends class{}{},b);
+						c=a(class extends null{},b);
 					a(c.prototype,b.prototype);
 					return c
 				})()`,
@@ -3378,16 +3378,27 @@ describe('Classes', () => {
 					return X;
 				},
 				out: `(()=>{
-					const a=Object,
-						b=a.setPrototypeOf,
-						c=b(class X extends class{}{},Function.prototype);
-					b(c.prototype,a.prototype);
-					return c
+					const a=class X extends null{},
+						b=Object;
+					b.setPrototypeOf(a.prototype,b.prototype);
+					return a
 				})()`,
 				validate(Klass) {
 					expect(Klass).toBeFunction();
 					expect(Klass).toHavePrototype(Function.prototype);
 					expect(Klass.prototype).toHavePrototype(Object.prototype);
+				}
+			});
+
+			itSerializes('null', {
+				in() {
+					return class extends null {};
+				},
+				out: 'class extends null{}',
+				validate(Klass) {
+					expect(Klass).toBeFunction();
+					expect(Klass).toHavePrototype(Function.prototype);
+					expect(Klass.prototype).toHavePrototype(null);
 				}
 			});
 		});
@@ -3415,7 +3426,7 @@ describe('Classes', () => {
 							}
 						},
 						c=a(
-							class Y extends class{}{
+							class Y extends null{
 								constructor(){
 									const a=()=>super();
 									a()
@@ -3471,7 +3482,7 @@ describe('Classes', () => {
 							}
 						},
 						c=a(
-							class Y extends class{}{
+							class Y extends null{
 								constructor(){
 									return{callSuper:(0,()=>super())}
 								}
@@ -3527,7 +3538,7 @@ describe('Classes', () => {
 				const a=Object,
 					b=a.setPrototypeOf,
 					c=(b=>[
-						class Klass extends class{}{
+						class Klass extends null{
 							constructor(){
 								super();
 								this.ext=b;
@@ -3595,11 +3606,11 @@ describe('Classes', () => {
 						b=class SuperKlass1{
 							constructor(){this.x=1}
 						},
-						c=a(class Klass1 extends class{}{},b),
+						c=a(class Klass1 extends null{},b),
 						d=class SuperKlass2{
 							constructor(){this.x=2}
 						},
-						e=a(class Klass2 extends class{}{},d);
+						e=a(class Klass2 extends null{},d);
 					a(c.prototype,b.prototype);
 					a(e.prototype,d.prototype);
 					return{Klass1:c,Klass2:e}
@@ -3651,7 +3662,7 @@ describe('Classes', () => {
 							constructor(){this.x=1}
 						},
 						c=a(
-							class Klass1 extends class{}{
+							class Klass1 extends null{
 								constructor(){
 									super();
 									this.y=this.x
@@ -3663,7 +3674,7 @@ describe('Classes', () => {
 							constructor(){this.x=2}
 						},
 						e=a(
-							class Klass2 extends class{}{
+							class Klass2 extends null{
 								constructor(){
 									super();
 									this.y=this.x
@@ -3713,7 +3724,7 @@ describe('Classes', () => {
 						d=c.prototype,
 						e=a.defineProperties,
 						f=b(
-							class Klass1 extends class{}{},
+							class Klass1 extends null{},
 							c
 						),
 						g=(a=>[
@@ -3726,7 +3737,7 @@ describe('Classes', () => {
 						])(),
 						h=class SuperKlass2{},
 						i=h.prototype,
-						j=b(class Klass2 extends class{}{},h),
+						j=b(class Klass2 extends null{},h),
 						k=(a=>[
 							b=>a=b,
 							{
@@ -3824,7 +3835,7 @@ describe('Classes', () => {
 						),
 						f=d(
 							c(
-								class Klass1 extends class{}{},
+								class Klass1 extends null{},
 								{foo:{value:a[1],writable:true,configurable:true}}
 							),
 							e
@@ -3849,7 +3860,7 @@ describe('Classes', () => {
 						),
 						i=d(
 							c(
-								class Klass2 extends class{}{},
+								class Klass2 extends null{},
 								{foo:{value:g[1],writable:true,configurable:true}}
 							),
 							h
@@ -3902,7 +3913,7 @@ describe('Classes', () => {
 			},
 			out: `(()=>{
 				const a=(b=>[
-						b=class Y extends class{}{
+						b=class Y extends null{
 							constructor(){
 								super();
 								this.z=b
@@ -4052,7 +4063,7 @@ describe('Classes', () => {
 						f=e.prototype,
 						g=d(
 							c(
-								class Y extends class{}{
+								class Y extends null{
 									constructor(){
 										const a=4;
 										super();
@@ -4155,7 +4166,7 @@ describe('Classes', () => {
 						f=e.prototype,
 						g=d(
 							c(
-								class Y extends class{}{
+								class Y extends null{
 									constructor(){
 										const a=4;
 										super();
@@ -4259,7 +4270,7 @@ describe('Classes', () => {
 						f=e.prototype,
 						g=d(
 							c(
-								class Y extends class{}{
+								class Y extends null{
 									constructor(){
 										const a=4;
 										super();
@@ -4318,7 +4329,7 @@ describe('Classes', () => {
 					const a=Object,
 						b=a.setPrototypeOf,
 						c=class S{},
-						d=b(class C extends class{}{},c),
+						d=b(class C extends null{},c),
 						e=(b=>[
 							a=>b=a,
 							{
@@ -4357,7 +4368,7 @@ describe('Classes', () => {
 					const a=Object,
 						b=a.setPrototypeOf,
 						c=class S{},
-						d=b(class C extends class{}{},c),
+						d=b(class C extends null{},c),
 						e=(b=>[
 							a=>b=a,
 							{
@@ -4396,7 +4407,7 @@ describe('Classes', () => {
 					const a=Object,
 						b=a.setPrototypeOf,
 						c=class S{},
-						d=b(class C extends class{}{},c),
+						d=b(class C extends null{},c),
 						e=(b=>[
 							a=>b=a,
 							{
@@ -4435,7 +4446,7 @@ describe('Classes', () => {
 					const a=Object,
 						b=a.setPrototypeOf,
 						c=class S{},
-						d=b(class C extends class{}{},c),
+						d=b(class C extends null{},c),
 						e=(b=>[
 							a=>b=a,
 							{
@@ -4474,7 +4485,7 @@ describe('Classes', () => {
 					const a=Object,
 						b=a.setPrototypeOf,
 						c=class S{},
-						d=b(class C extends class{}{},c),
+						d=b(class C extends null{},c),
 						e=(b=>[
 							a=>b=a,
 							{
@@ -4513,7 +4524,7 @@ describe('Classes', () => {
 					const a=Object,
 						b=a.setPrototypeOf,
 						c=class S{},
-						d=b(class C extends class{}{},c),
+						d=b(class C extends null{},c),
 						e=(b=>[
 							a=>b=a,
 							{
@@ -4552,7 +4563,7 @@ describe('Classes', () => {
 					const a=Object,
 						b=a.setPrototypeOf,
 						c=class S{},
-						d=b(class C extends class{}{},c),
+						d=b(class C extends null{},c),
 						e=(b=>[
 							a=>b=a,
 							{
@@ -4592,7 +4603,7 @@ describe('Classes', () => {
 					const a=Object,
 						b=a.setPrototypeOf,
 						c=class S{},
-						d=b(class C extends class{}{},c),
+						d=b(class C extends null{},c),
 						e=(b=>[
 							a=>b=a,
 							{
@@ -4649,7 +4660,7 @@ describe('Classes', () => {
 			},
 			out: `(()=>{
 				const a=((b,c)=>[
-						class Y extends class{}{
+						class Y extends null{
 							constructor(){
 								super();
 								this.z=[b,c]
@@ -4754,7 +4765,7 @@ describe('Classes', () => {
 						c=class X{},
 						d=c.prototype,
 						e=a.defineProperties,
-						f=b(class Y extends class{}{},c),
+						f=b(class Y extends null{},c),
 						g=(a=>[
 							b=>a=b,
 							{
@@ -4806,7 +4817,7 @@ describe('Classes', () => {
 						c=class X{},
 						d=c.prototype,
 						e=a.defineProperties,
-						f=b(class Y extends class{}{},c),
+						f=b(class Y extends null{},c),
 						g=(a=>[
 							b=>a=b,
 							{
@@ -4854,7 +4865,7 @@ describe('Classes', () => {
 						c=class X{},
 						d=c.prototype,
 						e=a.defineProperties,
-						f=b(class undefined extends class{}{},c),
+						f=b(class undefined extends null{},c),
 						g=(a=>[
 							b=>a=b,
 							{
@@ -5836,7 +5847,7 @@ describe('Classes', () => {
 					out: `(()=>{
 						const a=Object,
 							b=a.setPrototypeOf,
-							c=b(class c extends class{}{},a),
+							c=b(class c extends null{},a),
 							d=(a=>[
 								b=>a=b,
 								{
@@ -5895,7 +5906,7 @@ describe('Classes', () => {
 					out: `(()=>{
 						const a=Object,
 							b=a.setPrototypeOf,
-							c=b(class c extends class{}{},a),
+							c=b(class c extends null{},a),
 							d=(a=>[
 								b=>a=b,
 								{
@@ -5982,7 +5993,7 @@ describe('Classes', () => {
 						}
 					},
 					d=b(
-						class Y extends class{}{
+						class Y extends null{
 							constructor(){
 								super();
 								this.y=2

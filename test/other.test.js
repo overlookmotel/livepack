@@ -57,7 +57,7 @@ describe('RegExps', () => {
 		out: `(()=>{
 			const a=Object.setPrototypeOf,
 				b=RegExp,
-				c=a(class R extends class{}{},b).prototype;
+				c=a(class R extends null{},b).prototype;
 			a(c,b.prototype);
 			return a(/^foo$/gu,c)
 		})()`,
@@ -135,7 +135,7 @@ describe('Dates', () => {
 		out: `(()=>{
 			const a=Date,
 				b=Object.setPrototypeOf,
-				c=b(class D extends class{}{},a).prototype;
+				c=b(class D extends null{},a).prototype;
 			b(c,a.prototype);
 			return b(new a(1577880000000),c)
 		})()`,
@@ -167,7 +167,7 @@ describe('URLs', () => {
 		out: `(()=>{
 			const a=URL,
 				b=Object.setPrototypeOf,
-				c=b(class U extends class{}{},a).prototype;
+				c=b(class U extends null{},a).prototype;
 			b(c,a.prototype);
 			return b(new a("http://foo.com/path/to/file.html?a=1&b=2"),c)
 		})()`,
@@ -219,7 +219,7 @@ describe('URLSearchParams', () => {
 		out: `(()=>{
 			const a=URLSearchParams,
 				b=Object.setPrototypeOf,
-				c=b(class U extends class{}{},a).prototype;
+				c=b(class U extends null{},a).prototype;
 			b(c,a.prototype);
 			return b(new a("a=1&b=2"),c)
 		})()`,

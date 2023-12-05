@@ -340,7 +340,7 @@ describe('Arrays', () => {
 			out: `(()=>{
 				const a=Object.setPrototypeOf,
 					b=Array,
-					c=a(class A extends class{}{},b).prototype;
+					c=a(class A extends null{},b).prototype;
 				a(c,b.prototype);
 				return a([],c)
 			})()`,
@@ -363,7 +363,7 @@ describe('Arrays', () => {
 			out: `(()=>{
 				const a=Object.setPrototypeOf,
 					b=Array,
-					c=a(class A extends class{}{},b).prototype;
+					c=a(class A extends null{},b).prototype;
 				a(c,b.prototype);
 				return a([1,2,3],c)
 			})()`,
@@ -391,7 +391,7 @@ describe('Arrays', () => {
 			out: `(()=>{
 				const a=Object.setPrototypeOf,
 					b=Array,
-					c=a(class A extends class{}{},b).prototype,
+					c=a(class A extends null{},b).prototype,
 					d=a([,2],c);
 				a(c,b.prototype);
 				d[0]=d;

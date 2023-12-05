@@ -45,7 +45,7 @@ describe('Buffers', () => {
 			out: `(()=>{
 				const a=Buffer,
 					b=Object.setPrototypeOf,
-					c=b(class B extends class{}{},a).prototype;
+					c=b(class B extends null{},a).prototype;
 				b(c,a.prototype);
 				return b(a.from("QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVo=","base64"),c)
 			})()`,
@@ -373,7 +373,7 @@ describe('Buffers', () => {
 			out: `(()=>{
 				const a=Uint8Array,
 					b=Object.setPrototypeOf,
-					c=b(class B extends class{}{},a).prototype;
+					c=b(class B extends null{},a).prototype;
 				b(c,a.prototype);
 				return b(new a([100,200]),c)
 			})()`,
