@@ -47,19 +47,14 @@ export default function getRunner(config) {
  * For some reason, V8 coverage reporting is incorrect if multiple test files run in same thread.
  *
  * Uses `jest-light-runner`'s worker thread implementation.
- * Code for class below is copied from `jest-light-runner`, except uses `tinypool` instead of `piscina`,
- * with `isolateWorkers` option which ensures every task runs in its own fresh worker.
+ * Code for class below is copied from `jest-light-runner`, except with `isolateWorkers` option.
  */
 class CoverageRunner {
 	constructor(config) {
 		this._config = config;
 
-		this._piscina = new Tinypool({
+		this._pool = new Tinypool({
 			filename: LIGHT_RUNNER_WORKER_URL,
-			// `minThreads` is required to ensure continues to use all available CPUs
-			// due to bug with `tinypool`'s `isolateWorkers` option.
-			// https://github.com/tinylibs/tinypool/issues/42
-			minThreads: config.maxWorkers,
 			maxThreads: config.maxWorkers,
 			isolateWorkers: true,
 			env: {
