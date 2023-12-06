@@ -1,5 +1,152 @@
 # Changelog
 
+## 0.8.0
+
+Breaking changes:
+
+* Drop support for NodeJS v14, v16, v19
+* Remove `inline` option
+* Rename `cache` CLI option
+* Make `filename` compulsory for `parse()`
+
+Features:
+
+* Support NodeJS v20 + v21
+
+Bug fixes:
+
+* Instrument: Prevent side-effects serializing classes with properties
+* Don't transpile `super()` in class constructors
+* Fix getting URL Symbols
+* `WeakMap` + `WeakSet` shims fix memory leaks
+* Convert `WeakSet` + `WeakMap` shims to classes
+* Support `super` in `eval()`
+* Don't freeze `this` or `super` when `eval` present
+* Fix error serializing function with name prop getter which throws
+* Fix serializing invalid dates
+* Fix mangling function names
+* Convert `++` and `--` const violations correctly
+* Instrument: Fix parsing source map comments
+* Fix source maps where existing source map
+* `eval()` only parse `new.target` where legal
+* Separate prefix nums in eval contexts
+* Instrument: Prevent function info functions in sloppy mode eval being hoisted
+* Suppress experimental warnings when cataloging globals
+* Throw error if unknown primitive type
+* Instrument: Create `arguments` binding for function before visiting function body
+* Prevent duplicate var nodes in `internalVars` for read-write const violations
+
+Improvements:
+
+* Only freeze vars in functions where within scope of `eval()`
+* Shorter output for zeroed TypeArrays
+* Shorter output for zero-length buffers
+* Shorter output for buffers containing zeros
+* Serialize `WeakSet` + `WeakMap` entries out of order where circular values
+* Classes with super-classes extend `null`
+* Separate namespace for private vars in mangled var name transform
+* Error message for unexpected value type
+* Remove workarounds for class name property in Node v14 + v16
+* Remove workarounds for NodeJS v14 + v16
+* Instrument: Simplify defining temp var for classes containing `super`
+* Use `allowNewTargetOutsideFunction` Babel parse option
+* Instrument: Correctly set `isVar` for nested function declarations
+* Call `eval` function directly
+* Create temp vars in `eval`
+* Instrument don't record external var trails for frozen vars
+* `parseFunction` don't add `super` + `new.target` to frozen var names
+* Instrument: Freeze all external vars of functions containing `eval()`
+* Ensure `fnInfo.isMethod` is boolean
+
+Performance:
+
+* Reduce property lookups
+* Reduce Set lookups
+* Replace dictionary object with Map
+* Avoid string concatenation in passing assertions
+
+Refactor:
+
+* Instrument: Remove unused function return value
+* `firstMapValue` util function
+* Instrument: Store bindings in external vars
+* Instrument: Create function info functions at end of 2nd pass
+* Reduce redundant operations
+* Shorten code
+* Instrument: Shorten code
+* Remove unused code
+* Remove unnecessary vars
+* Combine var declarations
+* Simplify producing frozen `this` in scopes
+* Inline function
+* Don't write to empty array element
+* Rename var
+* Eval `compile` function always return object with same shape
+* Conform var to boolean
+* Remove unnecessary function arg
+* Instrument: Record internal var trails on binding objects
+* Remove recursion in mangled var name transform
+* Instrument: Rename `binding.isFunction` to `isFrozenName`
+* Instrument: Remove `fn.hasThisBindingForSuper` property
+* Instrumentation flag bindings which should not be internal vars
+* Instrumentation create list of frozen function names
+* Instrument: `getOrCreateExternalVar` take fn as param
+* Instrument: Replace `flagAllAncestorFunctions` function
+* Instrument: Remove unnecessary function param
+* Instrument: Shorten code
+* Instrument: Move creating tracker
+* Instrument: Move code to create scopes
+* Instrument: Move function to insert tracker into functions
+
+Dependencies:
+
+* Update dependencies
+* `parse-node-version` dev dependency only
+
+Tests:
+
+* Fix test for `ImportExpression` AST node type [fix]
+* Avoid instrumenting modules used by testing infrastructure [fix]
+* More tests for TypedArrays
+* Replace `eval` with fixtures
+* Run all tests in single pass
+* Workaround for bug in `@babel/generator`
+* Remove workaround for bug in Jest now fixed
+* Correct code comment [nocode]
+* Remove out of date code comments [nocode]
+
+Dev:
+
+* Fix coverage
+* Don't collect coverage for Jest ESLint config file [fix]
+* CI run tests on Node v20
+* CI run tests on Node v21
+* CI run lint on Node v20
+* CI run coverage on Node v18
+* Run ESLint in parallel
+* Update dev dependencies
+* Update `jest-light-runner` dev dependency
+* Replace `@overlook/jest-extended` with `jest-extended`
+* Remove installing NPM from CI task [improve]
+
+No code:
+
+* Code comments
+* Correct JSDoc comments
+* Correct code comments
+* Correct typo in comment
+* Reformat code comments
+* Reformat TODO code comments
+* Reformat NB code comments
+* Instrument: Remove outdated code comment
+* Instrument: Code comment formatting
+* Instrument: Correct JSDoc comment
+* Code comment on instrumentation debugging
+
+Docs:
+
+* Change versioning policy
+
 ## 0.7.8
 
 Docs:
