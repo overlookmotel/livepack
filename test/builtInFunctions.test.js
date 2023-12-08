@@ -18,11 +18,11 @@ describe('Built-in functions', () => {
 		itSerializes('simple', {
 			in: () => promisify(cb => cb(null, 1)),
 			out: 'require("util").promisify(a=>a(null,1))',
-			validate(fn) {
+			async validate(fn) {
 				expect(fn).toBeFunction();
-				// NB: `.isInstanceOf(Promise)` doesn't work in this case
-				// as Jest seems to use a `Promise` global from another realm
-				expect(fn().then).toBeFunction();
+				const promise = fn();
+				expect(promise).toBeInstanceOf(Promise);
+				expect(await promise).toBe(1);
 			}
 		});
 
@@ -42,6 +42,7 @@ describe('Built-in functions', () => {
 			validate(fn) {
 				expect(fn).toBeFunction();
 				expect(fn()).toBe(2);
+				expect(fn[promisify.custom]).toBe(fn);
 				expect(fn).toHaveDescriptorModifiersFor(promisify.custom, false, false, true);
 			}
 		});
