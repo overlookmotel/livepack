@@ -6,7 +6,8 @@
 'use strict';
 
 // Imports
-const {itSerializes, itSerializesEqual, stripLineBreaks} = require('./support/index.js');
+const {serialize} = require('livepack'),
+	{itSerializes, itSerializesEqual, withFixtures, stripLineBreaks} = require('./support/index.js');
 
 // Tests
 
@@ -124,5 +125,45 @@ describe('`__filename`', () => {
 		validateOutput(fn, {outputJs, minify}) {
 			expect(stripLineBreaks(outputJs)).toBe(minify ? '()=>__filename' : '() => __filename');
 		}
+	});
+});
+
+describe('`require`', () => {
+	describe('from same file', () => {
+		it('cannot be serialized directly', () => {
+			expect(() => serialize(require)).toThrowWithMessage(
+				Error, /^Cannot serialize `require` or `import` \(in /
+			);
+		});
+
+		it('cannot be serialized in function scope', () => {
+			expect(() => serialize(() => require)).toThrowWithMessage(
+				Error, /^Cannot serialize `require` or `import` \(in /
+			);
+		});
+	});
+
+	describe('from another file', () => {
+		it('cannot be serialized directly', () => {
+			withFixtures(
+				'module.exports = require;',
+				(otherRequire) => {
+					expect(() => serialize(otherRequire)).toThrowWithMessage(
+						Error, /^Cannot serialize `require` or `import` \(in /
+					);
+				}
+			);
+		});
+
+		it('cannot be serialized in function scope', () => {
+			withFixtures(
+				'module.exports = require;',
+				(otherRequire) => {
+					expect(() => serialize(() => otherRequire)).toThrowWithMessage(
+						Error, /^Cannot serialize `require` or `import` \(in /
+					);
+				}
+			);
+		});
 	});
 });
