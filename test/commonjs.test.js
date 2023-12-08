@@ -5,6 +5,9 @@
 
 'use strict';
 
+// Modules
+const Module = require('module');
+
 // Imports
 const {serialize} = require('livepack'),
 	{itSerializes, itSerializesEqual, withFixtures, stripLineBreaks} = require('./support/index.js');
@@ -163,6 +166,22 @@ describe('`require`', () => {
 						Error, /^Cannot serialize `require` or `import` \(in /
 					);
 				}
+			);
+		});
+	});
+
+	describe('created by `Module.createRequire()`', () => {
+		it('cannot be serialized directly', () => {
+			const otherRequire = Module.createRequire(__filename);
+			expect(() => serialize(otherRequire)).toThrowWithMessage(
+				Error, /^Cannot serialize `require` or `import` \(in /
+			);
+		});
+
+		it('cannot be serialized in function scope', () => {
+			const otherRequire = Module.createRequire(__filename);
+			expect(() => serialize(() => otherRequire)).toThrowWithMessage(
+				Error, /^Cannot serialize `require` or `import` \(in /
 			);
 		});
 	});
