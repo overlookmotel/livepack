@@ -391,6 +391,8 @@ function itSerializes(name, options, defaultOptions, describe, runExpectation) {
 			try {
 				await validateInput(input, {...opts, ...testOpts, isInput: true, isOutput: false});
 			} catch (err) {
+				// eslint-disable-next-line no-ex-assign
+				if (typeof err !== 'object' || err === null) err = new Error('Unknown error');
 				err.message = `Validation failed on input\n\n${err.message}`;
 				throw err;
 			}
