@@ -6,7 +6,8 @@
 'use strict';
 
 // Modules
-const {promisify, debuglog, debug} = require('util'); // eslint-disable-line node/no-deprecated-api
+// eslint-disable-next-line node/no-deprecated-api
+const {promisify, callbackify, debuglog, debug} = require('util');
 
 // Imports
 const {itSerializes} = require('./support/index.js');
@@ -46,6 +47,24 @@ describe('Built-in functions', () => {
 				expect(fn).toHaveDescriptorModifiersFor(promisify.custom, false, false, true);
 			}
 		});
+	});
+
+	itSerializes("require('util').callbackify", {
+		in: () => callbackify(async () => 1),
+		out: 'require("util").callbackify(async()=>1)',
+		async validate(fn) {
+			expect(fn).toBeFunction();
+			const value = await new Promise((resolve, reject) => {
+				fn((err, res) => {
+					if (err) {
+						reject(err);
+					} else {
+						resolve(res);
+					}
+				});
+			});
+			expect(value).toBe(1);
+		}
 	});
 
 	describe("require('util').debuglog", () => {
