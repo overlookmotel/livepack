@@ -186,3 +186,117 @@ describe('`require`', () => {
 		});
 	});
 });
+
+describe('`require.resolve`', () => {
+	describe('from same file', () => {
+		it('cannot be serialized directly', () => {
+			expect(() => serialize(require.resolve)).toThrowWithMessage(
+				Error, /^Cannot serialize `require` or `import` \(in /
+			);
+		});
+
+		it('cannot be serialized in function scope', () => {
+			const {resolve} = require;
+			expect(() => serialize(() => resolve)).toThrowWithMessage(
+				Error, /^Cannot serialize `require` or `import` \(in /
+			);
+		});
+	});
+
+	describe('from another file', () => {
+		it('cannot be serialized directly', () => {
+			withFixtures(
+				'module.exports = require.resolve;',
+				(otherResolve) => {
+					expect(() => serialize(otherResolve)).toThrowWithMessage(
+						Error, /^Cannot serialize `require` or `import` \(in /
+					);
+				}
+			);
+		});
+
+		it('cannot be serialized in function scope', () => {
+			withFixtures(
+				'module.exports = require.resolve;',
+				(otherResolve) => {
+					expect(() => serialize(() => otherResolve)).toThrowWithMessage(
+						Error, /^Cannot serialize `require` or `import` \(in /
+					);
+				}
+			);
+		});
+	});
+
+	describe('created by `Module.createRequire()`', () => {
+		it('cannot be serialized directly', () => {
+			const otherResolve = Module.createRequire(__filename).resolve;
+			expect(() => serialize(otherResolve)).toThrowWithMessage(
+				Error, /^Cannot serialize `require` or `import` \(in /
+			);
+		});
+
+		it('cannot be serialized in function scope', () => {
+			const otherResolve = Module.createRequire(__filename).resolve;
+			expect(() => serialize(() => otherResolve)).toThrowWithMessage(
+				Error, /^Cannot serialize `require` or `import` \(in /
+			);
+		});
+	});
+});
+
+describe('`require.resolve.paths`', () => {
+	describe('from same file', () => {
+		it('cannot be serialized directly', () => {
+			expect(() => serialize(require.resolve.paths)).toThrowWithMessage(
+				Error, /^Cannot serialize `require` or `import` \(in /
+			);
+		});
+
+		it('cannot be serialized in function scope', () => {
+			const {paths} = require.resolve;
+			expect(() => serialize(() => paths)).toThrowWithMessage(
+				Error, /^Cannot serialize `require` or `import` \(in /
+			);
+		});
+	});
+
+	describe('from another file', () => {
+		it('cannot be serialized directly', () => {
+			withFixtures(
+				'module.exports = require.resolve.paths;',
+				(otherPaths) => {
+					expect(() => serialize(otherPaths)).toThrowWithMessage(
+						Error, /^Cannot serialize `require` or `import` \(in /
+					);
+				}
+			);
+		});
+
+		it('cannot be serialized in function scope', () => {
+			withFixtures(
+				'module.exports = require.resolve.paths;',
+				(otherPaths) => {
+					expect(() => serialize(() => otherPaths)).toThrowWithMessage(
+						Error, /^Cannot serialize `require` or `import` \(in /
+					);
+				}
+			);
+		});
+	});
+
+	describe('created by `Module.createRequire()`', () => {
+		it('cannot be serialized directly', () => {
+			const otherPaths = Module.createRequire(__filename).resolve.paths;
+			expect(() => serialize(otherPaths)).toThrowWithMessage(
+				Error, /^Cannot serialize `require` or `import` \(in /
+			);
+		});
+
+		it('cannot be serialized in function scope', () => {
+			const otherPaths = Module.createRequire(__filename).resolve.paths;
+			expect(() => serialize(() => otherPaths)).toThrowWithMessage(
+				Error, /^Cannot serialize `require` or `import` \(in /
+			);
+		});
+	});
+});
