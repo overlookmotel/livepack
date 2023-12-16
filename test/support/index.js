@@ -22,7 +22,7 @@ const mapValues = require('lodash/mapValues'),
 	assert = require('simple-invariant');
 
 // Imports
-const {createFixtures, cleanupFixtures, withFixtures, serializeInNewProcess} = require('./fixtures.js'),
+const {withFixtures, serializeInNewProcess} = require('./fixtures.js'),
 	internalSplitPoints = require('../../lib/shared/internal.js').splitPoints;
 
 useGlobalModuleCache();
@@ -37,8 +37,6 @@ module.exports = { // eslint-disable-line jest/no-export
 	itSerializesEqual: wrapItSerializes({equal: true}),
 	stripLineBreaks,
 	stripSourceMapComment,
-	createFixtures,
-	cleanupFixtures,
 	withFixtures,
 	serializeInNewProcess,
 	tryCatch

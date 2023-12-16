@@ -23,7 +23,7 @@ const SPAWNED_PATH = pathJoin(__dirname, 'spawned.js'),
 
 // Exports
 
-module.exports = {createFixtures, cleanupFixtures, withFixtures, serializeInNewProcess};
+module.exports = {withFixtures, serializeInNewProcess};
 
 let fixtureNum = 0;
 
