@@ -51,7 +51,7 @@ const {readFileSync, statSync} = fs;
 fs.readFileSync = (path, encoding) => {
 	if (fixtureExists(path)) {
 		if (encoding !== 'utf8') throw new Error(`Cannot read fixture file with encoding '${encoding}'`);
-		return fixtures[path];
+		return fixtures.get(path);
 	}
 	return readFileSync(path, encoding);
 };
@@ -66,5 +66,5 @@ fs.statSync = (path, options) => {
 };
 
 function fixtureExists(path) {
-	return !!fixtures && Object.prototype.hasOwnProperty.call(fixtures, path);
+	return !!fixtures && fixtures.has(path);
 }

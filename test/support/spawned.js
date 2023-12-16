@@ -40,12 +40,12 @@ const {setFixtures} = require('./fixturesFs.js'),
 	});
 
 	// Create virtual fixtures files
-	const fixtures = JSON.parse(Buffer.concat(buffers));
-	setFixtures(fixtures);
+	const fixturesArr = JSON.parse(Buffer.concat(buffers));
+	setFixtures(new Map(fixturesArr));
 
 	// Load first fixture file
 	// eslint-disable-next-line global-require, import/no-dynamic-require
-	const input = require(Object.keys(fixtures)[0]);
+	const input = require(fixturesArr[0][0]);
 
 	// Serialize input and output result to stdout
 	console.log(serialize(input)); // eslint-disable-line no-console

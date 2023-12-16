@@ -44,7 +44,7 @@ const moduleChildren = module.children,
 function createFixtures(files) {
 	const fixtures = createFixturesFiles(files);
 	setFixtures(fixtures);
-	return Object.keys(fixtures);
+	return [...fixtures.keys()];
 }
 
 /**
@@ -58,9 +58,9 @@ function createFixturesFiles(files) {
 
 	// Create object mapping file paths to content
 	files = conformFiles(files);
-	const fixtures = Object.create(null);
+	const fixtures = new Map();
 	for (const [filename, content] of Object.entries(files)) {
-		fixtures[pathJoin(fixturePath, filename)] = content;
+		fixtures.set(pathJoin(fixturePath, filename), content);
 	}
 	return fixtures;
 }
@@ -75,7 +75,7 @@ function createFixturesFiles(files) {
  * @returns {undefined}
  */
 function cleanupFixtures() {
-	for (const path of Object.keys(getFixtures())) {
+	for (const path of getFixtures().keys()) {
 		const module = moduleCache[path];
 		if (!module) continue;
 
@@ -166,7 +166,7 @@ async function serializeInNewProcess(files) {
 		child.stdout.on('data', (chunk) => { stdout += chunk; });
 		child.stderr.on('data', (chunk) => { stderr += chunk; });
 
-		child.stdin.write(`${JSON.stringify(fixtures)}\n`);
+		child.stdin.write(`${JSON.stringify([...fixtures])}\n`);
 
 		child.on('close', () => {
 			if (stderr !== '') {
