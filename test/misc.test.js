@@ -25,6 +25,20 @@ describe('Internal vars created by instrumentation do not interfere with code', 
 		}
 	});
 
+	itSerializes('`getScopeId`', {
+		in: `
+			'use strict';
+			module.exports = () => typeof livepack_getScopeId;
+		`,
+		out: '()=>typeof livepack_getScopeId',
+		validate(fn, {transpiled}) {
+			expect(fn()).toBe('undefined');
+
+			// Check the temp var name which instrumentation creates matches the one being tested for
+			expect(transpiled).toInclude('const [livepack1_tracker, livepack1_getScopeId] = require(');
+		}
+	});
+
 	itSerializes('`scopeId`', {
 		in: `
 			'use strict';
@@ -72,6 +86,20 @@ describe('Internal vars created by instrumentation do not interfere with code', 
 
 			// Check the temp var name which instrumentation creates matches the one being tested for
 			expect(transpiled).toInclude('Object.setPrototypeOf(livepack1_temp_6 =');
+		}
+	});
+
+	itSerializes('`getFnInfo`', {
+		in: `
+			'use strict';
+			module.exports = () => typeof livepack_getFnInfo_3;
+		`,
+		out: '()=>typeof livepack_getFnInfo_3',
+		validate(fn, {transpiled}) {
+			expect(fn()).toBe('undefined');
+
+			// Check the temp var name which instrumentation creates matches the one being tested for
+			expect(transpiled).toInclude('function livepack1_getFnInfo_3() {');
 		}
 	});
 });
