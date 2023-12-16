@@ -12,7 +12,7 @@ const pathJoin = require('path').join,
 
 // Imports
 const {getFixtures, setFixtures, clearFixtures, FIXTURES_DIR_PATH} = require('./fixturesFs.js'),
-	transpiledFiles = require('./transpiledFiles.js'),
+	fixturesState = require('./fixturesState.js'),
 	maps = require('../../lib/register/maps.js'),
 	moduleCache = require('../../lib/shared/moduleCache.js').cache,
 	{globals} = require('../../lib/shared/internal.js');
@@ -72,7 +72,6 @@ function createFixturesFiles(files) {
  *   - Delete module from NodeJS module cache
  *   - Delete source map from source maps cache
  *   - Delete module object from `globals`
- *   - Delete from `transpiledFiles`
  * @returns {undefined}
  */
 function cleanupFixtures() {
@@ -83,7 +82,6 @@ function cleanupFixtures() {
 		delete moduleCache[path];
 		delete maps[path];
 		globals.delete(module);
-		delete transpiledFiles[path];
 	}
 
 	clearFixtures();
@@ -113,12 +111,21 @@ function withFixtures(files, fn) {
 	const paths = createFixtures(files);
 
 	try {
-		// `require()` first fixture file
+		// `require()` first fixture file.
+		// Capture fixture's transpiled code.
 		const path = paths[0];
-		const input = require(path); // eslint-disable-line global-require, import/no-dynamic-require
+		let input, transpiled;
+		fixturesState.isCapturingTranspiledCode = true;
+		try {
+			input = require(path); // eslint-disable-line global-require, import/no-dynamic-require
+			transpiled = fixturesState.transpiledCode;
+		} finally {
+			fixturesState.isCapturingTranspiledCode = false;
+			fixturesState.transpiledCode = undefined;
+		}
 
 		// Call test function
-		const res = fn(input, {path, paths, transpiled: transpiledFiles[path]});
+		const res = fn(input, {path, paths, transpiled});
 
 		if (res instanceof Promise) {
 			return res.then(

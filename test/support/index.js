@@ -23,7 +23,6 @@ const mapValues = require('lodash/mapValues'),
 
 // Imports
 const {createFixtures, cleanupFixtures, withFixtures, serializeInNewProcess} = require('./fixtures.js'),
-	transpiledFiles = require('./transpiledFiles.js'),
 	internalSplitPoints = require('../../lib/shared/internal.js').splitPoints;
 
 useGlobalModuleCache();
@@ -42,8 +41,7 @@ module.exports = { // eslint-disable-line jest/no-export
 	cleanupFixtures,
 	withFixtures,
 	serializeInNewProcess,
-	tryCatch,
-	transpiledFiles
+	tryCatch
 };
 
 // `LIVEPACK_TEST_QUICK` env runs tests in default options only

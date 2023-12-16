@@ -9,7 +9,7 @@
 
 // Imports
 const {
-	useInternalModuleCache, useGlobalModuleCache, usingInternalModuleCache, Module
+	useInternalModuleCache, useGlobalModuleCache, Module
 } = require('../../lib/shared/moduleCache.js');
 
 // Patch filesystem for virtual fixtures files
@@ -43,14 +43,17 @@ const {addHook} = require('pirates'),
 	EXTS = require('@babel/core').DEFAULT_EXTENSIONS;
 
 // Imports
-const transpiledFiles = require('./transpiledFiles.js');
+const fixturesState = require('./fixturesState.js');
 
 // Revert to global module cache
 useGlobalModuleCache();
 
-// Install extra require hook to record transpiled code in `transpiledFiles` object
-addHook((code, path) => {
-	if (!usingInternalModuleCache()) transpiledFiles[path] = code;
+// Install extra require hook to record transpiled code in `fixturesState` object
+addHook((code) => {
+	if (fixturesState.isCapturingTranspiledCode) {
+		fixturesState.isCapturingTranspiledCode = false;
+		fixturesState.transpiledCode = code;
+	}
 	return code;
 }, {
 	ignoreNodeModules: false,
