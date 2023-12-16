@@ -170,10 +170,26 @@ describe('Sets', () => {
 });
 
 describe('WeakSets', () => {
-	it('calling `WeakSet()` without `new` throws error', () => {
-		expect(() => WeakSet()).toThrowWithMessage(
-			TypeError, "Class constructor WeakSet cannot be invoked without 'new'"
-		);
+	describe('calling `WeakSet()` throws error when', () => {
+		it('called without `new`', () => {
+			expect(() => WeakSet()).toThrowWithMessage(
+				TypeError, "Class constructor WeakSet cannot be invoked without 'new'"
+			);
+		});
+
+		describe('called with non-iterable', () => {
+			it.each([
+				false,
+				true,
+				0,
+				1,
+				0n,
+				1n,
+				{}
+			])('%p', (value) => {
+				expect(() => new WeakSet(value)).toThrowWithMessage(TypeError, 'iterable is not iterable');
+			});
+		});
 	});
 
 	itSerializes('empty', {

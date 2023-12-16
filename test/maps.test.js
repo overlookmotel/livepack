@@ -179,10 +179,26 @@ describe('Maps', () => {
 });
 
 describe('WeakMaps', () => {
-	it('calling `WeakMap()` without `new` throws error', () => {
-		expect(() => WeakMap()).toThrowWithMessage(
-			TypeError, "Class constructor WeakMap cannot be invoked without 'new'"
-		);
+	describe('calling `WeakMap()` throws error when', () => {
+		it('called without `new`', () => {
+			expect(() => WeakMap()).toThrowWithMessage(
+				TypeError, "Class constructor WeakMap cannot be invoked without 'new'"
+			);
+		});
+
+		describe('called with non-iterable', () => {
+			it.each([
+				false,
+				true,
+				0,
+				1,
+				0n,
+				1n,
+				{}
+			])('%p', (value) => {
+				expect(() => new WeakMap(value)).toThrowWithMessage(TypeError, 'iterable is not iterable');
+			});
+		});
 	});
 
 	itSerializes('empty', {
