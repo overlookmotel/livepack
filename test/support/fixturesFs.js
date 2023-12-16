@@ -56,12 +56,9 @@ fs.readFileSync = (path, encoding) => {
 	return readFileSync(path, encoding);
 };
 
-let cachedStat;
+const cachedStat = statSync(__filename);
 fs.statSync = (path, options) => {
-	if (fixtureExists(path)) {
-		if (!cachedStat) cachedStat = statSync(__filename);
-		return cachedStat;
-	}
+	if (fixtureExists(path)) return cachedStat;
 	return statSync(path, options);
 };
 
