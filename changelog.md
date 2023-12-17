@@ -1,5 +1,63 @@
 # Changelog
 
+## 0.8.1
+
+Features:
+
+* Support serializing functions returned by `util.callbackify`
+
+Bug fixes:
+
+* WeakMap + WeakSet shims throw if falsy non-iterable input
+* Fix error message when serializing `require.resolve` or `require.resolve.paths`
+* Fix error message when serializing `require` created by `Module.createRequire`
+
+Performance:
+
+* WeakMap/WeakSet shims use private class fields
+* Avoid Map lookup serializing WeakMap/WeakSet
+* Avoid object property lookup
+* Instrument: Compile internal vars using Map instead of dictionary object
+* Instrument: Replace external vars object with Map
+* Instrument: Replace `bindings` object with Map
+
+Improvements:
+
+* Remove support for `Module.createRequireFromPath`
+
+Refactor:
+
+* Simplify patching `util` module
+* WeakMap/WeakSet shims shorten code
+* WeakMap/WeakSet shims capture `WeakMap` constructor earlier
+* Shorten code for serializing Sets + Maps
+* Shorten code
+
+Dependencies:
+
+* Update `@babel/generator` dependency
+* Update Babel dependencies
+
+Tests:
+
+* Handle validation errors which are not objects [fix]
+* Improve tests for promisified functions [improve]
+* Remove `transpiledFiles` from tests [improve]
+* More tests for internal vars in instrumentation [improve]
+* Tests for serializing `require` [improve]
+* Replace fixtures dictionary object with Map [perf]
+* Simplify fixtures FS shim [refactor]
+* Support module don't expose `createFixtures` or `cleanupFixtures` [refactor]
+
+Dev:
+
+* Update dev dependencies
+
+No code:
+
+* Correct code comment
+* Correct JSDoc comment
+
 ## 0.8.0
 
 Breaking changes:
