@@ -570,8 +570,6 @@ NB Applications can *use* any of these within functions, just that instances of 
 * Unsupported: `export default Promise.resolve();` (Promise instance serialized directly)
 * Unsupported: `const p = Promise.resolve(); export default function f() { return p; };` (Promise instance in outer scope of exported function)
 
-`with (...) {...}` is also not supported where it alters the scope of a function being serialized.
-
 ### Browser code
 
 This works in part. You can, for example, build a simple React app with Livepack.
