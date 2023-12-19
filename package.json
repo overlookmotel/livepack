@@ -50,7 +50,7 @@
     "find-up": "^5.0.0",
     "is-it-type": "^5.1.2",
     "lodash": "^4.17.21",
-    "native-type-of": "^1.1.0",
+    "native-type-of": "^2.0.0",
     "pirates": "^4.0.6",
     "reserved-words": "^0.1.2",
     "simple-invariant": "^2.0.1",
