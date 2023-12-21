@@ -1944,6 +1944,49 @@ describe('eval', () => {
 					});
 				});
 
+				describe('function arguments + var binding', () => {
+					itSerializes('where var binding is frozen', {
+						in: `
+							module.exports = function(module, exports) {
+								var arguments;
+								eval('arguments');
+								return arguments;
+							};
+						`,
+						out: `(0,eval)("
+							(function(module,exports){var arguments;eval(\\"arguments\\");return arguments})
+						")`,
+						validate(fn) {
+							expect(fn).toBeFunction();
+							const args = fn(1, 2, 3);
+							expect(args).toBeArguments();
+							expect([...args]).toEqual([1, 2, 3]);
+						}
+					});
+
+					itSerializes('where function param is frozen', {
+						in: `
+							module.exports = function(module, exports, args = eval('arguments')) {
+								var arguments;
+								return [arguments, args];
+							};
+						`,
+						out: `(0,eval)("
+							(function(module,exports,args=eval(\\"arguments\\")){
+								var arguments;
+								return[arguments,args]
+							})
+						")`,
+						validate(fn) {
+							expect(fn).toBeFunction();
+							const [args, args2] = fn(1, 2);
+							expect(args).toBeArguments();
+							expect([...args]).toEqual([1, 2]);
+							expect(args2).toBe(args);
+						}
+					});
+				});
+
 				describe('for statement bindings', () => {
 					itSerializes('where left binding is frozen', {
 						in: `
