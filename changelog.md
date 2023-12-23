@@ -1,5 +1,54 @@
 # Changelog
 
+## 0.8.2
+
+Bug fixes:
+
+* Instrument: Link bindings for `arguments` var and function arguments
+* Retain `Module.prototype.require.main`
+* Freeze vars in function containing `eval()` even if `eval` is local var
+* Capture `module` objects when function declaration called `module` at top level
+* Register: Better identify ESM require errors
+* Rename top level `require` functions in CommonJS
+
+Improvements:
+
+* Instrument: Remove check for CommonJS var declaration clashes
+* Instrument: Don't instrument `eval()` call with no arguments
+* Register: Better fallback cache dir
+
+Performance:
+
+* Avoid object prop lookup getting function type
+
+Refactor:
+
+* Instrument: Move check for frozen binding when hoisting sloppy functions earlier
+* Instrument: Don't flag bindings shared between function param and `var` binding as `isVar`
+* Instrument: Define `state.getSourcesNode` upfront
+* Remove unnecessary function naming shield
+* Shorten code
+* Instrument: Refactor `visitEval`
+* Use `+` to conform strings to numbers
+
+Dependencies:
+
+* Update `native-type-of` dependency
+
+Tests:
+
+* Test for serializing `module` object from file which failed to load [improve]
+* Handle non-error thrown in `validate` function [fix]
+
+No code:
+
+* Correct code comment
+* Reformat NB code comments
+* Instrument: Code comment
+* Instrument: Correct typo in code comment
+* Instrument: Correct JSDoc comment
+* Instrument: Correct code comment
+
 ## 0.8.1
 
 Features:
