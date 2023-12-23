@@ -1695,6 +1695,45 @@ describe('eval', () => {
 				});
 			});
 
+			describe('freezes vars where `eval` is local var', () => {
+				itSerializes('external vars', {
+					in: `
+						const {eval} = global,
+							extA = 1, extB = 2;
+						module.exports = function(module, exports) {
+							return eval('[extA, extB]');
+						};
+					`,
+					out: `(0,eval)("
+						(eval,extA,extB)=>function(module,exports){return eval(\\"[extA, extB]\\")}
+					")(eval,1,2)`,
+					validate(fn) {
+						expect(fn).toBeFunction();
+						expect(fn()).toEqual([1, 2]);
+					}
+				});
+
+				itSerializes('internal vars', {
+					in: `
+						module.exports = function(module, exports) {
+							const {eval} = global,
+								intA = 1, intB = 2;
+							return eval('[intA, intB]');
+						};
+					`,
+					out: `(0,eval)("
+						(function(module,exports){
+							const{eval}=global,intA=1,intB=2;
+							return eval(\\"[intA, intB]\\")
+						})
+					")`,
+					validate(fn) {
+						expect(fn).toBeFunction();
+						expect(fn()).toEqual([1, 2]);
+					}
+				});
+			});
+
 			describe('does not freeze vars internal to function where not accessible to eval', () => {
 				describe('in nested blocks', () => {
 					itSerializes('where vars differently named from frozen vars', {
