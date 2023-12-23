@@ -69,6 +69,38 @@ describe('`module`', () => {
 			expect(fn()).toBe(123);
 		}
 	});
+
+	itSerializes('var overriden by function declaration and module object exported', {
+		in: `
+			'use strict';
+			function module() { return 123; }
+			// arguments[2] is module object
+			arguments[2].exports = arguments[2];
+		`,
+		out: '(()=>{const a={};a.exports=a;return a})()',
+		validate(mod, {isOutput}) {
+			expect(mod).toBeObject();
+			if (isOutput) expect(mod).toHaveOwnPropertyNames(['exports']);
+			expect(mod.exports).toBe(mod);
+		}
+	});
+
+	itSerializes('var overriden by function declaration and function exported', {
+		in: `
+			'use strict';
+			function module() { return 123; }
+			exports.x = module;
+		`,
+		out: '{x:function module(){return 123}}',
+		validate(obj) {
+			expect(obj).toBeObject();
+			expect(obj).toHaveOwnPropertyNames(['x']);
+			const fn = obj.x;
+			expect(fn).toBeFunction();
+			expect(fn.name).toBe('module');
+			expect(fn()).toBe(123);
+		}
+	});
 });
 
 describe('`exports`', () => {
