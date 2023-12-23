@@ -401,6 +401,8 @@ function itSerializes(name, options, defaultOptions, describe, runExpectation) {
 					...opts, ...testOpts, isInput: false, isOutput: true, input, outputJs
 				});
 			} catch (err) {
+				// eslint-disable-next-line no-ex-assign
+				if (typeof err !== 'object' || err === null) err = new Error('Unknown error');
 				err.message = `Validation failed on output\n\n${err.message}`;
 				throw err;
 			}
