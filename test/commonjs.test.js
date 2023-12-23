@@ -45,6 +45,30 @@ describe('`module`', () => {
 		}
 	});
 
+	itSerializes('from another module where loading module threw', {
+		in: {
+			'index.js': `
+				try {
+					require('./other.js');
+				} catch {}
+				module.exports = require('./store.js').module;
+			`,
+			'other.js': `
+				const store = require('./store.js');
+				store.module = module;
+				module.exports = {x: 1};
+				throw new Error('foo');
+			`,
+			'store.js': 'module.exports = {};'
+		},
+		out: '{exports:{x:1}}',
+		validate(mod, {isOutput}) {
+			expect(mod).toBeObject();
+			if (isOutput) expect(mod).toHaveOwnPropertyNames(['exports']);
+			expect(mod.exports).toEqual({x: 1});
+		}
+	});
+
 	itSerializes('in scope of function', {
 		in: "'use strict';module.exports = () => module;",
 		out: '(()=>{const a={},b=(a=>()=>a)(a);a.exports=b;return b})()',
