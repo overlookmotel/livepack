@@ -241,6 +241,161 @@ describe('`require`', () => {
 			);
 		});
 	});
+
+	describe('local functions called `require` do not break instrumentation', () => {
+		describe('1 function', () => {
+			itSerializes('sloppy mode', {
+				in: `
+					module.exports = require;
+					const ext = {x: 1};
+					function require() {
+						return ext;
+					}
+				`,
+				strictEnv: false,
+				out: '(a=>function require(){return a})({x:1})',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					expect(fn.name).toBe('require');
+					expect(fn()).toEqual({x: 1});
+				}
+			});
+
+			itSerializes('strict mode', {
+				in: `
+					'use strict';
+					module.exports = require;
+					const ext = {x: 1};
+					function require() {
+						return ext;
+					}
+				`,
+				out: '(a=>function require(){return a})({x:1})',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					expect(fn.name).toBe('require');
+					expect(fn()).toEqual({x: 1});
+				}
+			});
+		});
+
+		describe('multiple functions', () => {
+			itSerializes('sloppy mode', {
+				in: `
+					module.exports = require;
+					const extA = {x: 1},
+						extB = {y: 2},
+						extC = {z: 3};
+					function require() {
+						return extA;
+					}
+					function require() {
+						return extB;
+					}
+					function require() {
+						return extC;
+					}
+				`,
+				strictEnv: false,
+				out: '(a=>function require(){return a})({z:3})',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					expect(fn.name).toBe('require');
+					expect(fn()).toEqual({z: 3});
+				}
+			});
+
+			itSerializes('strict mode', {
+				in: `
+					'use strict';
+					module.exports = require;
+					const extA = {x: 1},
+						extB = {y: 2};
+					function require() {
+						return extA;
+					}
+					function require() {
+						return extB;
+					}
+				`,
+				out: '(a=>function require(){return a})({y:2})',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					expect(fn.name).toBe('require');
+					expect(fn()).toEqual({y: 2});
+				}
+			});
+		});
+
+		itSerializes('function prefixed with label', {
+			in: `
+				module.exports = require;
+				const ext = {x: 1};
+				foo: function require() {
+					return ext;
+				}
+			`,
+			strictEnv: false,
+			out: '(a=>function require(){return a})({x:1})',
+			validate(fn) {
+				expect(fn).toBeFunction();
+				expect(fn.name).toBe('require');
+				expect(fn()).toEqual({x: 1});
+			}
+		});
+
+		describe('function in nested block is not hoisted', () => {
+			itSerializes('when no top level function', {
+				in: {
+					'index.js': `
+						let inner;
+						{
+							inner = require;
+							function require() {
+								return 456;
+							}
+						}
+						module.exports = [require('./other.js'), inner];
+					`,
+					'other.js': 'module.exports = 123;'
+				},
+				out: '[123,function require(){return 456}]',
+				strictEnv: false,
+				validate([num, fn]) {
+					expect(num).toBe(123);
+					expect(fn).toBeFunction();
+					expect(fn.name).toBe('require');
+					expect(fn()).toBe(456);
+				}
+			});
+
+			itSerializes('when also top level function', {
+				in: `
+					let inner;
+					{
+						inner = require;
+						function require() {
+							return 456;
+						}
+					}
+					function require() {
+						return 123;
+					}
+					module.exports = [require, inner];
+				`,
+				out: '[function require(){return 123},function require(){return 456}]',
+				strictEnv: false,
+				validate([fn, inner]) {
+					expect(fn).toBeFunction();
+					expect(fn.name).toBe('require');
+					expect(fn()).toBe(123);
+					expect(inner).toBeFunction();
+					expect(inner.name).toBe('require');
+					expect(inner()).toBe(456);
+				}
+			});
+		});
+	});
 });
 
 describe('`require.resolve`', () => {
