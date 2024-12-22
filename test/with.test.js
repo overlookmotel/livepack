@@ -624,6 +624,88 @@ describe('with statements', () => {
 		});
 	});
 
+	describe('inside serialized function', () => {
+		itSerializes('allows access to outer binding', {
+			in() {
+				const x = 123;
+				return (o) => {
+					with (o) {
+						return x;
+					}
+				};
+			},
+			out: '(x=>a=>{with(a){return x}})(123)',
+			validate(fn) {
+				expect(fn).toBeFunction();
+				expect(fn({})).toBe(123);
+				expect(fn({x: 456})).toBe(456);
+			}
+		});
+
+		itSerializes('allows access to global', {
+			in() {
+				return (o) => {
+					with (o) {
+						return console;
+					}
+				};
+			},
+			out: 'a=>{with(a){return console}}',
+			validate(fn) {
+				expect(fn).toBeFunction();
+				expect(fn({})).toBe(console);
+				expect(fn({console: 123})).toBe(123);
+			}
+		});
+
+		describe('allows access to `this`', () => {
+			itSerializes('when `with ()` not included in output', {
+				in() {
+					function outer() {
+						return (o) => {
+							with (o) {
+								return this;
+							}
+						};
+					}
+					return outer.call({x: 1});
+				},
+				out: '(b=>function(){return a=>{with(a){return this}}}.call(b))({x:1})',
+				validate(fn) {
+					expect(fn).toBeFunction();
+					expect(fn({this: 2, a: 3})).toEqual({x: 1});
+				}
+			});
+
+			itSerializes('when `with ()` included in output', {
+				in() {
+					const y = 2;
+					function outer() {
+						return (o) => {
+							with (o) {
+								return [this, y];
+							}
+						};
+					}
+					return outer.call({x: 1});
+				},
+				out: `
+					(y=>b=>function(){
+						return a=>{
+							with(a){
+								return[this,y]
+							}
+						}
+					}.call(b))(2)({x:1})
+				`,
+				validate(fn) {
+					expect(fn).toBeFunction();
+					expect(fn({this: 3, a: 4})).toEqual([{x: 1}, 2]);
+				}
+			});
+		});
+	});
+
 	/* eslint-disable no-restricted-properties */
 	describe('shimming `Object.prototype.__defineSetter__`', () => {
 		it('does not interfere with its normal functioning', () => {
